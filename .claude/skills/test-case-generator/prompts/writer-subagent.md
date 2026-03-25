@@ -26,7 +26,10 @@
 
 ## 历史用例参考（如有）
 
-> 历史用例已预先转化为 Markdown 格式，存放在 `zentao-cases/history-cases/<项目>/` 目录，直接读取对应目录下的 .md 文件即可。
+> 历史用例已预先转化为 Markdown 格式，存放在各模块的 `archive-cases/` 目录：
+> - DTStack 平台：`zentao-cases/dtstack-platform/<module>/archive-cases/`
+> - 信永中和：`zentao-cases/customItem-platform/信永中和/archive-cases/`
+> 直接读取对应目录下的 .md 文件即可。
 
 以下功能点已在历史用例中覆盖，你的输出中不得重复编写：
 [列出已覆盖的功能点，或写「无历史用例参考」]

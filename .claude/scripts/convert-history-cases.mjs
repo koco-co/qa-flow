@@ -12,7 +12,12 @@
  *   3. zentao-cases/XMind/**\/*.xmind
  *
  * 输出目标:
- *   zentao-cases/history-cases/<项目分类>/<文件名>.md
+ *   CSV  → zentao-cases/customItem-platform/信永中和/archive-cases/<version>/<文件名>.md
+ *   XMind（信永中和）→ zentao-cases/customItem-platform/信永中和/archive-cases/<文件名>.md
+ *   XMind（离线开发）→ zentao-cases/dtstack-platform/离线开发/archive-cases/<文件名>.md
+ *   XMind（数据资产）→ zentao-cases/dtstack-platform/数据资产/archive-cases/<文件名>.md
+ *   XMind（统一查询）→ zentao-cases/dtstack-platform/统一查询/archive-cases/<文件名>.md
+ *   XMind（变量中心）→ zentao-cases/dtstack-platform/变量中心/archive-cases/<文件名>.md
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs'
@@ -300,23 +305,26 @@ async function convertXMind(xmindPath) {
 // ─── 输出路径映射 ─────────────────────────────────────────────────────────────
 
 /**
- * 根据 xmind 路径决定 history-cases 子目录
- * XMind 来自 定制化/信永中和/ → 信永中和
- * XMind 来自 离线开发/ → 离线开发
- * XMind 来自 数据资产/ → 数据资产
- * 以此类推
+ * 根据 xmind 路径决定 archive-cases 输出目录
+ * XMind 来自 定制化/信永中和/ 或 CustomItem/信永中和/ → customItem-platform/信永中和/archive-cases/
+ * XMind 来自 离线开发/ → dtstack-platform/离线开发/archive-cases/
+ * XMind 来自 数据资产/ → dtstack-platform/数据资产/archive-cases/
+ * XMind 来自 统一查询/ → dtstack-platform/统一查询/archive-cases/
+ * XMind 来自 变量中心/ → dtstack-platform/变量中心/archive-cases/
  */
-function xmindOutputCategory(xmindPath) {
+function xmindOutputDir(xmindPath) {
   const rel = xmindPath.replace(ROOT + '/', '')
-  // rel 类似 zentao-cases/XMind/定制化/信永中和/xxx.xmind
+  // rel 类似 zentao-cases/XMind/离线开发/xxx.xmind
   const parts = rel.split('/')
-  // parts[2] = 一级子目录 (定制化 / 离线开发 / 数据资产 / ...)
+  // parts[0]='zentao-cases', parts[1]='XMind', parts[2]=一级子目录
   const top = parts[2] || ''
-  if (top === '定制化') {
+  if (top === '定制化' || top === 'CustomItem') {
     // parts[3] = 信永中和 etc.
-    return parts[3] || top
+    const subProject = parts[3] || top
+    return join(ROOT, 'zentao-cases/customItem-platform', subProject, 'archive-cases')
   }
-  return top
+  // dtstack-platform modules: 离线开发, 数据资产, 统一查询, 变量中心
+  return join(ROOT, 'zentao-cases/dtstack-platform', top, 'archive-cases')
 }
 
 // ─── 主流程 ──────────────────────────────────────────────────────────────────
@@ -331,8 +339,8 @@ async function processCSVFiles() {
     const csvFiles = findFiles(dir, '.csv')
     for (const csvPath of csvFiles) {
       const name = basename(csvPath, '.csv')
-      const outDir = join(ROOT, 'zentao-cases/history-cases/信永中和')
-      const outFile = join(outDir, `${version}-${name}.md`)
+      const outDir = join(ROOT, 'zentao-cases/customItem-platform/信永中和/archive-cases', version)
+      const outFile = join(outDir, `${name}.md`)
 
       if (existsSync(outFile) && !FORCE) {
         stats.skipped.push(outFile.replace(ROOT + '/', ''))
@@ -356,9 +364,8 @@ async function processXMindFiles() {
   const xmindFiles = findFiles(xmindDir, '.xmind')
 
   for (const xmindPath of xmindFiles) {
-    const category = xmindOutputCategory(xmindPath)
     const name = basename(xmindPath, '.xmind')
-    const outDir = join(ROOT, 'zentao-cases/history-cases', category)
+    const outDir = xmindOutputDir(xmindPath)
     const outFile = join(outDir, `${name}.md`)
 
     if (existsSync(outFile) && !FORCE) {
