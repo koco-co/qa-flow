@@ -89,7 +89,7 @@ Step 8: xmind-converter（支持 --append 追加模式）
 | 项目名称 | 目录路径推断 | `信永中和` / `DTStack` |
 | 源码仓库路径 | CLAUDE.md 路径映射表 | 信永中和无源码 |
 | 输出 XMind 路径 | CLAUDE.md 输出规范 | `zentao-cases/XMind/CustomItem/信永中和/` |
-| 历史用例 | 自动查找 | `zentao-cases/history-cases/<项目>/` 目录下的 .md 文件（预转化格式，AI 可直接读取） |
+| 历史用例 | 自动查找 | - DTStack 平台模块：`zentao-cases/dtstack-platform/<module>/archive-cases/` 目录下的 .md 文件<br>- 信永中和：`zentao-cases/customItem-platform/信永中和/archive-cases/` 目录下的 .md 文件 |
 | 运行模式 | 用户指令关键词 | `--quick` / 普通 |
 
 如果用户只说了 Story 编号（如 `Story-20260322`），自动补全完整路径。
@@ -161,7 +161,7 @@ zentao-cases/<项目路径>/Requirement/Story-20260322/.qa-state.json
 - 高风险场景（联动逻辑复杂的字段、权限相关功能、审批流程等）
 - 是否有已知的历史 Bug 需要重点覆盖
 
-同时读取 `zentao-cases/history-cases/<项目>/` 目录下的 .md 文件，整理已覆盖的功能点，避免重复。
+同时读取历史用例目录下的 .md 文件（DTStack 平台：`zentao-cases/dtstack-platform/<module>/archive-cases/`，信永中和：`zentao-cases/customItem-platform/信永中和/archive-cases/`），整理已覆盖的功能点，避免重复。
 
 ### 3.2 需求解耦分析
 

@@ -137,7 +137,9 @@ C. 忽略质量问题，强制继续（不推荐）
 
 在输出最终 JSON 前，检查以下来源的已有用例，避免重复：
 
-1. 读取 `zentao-cases/history-cases/<项目>/` 目录下的 .md 文件，提取已有用例标题（已预先转化为可读 Markdown，无需解析二进制文件）
+1. 读取各模块 `archive-cases/` 目录下的 .md 文件，提取已有用例标题（已预先转化为可读 Markdown，无需解析二进制文件）：
+   - DTStack 平台：`zentao-cases/dtstack-platform/<module>/archive-cases/`
+   - 信永中和：`zentao-cases/customItem-platform/信永中和/archive-cases/`
 2. 如本次生成的用例标题与已有用例完全相同，在 precondition 末尾标注 `[可能与历史用例重复，请确认]`
 
 ## 输出要求

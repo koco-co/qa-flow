@@ -57,15 +57,6 @@ WorkSpaces/
 │   │   ├── DataAssets/                    # 数据资产测试用例
 │   │   ├── DataQuery/                     # 统一查询测试用例
 │   │   └── VariableCenter/                # 变量中心测试用例
-│   ├── history-cases/                     # 预转化历史用例（AI 可直接读取）
-│   │   ├── 信永中和/                       # CSV + XMind 转化
-│   │   │   ├── v0.2.1-流程中心.md
-│   │   │   ├── v0.2.1-数据目录管理.md
-│   │   │   └── ...
-│   │   ├── 离线开发/
-│   │   ├── 数据资产/
-│   │   ├── 统一查询/
-│   │   └── 变量中心/
 │   ├── customItem-platform/信永中和/       # 信永中和需求文档与历史用例
 │   │   ├── Requirement/Story-YYYYMMDD/    # PRD 文档 + 临时文件（按 Story 隔离）
 │   │   │   ├── PRD-XX-xxx.md             # 原始 PRD
@@ -224,18 +215,18 @@ Root (项目名)
 
 ## 历史用例维护
 
-历史用例预先转化为 Markdown 格式，存放在 `zentao-cases/history-cases/` 目录，供工作流直接读取（无需实时解析 XMind 二进制文件）。
+历史用例预先转化为 Markdown 格式，存放在各模块的 `archive-cases/` 目录，供工作流直接读取（无需实时解析 XMind 二进制文件）。不再使用单独的 `history-cases/` 目录。
 
 ### 转化来源
 
 | 来源 | 目标目录 | 格式 |
 |------|---------|------|
-| `customItem-platform/信永中和/v0.x.x/*.csv` | `history-cases/信永中和/` | 完整用例（含步骤+预期） |
-| `XMind/CustomItem/信永中和/*.xmind` | `history-cases/信永中和/` | 标题树结构 |
-| `XMind/BatchWorks/*.xmind` | `history-cases/离线开发/` | 标题树结构 |
-| `XMind/DataAssets/*.xmind` | `history-cases/数据资产/` | 标题树结构 |
-| `XMind/DataQuery/*.xmind` | `history-cases/统一查询/` | 标题树结构 |
-| `XMind/VariableCenter/*.xmind` | `history-cases/变量中心/` | 标题树结构 |
+| `customItem-platform/信永中和/v0.x.x/*.csv` | `customItem-platform/信永中和/archive-cases/` | 完整用例（含步骤+预期） |
+| `XMind/CustomItem/信永中和/*.xmind` | `customItem-platform/信永中和/archive-cases/` | 标题树结构 |
+| `XMind/BatchWorks/*.xmind` | `dtstack-platform/离线开发/archive-cases/` | 标题树结构 |
+| `XMind/DataAssets/*.xmind` | `dtstack-platform/数据资产/archive-cases/` | 标题树结构 |
+| `XMind/DataQuery/*.xmind` | `dtstack-platform/统一查询/archive-cases/` | 标题树结构 |
+| `XMind/VariableCenter/*.xmind` | `dtstack-platform/变量中心/archive-cases/` | 标题树结构 |
 
 ### 更新历史用例
 
