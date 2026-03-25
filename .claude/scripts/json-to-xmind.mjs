@@ -33,13 +33,68 @@ const PRIORITY_MAP = {
   P2: Marker.Priority.p3,
 }
 
+function validateJson(data) {
+  let totalCases = 0
+  let emptyStepCases = 0
+  let emptyExpectedCases = 0
+  let noStepsCases = 0
+
+  const walkCases = (testCases) => {
+    for (const tc of testCases) {
+      totalCases++
+      if (!tc.steps || tc.steps.length === 0) {
+        noStepsCases++
+        continue
+      }
+      for (const s of tc.steps) {
+        if (!s.step && !s.action && !s.操作步骤) emptyStepCases++
+        if (!s.expected && !s.result && !s.预期结果) emptyExpectedCases++
+      }
+    }
+  }
+
+  for (const mod of data.modules ?? []) {
+    if (mod.pages) {
+      for (const page of mod.pages) {
+        if (page.sub_groups) {
+          for (const sg of page.sub_groups) {
+            walkCases(sg.test_cases ?? [])
+          }
+        }
+        walkCases(page.test_cases ?? [])
+      }
+    }
+    if (mod.sub_groups) {
+      for (const sg of mod.sub_groups) {
+        walkCases(sg.test_cases ?? [])
+      }
+    }
+    walkCases(mod.test_cases ?? [])
+  }
+
+  console.log(`\n📋 JSON 校验结果：共 ${totalCases} 条用例`)
+  if (emptyStepCases > 0) console.warn(`  ⚠️ ${emptyStepCases} 处步骤描述为空`)
+  if (emptyExpectedCases > 0) console.warn(`  ⚠️ ${emptyExpectedCases} 处预期结果为空`)
+  if (noStepsCases > 0) console.warn(`  ⚠️ ${noStepsCases} 条用例无步骤`)
+  if (emptyStepCases === 0 && emptyExpectedCases === 0 && noStepsCases === 0) {
+    console.log('  ✅ 所有用例步骤格式校验通过')
+  }
+
+  return { totalCases, emptyStepCases, emptyExpectedCases, noStepsCases }
+}
+
 function buildCaseTopic(testCase) {
   const marker = PRIORITY_MAP[testCase.priority] ?? Marker.Priority.p3
-  const steps = (testCase.steps ?? []).map(({ step, expected }) =>
-    Topic(step).children([Topic(expected)])
-  )
+  const steps = (testCase.steps ?? []).map((s, idx) => {
+    const stepText = s.step || s.action || s.操作步骤 || `⚠️步骤${idx + 1}缺失`
+    const expectedText = s.expected || s.result || s.预期结果 || `⚠️预期${idx + 1}缺失`
+    if (!s.step || !s.expected) {
+      console.warn(`  ⚠️ 用例「${testCase.title}」步骤${idx + 1}: step=${!!s.step}, expected=${!!s.expected}`)
+    }
+    return Topic(stepText).children([Topic(expectedText)])
+  })
 
-  const caseTopic = Topic(testCase.title).markers([marker])
+  const caseTopic = Topic(testCase.title || '⚠️标题缺失').markers([marker])
 
   if (testCase.precondition) {
     caseTopic.note(testCase.precondition)
@@ -179,6 +234,7 @@ const inputPaths = filteredArgs.slice(0, filteredArgs.length - 1)
 
 try {
   const data = mergeJsonFiles(inputPaths)
+  const validation = validateJson(data)
 
   if (appendMode && existsSync(resolve(outputPath))) {
     appendToExisting(data, outputPath)

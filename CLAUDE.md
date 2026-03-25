@@ -40,7 +40,7 @@ Story-20260322 --quick
 为 Story-20260322 追加边界用例
 ```
 
-系统将自动执行：PRD 增强（含增量 diff）→ 健康度预检 → Brainstorming + 解耦 → Checklist 预览 → 并行生成 → 评审 → 输出 XMind。
+系统将自动执行：PRD 增强（含增量 diff）→ 健康度预检 → Brainstorming + 解耦 → Checklist 预览 → 并行生成 → 评审 → 输出 XMind → 归档 MD 同步 → 用户验证。
 
 ---
 
@@ -80,11 +80,12 @@ WorkSpaces/
 └── .claude/
     ├── skills/                            # 项目级 skills
     │   ├── prd-enhancer/                  # PRD 文档增强（含增量 diff + 健康度预检）
-    │   ├── test-case-generator/           # 用例生成编排（主入口，8步流程）
+    │   ├── test-case-generator/           # 用例生成编排（主入口，10步流程）
     │   └── xmind-converter/               # JSON → XMind 转换（含 --append 模式）
     └── scripts/
         ├── package.json                   # Node.js 依赖
         ├── json-to-xmind.mjs             # XMind 转换脚本（支持 --append）
+        ├── json-to-archive-md.mjs         # 归档 MD 转换脚本（JSON/XMind → MD）
         └── convert-history-cases.mjs      # 历史用例转化脚本（CSV/XMind → MD）
 ```
 
@@ -104,7 +105,7 @@ WorkSpaces/
 
 ---
 
-## 完整工作流（8 步）
+## 完整工作流（10 步）
 
 | 步骤 | 名称 | 说明 |
 |------|------|------|
@@ -116,6 +117,8 @@ WorkSpaces/
 | Step 6 | 并行 Writer | 为每个解耦模块启动独立 Writer Subagent，并行生成用例 |
 | Step 7 | Reviewer 评审 | 合并所有 Writer 输出，3 轮修正 + 查漏补缺 + 质量阈值检查 |
 | Step 8 | 输出 XMind | 调用 xmind-converter 生成 .xmind 文件（支持 --append 追加） |
+| Step 9 | 归档 MD 同步 | 生成 archive-cases MD + 向用户发出验证提示 |
+| Step 10 | 用户验证同步 | 用户确认通过或修改后同步，清理临时文件 |
 
 ---
 

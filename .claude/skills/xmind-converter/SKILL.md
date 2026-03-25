@@ -117,17 +117,15 @@ unzip -p <output.xmind> content.json | python3 -m json.tool | head -30
 
 ---
 
-## 七、清理临时文件
+## 七、延迟清理说明
 
-转换成功后，删除本次 Story 的临时 JSON 文件：
+> ⚠️ 当作为 test-case-generator 流程的一部分执行时，**不在此步清理临时文件**。
+> 临时文件（temp/ 和 .qa-state.json）的清理延迟到 Step 10（用户验证通过后）执行。
+
+当独立使用 xmind-converter 时（非工作流调用），仍可手动清理：
 
 ```bash
 rm -rf zentao-cases/<项目路径>/Requirement/<Story>/temp/
-```
-
-同时删除断点续传状态文件（流程已完成，不再需要）：
-
-```bash
 rm -f zentao-cases/<项目路径>/Requirement/<Story>/.qa-state.json
 ```
 
@@ -150,6 +148,8 @@ XMind 文件已生成：<相对路径>/<文件名>.xmind
 
 可使用 XMind 应用打开查看。
 ```
+
+如果是工作流调用，还会同步生成归档 MD 文件（由 Step 9 自动执行）。
 
 ---
 
