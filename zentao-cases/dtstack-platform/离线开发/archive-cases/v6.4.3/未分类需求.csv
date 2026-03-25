@@ -1,0 +1,873 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+表生命周期统一,验证审计日志-离线开发正确展示表生命周期变更记录,"1) 存在Hive数据源${datasourceA}, 该数据源下有数据库${schemaA}, 该数据库下有数据表${tableA}
+2) 离线开发-数据地图-数据表管理中已存在表${tableA}, 生命周期为9999天","1. 进入离线开发-数据地图-数据表管理-我管理的表
+2. 查看表名为${tableA}的生命周期
+3. 依次编辑并保存表${tableA}的生命周期, 由9999天 -> 500天 -> 50天 -> 1天
+4. 进入【离线开发-安全审计-离线开发】页面
+5. 【按操作对象筛选】选择【表】后, 展开【安全审计-离线开发-按动作筛选】选项
+6. 选择【修改生命周期】后, 检查筛选结果
+7. 等待一天后, 进入「离线开发-数据地图-数据表管理-我管理的表」, 检查表${tableA}","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 生命周期为9999天
+3. 生命周期变更成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 存在三条【动作】为【修改生命周期】的操作记录, 详细内容依次为:
+1) 更新${tableA}的生命周期，由 50 天调整为 1 天
+2) 更新${tableA}的生命周期，由 500 天调整为 50 天
+3) 更新${tableA}的生命周期，由 9999 天调整为 500 天
+5. 新增筛选项【修改生命周期】
+6. 仅展示操作对象为【表】, 且动作为【修改生命周期】的记录
+7. 表${tableA}不存在 (生命周期已过期)",1
+表生命周期统一,验证表生命周期更新功能正常(Hive表不存在),"建表语句:
+CREATE TABLE example_partitioned_table (
+id INT,
+name STRING,
+age SMALLINT,
+bio STRING,
+last_seen TIMESTAMP,
+is_active BOOLEAN,
+height DECIMAL(3,2),
+email STRING,
+registration_date TIMESTAMP,
+profile_picture BINARY,
+salary DOUBLE,
+revision INT
+)
+COMMENT 'Example Partitioned Table'
+PARTITIONED BY (birth_date DATE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1994-06-14') VALUES
+(3001, '黄娟', 30, 'UI设计师，注重界面美观与交互体验。', '2025-06-04 10:00:00', TRUE, 1.62, 'huangjuan@example.com', '2024-12-12 08:30:00', NULL, 14000.0, 1);
+
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1985-02-08') VALUES
+(3002, '周杰', 40, '高级运维工程师，熟悉Kubernetes与云计算。', '2025-06-04 09:30:00', TRUE, 1.76, 'zhoujie@example.com', '2025-01-05 14:00:00', NULL, 20000.0, 2);
+
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1992-09-19') VALUES
+(3003, '徐丽', 33, '市场营销专家，擅长品牌推广与社交媒体运营。', '2025-06-03 15:20:00', FALSE, 1.67, 'xuli@example.com', '2024-11-30 13:15:00', NULL, 16000.0, 1);","1. 进入离线开发-数据开发-周期任务
+2. 创建SparkSQL任务, 并执行建表语句
+3. 进入离线开发-数据地图-数据表管理-我管理的表
+4. 查看表名为${tableA}的生命周期
+5. 进入数据资产-元数据-元数据管理-${datasourceA}-${schemaA}
+6. 勾选表${tableA}后, 点击【批量编辑生命周期】, 设置为3天后确定
+7. 返回到离线开发-数据地图-数据表管理-我管理的表, 查看表${tableA}的生命周期
+8. 选择表${tableA}, 点击【编辑】
+9. 生命周期改为1天, 点击【保存】
+10. 返回到数据资产-元数据-元数据管理-${datasourceA}-${schemaA}
+11. 进入【离线开发-安全审计】页面
+12. 检查【安全审计-离线开发】的审计日志列表记录","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 成功进入目标页面，页面内容正常加载显示，无报错
+4. 生命周期为9999天
+5. 进入成功, 存在表记录${tableA}, 且生命周期为9999天
+6. 表${tableA}的生命周期更新为3天
+7. 表生命周期由9999天变更为3天
+8. 进入编辑页面
+9. 表生命周期由3天变更为1天
+10. 进入成功, 表${tableA}的生命周期由3天变更为1天
+11. 成功进入目标页面，页面内容正常加载显示，无报错
+12. 存在一条【动作】为【修改生命周期】的操作记录, 详细内容为: 更新${tableA}的生命周期，由 3 天调整为 1 天",3
+表生命周期统一,验证表生命周期更新功能正常(Hive表不存在于平台),"存在Hive数据源${datasourceA}, 该数据源下有数据库${schemaA}, 该数据库下有数据表${tableA}, 该表尚未同步至离线平台
+
+建表语句:
+CREATE TABLE example_partitioned_table (
+id INT,
+name STRING,
+age SMALLINT,
+bio STRING,
+last_seen TIMESTAMP,
+is_active BOOLEAN,
+height DECIMAL(3,2),
+email STRING,
+registration_date TIMESTAMP,
+profile_picture BINARY,
+salary DOUBLE,
+revision INT
+)
+COMMENT 'Example Partitioned Table'
+PARTITIONED BY (birth_date DATE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1994-06-14') VALUES
+(3001, '黄娟', 30, 'UI设计师，注重界面美观与交互体验。', '2025-06-04 10:00:00', TRUE, 1.62, 'huangjuan@example.com', '2024-12-12 08:30:00', NULL, 14000.0, 1);
+
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1985-02-08') VALUES
+(3002, '周杰', 40, '高级运维工程师，熟悉Kubernetes与云计算。', '2025-06-04 09:30:00', TRUE, 1.76, 'zhoujie@example.com', '2025-01-05 14:00:00', NULL, 20000.0, 2);
+
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1992-09-19') VALUES
+(3003, '徐丽', 33, '市场营销专家，擅长品牌推广与社交媒体运营。', '2025-06-03 15:20:00', FALSE, 1.67, 'xuli@example.com', '2024-11-30 13:15:00', NULL, 16000.0, 1);","1. 进入离线开发-数据源
+2. 选择数据源${datasourceA}, 点击【同步元数据】, 配置如下:部分表: example_partitioned_table表类目: 类目管理生命周期: 9999天
+3. 进入离线开发-数据地图-数据表管理-我管理的表
+4. 查看表名为${tableA}的生命周期
+5. 进入数据资产-元数据-元数据管理-${datasourceA}-${schemaA}
+6. 勾选表${tableA}后, 点击【批量编辑生命周期】, 设置为3天后确定
+7. 返回到离线开发-数据地图-数据表管理-我管理的表, 查看表${tableA}的生命周期
+8. 选择表${tableA}, 点击【编辑】
+9. 生命周期改为1天, 点击【保存】
+10. 返回到数据资产-元数据-元数据管理-${datasourceA}-${schemaA}
+11. 进入【离线开发-安全审计】页面
+12. 检查【安全审计-离线开发】的审计日志列表记录","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 成功进入目标页面，页面内容正常加载显示，无报错
+4. 生命周期为9999天
+5. 进入成功, 存在表记录${tableA}, 且生命周期为9999天
+6. 表${tableA}的生命周期更新为3天
+7. 表生命周期由9999天变更为3天
+8. 进入编辑页面
+9. 表生命周期由3天变更为1天
+10. 进入成功, 表${tableA}的生命周期由3天变更为1天
+11. 成功进入目标页面，页面内容正常加载显示，无报错
+12. 存在一条【动作】为【修改生命周期】的操作记录, 详细内容为: 更新${tableA}的生命周期，由 3 天调整为 1 天",3
+表生命周期统一,验证表生命周期更新功能正常(Hive表已存在于平台),"1) 存在Hive数据源${datasourceA}, 该数据源下有数据库${schemaA}, 该数据库下有数据表${tableA}
+
+2) 离线开发-数据地图-数据表管理中已存在表${tableA}, 生命周期为9999天","1. 进入离线开发-数据地图-数据表管理-我管理的表
+2. 查看表名为${tableA}的生命周期
+3. 进入数据资产-元数据-元数据管理-${datasourceA}-${schemaA}
+4. 勾选表${tableA}后, 点击【批量编辑生命周期】, 设置为3天后确定
+5. 返回到离线开发-数据地图-数据表管理-我管理的表, 查看表${tableA}的生命周期
+6. 选择表${tableA}, 点击【编辑】
+7. 生命周期改为1天, 点击【保存】
+8. 返回到数据资产-元数据-元数据管理-${datasourceA}-${schemaA}
+9. 进入【离线开发-安全审计】页面
+10. 检查【安全审计-离线开发】的审计日志列表记录","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 生命周期为9999天
+3. 进入成功, 存在表记录${tableA}, 且生命周期为9999天
+4. 表${tableA}的生命周期更新为3天
+5. 表生命周期由9999天变更为3天
+6. 进入编辑页面
+7. 表生命周期由3天变更为1天
+8. 进入成功, 表${tableA}的生命周期由3天变更为1天
+9. 成功进入目标页面，页面内容正常加载显示，无报错
+10. 存在一条【动作】为【修改生命周期】的操作记录, 详细内容为: 更新${tableA}的生命周期，由 3 天调整为 1 天",1
+计算引擎适配Gaussdb9.1,验证 GaussDB 数据源映射配置功能正常,"存在两个项目projectA(测试项目), projectB(生产项目)
+1. projectA(测试项目)已对接gaussdb数据源${datasourceA}
+2. projectB(生产项目)已对接gaussdb数据源${datasourceB}","1. 进入projectA(测试项目) -> 数据源
+2. 选择数据源${datasourceA}, 点击【映射配置】
+3. 展开【发布目标】
+4. 选择${datasourceB}后, 点击【确定】
+5. 再次点击【映射配置】","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹出【映射配置】弹窗, 存在必填项【发布目标】
+3. 加载出projectB(生产项目)中的所有同类型(GaussDB)的Meta数据源名称
+4. 映射配置成功，系统给出配置成功提示，配置已生效，页面显示最新配置
+5. 数据源映射配置回显正常，功能行为符合预期，无报错或异常",2
+计算引擎适配Gaussdb9.1,验证 GaussDB 任务一键发布&导入导出发布功能正常,"存在两个项目projectA(测试项目), projectB(生产项目), 项目A, B均已对接gaussdb数据源<br /><br />gaussdb建表语句: <br /><br />-- 创建银行客户账户与交易测试表，涵盖多种 openGauss 支持的数据类型<br />drop table if exists bank_customer_account;<br />CREATE TABLE bank_customer_account (<br /> customer_id            BIGINT,                          -- 数值类型（整型）<br /> account_number          INTEGER,                         -- 账号（整型）<br /> credit_limit             NUMERIC(18,2),                  -- 任意精度（货币类型）<br /> is_premium               BOOLEAN,                         -- 布尔类型<br /> customer_name             VARCHAR(200),                   -- 字符类型<br /> remarks_blob              BYTEA,                           -- 二进制类型<br /> open_date                 DATE,                            -- 日期类型<br /> last_transaction_ts        TIMESTAMP,                       -- 时间戳类型<br /> transaction_interval        TSTZRANGE,                      -- 范围类型 (带时区范围)<br /> customer_uuid              UUID,                            -- UUID 类型 :contentReference[oaicite:0]{index=0}<br /> metadata_json               JSONB,                           -- JSONB 类型 :contentReference[oaicite:1]{index=1}<br /> login_hll                   hll,                             -- HLL 类型 :contentReference[oaicite:2]{index=2}<br /> permission_bits              BIT VARYING(16),                 -- 位串类型 :contentReference[oaicite:3]{index=3}<br /> transaction_counts          INTEGER[],                       -- 数组类型 :contentReference[oaicite:4]{index=4}<br /> object_oid                   OID,                             -- 对象标识符类型 (OID) :contentReference[oaicite:5]{index=5}<br /> config_xml                    XML,                             -- XML 类型 :contentReference[oaicite:6]{index=6}<br /> acct_balance_double         DOUBLE PRECISION,              -- 浮点数 (双精度)<br /> small_balance                 SMALLINT                        -- 小整数<br />);<br /><br />-- 插入一条模拟银行客户账户数据<br />INSERT INTO bank_customer_account VALUES (<br /> 1000000000001,                     -- customer_id<br /> 12345678,                           -- account_number<br /> 250000.50,                          -- credit_limit<br /> TRUE,                               -- is_premium<br /> '李四-高端客户',                      -- customer_name<br /> E'\\xDEADBEEFCAFE',                  -- 备注 (bytea, 十六进制)<br /> DATE '2022-01-15',                   -- open_date<br /> TIMESTAMP '2025-11-17 09:45:30',     -- last_transaction_ts<br /> tstzrange(<br /> TIMESTAMP WITH TIME ZONE '2025-11-01 00:00:00+08',<br /> TIMESTAMP WITH TIME ZONE '2025-11-17 23:59:59+08'<br /> ),                                   -- transaction_interval<br /> '3f50f5a2-9d0b-4f3d-b244-9adbe1f12345', -- customer_uuid<br /> '{“preferred_channel“:“mobile“,“alerts“: [“sms“,“email“]}'::JSONB,  -- metadata_json<br /> hll_empty(),                         -- login_hll (初始 HLL)<br /> B'1011001110001111',                 -- permission_bits (16 位二进制)<br /> ARRAY[5, 10, 15],                     -- transaction_counts (示例数组)<br /> 9999::OID,                           -- object_oid (示范一个 OID 值)<br /> 'goldasia'::XML,  -- config_xml<br /> 12345.6789,                          -- acct_balance_double<br /> 32000                                -- small_balance<br />);<br /><br />-- 查询所有列，验证插入<br />SELECT * FROM bank_customer_account;<br /> 
+<div><br /></div>
+<br />","1. 进入projectA(测试项目) -> 数据开发-周期任务
+2. 创建gaussdb sql任务taskA, 执行建表语句后, 提交并发布
+3. 勾选任务taskA并打包
+4. 点击【导出】按钮
+5. 点击【发布】按钮
+6. 切换到projectB(生产项目) -> 数据开发-周期任务
+7. 临时运行任务taskA后, 冻结并删除该任务
+8. 进入projectB(生产项目) -> 任务发布 -> 发布至本项目
+9. 点击【导入发布包】, 选择zip文件${fileA}后, 点击【发布】按钮
+10. 【数据源 - 本项目数据源】中选择projectB(生产项目)中的gaussdb数据源后, 点击【发布】
+11. 检查 projectB(生产项目) -> 数据开发-周期任务
+12. 临时运行任务taskA","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 发布成功, 跳转到【创建发布包】页面
+3. 打包成功, 跳转到【发布至目标项目】页面
+4. zip文件${fileA}导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+5. 发布状态由【待发布】 -> 【发布成功】
+6. 存在周期任务taskA, 任务内容与projectA(测试项目)中的taskA保持一致, GaussDB 任务一键发布功能正常
+7. 运行/删除成功，系统给出删除成功提示，该记录从列表中消失
+8. 成功进入目标页面，页面内容正常加载显示，无报错
+9. 弹出【发布包校验】弹窗, 【数据源】需要手动配置, 其他配置均校验通过
+10. 系统提示发布成功，发布状态更新，相关页面可访问
+11. 存在周期任务taskA, 任务内容与projectA(测试项目)中的taskA保持一致, GaussDB 任务导入导出发布功能正常
+12. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",1
+计算引擎适配Gaussdb9.1,验证 GaussDB 存储过程增删改查功能正常,无,"1. 进入【离线开发-数据开发-函数管理】页面
+2. 存储过程配置如下:
+1) 存储过程名称: proc_account_summary
+2) 用途: 统计某账户的交易总数、总金额，并把这些值通过 OUT 参数返回
+3) SQL:
+CREATE OR REPLACE PROCEDURE ${项目标识}.proc_account_summary(
+p_account_id    IN  BIGINT,
+o_txn_count     OUT BIGINT,
+o_total_amount  OUT NUMERIC
+)
+AS
+DECLARE
+v_count BIGINT;
+v_sum   NUMERIC;
+BEGIN
+SELECT COUNT(*), COALESCE(SUM(txn_amount), 0)
+INTO v_count, v_sum
+FROM bank_transaction
+WHERE account_id = p_account_id;
+o_txn_count := v_count;
+o_total_amount := v_sum;
+RAISE NOTICE 'Account % has % transactions, total_amount = %',
+p_account_id, o_txn_count, o_total_amount;
+END;
+/
+4) 参数说明: 无
+5) 存储位置: 存储过程
+3. 右键编辑proc_account_summary 存储过程, 配置如下:用途: 根据交易类型和金额计算手续费
+4. 在【自定义函数】目录下新增子目录A后, 右键移动proc_account_summary 存储过程存储位置到目录A
+5. 点击 proc_account_summary 存储过程
+6. 右键删除 proc_account_summary 存储过程","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. Toast提示: 创建成功，系统给出创建成功提示，列表中出现新创建的记录
+3. Toast提示: 编辑成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 系统提示移动成功，记录已移至目标位置，原位置记录消失
+5. 展示【存储过程信息】, 内容回显正确，内容与预期完全一致，无异常或错误
+6. Toast提示: 删除成功，系统给出删除成功提示，该记录从列表中消失",2
+计算引擎适配Gaussdb9.1,验证 GaussDB 新建存储过程(异常场景),无,"1. 进入【离线开发-数据开发-函数管理】页面
+2. 选择GaussDB SQL - 存储过程, 右键【新建存储过程】
+3. 【存储过程名称】为空, 提交表单
+4. 【存储过程名称】输入123, 提交表单
+5. 【存储过程名称】输入非法字符#¥%, 提交表单
+6. 【存储过程名称】输入21个英文字符, 提交表单
+7. 【存储过程名称】输入20个英文字符, 提交表单
+8. 【用途】输入201个字符, 提交表单
+9. 【用途】输入200个字符, 提交表单
+10. 【SQL】为空, 提交表单
+11. 【参数说明】输入201个字符, 提交表单
+12. 【参数说明】输入200个字符, 提交表单","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹出【新建存储过程】弹窗, 内容展示如下:1) 存储过程类型: 必填标识, 默认展示为GaussDB SQL, 置灰不可点击2) 存储过程名称: 必填标识, 置灰提示“请输入存储过程”3) 用途: 非必填, 置灰提示“请输入用途”4) SQL: 必填标识, “存储过程名称”未填写时SQL内存储过程名称位置为空,置灰提示:create or replace procedure ${项目标识}.${存储过程名称}RETURNS character varyingLANGUAGE 'plpgsq!'COST 100VOLATILEAS $BODY$ BEGIN perform “PRO_BU_MAINTAIN“ (to_Char(now(), yyyy-mm-dd')::varchar);RETURN 'ok':END$BODY$;ALTER FUNCTION odS.“PROCOMPUTINTAINCOMPUT“() OWNER TO bi:5) 参数说明: 非必填, 置灰提示“请输入参数说明”6) 存储位置: 必填标识, 默认展示存储过程, 支持切换存储过程下创建的文件夹
+3. 置红提示: 存储过程名称不可为空！
+4. 置红提示: 存储过程名称开头必须是英文！
+5. 置红提示: 存储过程名称只能由字母、数字、下划线组成！
+6. 置红提示: 存储过程名称不得超过20个字符！
+7. 无红色提示, 【SQL】配置项中自动补充存储过程名称
+8. 置红提示: 请控制在200个字符以内！
+9. 无红色提示
+10. SQL不能为空！
+11. 置红提示: 请控制在200个字符以内！
+12. 无红色提示",3
+计算引擎适配Gaussdb9.1,验证 GaussDB 任务支持存储过程,"建表语句:<br /><br />-- 1. 创建银行交易表<br />CREATE TABLE bank_transaction (<br /> txn_id          BIGINT PRIMARY KEY,<br /> account_id       BIGINT NOT NULL,<br /> txn_amount       NUMERIC(18,2) NOT NULL,<br /> txn_type         VARCHAR(20),     -- 例如 'deposit' / 'withdraw'<br /> txn_time         TIMESTAMP WITH TIME ZONE NOT NULL,<br /> txn_currency     VARCHAR(3),      -- 货币 ISO 代码<br /> description      VARCHAR(200)<br />);<br /><br /><br />-- 2. 插入几条测试交易数据<br />INSERT INTO bank_transaction(txn_id, account_id, txn_amount, txn_type, txn_time, txn_currency, description) VALUES<br />(1, 1001, 1000.00, 'deposit', '2025-11-17 10:00:00+08', 'USD', 'Initial deposit'),<br />(2, 1001, 200.00, 'withdraw', '2025-11-17 11:00:00+08', 'USD', 'ATM withdrawal'),<br />(3, 1002, 500.00, 'deposit', '2025-11-17 12:00:00+08', 'EUR', 'Salary deposit'),<br />(4, 1002, 50.00, 'other', '2025-11-17 13:00:00+08', 'EUR', 'Misc fee');<br /><br />","1. 进入【离线开发-数据开发-函数管理】页面
+2. 选择GaussDB SQL - 存储过程, 右键【新建存储过程】
+3. 存储过程配置如下:
+1) 存储过程名称: proc_account_summary
+2) 用途: 统计某账户的交易总数、总金额，并把这些值通过 OUT 参数返回
+3) SQL:
+CREATE OR REPLACE PROCEDURE ${项目标识}.proc_account_summary(
+p_account_id    IN  BIGINT,
+o_txn_count     OUT BIGINT,
+o_total_amount  OUT NUMERIC
+)
+AS
+DECLARE
+v_count BIGINT;
+v_sum   NUMERIC;
+BEGIN
+SELECT COUNT(*), COALESCE(SUM(txn_amount), 0)
+INTO v_count, v_sum
+FROM bank_transaction
+WHERE account_id = p_account_id;
+o_txn_count := v_count;
+o_total_amount := v_sum;
+RAISE NOTICE 'Account % has % transactions, total_amount = %',
+p_account_id, o_txn_count, o_total_amount;
+END;
+/
+4) 参数说明: 无
+5) 存储位置: 存储过程
+4. 进入离线开发-周期任务, 创建gaussdb sql任务
+5. 执行建表语句并插入数据
+6. 调用存储过程:
+DECLARE
+v_txn_count    NUMBER;
+v_total_amount NUMBER;
+BEGIN
+${项目标识}.proc_account_summary(1001, v_txn_count, v_total_amount);
+RAISE NOTICE '交易次数: %', v_txn_count;
+RAISE NOTICE '总计金额: %', v_total_amount;
+END;
+/","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹出【新建存储过程】弹窗, 内容展示如下:
+1) 存储过程类型: 必填标识, 默认展示为GaussDB SQL, 置灰不可点击
+2) 存储过程名称: 必填标识, 置灰提示“请输入存储过程”
+3) 用途: 非必填, 置灰提示“请输入用途”
+4) SQL: 必填标识, “存储过程名称”未填写时SQL内存储过程名称位置为空,置灰提示:
+create or replace procedure ${项目标识}.${存储过程名称}
+RETURNS character varying
+LANGUAGE 'plpgsq!'
+COST 100
+VOLATILE
+AS $BODY$ BEGIN perform “PRO_BU_MAINTAIN“ (to_Char(now(), yyyy-mm-dd')::varchar);
+RETURN 'ok':
+END
+$BODY$;
+ALTER FUNCTION odS.“PROCOMPUT
+INTAINCOMPUT“() OWNER TO bi:
+5) 参数说明: 非必填, 置灰提示“请输入参数说明”
+6) 存储位置: 必填标识, 默认展示存储过程, 支持切换存储过程下创建的文件夹
+3. 系统提示添加成功，列表中出现新添加的记录，记录内容与填写一致
+4. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+5. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+6. PL/SQL执行成功, 结果正常返回",1
+计算引擎适配Gaussdb9.1,验证 GaussDB 自定义函数增删改查功能正常,无,"1. 进入【离线开发-数据开发-函数管理】页面
+2. 新建GaussDB 自定义函数, 配置如下:
+1) 函数名称: calculate_fee
+2) SQL:
+CREATE FUNCTION ${项目标识}.calculate_fee
+(p_amount NUMERIC, p_type VARCHAR)
+RETURNS NUMERIC
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+v_fee NUMERIC := 0;
+BEGIN
+IF p_type = 'withdraw' THEN
+-- 假设提现手续费 1%
+v_fee := p_amount * 0.01;
+ELSIF p_type = 'deposit' THEN
+-- 存款手续费 固定 2 单位货币
+v_fee := 2.00;
+ELSE
+-- 其它交易类型默认费用
+v_fee := p_amount * 0.005;
+END IF;
+RETURN v_fee;
+END;
+$$;
+3. 右键编辑calculate_fee函数, 配置如下:用途: 根据交易类型和金额计算手续费
+4. 在【自定义函数】目录下新增子目录A后, 右键移动calculate_fee函数存储位置到目录A
+5. 点击calculate_fee函数
+6. 右键删除calculate_fee函数","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. Toast提示: 创建成功，系统给出创建成功提示，列表中出现新创建的记录
+3. Toast提示: 编辑成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 系统提示移动成功，记录已移至目标位置，原位置记录消失
+5. 展示【函数信息】, 内容回显正确，内容与预期完全一致，无异常或错误
+6. Toast提示: 删除成功，系统给出删除成功提示，该记录从列表中消失",2
+计算引擎适配Gaussdb9.1,验证 GaussDB 新建自定义函数(异常场景),无,"1. 进入【离线开发-数据开发-函数管理】页面
+2. 选择GaussDB SQL - 自定义函数, 右键【新建自定义函数】
+3. 【函数名称】为空, 提交表单
+4. 【函数名称】输入123, 提交表单
+5. 【函数名称】输入非法字符#¥%, 提交表单
+6. 【函数名称】输入21个英文字符, 提交表单
+7. 【函数名称】输入20个英文字符, 提交表单
+8. 【用途】输入201个字符, 提交表单
+9. 【用途】输入200个字符, 提交表单
+10. 【SQL】为空, 提交表单
+11. 【参数说明】输入201个字符, 提交表单
+12. 【参数说明】输入200个字符, 提交表单","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹出【新建自定义函数】弹窗, 内容展示如下:1) 函数类型: 必填标识, 默认展示为GaussDB SQL, 置灰不可点击2) 函数名称: 必填标识, 置灰提示“请输入函数名称”3) 用途: 非必填, 置灰提示“请输入用途”4) SQL: 必填标识, “函数名称”未填写时SQL内函数名称位置为空,置灰提示:create function ${项目标识}.${函数名称}RETURNS character varyingLANGUAGE 'plpgsq!'COST 100VOLATILEAS $BODY$ BEGIN perform “PRO_BU_MAINTAIN“ (to_Char(now(), yyyy-mm-dd')::varchar);RETURN 'ok':END$BODY$;ALTER FUNCTION odS.“PROCOMPUTINTAINCOMPUT“() OWNER TO bi:5) 参数说明: 非必填, 置灰提示“请输入参数说明”6) 存储位置: 必填标识, 默认展示自定义函数, 支持切换自定义函数下创建的文件夹
+3. 置红提示: 函数名称不可为空！
+4. 置红提示: 函数名称开头必须是英文！
+5. 置红提示: 函数名称只能由字母、数字、下划线组成！
+6. 置红提示: 函数名称不得超过20个字符！
+7. 无红色提示, 【SQL】配置项中自动补充函数名称
+8. 置红提示: 请控制在200个字符以内！
+9. 无红色提示
+10. SQL不能为空！
+11. 置红提示: 请控制在200个字符以内！
+12. 无红色提示",3
+计算引擎适配Gaussdb9.1,验证 GaussDB 任务支持自定义函数,"建表语句:<br /><br />-- 1. 创建银行交易表<br />CREATE TABLE bank_transaction (<br /> txn_id          BIGINT PRIMARY KEY,<br /> account_id       BIGINT NOT NULL,<br /> txn_amount       NUMERIC(18,2) NOT NULL,<br /> txn_type         VARCHAR(20),     -- 例如 'deposit' / 'withdraw'<br /> txn_time         TIMESTAMP WITH TIME ZONE NOT NULL,<br /> txn_currency     VARCHAR(3),      -- 货币 ISO 代码<br /> description      VARCHAR(200)<br />);<br /><br /><br />-- 2. 插入几条测试交易数据<br />INSERT INTO bank_transaction(txn_id, account_id, txn_amount, txn_type, txn_time, txn_currency, description) VALUES<br />(1, 1001, 1000.00, 'deposit', '2025-11-17 10:00:00+08', 'USD', 'Initial deposit'),<br />(2, 1001, 200.00, 'withdraw', '2025-11-17 11:00:00+08', 'USD', 'ATM withdrawal'),<br />(3, 1002, 500.00, 'deposit', '2025-11-17 12:00:00+08', 'EUR', 'Salary deposit'),<br />(4, 1002, 50.00, 'other', '2025-11-17 13:00:00+08', 'EUR', 'Misc fee');<br />","1. 进入【离线开发-数据开发-函数管理】页面
+2. 选择GaussDB SQL - 自定义函数, 右键【新建自定义函数】
+3. 自定义函数配置如下:
+1) 函数名称: calculate_fee
+2) 用途: 根据交易类型和金额计算手续费
+3) SQL:
+CREATE FUNCTION ${项目标识}.calculate_fee
+(p_amount NUMERIC, p_type VARCHAR)
+RETURNS NUMERIC
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+v_fee NUMERIC := 0;
+BEGIN
+IF p_type = 'withdraw' THEN
+-- 假设提现手续费 1%
+v_fee := p_amount * 0.01;
+ELSIF p_type = 'deposit' THEN
+-- 存款手续费 固定 2 单位货币
+v_fee := 2.00;
+ELSE
+-- 其它交易类型默认费用
+v_fee := p_amount * 0.005;
+END IF;
+RETURN v_fee;
+END;
+$$;
+4) 参数说明: 无
+5) 存储位置: 自定义函数
+4. 进入离线开发-周期任务, 创建gaussdb sql任务
+5. 执行建表语句并插入数据
+6. 调用自定义函数:
+SELECT
+txn_id,
+account_id,
+txn_amount,
+txn_type,
+calculate_fee(txn_amount, txn_type) AS fee,
+txn_amount - calculate_fee(txn_amount, txn_type) AS net_amount,
+txn_time
+FROM bank_transaction;","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹出【新建自定义函数】弹窗, 内容展示如下:
+1) 函数类型: 必填标识, 默认展示为GaussDB SQL, 置灰不可点击
+2) 函数名称: 必填标识, 置灰提示“请输入函数名称”
+3) 用途: 非必填, 置灰提示“请输入用途”
+4) SQL: 必填标识, “函数名称”未填写时SQL内函数名称位置为空,置灰提示:
+create function ${项目标识}.${函数名称}
+RETURNS character varying
+LANGUAGE 'plpgsq!'
+COST 100
+VOLATILE
+AS $BODY$ BEGIN perform “PRO_BU_MAINTAIN“ (to_Char(now(), yyyy-mm-dd')::varchar);
+RETURN 'ok':
+END
+$BODY$;
+ALTER FUNCTION odS.“PROCOMPUT
+INTAINCOMPUT“() OWNER TO bi:
+5) 参数说明: 非必填, 置灰提示“请输入参数说明”
+6) 存储位置: 必填标识, 默认展示自定义函数, 支持切换自定义函数下创建的文件夹
+3. 系统提示添加成功，列表中出现新添加的记录，记录内容与填写一致
+4. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+5. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+6. SQL执行成功, 结果正常返回",1
+计算引擎适配Gaussdb9.1,验证 GaussDB 任务支持系统函数,"gaussdb建表语句<br />-- 创建测试表<br />DROP TABLE IF EXISTS customer_transactions;<br />CREATE TABLE customer_transactions (<br /> customer_id       BIGINT,<br /> transaction_id     BIGINT,<br /> amount             NUMERIC(12,2),<br /> transaction_time   TIMESTAMP WITH TIME ZONE,<br /> channel            VARCHAR(50),<br /> tags               TEXT[],<br /> login_count_hll    hll,  -- 用 HLL 统计客户登录 / 交易来源<br /> remarks            TEXT<br />);<br /><br />-- 插入一些示例数据<br />INSERT INTO customer_transactions VALUES<br /> (1, 1001, 200.00, '2025-11-15 10:00:00+08', 'web', ARRAY['first', 'promo'], hll_add(hll_empty(), hll_hash_integer(1)), '首次登录'),<br /> (1, 1002, 150.00, '2025-11-16 12:10:00+08', 'mobile', ARRAY['repeat'], hll_add(hll_empty(), hll_hash_integer(2)), '常规交易'),<br /> (2, 2001, 300.00, '2025-11-15 09:00:00+08', 'web', ARRAY['vip'], hll_add(hll_empty(), hll_hash_integer(1)), 'VIP 客户交易'),<br /> (2, 2002, 450.00, '2025-11-17 14:30:00+08', 'mobile', ARRAY['vip', 'promo'], hll_add(hll_empty(), hll_hash_integer(2)), '促销交易'),<br /> (3, 3001, 500.00, '2025-11-17 08:05:00+08', 'atm', ARRAY['offline'], hll_add(hll_empty(), hll_hash_integer(3)), 'ATM 取款');<br /><br />WITH agg AS (<br /> SELECT<br /> customer_id,<br /> -- 聚合函数<br /> COUNT(*) AS txn_count,<br /> SUM(amount) AS total_amount,<br /> AVG(amount) AS avg_amount,<br /> MIN(amount) AS min_amount,<br /> MAX(amount) AS max_amount,<br /> MIN(transaction_time) AS first_txn_time,<br /> MAX(transaction_time) AS last_txn_time<br /> FROM customer_transactions<br /> GROUP BY customer_id<br />)<br />SELECT<br /> customer_id,<br /> txn_count,<br /> total_amount,<br /> avg_amount,<br /> min_amount,<br /> max_amount,<br /><br /> -- 窗口函数<br /> ROW_NUMBER()     OVER (ORDER BY total_amount DESC)        AS rn_by_amt,<br /> RANK()           OVER (ORDER BY total_amount DESC)        AS rank_by_amount,<br /> DENSE_RANK()     OVER (ORDER BY total_amount DESC)        AS dense_rank_by_amount,<br /> FIRST_VALUE(total_amount) OVER (ORDER BY customer_id)     AS first_total_amount,<br /> LAST_VALUE(total_amount)  OVER (<br /> ORDER BY customer_id<br /> ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING<br /> ) AS last_total_amount,<br /> PERCENT_RANK()   OVER (ORDER BY total_amount)              AS pct_rank_amount,<br /><br /> -- 日期函数<br /> current_date                                               AS today,<br /> current_timestamp                                          AS now_ts,<br /> date_trunc('day', first_txn_time)                          AS first_txn_day,<br /> EXTRACT(YEAR FROM first_txn_time)                           AS first_txn_year,<br /> FLOOR( EXTRACT(EPOCH FROM (now_ts - first_txn_time)) / 3600 ) AS hours_since_first_txn<br /><br />FROM agg<br />ORDER BY total_amount DESC;<br /><br /><br />","1. 进入【离线开发-数据开发-周期任务】页面
+2. 新建 GaussDB SQL 任务
+3. 输入SQL测试语句并执行","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 执行成功, 返回3行结果",1
+计算引擎适配Gaussdb9.1,验证 GaussDB 任务支持停止运行中的任务,"准备长时间执行 SQL：
+select pg_sleep(100);","1. 进入【离线开发-数据开发-周期任务】页面
+2. 新建 GaussDB SQL 任务
+3. 输入SQL测试语句并执行
+4. 点击【停止】","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 运行成功, 控制台开始打印日志
+4. 运行终止, 日志停止打印",2
+计算引擎适配Gaussdb9.1,验证 GaussDB 语法提示功能正常,"<p>gaussdb 数据源中已存在表t_user, 建表语句如下: </p>
+<p>
+  <div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco, ""“>
+    <div><span style=“color:#0000ff;“>drop</span> <span style=“color:#0000ff;“>table</span> <span style=“color:#0000ff;“>if</span> <span style=“color:#778899;“>exists</span> t_user;</div>
+<br />
+<div><span style=“color:#0000ff;“>CREATE</span> <span style=“color:#0000ff;“>TABLE</span> t_user(</div>
+    <div>id SERIAL <span style=“color:#0000ff;“>PRIMARY</span> <span style=“color:#0000ff;“>KEY</span>,</div>
+    <div>name <span style=“color:#0000ff;“>VARCHAR</span>(<span style=“color:#098658;“>50</span>) ,</div>
+    <div>age <span style=“color:#0000ff;“>INT</span>,</div>
+    <div>created_at <span style=“color:#0000ff;“>TIMESTAMP</span> <span style=“color:#0000ff;“>DEFAULT</span> <span style=“color:#c700c7;“>CURRENT_TIMESTAMP</span></div>
+    <div>);</div>
+<br />
+</div>
+</p>","1. 进入【离线开发-数据开发-周期任务】页面
+2. 新建 GaussDB SQL 任务
+3. 在编辑器中输入 SEL
+4. 输入 SELECT * FROM t_
+5. 输入系统函数前缀 RA","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 自动提示补全 SELECT
+4. 提示补全表名 t_user
+5. 自动提示 RANK()",2
+计算引擎适配Gaussdb9.1,验证GaussDB全数据类型支持并返回结果,"gaussdb建表语句: <br /><br />-- 创建银行客户账户与交易测试表，涵盖多种 openGauss 支持的数据类型<br />drop table if exists bank_customer_account;<br />CREATE TABLE bank_customer_account (<br />    customer_id            BIGINT,                          -- 数值类型（整型）<br />    account_number          INTEGER,                         -- 账号（整型）<br />    credit_limit             NUMERIC(18,2),                  -- 任意精度（货币类型）<br />    is_premium               BOOLEAN,                         -- 布尔类型<br />    customer_name             VARCHAR(200),                   -- 字符类型<br />    remarks_blob              BYTEA,                           -- 二进制类型<br />    open_date                 DATE,                            -- 日期类型<br />    last_transaction_ts        TIMESTAMP,                       -- 时间戳类型<br />    transaction_interval        TSTZRANGE,                      -- 范围类型 (带时区范围)<br />    customer_uuid              UUID,                            -- UUID 类型 :contentReference[oaicite:0]{index=0}<br />    metadata_json               JSONB,                           -- JSONB 类型 :contentReference[oaicite:1]{index=1}<br />    login_hll                   hll,                             -- HLL 类型 :contentReference[oaicite:2]{index=2}<br />    permission_bits              BIT VARYING(16),                 -- 位串类型 :contentReference[oaicite:3]{index=3}<br />    transaction_counts          INTEGER[],                       -- 数组类型 :contentReference[oaicite:4]{index=4}<br />    object_oid                   OID,                             -- 对象标识符类型 (OID) :contentReference[oaicite:5]{index=5}<br />    config_xml                    XML,                             -- XML 类型 :contentReference[oaicite:6]{index=6}<br />    acct_balance_double         DOUBLE PRECISION,              -- 浮点数 (双精度)<br />    small_balance                 SMALLINT                        -- 小整数<br />);<br /><br />-- 插入一条模拟银行客户账户数据<br />INSERT INTO bank_customer_account VALUES (<br />    1000000000001,                     -- customer_id<br />    12345678,                           -- account_number<br />    250000.50,                          -- credit_limit<br />    TRUE,                               -- is_premium<br />    '李四-高端客户',                      -- customer_name<br />    E'\\xDEADBEEFCAFE',                  -- 备注 (bytea, 十六进制)<br />    DATE '2022-01-15',                   -- open_date<br />    TIMESTAMP '2025-11-17 09:45:30',     -- last_transaction_ts<br />    tstzrange(<br />       TIMESTAMP WITH TIME ZONE '2025-11-01 00:00:00+08',<br />       TIMESTAMP WITH TIME ZONE '2025-11-17 23:59:59+08'<br />    ),                                   -- transaction_interval<br />    '3f50f5a2-9d0b-4f3d-b244-9adbe1f12345', -- customer_uuid<br />    '{“preferred_channel“:“mobile“,“alerts“: [“sms“,“email“]}'::JSONB,  -- metadata_json<br />    hll_empty(),                         -- login_hll (初始 HLL)<br />    B'1011001110001111',                 -- permission_bits (16 位二进制)<br />    ARRAY[5, 10, 15],                     -- transaction_counts (示例数组)<br />    9999::OID,                           -- object_oid (示范一个 OID 值)<br />    '<settings><tier>gold</tier><region>asia</region></settings>'::XML,  -- config_xml<br />    12345.6789,                          -- acct_balance_double<br />    32000                                -- small_balance<br />);<br /><br />-- 查询所有列，验证插入<br />SELECT * FROM bank_customer_account;<br />
+<div><br /></div>
+<br />","1. 进入【离线开发-数据开发-周期任务】页面
+2. 新建GaussDB SQL任务, 输入测试SQL语句并运行
+3. 进入【离线开发-数据开发-手动任务】页面
+4. 新建GaussDB SQL任务, 输入测试SQL语句并运行
+5. 进入【离线开发-数据开发-临时查询】页面
+6. 新建GaussDB SQL任务, 输入测试SQL语句并运行","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 执行成功, 返回结果显示正常，功能行为符合预期，无报错或异常
+3. 成功进入目标页面，页面内容正常加载显示，无报错
+4. 执行成功, 返回结果显示正常，功能行为符合预期，无报错或异常
+5. 成功进入目标页面，页面内容正常加载显示，无报错
+6. 执行成功, 返回结果显示正常，功能行为符合预期，无报错或异常",2
+计算引擎适配Gaussdb9.1,验证GaussDB数据源项目维度数据库绑定账号功能正常,"GaussDB 数据源已经配置root 和 test_user账号
+<p><br /></p>
+<div style=“background-color:#282c34;color:#bbbbbb;“>
+<pre><span style=“color:#d55fde;font-style:italic;“><span>1. 创建用户（密码自己换）</span> </span></pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>CREATE USER </span>test_user <span style=“color:#d55fde;font-style:italic;“>WITH PASSWORD </span><span style=“color:#89ca78;“>'test123456@'</span>; </pre>
+<pre><span style=“color:#d55fde;font-style:italic;“><span>2. 建一个专用角色</span> </span></pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>CREATE ROLE </span>test_role <span style=“color:#d55fde;font-style:italic;“>PASSWORD </span><span style=“color:#89ca78;“>'test123456@'</span>; </pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>3. <span>给这个角色授予访问数据库的权限</span></span></pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>GRANT ALL PRIVILEGES ON DATABASE postgres</span> <span style=“color:#D55FDE;font-style:italic;“>TO </span>test_role; </pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>4. <span style=“color:#000000;font-family:system-ui, -apple-system, “ font-size:14px;“=““>授予对 public 模式（或其他模式）的 USAGE 权限</span></span></pre>
+<pre>
+<div style=“background-color:#282c34;color:#bbbbbb;“>
+<pre><span style=“color:#d55fde;font-style:italic;“>GRANT USAGE ON SCHEMA </span><span style=“color:#e5c07b;“>test_gaussdb_1 </span><span style=“color:#d55fde;font-style:italic;“>TO </span>test_role;</pre>
+</div>
+</pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>5. <span style=“color:#000000;font-family:system-ui, -apple-system, “ font-size:14px;“=““>授予对 public 模式下所有现有表的 SELECT, INSERT 等权限</span></span></pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>GRANT SELECT</span>, <span style=“color:#d55fde;font-style:italic;“>INSERT</span>, <span style=“color:#d55fde;font-style:italic;“>UPDATE</span>, <span style=“color:#d55fde;font-style:italic;“>DELETE ON ALL TABLES IN SCHEMA </span>test_gaussdb_1<span style=“font-style:italic;“> </span><span style=“font-style:italic;color:#D55FDE;“>TO </span>test_role; </pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>6. <span style=“color:#000000;font-family:system-ui, -apple-system, “ font-size:14px;“=““>设置未来新建表也自动授权</span></span></pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>ALTER DEFAULT PRIVILEGES IN SCHEMA </span>test_gaussdb_1<span style=“font-style:italic;“> </span><span style=“font-style:italic;color:#D55FDE;“>GRANT SELECT</span>, <span style=“font-style:italic;color:#D55FDE;“>INSERT</span>, <span style=“font-style:italic;color:#D55FDE;“>UPDATE</span>, <span style=“font-style:italic;color:#D55FDE;“>DELETE ON TABLES TO </span>test_role; </pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>7. <span>把角色授予用户</span></span></pre>
+<pre><span style=“color:#d55fde;font-style:italic;“>GRANT </span>test_role <span style=“color:#d55fde;font-style:italic;“>TO </span>test_user;</pre>
+</div>
+<p><br /></p>
+<p><br /></p>
+<h4 style=“font-size:16px;color:#111133;font-family:-apple-system, blinkmacsystemfont, “ background-color:#ffffff;“=““>列出当前数据库用户所有可查询的表<span style=“color:#3C4353;font-family:“ font-size:13px;font-weight:normal;“=““></span>
+</h4>
+  <p><br /></p>
+  <p><br /></p>
+  <div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco,;“>
+    <div><span style=“color:#0000ff;“>SELECT</span> </div>
+    <div>n.nspname <span style=“color:#0000ff;“>AS</span> <span style=“color:#c700c7;“>schema_name</span>,</div>
+    <div>c.relname <span style=“color:#0000ff;“>AS</span> table_name</div>
+    <div><span style=“color:#0000ff;“>FROM</span> pg_class c</div>
+    <div><span style=“color:#778899;“> JOIN</span> pg_namespace n <span style=“color:#0000ff;“>ON</span> n.oid <span style=“color:#778899;“>=</span> c.relnamespace</div>
+    <div><span style=“color:#0000ff;“>WHERE</span> c.relkind <span style=“color:#778899;“>=</span> <span style=“color:#ff0000;“>'r'</span> <span style=“color:#008000;“>-- 普通表</span></div>
+    <div><span style=“color:#778899;“> AND</span> has_table_privilege(c.oid, <span style=“color:#ff0000;“>'SELECT'</span>);</div>
+  </div>
+  <p><br /></p>
+  <p><br /></p>
+  <div style=“background-color:#282c34;color:#bbbbbb;“></div>
+  <p><br /></p>","1. 进入【离线开发-数据开发-周期任务】页面
+2. 新建 GaussDB SQL 任务
+3. 执行SQL: SELECT * FROM ${schemaA}.${tableA};
+4. 进入项目管理-项目设置-开发设置-GaussDB配置中，开启项目绑定数据库账号, 新增test_user账号
+5. 执行SQL: SELECT * FROM ${schemaA}.${tableA};
+6. 执行SQL: SELECT * FROM test_gaussdb_1.${tableB};","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 查询成功, 当前为root用户在执行
+4. 新增成功, 数据回显正常，功能行为符合预期，无报错或异常
+5. 查询失败
+6. 查询成功, 当前为test_user用户在执行",3
+计算引擎适配Gaussdb9.1,验证 GaussDB SQL任务调度功能运行正常(DQL),"1. 平台中已配置 GaussDB 数据源，连接状态正常。<br />2. 当前离线项目中已存在GaussDB表:<br />CREATE TABLE t_user (<br />    id SERIAL PRIMARY KEY,<br />    name VARCHAR(50),<br />    age INT,<br />    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,<br />email VARCHAR(100)<br />);<br /><br /><br />3. 准备三个对接GaussDB的离线SQL任务：<br />${task01}<br />SELECT * FROM t_user;<br /><br /><br />${task02}<br />SELECT id, name, age FROM t_user WHERE age > 20;<br /><br /><br />${task03}<br />SELECT age, COUNT(*) AS cnt<br />FROM t_user<br />GROUP BY age<br />ORDER BY age;<br />","1. 进入【离线开发-数据开发-周期任务】页面
+2. 创建GaussDB SQL任务${task01}、${task02}、${task03}, 并临时运行
+3. 保存并提交到运维中心
+4. 周期运行, 查看结果
+5. 补数据运行, 查看结果
+6. 进入【离线开发-数据开发-手动任务】页面
+7. 创建GaussDB SQL任务${task01}、${task02}、${task03}后, 提交到运维中心手动运行","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+3. 系统提示提交成功，记录状态更新，列表中可见该条记录
+4. 周期任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错
+5. 补数据任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错
+6. 成功进入目标页面，页面内容正常加载显示，无报错
+7. 手动任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错",2
+计算引擎适配Gaussdb9.1,验证 GaussDB SQL任务调度功能运行正常(DML),"1. 平台中已配置 GaussDB 数据源，连接状态正常。<br />2. 准备三个对接GaussDB的离线SQL任务：<br />
+<p>${task01}</p>
+<p>
+  <div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco, ""“><span style=“color:#0000ff;“>drop</span> <span style=“color:#0000ff;“>TABLE</span> <span style=“color:#0000ff;“>if</span> <span style=“color:#778899;“>exists</span> t_user;<span style=“background-color:initial;color:#3C4353;font-family:""“></span></div>
+</p>
+<p><span>CREATE TABLE t_user (</span><br /><span>    id SERIAL PRIMARY KEY,</span><br /><span>    name VARCHAR(50),</span><br /><span>    age INT,</span><br /><span>    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,</span><br /><span>email VARCHAR(100)</span><br /><span>);</span></p>
+INSERT INTO t_user (name, age, email) VALUES ('Alice', 25, 'alice@example.com');<br />
+<br /> <br />${task02}<br />UPDATE t_user SET age = 26 WHERE name = 'Alice';<br /><br /><br />${task03}<br />DELETE FROM t_user WHERE name = 'Alice';<br />
+<div><br /></div>
+<br />","1. 进入【离线开发-数据开发-周期任务】页面
+2. 创建GaussDB SQL任务${task01}、${task02}、${task03}, 并临时运行
+3. 进入调度属性-任务间依赖, 给SQL任务添加依赖关系${task03} -> ${task02} -> ${task01}
+4. 保存并提交到运维中心
+5. 周期运行, 查看结果
+6. 补数据运行, 查看结果
+7. 进入【离线开发-数据开发-手动任务】页面
+8. 创建GaussDB SQL任务${task01}、${task02}、${task03}并添加依赖关系后, 提交到运维中心手动运行","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+3. 依赖添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 系统提示提交成功，记录状态更新，列表中可见该条记录
+5. 周期任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错
+6. 补数据任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错
+7. 成功进入目标页面，页面内容正常加载显示，无报错
+8. 手动任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错",2
+计算引擎适配Gaussdb9.1,验证 GaussDB SQL任务调度功能运行正常(DDL),"1. 平台中已配置 GaussDB 数据源，连接状态正常。<br />2. 准备三个对接GaussDB的离线SQL任务：<br />${task01}<br />drop table if exists t_user;<br />CREATE TABLE t_user (<br /> id SERIAL PRIMARY KEY,<br /> name VARCHAR(50),<br /> age INT,<br /> created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP<br />);<br /><br />${task02}<br />ALTER TABLE t_user ADD COLUMN email VARCHAR(100);<br /><br />${task03}<br />
+<div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco, ""“><span style=“color:#0000ff;“>CREATE</span> <span style=“color:#0000ff;“>INDEX</span> <span style=“color:#0000ff;“>if</span> <span style=“color:#778899;“>not</span> <span style=“color:#778899;“>exists</span> idx_t_user_age <span style=“color:#0000ff;“>ON</span> t_user(age);</div>
+<br />
+<div><br /></div>","1. 进入【离线开发-数据开发-周期任务】页面
+2. 创建GaussDB SQL任务${task01}、${task02}、${task03}, 并临时运行, 保存并提交
+3. 进入调度属性-任务间依赖, 给SQL任务添加依赖关系${task02}、${task03} -> ${task01}
+4. 周期运行, 查看结果
+5. 补数据运行, 查看结果
+6. 进入【离线开发-数据开发-手动任务】页面
+7. 创建GaussDB SQL任务${task01}、${task02}、${task03}并添加依赖关系后, 提交到运维中心手动运行","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示提交成功，记录状态更新，列表中可见该条记录
+3. 依赖添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 周期任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错
+5. 补数据任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错
+6. 成功进入目标页面，页面内容正常加载显示，无报错
+7. 手动任务实例中新增该任务的实例记录并运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错",1
+计算引擎适配Gaussdb9.1,验证【数据开发】GaussDB SQL任务创建功能正常,"「离线开发-数据源」中已存在GaussDB Meta数据源, 数据源名称: ${datasourceA}","1. 进入【离线开发-数据开发-周期任务】页面
+2. 右键【任务开发】, 选择GaussDB SQL任务
+3. 新建周期任务:任务名称: ${nameA}任务类型: GaussDB SQL集群名称: ${datasourceA}
+4. 进入【手动任务】, 新建手动任务:任务名称: ${nameB}任务类型: GaussDB SQL集群名称: ${datasourceA}
+5. 进入【临时查询】, 新建临时查询:查询名称: ${nameC}任务类型: GaussDB SQL集群名称: ${datasourceA}","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 选择项已高亮/回显选中状态，相关联动字段随之更新
+3. 周期任务创建成功，系统给出创建成功提示，列表中出现新创建的记录
+4. 手动任务创建成功，系统给出创建成功提示，列表中出现新创建的记录
+5. 临时查询创建成功，系统给出创建成功提示，列表中出现新创建的记录",3
+计算引擎适配Gaussdb9.1,验证【创建项目】添加GaussDB数据源显示正常(初始化方式: 不创建且不对接),"1) 「公共管理-控制台」中已存在GaussDB组件
+2) GaussDB数据源名称: ${datasourceA}","1. 进入【离线开发】页面
+2. 点击【创建项目】
+3. 配置如下: 项目标识&项目名称: ${nameA}计算引擎配置: GaussDB, 初始化方式: 【不创建且不对接 Schema】
+4. 点击【创建项目】
+5. 进入${nameA}项目的【数据源】页面","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入创建项目页面
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+5. 进入成功, 数据源列表存在类型为GaussDB, 数据源名称为${nameA}_DORIS_${ClusterA}的数据源记录",3
+计算引擎适配Gaussdb9.1,验证【创建项目】添加GaussDB 数据源显示正常(初始化方式: 对接),"1) 「公共管理-控制台」中已存在GaussDB组件
+2) GaussDB数据源名称: ${datasourceA}","1. 进入【离线开发】页面
+2. 点击【创建项目】
+3. 配置如下: 项目标识&项目名称: ${nameA}计算引擎配置: GaussDB, 初始化方式:【对接已有GaussDB Schema】、${schemaA}、${表类目A}
+4. 点击【创建项目】
+5. 进入${nameA}项目的【数据源】页面","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入创建项目页面
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+5. 进入成功, 数据源列表存在类型为GaussDB, 数据源名称为${nameA}_DORIS_${ClusterA}的数据源记录",3
+计算引擎适配Gaussdb9.1,验证【创建项目】添加GaussDB 数据源显示正常(初始化方式: 创建),"1) 「公共管理-控制台」中已存在GaussDB组件
+2) GaussDB数据源名称: ${datasourceA}","1. 进入【离线开发】页面
+2. 点击【创建项目】
+3. 配置如下: 项目标识&项目名称: ${nameA}计算引擎配置: GaussDB, 初始化方式: 【创建】
+4. 点击【创建项目】
+5. 进入${nameA}项目的【数据源】页面","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入创建项目页面
+3. 配置成功, 初始化方式问号hover提示：当选择不创建且不对接 Schema 时，创建任务后编辑SQL时需要去指定使用的Schema
+4. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+5. 进入成功, 数据源列表存在类型为GaussDB, 数据源名称为${nameA}_GaussDB的数据源记录",1
+引擎bug修复,验证数据同步任务正常运行(Hive ❯ SR),"<p>Hive建表语句 </p>
+<div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco, ""“>
+  <div>CREATE TABLE</div>
+  <div>example_managed_table (</div>
+  <div>id INT,</div>
+  <div>name STRING,</div>
+  <div>age SMALLINT,</div>
+  <div>bio STRING,</div>
+  <div>birth_date DATE,</div>
+  <div>is_active BOOLEAN,</div>
+  <div>height DECIMAL(3, 2),</div>
+  <div>email STRING,</div>
+  <div>profile_picture BINARY,</div>
+  <div>salary DOUBLE,</div>
+  <div>revision INT</div>
+  <div>) COMMENT 'Example Managed Table'</div>
+  <div>ROW FORMAT</div>
+  <div>DELIMITED FIELDS TERMINATED BY ','</div>
+  <div>STORED AS</div>
+  <div>TEXTFILE;</div>
+<br />
+<div>INSERT INTO TABLE</div>
+  <div>example_managed_table</div>
+  <div>VALUES</div>
+  <div>(</div>
+  <div>1001,</div>
+  <div>'张伟',</div>
+  <div>28,</div>
+  <div>'热爱编程与开源技术，擅长Java和Python开发。',</div>
+  <div>'1996-05-12',</div>
+  <div>TRUE,</div>
+  <div>1.75,</div>
+  <div>'zhangwei@example.com',</div>
+  <div>NULL,</div>
+  <div>12000.0,</div>
+  <div>1</div>
+  <div>),</div>
+  <div>(</div>
+  <div>1002,</div>
+  <div>'李娜',</div>
+  <div>32,</div>
+  <div>'资深产品经理，拥有多年互联网产品设计经验。',</div>
+  <div>'1992-08-24',</div>
+  <div>FALSE,</div>
+  <div>1.68,</div>
+  <div>'lina@example.com',</div>
+  <div>NULL,</div>
+  <div>15000.0,</div>
+  <div>2</div>
+  <div>),</div>
+  <div>(</div>
+  <div>1003,</div>
+  <div>'王强',</div>
+  <div>45,</div>
+  <div>'企业高管，专注于战略规划与市场拓展。',</div>
+  <div>'1980-01-30',</div>
+  <div>TRUE,</div>
+  <div>1.80,</div>
+  <div>'wangqiang@example.com',</div>
+  <div>NULL,</div>
+  <div>25000.0,</div>
+  <div>1</div>
+  <div>);</div>
+</div>","1. 进入离线开发-周期任务
+2. 创建Hive2SR数据同步任务
+3. 源端配置：数据源: Hive
+Schema: ${schemaA}
+表名: ${tableA}
+4. 选择目标配置: 数据源: SR
+Schema: ${schemaB}
+表名: 一键生成目标表
+写入模式: 覆盖
+5. 其他配置: 字段映射: 同名映射通道控制: 默认
+6. 保存任务后运行
+7. 新建SR任务, 执行SQL: SELECT * FROM ${schemaB}.${tableA};","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+7. 查询成功, 表记录与Hive表记录一致",1
+引擎bug修复,验证数据同步任务正常运行(Hive ❯ MySQL),"<p>Hive建表语句 </p>
+<p>
+  <div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco, ""“>
+    <div><span style=“color:#0000ff;“>CREATE</span> <span style=“color:#0000ff;“>TABLE</span></div>
+    <div>example_managed_table (</div>
+    <div>id <span style=“color:#0000ff;“>INT</span>,</div>
+    <div>name <span style=“color:#0000ff;“>STRING</span>,</div>
+    <div>age <span style=“color:#0000ff;“>SMALLINT</span>,</div>
+    <div>bio <span style=“color:#0000ff;“>STRING</span>,</div>
+    <div>birth_date <span style=“color:#0000ff;“>DATE</span>,</div>
+    <div>is_active <span style=“color:#0000ff;“>BOOLEAN</span>,</div>
+    <div>height <span style=“color:#0000ff;“>DECIMAL</span>(<span style=“color:#098658;“>3</span>, <span style=“color:#098658;“>2</span>),</div>
+    <div>email <span style=“color:#0000ff;“>STRING</span>,</div>
+    <div>profile_picture <span style=“color:#0000ff;“>BINARY</span>,</div>
+    <div>salary <span style=“color:#0000ff;“>DOUBLE</span>,</div>
+    <div>revision <span style=“color:#0000ff;“>INT</span></div>
+    <div>) <span style=“color:#0000ff;“>COMMENT</span> <span style=“color:#ff0000;“>'Example Managed Table'</span></div>
+    <div><span style=“color:#0000ff;“>ROW</span> <span style=“color:#0000ff;“>FORMAT</span></div>
+    <div><span style=“color:#0000ff;“>DELIMITED</span> <span style=“color:#0000ff;“>FIELDS</span> <span style=“color:#0000ff;“>TERMINATED</span> <span style=“color:#0000ff;“>BY</span> <span style=“color:#ff0000;“>','</span></div>
+    <div><span style=“color:#0000ff;“>STORED</span> <span style=“color:#0000ff;“>AS</span></div>
+    <div><span style=“color:#0000ff;“>TEXTFILE</span>;</div>
+<br />
+<div><span style=“color:#0000ff;“>INSERT</span> <span style=“color:#0000ff;“>INTO</span> <span style=“color:#0000ff;“>TABLE</span></div>
+    <div>example_managed_table</div>
+    <div><span style=“color:#0000ff;“>VALUES</span></div>
+    <div>(</div>
+    <div><span style=“color:#098658;“>1001</span>,</div>
+    <div><span style=“color:#ff0000;“>'张伟'</span>,</div>
+    <div><span style=“color:#098658;“>28</span>,</div>
+    <div><span style=“color:#ff0000;“>'热爱编程与开源技术，擅长Java和Python开发。'</span>,</div>
+    <div><span style=“color:#ff0000;“>'1996-05-12'</span>,</div>
+    <div><span style=“color:#0000ff;“>TRUE</span>,</div>
+    <div><span style=“color:#098658;“>1.75</span>,</div>
+    <div><span style=“color:#ff0000;“>'zhangwei@example.com'</span>,</div>
+    <div><span style=“color:#0000ff;“>NULL</span>,</div>
+    <div><span style=“color:#098658;“>12000.0</span>,</div>
+    <div><span style=“color:#098658;“>1</span></div>
+    <div>),</div>
+    <div>(</div>
+    <div><span style=“color:#098658;“>1002</span>,</div>
+    <div><span style=“color:#ff0000;“>'李娜'</span>,</div>
+    <div><span style=“color:#098658;“>32</span>,</div>
+    <div><span style=“color:#ff0000;“>'资深产品经理，拥有多年互联网产品设计经验。'</span>,</div>
+    <div><span style=“color:#ff0000;“>'1992-08-24'</span>,</div>
+    <div><span style=“color:#0000ff;“>FALSE</span>,</div>
+    <div><span style=“color:#098658;“>1.68</span>,</div>
+    <div><span style=“color:#ff0000;“>'lina@example.com'</span>,</div>
+    <div><span style=“color:#0000ff;“>NULL</span>,</div>
+    <div><span style=“color:#098658;“>15000.0</span>,</div>
+    <div><span style=“color:#098658;“>2</span></div>
+    <div>),</div>
+    <div>(</div>
+    <div><span style=“color:#098658;“>1003</span>,</div>
+    <div><span style=“color:#ff0000;“>'王强'</span>,</div>
+    <div><span style=“color:#098658;“>45</span>,</div>
+    <div><span style=“color:#ff0000;“>'企业高管，专注于战略规划与市场拓展。'</span>,</div>
+    <div><span style=“color:#ff0000;“>'1980-01-30'</span>,</div>
+    <div><span style=“color:#0000ff;“>TRUE</span>,</div>
+    <div><span style=“color:#098658;“>1.80</span>,</div>
+    <div><span style=“color:#ff0000;“>'wangqiang@example.com'</span>,</div>
+    <div><span style=“color:#0000ff;“>NULL</span>,</div>
+    <div><span style=“color:#098658;“>25000.0</span>,</div>
+    <div><span style=“color:#098658;“>1</span></div>
+    <div>);</div>
+  </div>
+</p>","1. 进入离线开发-周期任务
+2. 创建Hive2MySQL数据同步任务
+3. 源端配置：数据源: HiveSchema: ${schemaA}表名: ${tableA}
+4. 选择目标配置: 数据源: MySQLSchema: ${schemaB}表名: 一键生成目标表写入模式: 覆盖
+5. 其他配置: 字段映射: 同名映射通道控制: 默认
+6. 保存任务后运行
+7. 新建MySQL任务, 执行SQL: SELECT * FROM ${schemaB}.${tableA};","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+7. 查询成功, 表记录与Hive表记录一致",3
+引擎bug修复,验证数据同步任务正常运行(SR ❯ Hive),"<p>SR建表语句</p>
+<p><br /></p>
+<div style=“background-color:#FFFFFE;“>
+  <div>
+    <div style=“background-color:#282c34;color:#bbbbbb;“>
+<pre><span style=“color:#d55fde;font-style:italic;“>drop table </span><span style=“color:#e5c07b;“>example_table</span>; <span style=“color:#d55fde;font-style:italic;“>CREATE TABLE </span><span style=“color:#e5c07b;“>example_table </span>( <span style=“color:#ef596f;“>id </span><span style=“color:#d55fde;font-style:italic;“>INT</span>, <span style=“color:#ef596f;font-style:italic;“>name </span><span style=“color:#d55fde;font-style:italic;“>VARCHAR</span>(<span style=“color:#d19a66;“>255</span>) <span style=“color:#d55fde;font-style:italic;“>NOT NULL</span>, <span style=“color:#ef596f;“>bio </span><span style=“color:#d55fde;font-style:italic;“>VARCHAR</span>(<span style=“color:#d19a66;“>65533</span>), <span style=“color:#ef596f;“>birth_date </span><span style=“color:#d55fde;font-style:italic;“>DATE</span>, <span style=“color:#ef596f;“>last_seen </span><span style=“color:#d55fde;font-style:italic;“>DATETIME DEFAULT </span><span style=“color:#61afef;font-style:italic;“>CURRENT_TIMESTAMP</span>, <span style=“color:#ef596f;“>height </span><span style=“color:#d55fde;font-style:italic;“>DECIMAL</span>(<span style=“color:#d19a66;“>3</span>,<span style=“color:#d19a66;“>2</span>), <span style=“color:#ef596f;“>email </span><span style=“color:#d55fde;font-style:italic;“>VARCHAR</span>(<span style=“color:#d19a66;“>255</span>), <span style=“color:#ef596f;“>registration_date </span><span style=“color:#d55fde;font-style:italic;“>DATETIME</span>, <span style=“color:#ef596f;“>profile_picture </span><span style=“color:#d55fde;font-style:italic;“>VARCHAR</span>(<span style=“color:#d19a66;“>65533</span>), <span style=“color:#ef596f;“>salary </span><span style=“color:#d55fde;font-style:italic;“>DOUBLE</span>, <span style=“color:#ef596f;“>revision </span><span style=“color:#d55fde;font-style:italic;“>INT DEFAULT </span><span style=“color:#ef596f;“>“1“</span>, <span style=“color:#ef596f;“>metadata </span><span style=“color:#d55fde;font-style:italic;“>VARCHAR</span>(<span style=“color:#d19a66;“>65533</span>)
+) <span style=“color:#d55fde;font-style:italic;“>DUPLICATE KEY</span>(id)
+DISTRIBUTED <span style=“color:#d55fde;font-style:italic;“>BY HASH</span>(id) <span style=“color:#d55fde;font-style:italic;“>BUCKETS </span><span style=“color:#d19a66;“>1 </span>PROPERTIES (
+    “replication_num“ = “1“
+); <span style=“color:#5c6370;font-style:italic;“>-- </span><span style=“color:#5c6370;font-style:italic;font-family:'Menlo-Regular',monospace;“>插入第一条数据 </span><span style=“color:#d55fde;font-style:italic;“>INSERT INTO </span><span style=“color:#e5c07b;“>example_table </span>( <span style=“color:#ef596f;“>id</span>, <span style=“color:#ef596f;font-style:italic;“>name</span>, <span style=“color:#ef596f;“>bio</span>, <span style=“color:#ef596f;“>birth_date</span>, <span style=“color:#ef596f;“>last_seen</span>, <span style=“color:#ef596f;“>height</span>, <span style=“color:#ef596f;“>email</span>, <span style=“color:#ef596f;“>registration_date</span>, <span style=“color:#ef596f;“>profile_picture</span>, <span style=“color:#ef596f;“>salary</span>, <span style=“color:#ef596f;“>revision</span>, <span style=“color:#ef596f;“>metadata </span>) <span style=“color:#d55fde;font-style:italic;“>VALUES </span>( <span style=“color:#d19a66;“>1001</span>, <span style=“color:#89ca78;“>'</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>张伟</span><span style=“color:#89ca78;“>'</span>, <span style=“color:#89ca78;“>'</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>热爱编程与开源技术，擅长</span><span style=“color:#89ca78;“>Java</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>和</span><span style=“color:#89ca78;“>Python</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>开发。</span><span style=“color:#89ca78;“>'</span>, <span style=“color:#89ca78;“>'1996-05-12'</span>, <span style=“color:#89ca78;“>'2025-06-04 10:30:00'</span>, <span style=“color:#d19a66;“>1.75</span>, <span style=“color:#89ca78;“>'zhangwei@example.com'</span>, <span style=“color:#89ca78;“>'2024-03-15 10:30:00'</span>, <span style=“color:#89ca78;“>'https://example.com/pic/zhangwei.jpg'</span>, <span style=“color:#d19a66;“>12000.0</span>, <span style=“color:#d19a66;“>1</span>, <span style=“color:#89ca78;“>'{“</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>兴趣</span><span style=“color:#89ca78;“>“: “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>编程</span><span style=“color:#89ca78;“>“, “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>城市</span><span style=“color:#89ca78;“>“: “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>北京</span><span style=“color:#89ca78;“>“}' </span>); <span style=“color:#5c6370;font-style:italic;“>-- </span><span style=“color:#5c6370;font-style:italic;font-family:'Menlo-Regular',monospace;“>插入第二条数据 </span><span style=“color:#d55fde;font-style:italic;“>INSERT INTO </span><span style=“color:#e5c07b;“>example_table </span>( <span style=“color:#ef596f;“>id</span>, <span style=“color:#ef596f;font-style:italic;“>name</span>, <span style=“color:#ef596f;“>bio</span>, <span style=“color:#ef596f;“>birth_date</span>, <span style=“color:#ef596f;“>last_seen</span>, <span style=“color:#ef596f;“>height</span>, <span style=“color:#ef596f;“>email</span>, <span style=“color:#ef596f;“>registration_date</span>, <span style=“color:#ef596f;“>profile_picture</span>, <span style=“color:#ef596f;“>salary</span>, <span style=“color:#ef596f;“>revision</span>, <span style=“color:#ef596f;“>metadata </span>) <span style=“color:#d55fde;font-style:italic;“>VALUES </span>( <span style=“color:#d19a66;“>1002</span>, <span style=“color:#89ca78;“>'</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>李娜</span><span style=“color:#89ca78;“>'</span>, <span style=“color:#89ca78;“>'</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>资深产品经理，拥有多年互联网产品设计经验。</span><span style=“color:#89ca78;“>'</span>, <span style=“color:#89ca78;“>'1992-08-24'</span>, <span style=“color:#89ca78;“>'2025-06-04 09:15:00'</span>, <span style=“color:#d19a66;“>1.68</span>, <span style=“color:#89ca78;“>'lina@example.com'</span>, <span style=“color:#89ca78;“>'2024-07-22 09:15:00'</span>, <span style=“color:#89ca78;“>'https://example.com/pic/lina.jpg'</span>, <span style=“color:#d19a66;“>15000.0</span>, <span style=“color:#d19a66;“>2</span>, <span style=“color:#89ca78;“>'{“</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>职位</span><span style=“color:#89ca78;“>“: “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>产品经理</span><span style=“color:#89ca78;“>“, “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>公司</span><span style=“color:#89ca78;“>“: “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>某科技公司</span><span style=“color:#89ca78;“>“}' </span>); <span style=“color:#5c6370;font-style:italic;“>-- </span><span style=“color:#5c6370;font-style:italic;font-family:'Menlo-Regular',monospace;“>插入第三条数据 </span><span style=“color:#d55fde;font-style:italic;“>INSERT INTO </span><span style=“color:#e5c07b;“>example_table </span>( <span style=“color:#ef596f;“>id</span>, <span style=“color:#ef596f;font-style:italic;“>name</span>, <span style=“color:#ef596f;“>bio</span>, <span style=“color:#ef596f;“>birth_date</span>, <span style=“color:#ef596f;“>last_seen</span>, <span style=“color:#ef596f;“>height</span>, <span style=“color:#ef596f;“>email</span>, <span style=“color:#ef596f;“>registration_date</span>, <span style=“color:#ef596f;“>profile_picture</span>, <span style=“color:#ef596f;“>salary</span>, <span style=“color:#ef596f;“>revision</span>, <span style=“color:#ef596f;“>metadata </span>) <span style=“color:#d55fde;font-style:italic;“>VALUES </span>( <span style=“color:#d19a66;“>1003</span>, <span style=“color:#89ca78;“>'</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>王强</span><span style=“color:#89ca78;“>'</span>, <span style=“color:#89ca78;“>'</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>企业高管，专注于战略规划与市场拓展。</span><span style=“color:#89ca78;“>'</span>, <span style=“color:#89ca78;“>'1980-01-30'</span>, <span style=“color:#89ca78;“>'2025-06-03 18:45:00'</span>, <span style=“color:#d19a66;“>1.80</span>, <span style=“color:#89ca78;“>'wangqiang@example.com'</span>, <span style=“color:#89ca78;“>'2025-01-10 14:20:00'</span>, <span style=“color:#89ca78;“>'https://example.com/pic/wangqiang.jpg'</span>, <span style=“color:#d19a66;“>25000.0</span>, <span style=“color:#d19a66;“>1</span>, <span style=“color:#89ca78;“>'{“</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>经历</span><span style=“color:#89ca78;“>“: [“</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>创业</span><span style=“color:#89ca78;“>“, “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>投资</span><span style=“color:#89ca78;“>“], “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>国家</span><span style=“color:#89ca78;“>“: “</span><span style=“color:#89ca78;font-family:'Menlo-Regular',monospace;“>中国</span><span style=“color:#89ca78;“>“}' </span>); <span style=“color:#d55fde;font-style:italic;“>select </span>* <span style=“color:#d55fde;font-style:italic;“>from </span><span style=“color:#e5c07b;“>example_table</span>;</pre>
+</div>
+<br />
+</div>
+</div>
+<p><br /></p>","1. 进入离线开发-周期任务
+2. 创建SR2Hive数据同步任务
+3. 源端配置：数据源: SR
+Schema: ${schemaA}
+表名: ${tableA}
+4. 选择目标配置: 数据源: Hive
+Schema: ${schemaB}
+表名: 一键生成目标表
+写入模式: 覆盖
+5. 其他配置: 字段映射: 同名映射通道控制: 默认
+6. 保存任务后运行
+7. 新建HiveSQL任务, 执行SQL: SELECT * FROM ${schemaB}.${tableA};","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+7. 查询成功, 表记录与SR表记录一致",3
+引擎bug修复,验证数据同步任务正常运行(MySQL ❯ Hive),"MySQL建表语句
+CREATE TABLE example_table (
+id INT AUTO_INCREMENT PRIMARY KEY COMMENT '自增主键ID',
+name VARCHAR(255) NOT NULL COMMENT '用户名，不能为空',
+age TINYINT UNSIGNED COMMENT '年龄，非负数',
+bio TEXT COMMENT '个人简介',
+birth_date DATE COMMENT '出生日期',
+last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次在线时间，默认当前时间',
+is_active BOOLEAN COMMENT '是否活跃',
+height DECIMAL(3,2) COMMENT '身高，单位米，保留两位小数',
+email VARCHAR(255) UNIQUE COMMENT '邮箱，唯一',
+registration_date DATETIME COMMENT '注册日期和时间',
+profile_picture BLOB COMMENT '头像图片二进制数据',
+salary DOUBLE COMMENT '薪资',
+revision INT DEFAULT 1 COMMENT '版本号，默认1',
+metadata JSON COMMENT '额外元数据信息，JSON格式'
+);
+INSERT INTO example_table (name, age, bio, birth_date, is_active, height, email, registration_date, profile_picture, salary, metadata)
+VALUES
+('张三', 28, '热爱编程的软件工程师', '1997-05-30', TRUE, 1.75, 'zhangsan@example.com', '2020-01-01 10:00:00', NULL, 12000.50, '{“department“:“研发部“,“level“:“中级“}'),
+('李四', 34, '经验丰富的项目经理', '1989-08-15', TRUE, 1.80, 'lisi@example.com', '2019-03-12 09:30:00', NULL, 15000.75, '{“department“:“项目管理部“,“level“:“高级“}'),
+('王五', 22, '新晋的数据分析师', '2003-02-20', FALSE, 1.65, 'wangwu@example.com', '2022-06-01 14:20:00', NULL, 8000.00, '{“department“:“数据分析部“,“level“:“初级“}'),
+('赵六', 45, '资深的产品设计师', '1978-12-11', TRUE, 1.70, 'zhaoliu@example.com', '2018-07-23 16:45:00', NULL, 20000.00, '{“department“:“产品设计部“,“level“:“专家“}'),
+('孙七', 30, '专业的前端开发人员', '1995-04-04', TRUE, 1.78, 'sunqi@example.com', '2021-02-28 11:11:11', NULL, 13000.00, '{“department“:“前端开发部“,“level“:“中级“}'),
+('周八', 26, '移动应用开发者', '1999-11-22', FALSE, 1.68, 'zhouba@example.com', '2023-09-15 08:50:00', NULL, 9500.25, '{“department“:“移动端开发部“,“level“:“初级“}');","1. 进入离线开发-周期任务
+2. 创建MySQL2Hive数据同步任务
+3. 源端配置：数据源: MySQLSchema: ${schemaA}表名: ${tableA}
+4. 选择目标配置: 数据源: HiveSchema: ${schemaB}表名: 一键生成目标表写入模式: 覆盖
+5. 其他配置: 字段映射: 同名映射通道控制: 默认
+6. 保存任务后运行
+7. 新建HiveSQL任务, 执行SQL: SELECT * FROM ${schemaB}.${tableA};","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+7. 查询成功, 表记录与MySQL表记录一致",1
+引擎bug修复,验证HiveSQL任务正常运行,"Hive分区表
+CREATE TABLE example_partitioned_table (
+id INT,
+name STRING,
+age SMALLINT,
+bio STRING,
+last_seen TIMESTAMP,
+is_active BOOLEAN,
+height DECIMAL(3,2),
+email STRING,
+registration_date TIMESTAMP,
+profile_picture BINARY,
+salary DOUBLE,
+revision INT
+)
+COMMENT 'Example Partitioned Table'
+PARTITIONED BY (birth_date DATE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1994-06-14') VALUES
+(3001, '黄娟', 30, 'UI设计师，注重界面美观与交互体验。', '2025-06-04 10:00:00', TRUE, 1.62, 'huangjuan@example.com', '2024-12-12 08:30:00', NULL, 14000.0, 1);
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1985-02-08') VALUES
+(3002, '周杰', 40, '高级运维工程师，熟悉Kubernetes与云计算。', '2025-06-04 09:30:00', TRUE, 1.76, 'zhoujie@example.com', '2025-01-05 14:00:00', NULL, 20000.0, 2);
+INSERT INTO TABLE example_partitioned_table PARTITION (birth_date = '1992-09-19') VALUES
+(3003, '徐丽', 33, '市场营销专家，擅长品牌推广与社交媒体运营。', '2025-06-03 15:20:00', FALSE, 1.67, 'xuli@example.com', '2024-11-30 13:15:00', NULL, 16000.0, 1);","1. 进入离线开发-周期任务
+2. 创建HiveSQL任务
+3. 执行HiveSQL语句
+4. 查询: SELECT * FROM example_partitioned_table;","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示",2

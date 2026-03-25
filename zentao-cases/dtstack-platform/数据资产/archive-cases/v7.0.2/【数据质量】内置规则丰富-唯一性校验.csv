@@ -1,0 +1,973 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+数据资产-数据质量-内置规则库,验证选择手动输入分区，表分区内数据校验异常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_03 (
+id INT,
+name VARCHAR(255),
+age INT
+)
+PARTITION BY RANGE (age) (
+PARTITION p1 VALUES LESS THAN (“18“),
+PARTITION p2 VALUES LESS THAN (“30“),
+PARTITION p3 VALUES LESS THAN (“40“),
+PARTITION p4 VALUES LESS THAN (“50“),
+PARTITION pmax VALUES LESS THAN (MAXVALUE)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_03 VALUES (1, 'Alice', 25);   -- p1
+INSERT INTO test_doris_03 VALUES (1, 'Alice',   25);   -- p2
+INSERT INTO test_doris_03 VALUES (3, 'Charlie', 35); -- p3
+INSERT INTO test_doris_03 VALUES (4, 'David', 45);   -- p4
+INSERT INTO test_doris_03 VALUES (5, 'Eva',   60);   -- pmax","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_03
+选择对比表字段：id、name
+输入分区：手动输入分区-age=25
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验异常
+进入详情查看，表id、name字段均不唯一",2
+数据资产-数据质量-内置规则库,验证选择“选择已有分区”，表分区内数据校验正常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_03 (
+id INT,
+name VARCHAR(255),
+age INT
+)
+PARTITION BY RANGE (age) (
+PARTITION p1 VALUES LESS THAN (“18“),
+PARTITION p2 VALUES LESS THAN (“30“),
+PARTITION p3 VALUES LESS THAN (“40“),
+PARTITION p4 VALUES LESS THAN (“50“),
+PARTITION pmax VALUES LESS THAN (MAXVALUE)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_03 VALUES (1, 'Alice', 10);   -- p1
+INSERT INTO test_doris_03 VALUES (2, 'Bob',   25);   -- p2
+INSERT INTO test_doris_03 VALUES (3, 'Charlie', 35); -- p3
+INSERT INTO test_doris_03 VALUES (4, 'David', 45);   -- p4
+INSERT INTO test_doris_03 VALUES (5, 'Eva',   60);   -- pmax","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_03
+选择对比表字段：id、name
+输入分区：选择已有分区-p1
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证选择手动输入分区，表分区内数据校验正常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_03 (
+id INT,
+name VARCHAR(255),
+age INT
+)
+PARTITION BY RANGE (age) (
+PARTITION p1 VALUES LESS THAN (“18“),
+PARTITION p2 VALUES LESS THAN (“30“),
+PARTITION p3 VALUES LESS THAN (“40“),
+PARTITION p4 VALUES LESS THAN (“50“),
+PARTITION pmax VALUES LESS THAN (MAXVALUE)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_03 VALUES (1, 'Alice', 10);   -- p1
+INSERT INTO test_doris_03 VALUES (2, 'Bob',   25);   -- p2
+INSERT INTO test_doris_03 VALUES (3, 'Charlie', 35); -- p3
+INSERT INTO test_doris_03 VALUES (4, 'David', 45);   -- p4
+INSERT INTO test_doris_03 VALUES (5, 'Eva',   60);   -- pmax","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_03
+选择对比表字段：id、name
+输入分区：手动输入分区-age=25
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证选择手动输入分区，表分区内数据校验异常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_02 (
+id INT,
+name VARCHAR(255),
+year INT,
+month INT
+)
+PARTITION BY LIST (year, month) (
+PARTITION p2025m01 VALUES IN ((“2025“, “1“)),
+PARTITION p2025m02 VALUES IN ((“2025“, “2“)),
+PARTITION p2025m03 VALUES IN ((“2025“, “3“))
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_02 VALUES (1, 'Alice', 2025, 1);
+INSERT INTO test_doris_02 VALUES (1, 'Alice',   2025, 1);
+INSERT INTO test_doris_02 VALUES (3, 'Charlie', 2025, 3);","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_02
+选择对比表字段：id、name
+输入分区：手动输入分区-year=2025
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验异常
+进入详情查看，表id、name字段均不唯一",2
+数据资产-数据质量-内置规则库,验证选择“选择已有分区”，表分区内数据校验正常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_02 (
+id INT,
+name VARCHAR(255),
+year INT,
+month INT
+)
+PARTITION BY LIST (year, month) (
+PARTITION p2025m01 VALUES IN ((“2025“, “1“)),
+PARTITION p2025m02 VALUES IN ((“2025“, “2“)),
+PARTITION p2025m03 VALUES IN ((“2025“, “3“))
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_02 VALUES (1, 'Alice', 2025, 1);
+INSERT INTO test_doris_02 VALUES (2, 'Bob',   2025, 2);
+INSERT INTO test_doris_02 VALUES (3, 'Charlie', 2025, 3);","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_02
+选择对比表字段：id、name
+输入分区：选择已有分区-p2025m01
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证选择手动输入分区，表分区内数据校验正常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_02 (
+id INT,
+name VARCHAR(255),
+year INT,
+month INT
+)
+PARTITION BY LIST (year, month) (
+PARTITION p2025m01 VALUES IN ((“2025“, “1“)),
+PARTITION p2025m02 VALUES IN ((“2025“, “2“)),
+PARTITION p2025m03 VALUES IN ((“2025“, “3“))
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_02 VALUES (1, 'Alice', 2025, 1);
+INSERT INTO test_doris_02 VALUES (2, 'Bob',   2025, 2);
+INSERT INTO test_doris_02 VALUES (3, 'Charlie', 2025, 3);","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_02
+选择对比表字段：id、name
+输入分区：手动输入分区-year=2025
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证选择手动输入分区，表分区内数据校验异常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_01 (
+id INT,
+name VARCHAR(255),
+dt DATE
+)
+PARTITION BY LIST (dt) (
+PARTITION p202501 VALUES IN (“2025-01-01“),
+PARTITION p202502 VALUES IN (“2025-02-01“),
+PARTITION p202503 VALUES IN (“2025-03-01“)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_01 VALUES (1, 'Alice', “2025-01-01“);
+INSERT INTO test_doris_01 VALUES (1, 'Alice',   “2025-01-01“);
+INSERT INTO test_doris_01 VALUES (3, 'Charlie', “2025-02-01“);","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_01
+选择对比表字段：id、name
+输入分区：手动输入分区-dt=“2025-01-01“
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验异常
+进入详情查看，表id、name字段均不唯一",1
+数据资产-数据质量-内置规则库,验证选择“选择已有分区”，表分区内数据校验正常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_01 (
+id INT,
+name VARCHAR(255),
+dt DATE
+)
+PARTITION BY LIST (dt) (
+PARTITION p202501 VALUES IN (“2025-01-01“),
+PARTITION p202502 VALUES IN (“2025-02-01“),
+PARTITION p202503 VALUES IN (“2025-03-01“)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_01 VALUES (1, 'Alice', “2025-01-01“);
+INSERT INTO test_doris_01 VALUES (2, 'Bob',   “2025-01-01“);
+INSERT INTO test_doris_01 VALUES (3, 'Charlie', “2025-02-01“);","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_01
+选择对比表字段：id、name
+输入分区：选择已有分区-p202501
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",1
+数据资产-数据质量-内置规则库,验证选择手动输入分区，表分区内数据校验正常,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_doris_01 (
+id INT,
+name VARCHAR(255),
+dt DATE
+)
+PARTITION BY LIST (dt) (
+PARTITION p202501 VALUES IN (“2025-01-01“),
+PARTITION p202502 VALUES IN (“2025-02-01“),
+PARTITION p202503 VALUES IN (“2025-03-01“)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 3;
+表插入语句：
+INSERT INTO test_doris_01 VALUES (1, 'Alice', “2025-01-01“);
+INSERT INTO test_doris_01 VALUES (2, 'Bob',   “2025-01-01“);
+INSERT INTO test_doris_01 VALUES (3, 'Charlie', “2025-02-01“);","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_doris_01
+选择对比表字段：id、name
+输入分区：手动输入分区-dt=“2025-01-01“
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",1
+数据资产-数据质量-内置规则库,验证唯一-且-唯一：验证选择多字段时校验失败,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_03 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(1,'keko');
+INSERT INTO test_weiyi_02 VALUES (1,'kako'),(2,'kako');
+INSERT INTO test_weiyi_03 VALUES (1,'mengfei'),(1,'mengfei');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_07
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择字段：id、name
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_02
+选择对比表字段：id、name
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_03
+选择对比表字段：id、name
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验异常
+进入详情查看，01表字段name不唯一
+02表id字段不唯一，03表id、name均不唯一",2
+数据资产-数据质量-内置规则库,验证唯一-且-唯一：验证选择多字段时正常校验,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_06
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择字段：id、name
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_02
+选择对比表字段：id、name
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证编辑界面正常克隆多表唯一性判断,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');","1. 进入数据质量-规则任务配置-选择weiyi_01，点击表名
+2. 选择一个唯一性校验，点击克隆
+3. 点击立即执行-进入任务实例查询","1. 右侧弹出具体规则信息
+2. 下方新增一个已配置的唯一性校验，配置内容与克隆源保持一致
+3. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证编辑界面正常编辑多表唯一性判断,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');","1. 进入数据质量-规则任务配置-选择weiyi_01，点击表名
+2. 选择一个唯一性校验，点击编辑
+3. 输入
+字段：name
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_02
+选择对比表字段：name
+选择校验字段逻辑：唯一
+点击保存、下一步
+4. 点击立即执行-进入任务实例查询","1. 右侧弹出具体规则信息
+2. 唯一性校验具体配置框进入编辑状态
+3. 进入调度属性配置界面
+4. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证编辑界面正常新增多表唯一性判断,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');","1. 进入数据质量-规则任务配置-选择weiyi_01，点击表名
+2. 点击添加规则-唯一性校验
+3. 输入
+字段：id
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_02
+选择对比表字段：id
+选择校验字段逻辑：唯一
+点击保存、下一步
+4. 点击立即执行-进入任务实例查询","1. 右侧弹出具体规则信息
+2. 展示唯一性校验具体配置框
+3. 进入调度属性配置界面
+4. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证编辑界面选择字段校验逻辑和选择其他表校验关系逻辑关系校验,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');","1. 进入数据质量-规则任务配置-选择weiyi_01，点击表名
+2. 选择一个唯一性校验，点击编辑
+3. 逻辑修改为允许重复-或-唯一，点击保存
+4. 逻辑修改为允许重复-且-允许重复，点击保存","1. 右侧弹出具体规则信息
+2. 唯一性校验具体配置框进入编辑状态
+3. 保存失败，提醒不允许选择允许重复
+4. 保存失败，提醒必须有一个字段校验逻辑选择唯一，否则规则无法生效",2
+数据资产-数据质量-内置规则库,验证唯一-或-唯一：验证数据质量规则多表唯一性判断失败校验（表内包含重复数据）,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_03 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_04 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_03 VALUES (1,'mengfei'),(2,'kako'),(2,'kako');
+INSERT INTO test_weiyi_04 VALUES (1,'mengfei'),(2,'mengfei');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_01
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+字段：id
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：或
+选择对比表：test_weiyi_04
+选择对比表字段：name
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验异常
+进入详情查看，03表字段id不唯一
+04表name字段不唯一",2
+数据资产-数据质量-内置规则库,验证唯一-或-唯一：验证数据质量规则多表唯一性判断正常校验（表内包含重复数据）,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_03 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_04 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_03 VALUES (1,'mengfei'),(2,'kako'),(2,'kako');
+INSERT INTO test_weiyi_04 VALUES (1,'mengfei'),(2,'mengfei');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_01
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+字段：id
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：或
+选择对比表：test_weiyi_04
+选择对比表字段：id
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",1
+数据资产-数据质量-内置规则库,验证允许重复-且-唯一：验证数据质量规则多表唯一性判断校验失败（表内包含重复数据）,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_03 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_04 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_03 VALUES (1,'mengfei'),(2,'kako'),(2,'kako');
+INSERT INTO test_weiyi_04 VALUES (1,'mengfei'),(2,'mengfei');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_06
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+字段：id
+选择校验字段逻辑：允许重复
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_04
+选择对比表字段：name
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验异常
+进入详情查看，04表name字段不唯一",2
+数据资产-数据质量-内置规则库,验证允许重复-且-唯一：验证数据质量规则多表唯一性判断正常校验,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_05
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：允许重复
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_02
+选择对比表字段：id
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",1
+数据资产-数据质量-内置规则库,验证唯一-且-唯一：验证数据质量规则多表唯一性判断校验失败（表内包含重复数据）,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_03 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_04 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_03 VALUES (1,'mengfei'),(2,'kako'),(2,'kako');
+INSERT INTO test_weiyi_04 VALUES (1,'mengfei'),(2,'mengfei');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_01
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+字段：id
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_04
+选择对比表字段：name
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验异常
+进入详情查看，03表字段id不唯一
+04表name字段不唯一",2
+数据资产-数据质量-内置规则库,验证唯一-且-唯一：验证数据质量规则多表唯一性判断正常校验,"<p>已引入hive数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');</p>","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_01
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_02
+选择对比表字段：id
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",1
+数据资产-数据质量-内置规则库,验证唯一-或-唯一：唯一验证选择多张表字段时正常校验,"<span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>1. 公共管理-数据源中心已添加Doris数据源并已授权给资产平台  2. 资产平台已经引入该数据源，并且在平台管理页面授权给当前测试项目    3. 已在离线平台创建Doris类型SQL任务(控制台需要配置Doris计算引擎)并执行成功</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>建表语句：</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_01</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_01</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_01</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (3, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>drop table test_weiyi_02;</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_02</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_02</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>drop table test_weiyi_03;</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_03</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_03</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'mengfei');</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>truncate table test_weiyi_03;</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>select *</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>from test_weiyi_03;</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_04</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_04</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (2, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (1, 'mengfei');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_05</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_05</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_06</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_06</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_07</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_07</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_08</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_08</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_09</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_09</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_010</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_010</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE test_weiyi_011</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO test_weiyi_011</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>       (2, 'kako');</span><br />","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_04
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+字段：id、name
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：或
+选择对比表：test_weiyi_02
+选择对比表字段：id、name
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_03
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_04
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_05
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_06
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_07
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_08
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_09
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_010
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_011
+选择对比表字段：id
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",2
+数据资产-数据质量-内置规则库,验证唯一-且-唯一：唯一验证选择多张表字段时正常校验,"<span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>1. 公共管理-数据源中心已添加Doris数据源并已授权给资产平台  2. 资产平台已经引入该数据源，并且在平台管理页面授权给当前测试项目    3. 已在离线平台创建Doris类型SQL任务(控制台需要配置Doris计算引擎)并执行成功</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>建表语句：</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_01</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_01</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_01</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (3, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>drop table test_weiyi_02;</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_02</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_02</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>drop table test_weiyi_03;</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_03</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_03</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'mengfei');</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>truncate table test_weiyi_03;</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>select *</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>from test_weiyi_03;</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_04</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_04</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (2, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (1, 'mengfei');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_05</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_05</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_06</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_06</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_07</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_07</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_08</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_08</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_09</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_09</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_010</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_010</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE test_weiyi_011</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>(</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    id   INT,</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    name varchar(255)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>) DISTRIBUTED BY HASH(id) BUCKETS 3</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PROPERTIES(“replication_num“ = “1“);</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO test_weiyi_011</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES (1, 'mengfei'),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>       (2, 'kako');</span><br />","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_04
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+字段：id、name
+选择校验字段逻辑：唯一
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_02
+选择对比表字段：id、name
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_03
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_04
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_05
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_06
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_07
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_08
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_09
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_010
+选择对比表字段：id
+选择校验字段逻辑：唯一
+选择对比表：test_weiyi_011
+选择对比表字段：id
+选择校验字段逻辑：唯一
+点击保存、下一步
+5. 选项均为默认，点击新建
+6. 点击所建规则查看详细信息
+7. 点击立即执行-进入任务实例查询","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 进入调度属性配置界面
+5. 提示规则新建成功，系统给出创建成功提示，列表中出现新创建的记录
+6. 基本信息、监控规则内容符合预期
+7. 校验完成后状态显示校验通过",1
+数据资产-数据质量-内置规则库,验证选择“且”选项且无“唯一”选择时正常报错提示,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_03
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：允许重复
+选择和其他表的校验关系：且
+选择对比表：test_weiyi_02
+选择对比表字段：id
+选择校验字段逻辑：允许重复
+点击保存","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 提示：必须有一个字段校验逻辑选择唯一，否则规则无法生效",1
+数据资产-数据质量-内置规则库,验证选择或时，选择校验字段逻辑无法选择允许重复,"已引入数据源，且包含库表，表内包含数据
+建表语句：
+CREATE TABLE test_weiyi_01 (
+id INT ,
+name varchar(255)
+);
+CREATE TABLE test_weiyi_02 (
+id INT ,
+name varchar(255)
+);
+表插入语句：
+INSERT INTO test_weiyi_01 VALUES (1,'mengfei'),(2,'kako');
+INSERT INTO test_weiyi_02 VALUES (1,'mengfei'),(2,'kako');","1. 进入数据质量-规则任务配置-单表校验规则
+2. 输入
+规则名称：weiyi_02
+选择数据源：已有数据源
+选择数据库：已有数据库
+选择数据表：已有数据表
+点击下一步
+3. 点击添加规则-唯一性校验
+4. 输入
+选择校验字段逻辑：允许重复
+选择和其他表的校验关系：或
+选择对比表：test_weiyi_02
+选择对比表字段：id
+选择校验字段逻辑：允许重复
+点击保存","1. 进入监控对象界面
+2. 进入监控规则界面
+3. 展示唯一性校验具体配置框
+4. 提示：无法选择允许重复",1
+数据资产-数据质量-内置规则库,验证前端交互框校验,无,"1. 进入数据质量-规则任务配置模块，新建单表规则选择必选项进入监控规则步骤，点击添加规则-有效性校验，点击统计函数下拉框
+2. 选择多表唯一性判断
+3. 点击选择校验字段逻辑
+4. 点击选择和其他表的校验关系
+5. 点击条件设置
+6. 点击过滤条件下拉框
+7. 点击添加表
+8. 进入数据质量-任务实例查询，选择一个校验类型为格式类型任务，点击表名
+9. 对于校验未通过结果点击查看明细
+10. 点击查看明细数据","1. 下方唯一性校验配置框
+新增“多表唯一性判断”
+2. 过滤条件展示在统计函数后方，新增条件设置按钮
+下方新增展示选择校验字段逻辑框、选择和其他表的校验关系、选择对比表、输入分区、选择对比表1字段、表后选择校验字段逻辑，新增表按钮（+）
+3. 可选唯一/允许重复
+4. 可选且/或
+5. 弹窗形式展示过滤条件，配置完成后自动拼接到过滤条件框中
+6. 支持选择=/>/>=/</<=/!=/in/not in/包含/不包含
+7. 最多添加十张表
+8. 右侧弹出实例详情
+显示唯一性校验配置详情
+9. 标题文案修改为：查看“唯一性校验-多表唯一性判断”明细
+默认界面显示校验结果，内容为表名、字段、校验字段逻辑
+10. 显示所有不符合规则的表名.字段，最多展示前1000条
+展示下载明细按钮，最多展示10000条",1

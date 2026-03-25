@@ -1,0 +1,1410 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+spark sql3.5适配,验证删除3.5计算引擎-验证删除3.5计算引擎后，已有任务运行失败,"控制台计算引擎已配置spark3.5、3.2版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 选择上述任一3.5版本sparksql任务，点击临时运行
+3. 进入控制台删除spark3.5版本的计算引擎
+4. 重新进入数据开发，依旧选择上述任务临时运行","1. 成功进入数据开发模块，新建3.5版本的spark sql周期任务页面，页面内容正常加载显示，无报错
+2. 任务正常运行，运行结果符合预期
+3. 引擎删除成功，系统给出删除成功提示，该记录从列表中消失
+4. 任务运行失败，报错显示没有相关计算引擎",3
+spark sql3.5适配,验证未创建3.5计算引擎-验证没有创建3.5计算引擎时，创建任务无法选择3.5版本,控制台没有创建3.5版本计算引擎,"1. 进入数据开发模块，点击新建sparksql任务
+2. 点击spark引擎版本","1. 弹框展示新建界面
+2. 下拉框不展示3.5版本",3
+spark sql3.5适配,验证克隆任务-克隆已有任务后正常运行,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 输入sql语句：前置条件内sql
+点击保存
+3. 选中上述任务，右键点击克隆、点击确定
+4. 进入新克隆任务，点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+3. 新增一个sparksql任务，计算引擎版本为3.5
+4. 任务正常运行，运行结果符合预期",3
+spark sql3.5适配,验证修改任务版本-修改已有任务的计算引擎版本后正常运行,"控制台计算引擎已配置spark3.5、3.2版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.2版本的spark sql周期任务
+2. 输入sql语句：前置条件内sql
+点击保存
+3. 选中上述任一任务，右键点击编辑
+4. 修改计算引擎为3.5，点击保存
+5. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+3. 弹框展示编辑框
+4. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+5. 任务正常运行，运行结果符合预期",3
+spark sql3.5适配,验证多种表类型-验证spark sql3.5版本支持多种表类型创建,"新特性sql：
+https://dtstack.yuque.com/rd-center/sm6war/ax77pwdpauhsxy6g#fJmMl","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 输入sql语句：（多种建表语句）
+点击保存
+3. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+3. 任务正常运行，运行结果符合预期",2
+spark sql3.5适配,验证语法检查-验证spark sql3.5版本语法检查正常,"新特性sql：
+https://dtstack.yuque.com/rd-center/sm6war/ax77pwdpauhsxy6g#fJmMl","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 输入sql语句：前置条件内sql
+点击语法检查","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 语法检查成功，结果符合预期",2
+spark sql3.5适配,验证内置函数-验证spark3.5版本与3.2版本不同内置函数正常运行,"新特性sql：
+https://dtstack.yuque.com/rd-center/sm6war/ax77pwdpauhsxy6g#fJmMl","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 输入sql语句：（3.5版本内置函数）
+点击保存
+3. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+3. 任务正常运行，运行结果符合预期",2
+spark sql3.5适配,验证新特性验证-验证spark3.5版本新特性SQL语句正常运行,"新特性sql：
+https://dtstack.yuque.com/rd-center/sm6war/ax77pwdpauhsxy6g#fJmMl","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 输入sql语句：前置条件文档内新特性sql
+点击保存
+3. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+3. 任务正常运行，运行结果符合预期",2
+spark sql3.5适配,验证paimon表-验证spark3.5版本周期任务正常运行paimon相关sql语句,paimon文档：https://paimon.apache.org/docs/1.2/spark/sql-ddl/#create-catalog,"1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 输入sql语句：前置条件内sql（paimon相关sql）
+点击保存
+3. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+3. 任务正常运行，运行结果符合预期",2
+spark sql3.5适配,验证任务发布-导入导出发布-验证3.5版本sparksql任务正常发布,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+存在两个项目，一个为测试项目，一个为目标项目，同时测试项目的项目管理-发布目标已经绑定了目标项目
+数据源映射已经配置
+资源组映射已经配置
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 选中上述任一周期任务，点击提交、发布
+3. 勾选相关的周期任务，点击打包，输入必填项，点击确认
+4. 点击操作列导出
+5. 进入目标项目-任务发布-发布至本项目，点击导入发布包，选中上述导出发布包点击确定
+6. 点击操作列发布
+7. 进入数据开发","1. 成功进入数据开发模块，新建3.5版本的spark sql周期任务页面，页面内容正常加载显示，无报错
+2. 进入发布界面
+3. 任务打包成功，进入发布至目标项目界面
+4. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+5. 列表新增一条发布包
+6. 任务发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 任务正常发布至界面，点击临时运行正常运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错",2
+spark sql3.5适配,验证任务发布-一键发布-验证3.5版本sparksql任务正常发布,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+存在两个项目，一个为测试项目，一个为目标项目，同时测试项目的项目管理-发布目标已经绑定了目标项目
+数据源映射已经配置
+资源组映射已经配置
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 选中上述任一周期任务，点击提交、发布
+3. 勾选相关的周期任务，点击打包，输入必填项，点击确认
+4. 点击操作列发布
+5. 进入目标项目-数据开发","1. 成功进入数据开发模块，新建3.5版本的spark sql周期任务页面，页面内容正常加载显示，无报错
+2. 进入发布界面
+3. 任务打包成功，进入发布至目标项目界面
+4. 任务发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+5. 任务正常发布至界面，点击临时运行正常运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错",2
+spark sql3.5适配,验证函数管理-新建spark sql自定义函数后正常使用,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块-函数管理，新建spark自定义函数
+2. 新建3.5版本的spark sql任务，点击确认，输入上文所建的自定义函数，点击保存
+3. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 任务创建、保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+3. 任务正常运行，运行结果符合预期",2
+spark sql3.5适配,验证组件管理-新建sparksql组件后正常使用,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块-组件管理，新建spark sql任务组件
+2. 输入sql语句：前置条件内sql
+点击保存
+3. 新建3.5版本的spark sql任务，勾选使用组件-勾选上述组件，点击确认
+4. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 组件保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+3. 任务创建成功，sql框内包含组件内sql
+4. 任务正常运行，运行结果符合预期",2
+spark sql3.5适配,验证模版管理-新建sparksql模版后正常使用,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块-模版管理，新建spark sql任务模版
+2. 输入sql语句：前置条件内sql
+点击保存
+3. 新建3.5版本的spark sql任务，勾选使用模版-勾选上述模版，点击确认
+4. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 模版保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+3. 任务创建成功，sql框内包含模版内sql
+4. 任务正常运行，运行结果符合预期",2
+spark sql3.5适配,验证补数据运行-spark3.5版本任务补数据运行正常运行,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 输入sql语句：前置条件内sql
+点击保存、提交
+3. 进入运维中心-周期任务管理，点击上述任务操作列补数据按钮-确定","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 任务保存、提交成功，系统给出提交成功提示，状态更新为下一处理阶段
+3. 任务补数据实例生成成功，实例运行结果成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+spark sql3.5适配,验证周期运行-spark3.5版本任务周期运行正常运行,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+
+
+SELECT * FROM ods_pof_holding_share_info;
+
+
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+
+
+SELECT * FROM ods_11_customer_account_view;
+
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 针对上述sparksql任务，次日后进入运维中心-周期任务实例查看","1. 成功进入数据开发模块，新建3.5版本的spark sql周期任务页面，页面内容正常加载显示，无报错
+2. 周期实例生成成功，实例运行结果成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+spark sql3.5适配,验证手动任务-spark3.5版本手动任务正常运行,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+SELECT * FROM ods_pof_holding_share_info;
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+SELECT * FROM ods_11_customer_account_view;
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.5版本的spark sql手动任务
+2. 输入sql语句：前置条件内sql
+点击保存
+3. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+3. 任务正常运行，运行结果符合预期",1
+spark sql3.5适配,验证周期任务-spark3.5版本周期任务正常运行,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql
+sql语句列表：
+DROP TABLE if EXISTS ods_pof_holding_share_info;
+CREATE TABLE IF NOT EXISTS `ods_pof_holding_share_info`(
+`client_id` bigint COMMENT'公募客户编号',
+`fund_code` bigint COMMENT'基金代码',
+`holding_cost` decimal(24,8) COMMENT'持仓总金额',
+`holding_income` decimal(24,8) COMMENT'持仓总收益',
+`source` string COMMENT'来源'
+)comment'客户持有共享信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+INSERT
+INTO
+TABLE
+ods_pof_holding_share_info PARTITION(pt = '${bdp.system.bizdate}')
+VALUES
+(   1,1,'10000','10000','1'
+),(
+2,2,'20000','20000','2'
+),(
+3,3,'30000','30000','1'
+);
+SELECT * FROM ods_pof_holding_share_info;
+-- 客户账户视图
+DROP TABLE if EXISTS ods_11_customer_account_view;
+CREATE TABLE IF NOT EXISTS `ods_11_customer_account_view`(
+`customer_no` bigint COMMENT'统一客户编号',
+`pub_no` bigint COMMENT'公募客户编号',
+`is_delete` string COMMENT'是否删除 0,1'
+)comment'客户账户视图'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+INSERT
+INTO
+TABLE
+ods_11_customer_account_view PARTITION(pt = '${bdp.system.bizdate}')
+values
+(   1,1,'0'
+),(
+2,2,'1'
+),(
+3,3,'0'
+);
+SELECT * FROM ods_11_customer_account_view;
+-- 客户最新持仓收益信息
+DROP TABLE if EXISTS ads_product_posit_cust_list;
+CREATE TABLE IF NOT EXISTS `ads_product_posit_cust_list`(
+`cust_no` bigint COMMENT'客编',
+`fun_code` bigint COMMENT'基金代码',
+`posit_amt` decimal(24,8)  COMMENT'持仓总金额',
+`posit_profit` decimal(24,8) COMMENT'持仓总收益',
+`posit_prof_rat` string COMMENT'持仓收益率	持仓总收益/累计支出',
+`posit_type` string COMMENT'汇总类别	公募，私募',
+`create_date` string COMMENT'时间'
+)comment'客户最新持仓收益信息'partitioned by(
+pt string
+)stored as orc
+lifecycle 100;
+INSERT OVERWRITE TABLE ads_product_posit_cust_list PARTITION(pt = '${bdp.system.bizdate}')
+select
+t1.customer_no
+,t.fund_code
+, t.posit_amt--持仓总金额
+, t.posit_profit-- 持仓总收益
+, t.posit_prof_rat--持仓收益率
+, t.posit_type -- 汇总类别公募
+, t.create_date --数据日期
+from (
+select
+client_id
+,fund_code
+,sum(holding_cost) as posit_amt--持仓总金额
+,sum(holding_income) as posit_profit--持仓总收益
+,sum(holding_income) as posit_prof_rat--持仓收益率.
+,'公募' as posit_type --汇总类别 公募，私募，汇总
+,'${bdp.system.bizdate}' as create_date--数据日期
+from  ods_pof_holding_share_info
+where pt='${bdp.system.bizdate}'
+and source='1'
+group by client_id,fund_code
+)t
+left join (
+select
+customer_no--统一客户编号
+,pub_no--公募客户编号
+from ods_11_customer_account_view
+where pt='${bdp.system.bizdate}'
+and is_delete='0'--正常
+and pub_no is not NULL
+) t1
+on t.client_id=t1.pub_no;","1. 进入数据开发模块，新建3.5版本的spark sql周期任务
+2. 输入sql语句：前置条件内sql
+点击保存
+3. 点击临时运行","1. 系统提示新建成功，列表顶部出现新建的记录，记录内容与填写一致
+2. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+3. 任务正常运行，运行结果符合预期",1
+spark sql3.5适配,验证前端交互框校验,"控制台计算引擎已配置spark3.5版本
+创建项目时引入hadoop组件
+项目管理开发设置已经勾选spark sql","1. 进入数据开发模块，点击新建sparksql周期任务、点击spark引擎版本下拉框
+2. 点击新建sparksql周期任务、点击spark引擎版本下拉框
+3. 点击新建sparksql手动任务、点击spark引擎版本下拉框
+4. 点击进入一个sparksql任务-基础属性","1. 包含版本3.5
+2. 包含版本3.5
+3. 包含版本3.5
+4. spark引擎版本显示为3.5",1

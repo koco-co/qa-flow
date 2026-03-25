@@ -91,12 +91,98 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 
 ## 临时文件命名规则
 
-Writer Subagent 输出的临时 JSON 文件命名：
+Writer Subagent 输出的临时 JSON 文件命名（按 Story 隔离）：
 
 ```
-zentao-cases/<项目名>/temp/<模块简称>.json
+zentao-cases/<项目路径>/Requirement/<Story>/temp/<模块简称>.json
 ```
 
 示例：
-- `zentao-cases/customItem-platform/信永中和/temp/list.json`
-- `zentao-cases/customItem-platform/信永中和/temp/create.json`
+- `zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/temp/list.json`
+- `zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/temp/create.json`
+
+---
+
+## Checklist JSON 格式
+
+Writer 在生成完整用例前，先输出轻量级 Checklist（供用户审阅和调整），格式如下：
+
+```json
+{
+  "module": "质量问题台账列表",
+  "writer": "Writer A",
+  "items": [
+    { "point": "列表默认加载显示", "priority": "P0", "type": "正常用例", "include": true },
+    { "point": "按行动编号单条件搜索", "priority": "P1", "type": "正常用例", "include": true },
+    { "point": "按问题分类下拉搜索", "priority": "P1", "type": "正常用例", "include": true },
+    { "point": "搜索无结果边界（暂无数据提示）", "priority": "P2", "type": "边界用例", "include": true },
+    { "point": "重置搜索条件", "priority": "P2", "type": "正常用例", "include": true },
+    { "point": "导出 Excel 功能", "priority": "P2", "type": "正常用例", "include": true }
+  ]
+}
+```
+
+Checklist 字段说明：
+
+| 字段 | 说明 |
+|------|------|
+| `point` | 测试点简述（非完整用例标题，用于快速浏览） |
+| `priority` | 预计优先级 P0/P1/P2 |
+| `type` | 预计用例类型 |
+| `include` | 用户可改为 `false` 以排除该测试点 |
+
+**Checklist 用途：**
+- 用户可在此阶段快速增减测试点，比修改完整用例成本低得多
+- 确认后 Writer 基于 Checklist 生成完整 steps/expected 用例
+- 不需要保存为独立文件，在对话中展示即可
+
+---
+
+## .qa-state.json 断点续传状态文件
+
+每步完成后写入 Story 目录，用于中断恢复：
+
+```
+zentao-cases/<项目路径>/Requirement/<Story>/.qa-state.json
+```
+
+```json
+{
+  "story": "Story-20260322",
+  "project_name": "信永中和",
+  "prd_files": ["PRD-26-xxx.md", "PRD-27-xxx.md"],
+  "last_completed_step": 4,
+  "steps_completed": [1, 2, 3, 4],
+  "prd_enhanced_at": "2026-03-25T10:00:00Z",
+  "enhanced_files": [
+    "PRD-26-数据质量-质量问题台账-enhanced.md"
+  ],
+  "checklist_confirmed": true,
+  "writers": {
+    "list": { "status": "completed", "file": "temp/list.json", "case_count": 12 },
+    "create": { "status": "completed", "file": "temp/create.json", "case_count": 15 },
+    "detail": { "status": "pending", "file": null, "case_count": 0 }
+  },
+  "reviewer_status": "pending",
+  "final_json": null,
+  "output_xmind": null,
+  "mode": "normal",
+  "created_at": "2026-03-25T10:00:00Z",
+  "updated_at": "2026-03-25T10:30:00Z"
+}
+```
+
+状态字段说明：
+
+| 字段 | 说明 |
+|------|------|
+| `last_completed_step` | 最后完成的步骤编号（1-8） |
+| `mode` | `normal` / `quick`（快速模式跳过 brainstorming 和确认） |
+| `writers.<name>.status` | `pending` / `in_progress` / `completed` / `failed` |
+| `reviewer_status` | `pending` / `completed` / `escalated`（需人工介入） |
+
+**恢复时的行为：**
+- 已完成步骤直接跳过，不重新执行
+- `pending` 状态的 Writer 重新启动
+- `in_progress` 状态的 Writer 也重新启动（上次可能被中断）
+- Reviewer 状态为 `escalated` 时，直接提示用户处理

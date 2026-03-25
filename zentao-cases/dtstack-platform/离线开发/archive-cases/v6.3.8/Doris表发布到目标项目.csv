@@ -1,0 +1,601 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+离线开发-项目管理-发布管理,验证【创建发布包】页面「对象类型&表类型&对接集群」显示&交互正确,"1）已在sql任务中创建了doris表；
+2）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”
+2. 点击“表类型”下拉框
+3. “表类型”选择“Doris”
+4. 点击“对接集群”下拉框
+5. “对接集群”选择“集群A”","1. 1）“对接类型”右侧新增“表类型”下拉框
+2）“表类型”默认选择为：Hive
+2. 下拉列表展示：Hive、Inceptor、Tidb、AnalyticDB PostgreSQL、Doris
+3. 1）“表类型”中“Doris”为选中状态，单选
+2）“表类型”右侧新增“对接集群”下拉框
+3）“对接集群”默认为空
+4）列表展示空
+4. 下拉列表展示：当前项目已对接的Doris集群，其中初始化方式为“不创建且不对接schema”的置灰不可点击
+5. 1）“对接集群”中“集群A”为选中状态，单选
+2）列表展示当前项目下集群A所对接的schema下的doris表",1
+离线开发-项目管理-发布管理,验证【发布至目标项目-发布包校验】页面显示正确_仅doris表发布,"1）已在sql任务中创建了doris表；
+2）已将doris表打包；
+3）已绑定发布目标（目标项目已添加doris引擎）；
+4）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入【数据开发-任务发布-发布至目标项目】页面，选择doris表的发布包，点击“发布”
+2. 查看“引擎”步骤的交互&显示","1. 进入【发布包校验】弹窗，【引擎】步骤展示信息：
+1）title：引擎映射配置
+2）展示表格字段：本项目引擎、目标项目引擎
+2. 1）本项目引擎：${doris表对应的测试项目的doris引擎}
+2）目标项目引擎：${默认展示接口返回的第一条doris集群}
+3）目标项目引擎下拉列表：目标项目中的所有已添加的doris集群",2
+离线开发-项目管理-发布管理,验证【发布至目标项目-发布包校验】页面显示正确_doris表&任务发布,"1）已在sql任务中创建了doris表且已存在已提交的dorissql任务；
+2）已将doris表&dorissql任务打包；
+3）已绑定发布目标（目标项目已添加doris引擎）；
+4）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入【数据开发-任务发布-发布至目标项目】页面，选择doris表&dorissql任务的发布包，点击“发布”
+2. 查看“引擎”步骤的交互&显示","1. 进入【发布包校验】弹窗，【引擎】步骤展示信息：
+1）title：引擎映射配置
+2）展示表格字段：本项目引擎、目标项目引擎
+2. 1）本项目引擎：${doris表对应的测试项目的doris引擎}
+2）目标项目引擎：${默认展示接口返回的第一条doris集群}
+3）目标项目引擎下拉列表：目标项目中的所有已添加的doris集群",2
+离线开发-项目管理-发布管理,验证【发布至本项目-发布包校验】页面显示正确_仅doris表发布,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为创建/对接已有schema；
+项目C：导入发布包使用；doris引擎初始化方式为创建/对接已有schema；
+2）项目A已在sql任务中创建了doris表；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入【数据开发-任务发布-发布至本项目】页面，导入doris表的发布包，点击“发布”
+2. 查看“引擎”步骤的交互&显示","1. 进入【发布包校验】弹窗，【引擎】步骤展示信息：
+1）title：引擎映射配置
+2）展示表格字段：发布包引擎、本项目引擎
+2. 1）发布包引擎：${doris表对应的测试项目的doris引擎}
+2）本项目引擎：${默认展示接口返回的第一条doris集群}
+3）本项目引擎下拉列表：本项目中的所有已添加的doris集群",2
+离线开发-项目管理-发布管理,验证【发布至本项目-发布包校验】页面显示正确_doris表&任务发布,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为创建/对接已有schema；
+项目C：导入发布包使用；doris引擎初始化方式为创建/对接已有schema；
+2）项目A已在sql任务中创建了doris表&dorissql任务；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入【数据开发-任务发布-发布至本项目】页面，导入doris表&dorissql任务的发布包，点击“发布”
+2. 查看“引擎”步骤的交互&显示","1. 进入【发布包校验】弹窗，【引擎】步骤展示信息：
+1）title：引擎映射配置
+2）展示表格字段：发布包引擎、本项目引擎
+2. 1）发布包引擎：${doris表对应的测试项目的doris引擎}
+2）本项目引擎：${默认展示接口返回的第一条doris集群}
+3）本项目引擎下拉列表：本项目中的所有已添加的doris集群",2
+离线开发-项目管理-发布管理,验证doris表发布功能正常_目标项目未配置doris引擎,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；未配置doris引擎；
+项目C：导入发布包使用；未配置doris引擎
+2）项目A已在sql任务中创建了doris表；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择一张doris表，点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 1）发布包校验不通过
+2）“引擎”步骤校验不通过，提示信息：
+目标项目缺失以下引擎，请联系项目管理员在项目中配置：
+Doris
+4. 1）发布包校验不通过
+2）“引擎”步骤校验不通过，提示信息：
+目标项目缺失以下引擎，请联系项目管理员在项目中配置：
+Doris",2
+离线开发-项目管理-发布管理,验证doris表发布功能正常_单表_目标项目doris引擎初始化方式为创建/对接已有schema,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为创建/对接已有schema；
+项目C：导入发布包使用；doris引擎初始化方式为创建/对接已有schema；
+2）项目A已在sql任务中创建了doris表；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择一张doris表，点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-目标项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目C可以查到对应的表，表结构为与测试项目中的一致
+4. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目B可以查到对应的表，表结构为与测试项目中的一致",1
+离线开发-项目管理-发布管理,验证doris表发布功能正常_单表_目标项目doris引擎初始化方式为不创建且不对接schema,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为不创建且不对接schema；
+项目C：导入发布包使用；doris引擎初始化方式为不创建且不对接schema；
+2）项目A已在sql任务中创建了doris表；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择一张doris表，点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为不创建且不对接schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-目标项目引擎”选择“初始化方式为不创建且不对接schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 发布状态显示发布中->发布失败，表失败信息为：目标项目引擎未对接schema，无法发布
+4. 发布状态显示发布中->发布失败，表失败信息为：目标项目引擎未对接schema，无法发布",2
+离线开发-项目管理-发布管理,验证doris表发布功能正常_多表_目标项目doris引擎初始化方式为创建/对接已有schema,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为创建/对接已有schema；
+项目C：导入发布包使用；doris引擎初始化方式为创建/对接已有schema；
+2）项目A已在sql任务中创建了doris表；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择多张doris表，点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-目标项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目C可以查到对应的表，表结构为与测试项目中的一致
+4. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目B可以查到对应的表，表结构为与测试项目中的一致",2
+离线开发-项目管理-发布管理,验证doris表发布功能正常_多表_目标项目doris引擎初始化方式为不创建且不对接schema,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为不创建且不对接schema；
+项目C：导入发布包使用；doris引擎初始化方式为不创建且不对接schema；
+2）项目A已在sql任务中创建了doris表；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择多张doris表，点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为不创建且不对接schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-目标项目引擎”选择“初始化方式为不创建且不对接schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 发布状态显示发布中->发布失败，表失败信息为：目标项目引擎未对接schema，无法发布
+4. 发布状态显示发布中->发布失败，表失败信息为：目标项目引擎未对接schema，无法发布",1
+离线开发-项目管理-发布管理,验证doris表发布功能正常_目标项目已存在同名不同结构的表,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为创建/对接已有schema；
+项目C：导入发布包使用；doris引擎初始化方式为创建/对接已有schema；
+2）项目A已在sql任务中创建了doris表；
+3）项目B/C已存在doris_fabu_001表，建表sql为：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+4）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择doris表（doris_fabu_001），点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-目标项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目C可以查到对应的表，表不会被删掉重新建，表结构为：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+4. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目B可以查到对应的表，表不会被删掉重新建，表结构为：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);",1
+离线开发-项目管理-发布管理,验证doris表发布功能正常_数据同步一键建表生成的表,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为创建/对接已有schema；
+项目C：导入发布包使用；doris引擎初始化方式为创建/对接已有schema；
+2）项目A已在sql任务中创建了doris表；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入进入项目A【数据开发-周期任务】页面，新建数据同步任务（mysql2doris），数据来源正常填写，选择目标选择doris，一键建表
+2. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择步骤1中创建的doris表），点击“打包”
+3. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+4. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤3下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”
+5. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤2中的发布包，点击“发布”，“引擎-目标项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”","1. doris一键建表成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2. 创建发布包成功，【发布至目标项目】新增一条记录
+3. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目C可以查到对应的表，表结构为与测试项目中的一致
+5. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目B可以查到对应的表，表结构为与测试项目中的一致",2
+离线开发-项目管理-发布管理,验证doris表发布功能正常_数据同步&doris表_目标项目doris引擎初始化方式为创建/对接已有schema,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为创建/对接已有schema；
+项目C：导入发布包使用；doris引擎初始化方式为创建/对接已有schema；
+2）项目A已在sql任务中创建了doris表且已存在已提交的数据同步任务；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择一张doris表；“对象类型”选择“周期任务”，选择一个数据同步任务，一起点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-目标项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目C可以查到对应的表，表结构为与测试项目中的一致
+3）进入项目C可以查到对应的数据同步任务，任务可以运行成功
+4. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目B可以查到对应的表，表结构为与测试项目中的一致
+3）进入项目B可以查到对应的数据同步任务，任务可以运行成功",1
+离线开发-项目管理-发布管理,验证doris表发布功能正常_数据同步&doris表_目标项目doris引擎初始化方式为不创建且不对接schema,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为不创建且不对接schema；
+项目C：导入发布包使用；doris引擎初始化方式为不创建且不对接schema；
+2）项目A已在sql任务中创建了doris表且已存在已提交的数据同步任务；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择一张doris表；“对象类型”选择“周期任务”，选择一个数据同步任务，一起点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为不创建且不对接schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-本项目引擎”选择“初始化方式为不创建且不对接schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 1）发布状态显示发布中->发布失败，表发布失败，数据同步任务发布成功
+2）进入项目C查不到对应的表
+3）进入项目C可以查到对应的数据同步任务，任务可以运行成功
+4. 1）发布状态显示发布中->发布失败，表发布失败，数据同步任务发布成功
+2）进入项目B查不到对应的表
+3）进入项目B可以查到对应的数据同步任务，任务可以运行成功",2
+离线开发-项目管理-发布管理,验证doris表发布功能正常_dorissql任务&doris表_目标项目doris引擎初始化方式为创建/对接已有schema,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为创建/对接已有schema；
+项目C：导入发布包使用；doris引擎初始化方式为创建/对接已有schema；
+2）项目A已在sql任务中创建了doris表且已存在已提交的dorissql任务；；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择一张doris表；“对象类型”选择“周期任务”，选择一个dorissql任务，一起点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-目标项目引擎”选择“初始化方式为创建/对接已有schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目C可以查到对应的表，表结构为与测试项目中的一致
+3）进入项目C可以查到对应的dorissql任务，任务可以运行成功
+4. 1）发布状态显示发布中->发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+2）进入项目B可以查到对应的表，表结构为与测试项目中的一致
+3）进入项目B可以查到对应的dorissql任务，任务可以运行成功",2
+离线开发-项目管理-发布管理,验证doris表发布功能正常_dorissql任务&doris表_目标项目doris引擎初始化方式为不创建且不对接schema,"1）项目信息如下：
+项目A：测试项目；doris引擎初始化方式为创建/对接已有schema；
+项目B：生产项目；doris引擎初始化方式为不创建且不对接schema；
+项目C：导入发布包使用；doris引擎初始化方式为不创建且不对接schema；
+2）项目A已在sql任务中创建了doris表且已存在已提交的dorissql任务；；
+3）doris sql建表&插入数据语句：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入项目A【数据开发-任务发布-创建发布包】页面，“对象类型”选择“表”，“表类型”选择“Doris”，选择一张doris表；“对象类型”选择“周期任务”，选择一个dorissql任务，一起点击“打包”
+2. 进入【发布至目标项目】页面，导出步骤1 对应的发布包
+3. 进入项目C的【数据发布-任务发布-发布至本标项目】页面，导入步骤2下载的发布包并，点击“发布”，“引擎-本项目引擎”选择“初始化方式为不创建且不对接schema的集群”，点击“发布”
+4. 进入项目A【数据开发-任务发布-发布至目标项目】页面，选择步骤1中的发布包，点击“发布”，“引擎-本项目引擎”选择“初始化方式为不创建且不对接schema的集群”，点击“发布”","1. 创建发布包成功，【发布至目标项目】新增一条记录
+2. 发布包导出成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 1）发布状态显示发布中->发布失败，表发布失败，dorissql任务发布成功
+2）进入项目C查不到对应的表
+3）进入项目C可以查到对应的dorissql任务，任务可以运行成功
+4. 1）发布状态显示发布中->发布失败，表发布失败，dorissql任务发布成功
+2）进入项目B查不到对应的表
+3）进入项目B可以查到对应的dorissql任务，任务可以运行成功",1

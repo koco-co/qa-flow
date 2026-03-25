@@ -1,0 +1,93 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+离线开发-数据开发-KingBase计算引擎,验证KingBaseES8.6数据源正常一键建表,无,"1. 进入数据源-点击KingBaseES8.6数据源操作列整库同步
+2. 新建数据同步任务，配置模式选择向导模式，点击保存
+3. 内容配置hive-KingBaseES8.6
+点击一键建表","1. 成功进入数据源-点击KingBaseES8.6数据源操作列整库同步页面，页面内容正常加载显示，无报错
+2. 系统提示任务新建成功，任务列表中出现新建的任务记录，状态为【待提交/草稿】
+3. 数据表正常创建
+数据类型正常，功能行为符合预期，无报错或异常
+注释正常，功能行为符合预期，无报错或异常",2
+离线开发-数据开发-KingBase计算引擎,验证KingBaseES8.6数据源正常进行KingBaseES8.6-KingBaseES8.6数据同步任务,无,"1. 进入数据源-点击KingBaseES8.6数据源操作列整库同步
+2. 新建数据同步任务，配置模式选择向导模式，点击保存
+3. 内容配置KingBaseES8.6-KingBaseES8.6
+写入模式为追加
+4. 点击运行按钮","1. 成功进入数据源-点击KingBaseES8.6数据源操作列整库同步页面，页面内容正常加载显示，无报错
+2. 系统提示任务新建成功，任务列表中出现新建的任务记录，状态为【待提交/草稿】
+3. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+4. 任务状态更新为【运行成功】，运行日志无错误信息，输出结果符合预期
+数据正常同步至目标表，无错位乱码等问题",2
+离线开发-数据开发-KingBase计算引擎,验证KingBaseES8.6数据源正常进行脚本模式数据同步任务（KingBaseES8.6-hive）,无,"1. 进入数据源-点击KingBaseES8.6数据源操作列整库同步
+2. 新建数据同步任务，配置模式选择脚本模式，点击保存
+3. 内容配置KingBaseES8.6-hive
+4. 点击运行按钮","1. 成功进入数据源-点击KingBaseES8.6数据源操作列整库同步页面，页面内容正常加载显示，无报错
+2. 系统提示任务新建成功，任务列表中出现新建的任务记录，状态为【待提交/草稿】
+3. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+4. 任务状态更新为【运行成功】，运行日志无错误信息，输出结果符合预期
+数据正常同步至目标表，无错位乱码等问题",2
+离线开发-数据开发-KingBase计算引擎,验证KingBaseES8.6数据源正常进行向导模式数据同步任务（hive-KingBaseES8.6）,无,"1. 进入数据源-点击KingBaseES8.6数据源操作列整库同步
+2. 新建数据同步任务，配置模式选择向导模式，点击保存
+3. 内容配置hive-KingBaseES8.6，kingbase建表语句：
+CREATE TABLE example_table (
+id BIGINT PRIMARY KEY,         -- 使用 BIGINT 数据类型
+name VARCHAR(100),             -- 使用 VARCHAR 数据类型
+description TEXT,              -- 使用 TEXT 数据类型
+age SMALLINT,                  -- 使用 SMALLINT 数据类型
+salary MONEY,                  -- 使用 MONEY 数据类型
+height FLOAT,                  -- 使用 FLOAT 数据类型
+balance NUMBER(10, 2),         -- 使用 NUMBER 数据类型，精度 10，标度 2
+hire_date DATE,                -- 使用 DATE 数据类型
+last_login TIMESTAMP,          -- 使用 TIMESTAMP 数据类型
+is_active BOOLEAN              -- 使用 BOOLEAN 数据类型
+);
+kingbase数据插入语句：
+INSERT INTO example_table (id, name, description, age, salary, height, balance, hire_date, last_login, is_active)
+VALUES
+(1, 'Alice', 'Software Engineer', 30, 10000.50, 5.6, 5000.00, '2020-01-15', '2024-11-14 08:30:00', TRUE),
+(2, 'Bob', 'Data Analyst', 28, 8500.00, 5.9, 4500.75, '2019-04-22', '2024-11-10 09:00:00', TRUE),
+(3, 'Charlie', 'Product Manager', 35, 12000.00, 5.8, 6000.30, '2018-07-30', '2024-11-12 10:15:00', FALSE),
+(4, 'David', 'UX Designer', 29, 9500.75, 5.7, 5200.50, '2021-11-11', '2024-11-13 14:20:00', TRUE),
+(5, 'Eva', 'QA Tester', 32, 9000.00, 5.5, 4800.20, '2020-08-15', '2024-11-14 08:45:00', TRUE);
+hive建表语句：
+CREATE TABLE example_table_hive (
+id BIGINT,                      -- 使用 BIGINT 数据类型
+name STRING,                    -- 使用 STRING (Hive 中相当于 VARCHAR)
+description STRING,             -- 使用 STRING (Hive 中相当于 TEXT)
+age SMALLINT,                   -- 使用 SMALLINT 数据类型
+salary DECIMAL(10, 2),           -- 使用 DECIMAL (Hive 中相当于 MONEY 和 NUMBER)
+height FLOAT,                   -- 使用 FLOAT 数据类型
+balance DECIMAL(10, 2),         -- 使用 DECIMAL 数据类型
+hire_date DATE,                 -- 使用 DATE 数据类型
+last_login TIMESTAMP,           -- 使用 TIMESTAMP 数据类型
+is_active BOOLEAN               -- 使用 BOOLEAN 数据类型
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+hive数据插入语句：
+INSERT INTO example_table_hive (id, name, description, age, salary, height, balance, hire_date, last_login, is_active)
+VALUES
+(1, 'Alice', 'Software Engineer', 30, 10000.50, 5.6, 5000.00, '2020-01-15', '2024-11-14 08:30:00', TRUE),
+(2, 'Bob', 'Data Analyst', 28, 8500.00, 5.9, 4500.75, '2019-04-22', '2024-11-10 09:00:00', TRUE),
+(3, 'Charlie', 'Product Manager', 35, 12000.00, 5.8, 6000.30, '2018-07-30', '2024-11-12 10:15:00', FALSE),
+(4, 'David', 'UX Designer', 29, 9500.75, 5.7, 5200.50, '2021-11-11', '2024-11-13 14:20:00', TRUE),
+(5, 'Eva', 'QA Tester', 32, 9000.00, 5.5, 4800.20, '2020-08-15', '2024-11-14 08:45:00', TRUE);
+4. 点击运行按钮","1. 成功进入数据源-点击KingBaseES8.6数据源操作列整库同步页面，页面内容正常加载显示，无报错
+2. 系统提示任务新建成功，任务列表中出现新建的任务记录，状态为【待提交/草稿】
+3. 系统提示任务保存成功，任务已保存至任务列表，可继续编辑或提交
+4. 任务状态更新为【运行成功】，运行日志无错误信息，输出结果符合预期
+数据正常同步至目标表，无错位乱码等问题",2
+离线开发-数据开发-KingBase计算引擎,验证KingBaseES8.6数据源正常进行整库同步操作,无,"1. 进入数据源-点击KingBaseES8.6数据源操作列整库同步
+2. 所有内容选择正确选项，点击发布任务
+3. 点击对应数据同步任务-点击运行按钮","1. 进入整库同步界面
+2. 任务发布成功，系统给出成功反馈，相关页面/数据状态更新为最新
+数据开发左侧目录新增对应数据同步任务
+3. 任务运行，结果符合预期",2
+离线开发-数据开发-KingBase计算引擎,验证KingBaseES8.6数据源正常进行映射状态配置,无,"1. 进入数据源-点击KingBaseES8.6数据源操作列整库同步
+2. 当前项目绑定发布目标项目
+3. 进入数据源-点击KingBaseES8.6数据源操作列映射配置-选择目标表对应数据源-点击确定","1. 成功进入数据源-点击KingBaseES8.6数据源操作列整库同步页面，页面内容正常加载显示，无报错
+2. 系统提示绑定成功，绑定关系已建立，页面显示已绑定的目标
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+映射状态改为已配置",2
+离线开发-数据开发-KingBase计算引擎,验证KingBaseES8.6数据源正常从列表内取消引入,无,1. 进入数据源-点击KingBaseES8.6数据源操作列取消引入-点击确定,"1. 数据源取消引入成功，系统给出成功反馈，相关页面/数据状态更新为最新
+再次点击引入数据源可以正常引入",2
+离线开发-数据开发-KingBase计算引擎,验证KingBaseES8.6数据源正常引入至离线数据源列表内,无,1. 进入数据源-点击引入数据源-勾选KingBaseES8.6数据源-点击确定,"1. 数据源引入成功，系统给出成功反馈，相关页面/数据状态更新为最新
+列表信息正常（名称、类型、描述、连接信息、连接状态、最近修改时间、应用状态、映射状态、操作列）",1

@@ -1,0 +1,444 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+以租户维度数据隔离,验证配置项「default.data.source.show.all.schema = true」不再生效,"1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+
+4、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎
+
+5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:
+Create database Project11;
+
+6、将Project03和Project08绑定为发布关系:
+Project03 > Project08
+
+7、 开启离线配置项(默认不开启, 默认值: false):
+default.data.source.show.all.schema = true","1. 进入离线开发-周期任务, 租户 A 进入Project01 项目
+2. 使用租户 A , 进入离线开发模块
+3. 依次检查如下页面中的Hive、Doris、DMMySQL的Schema下拉框: 【创建项目-对接已有Schema】
+4. 依次检查如下页面中的Hive、Doris、DMMySQL的Schema下拉框: 【Project03-添加计算引擎】
+5. 依次检查如下页面中的Hive、Doris、DMMySQL的Schema下拉框: 「Project03-映射配置-当前Schema&目标Schema」
+6. 依次检查如下页面中的Hive、Doris、DMMySQL的Schema下拉框: 「Project03-整库同步-数据同步目标」
+7. 依次检查如下页面中的Hive、Doris、DMMySQL的Schema下拉框: 「Project03-数据同步-Source端Schema&Sink端Schema」
+8. 依次检查如下页面中的Hive、Doris、DMMySQL的Schema下拉框: 【Project03-SQL任务】
+9. 依次检查如下页面中的Hive、Doris、DMMySQL的Schema下拉框: 【Project03-函数管理-自定义函数】","1. 成功进入离线开发-周期任务, 租户 A 进入Project01 项目页面，页面内容正常加载显示，无报错
+2. 成功进入目标页面，页面内容正常加载显示，无报错
+3. Schema列表: 仅过滤掉已被其他租户项目创建或对接的 Schema (project06~10)
+4. Schema列表: 租户A下项目已创建或已对接的 Schema (project01~05创建或对接的schema)
+5. 1) 当前Schema列表: 租户A下已创建或对接的 Schema (project01~05创建或对接的schema)2) 目标Schema列表: 租户B下已创建或对接的 Schema (project01~05创建或对接的schema)
+6. Schema列表: 租户A下项目已创建或已对接的 Schema (project01~05创建或对接的schema)
+7. Schema列表: 租户A下项目已创建或已对接的 Schema (project01~05创建或对接的schema)
+8. Schema列表: 租户A下项目已创建或已对接的 Schema (project01~05创建或对接的schema)
+9. Schema列表: 租户A下项目已创建或已对接的 Schema (project01~05创建或对接的schema)",2
+以租户维度数据隔离,验证「SQL任务-本地数据导入」Schema租户隔离生效(Meta源),"1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:<br />Create database Project11;<br />","1. 进入离线开发-周期任务, 租户 A 进入Project03 项目
+2. 创建HiveSQL任务, 点击【导入】并上传CSV文件
+3. 点击下一步, 【表类型】选择Hive后, 检查【Schema】下拉框
+4. 【Schema】输入框搜索project06~11创建或对接的schema
+5. 依次选择Schema、表后, 点击【导入】
+6. 执行Hive SQL: SELECT * FROM ${所选Schema}.${所选表};
+7. 再次进行【本地数据导入】操作, 【表类型】选择Doris后, 重复步骤3~6
+8. 再次进行【本地数据导入】操作, 【表类型】选择DMMySQL后, 重复步骤3~6","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【本地数据导入】表单页面
+3. 1) 仅展示租户A中project01~05中创建或对接的schema
+2) 不展示租户B中project06~10中创建或对接的schema
+3) 不展示外部平台中创建的schema-project11
+4. 暂无数据, 无法查询到对应的Schema
+5. 系统提示导入成功，数据已同步至对应列表中
+6. 查询成功, 本地数据导入正常，功能行为符合预期，无报错或异常
+7. 1) Doris Schema租户隔离功能正常，功能行为符合预期，无报错或异常
+2) 本地数据导入功能正常，功能行为符合预期，无报错或异常
+8. 1) DMMySQL Schema租户隔离功能正常，功能行为符合预期，无报错或异常
+2) 本地数据导入功能正常，功能行为符合预期，无报错或异常",1
+以租户维度数据隔离,"验证SQL代码不受Schema的租户隔离影响(临时运行, Meta源)","1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+
+4、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎
+
+5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:
+Create database Project11;","1. 进入离线开发-临时运行, 租户 A 进入Project01 项目
+2. 创建Hive任务, 访问租户A和租户B中的Hive Schema中的表:SELECT * FROM ${project01中的schema}.table;SELECT * FROM ${project02中的schema}.table;SELECT * FROM ${project04中的schema}.table;SELECT * FROM ${project05中的schema}.table;SELECT * FROM ${project06中的schema}.table;SELECT * FROM ${project07中的schema}.table;SELECT * FROM ${project09中的schema}.table;SELECT * FROM ${project10中的schema}.table;SELECT * FROM project11.table;
+3. 创建Doris任务, 访问租户A和租户B中的Doris Schema中的表:SELECT * FROM ${project01中的schema}.table;SELECT * FROM ${project02中的schema}.table;SELECT * FROM ${project04中的schema}.table;SELECT * FROM ${project05中的schema}.table;SELECT * FROM ${project06中的schema}.table;SELECT * FROM ${project07中的schema}.table;SELECT * FROM ${project09中的schema}.table;SELECT * FROM ${project10中的schema}.table;SELECT * FROM project11.table;
+4. 创建Dmmysql任务, 访问租户A和租户B中的DMmysql Schema中的表:SELECT * FROM ${project01中的schema}.table;SELECT * FROM ${project02中的schema}.table;SELECT * FROM ${project04中的schema}.table;SELECT * FROM ${project05中的schema}.table;SELECT * FROM ${project06中的schema}.table;SELECT * FROM ${project07中的schema}.table;SELECT * FROM ${project09中的schema}.table;SELECT * FROM ${project10中的schema}.table;SELECT * FROM project11.table;","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示
+3. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示
+4. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示",3
+以租户维度数据隔离,"验证SQL代码不受Schema的租户隔离影响(手动任务, Meta源)","1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+
+4、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎
+
+5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:
+Create database Project11;","1. 进入离线开发-手动任务, 租户 A 进入Project01 项目
+2. 创建Hive任务, 访问租户A和租户B中的Hive Schema中的表:SELECT * FROM ${project01中的schema}.table;SELECT * FROM ${project02中的schema}.table;SELECT * FROM ${project04中的schema}.table;SELECT * FROM ${project05中的schema}.table;SELECT * FROM ${project06中的schema}.table;SELECT * FROM ${project07中的schema}.table;SELECT * FROM ${project09中的schema}.table;SELECT * FROM ${project10中的schema}.table;SELECT * FROM project11.table;
+3. 创建Doris任务, 访问租户A和租户B中的Doris Schema中的表:SELECT * FROM ${project01中的schema}.table;SELECT * FROM ${project02中的schema}.table;SELECT * FROM ${project04中的schema}.table;SELECT * FROM ${project05中的schema}.table;SELECT * FROM ${project06中的schema}.table;SELECT * FROM ${project07中的schema}.table;SELECT * FROM ${project09中的schema}.table;SELECT * FROM ${project10中的schema}.table;SELECT * FROM project11.table;
+4. 创建Dmmysql任务, 访问租户A和租户B中的DMmysql Schema中的表:SELECT * FROM ${project01中的schema}.table;SELECT * FROM ${project02中的schema}.table;SELECT * FROM ${project04中的schema}.table;SELECT * FROM ${project05中的schema}.table;SELECT * FROM ${project06中的schema}.table;SELECT * FROM ${project07中的schema}.table;SELECT * FROM ${project09中的schema}.table;SELECT * FROM ${project10中的schema}.table;SELECT * FROM project11.table;","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示
+3. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示
+4. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示",3
+以租户维度数据隔离,"验证SQL代码不受Schema的租户隔离影响(周期任务, Meta源)","1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:<br />Create database Project11;<br />
+<div><br /></div>","1. 进入离线开发-周期任务, 租户 A 进入Project01 项目
+2. 创建Hive任务, 访问租户A、租户B、外部平台中的Hive Schema中的表:
+SELECT * FROM ${project01中的schema}.table;
+SELECT * FROM ${project02中的schema}.table;
+SELECT * FROM ${project04中的schema}.table;
+SELECT * FROM ${project05中的schema}.table;
+SELECT * FROM ${project06中的schema}.table;
+SELECT * FROM ${project07中的schema}.table;
+SELECT * FROM ${project09中的schema}.table;
+SELECT * FROM ${project10中的schema}.table;
+SELECT * FROM project11.table;
+3. 创建Doris任务, 访问租户A和租户B中的Doris Schema中的表:
+SELECT * FROM ${project01中的schema}.table;
+SELECT * FROM ${project02中的schema}.table;
+SELECT * FROM ${project04中的schema}.table;
+SELECT * FROM ${project05中的schema}.table;
+SELECT * FROM ${project06中的schema}.table;
+SELECT * FROM ${project07中的schema}.table;
+SELECT * FROM ${project09中的schema}.table;
+SELECT * FROM ${project10中的schema}.table;
+SELECT * FROM project11.table;
+4. 创建Dmmysql任务, 访问租户A和租户B中的DMmysql Schema中的表:
+SELECT * FROM ${project01中的schema}.table;
+SELECT * FROM ${project02中的schema}.table;
+SELECT * FROM ${project04中的schema}.table;
+SELECT * FROM ${project05中的schema}.table;
+SELECT * FROM ${project06中的schema}.table;
+SELECT * FROM ${project07中的schema}.table;
+SELECT * FROM ${project09中的schema}.table;
+SELECT * FROM ${project10中的schema}.table;
+SELECT * FROM project11.table;","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示
+3. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示
+4. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示",1
+以租户维度数据隔离,验证「数据同步-自定义SQL-Schema」租户隔离不生效(非Meta源),"1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+开启离线配置项:
+default.data.source.show.all.schema = true
+
+4、租户 A
+Project01（引入schema）
+
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接mysql计算引擎","1. 进入离线开发-周期任务, 租户 A 进入Project01 项目
+2. 创建数据同步任务, 源端选择MySQL数据源, 自定义SQL依次输入并数据预览:1) SELECT * FROM ${mysql中的schemaA}.table;2) SELECT * FROM ${mysql中的schemaB}.table;
+3. 目标端选择任意数据源后, 依次执行数据同步任务
+4. 查看目标端中同步的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 数据预览成功, 正常返回结果
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 数据同步成功，系统给出成功反馈，相关页面/数据状态更新为最新",3
+以租户维度数据隔离,验证「数据同步-自定义SQL-Schema」租户隔离不生效(Meta源),"1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+开启离线配置项:
+default.data.source.show.all.schema = true
+
+4、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接mysql计算引擎
+
+5、mysql在外部平台中创建Schema:
+Create database Project11;","1. 进入离线开发-周期任务, 租户 A 进入Project01 项目
+2. 创建数据同步任务, 源端选择MySQL数据源, 自定义SQL依次输入并数据预览:1) SELECT * FROM ${project01中的schema}.table;2) SELECT * FROM ${project02中的schema}.table;3) SELECT * FROM ${project04中的schema}.table;4) SELECT * FROM ${project05中的schema}.table;5) SELECT * FROM ${project06中的schema}.table;6) SELECT * FROM ${project07中的schema}.table;7) SELECT * FROM ${project09中的schema}.table;8) SELECT * FROM ${project10中的schema}.table;9) SELECT * FROM project11.table;
+3. 目标端选择任意数据源后, 依次执行数据同步任务
+4. 查看目标端中同步的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 数据预览成功, 正常返回结果
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 数据同步成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+以租户维度数据隔离,验证「数据同步-Schema列表」 租户隔离不生效（非Meta 源）,"1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+4、开启配置项:
+default.data.source.show.all.schema = true
+
+5、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎
+
+6、Hive、Doris、Dmmysql分别在外部平台中创建Schema:
+Create database Project11;","1. 进入离线开发, 租户 A 在Project01 中创建数据同步任务
+2. source端选择doris(非Meta)数据源, 检查schema下拉框
+3. source端选择dmmysql(非Meta)数据源, 检查schema下拉框
+4. sink端选择doris(非Meta)数据源, 检查schema下拉框
+5. sink端选择dmmysql(非Meta)数据源, 检查schema下拉框
+6. 配置hive2dmmysql数据同步任务, 检查数据同步功能","1. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+2. 展示该数据源下所有的schema
+3. 展示该数据源下所有的schema
+4. 展示该数据源下所有的schema
+5. 展示该数据源下所有的schema
+6. 数据同步功能正常，功能行为符合预期，无报错或异常",2
+以租户维度数据隔离,验证「数据同步-Schema列表」 租户隔离生效（Meta 源）,"1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br />开启离线配置项:<br />default.data.source.show.all.schema = true<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:<br />Create database Project11;<br />","1. 进入离线开发, 租户 A 在Project01 中创建数据同步任务
+2. source端选择hive数据源, 检查schema下拉框
+3. source端选择doris数据源, 检查schema下拉框
+4. source端选择dmmysql数据源, 检查schema下拉框
+5. sink端选择hive数据源, 检查schema下拉框
+6. sink端选择doris数据源, 检查schema下拉框
+7. sink端选择dmmysql数据源, 检查schema下拉框
+8. 配置hive2doris数据同步任务, 检查数据同步功能
+9. 进入Project02, 重复步骤1~8
+10. 进入Project03, 重复步骤1~8","1. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+2. 1) 仅展示projec01~05中创建或对接的hive schema2) 不展示projec06~10中创建或对接的hive schema3) 不展示schema - project11
+3. 1) 仅展示projec01~05中创建或对接的doris schema2) 不展示projec06~10中创建或对接的doris schema3) 不展示schema - project11
+4. 1) 仅展示projec01~05中创建或对接的DMMySQL schema2) 不展示projec06~10中创建或对接的DMMySQL schema3) 不展示schema - project11
+5. 1) 仅展示projec01~05中创建或对接的hive schema2) 不展示projec06~10中创建或对接的hive schema3) 不展示schema - project11
+6. 1) 仅展示projec01~05中创建或对接的doris schema2) 不展示projec06~10中创建或对接的doris schema3) 不展示schema - project11
+7. 1) 仅展示projec01~05中创建或对接的DMMySQL schema2) 不展示projec06~10中创建或对接的DMMySQL schema3) 不展示schema - project11
+8. 数据同步功能正常，功能行为符合预期，无报错或异常
+9. 租户隔离功能生效
+10. 租户隔离功能生效",1
+以租户维度数据隔离,验证「SQL任务-Schema列表」Scheam租户隔离功能生效(初始化方式: 不创建且不对接 Schema),"1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:<br />Create database Project11;<br />","1. 进入离线开发-周期任务, 租户 A 在Project03 中创建HiveSQL任务
+2. 展开HiveSQL任务的Schema下拉框
+3. 创建DorisSQL任务, 检查Schema下拉框
+4. 创建DMMySQL任务, 检查Schema下拉框","1. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+2. 1) 仅展示projec01~05中创建或对接的hive schema2) 不展示projec06~10中创建或对接的hive schema3) 不展示schema - project11
+3. 1) 仅展示projec01~05中创建或对接的doris schema2) 不展示projec06~10中创建或对接的doris schema3) 不展示schema - project11
+4. 1) 仅展示projec01~05中创建或对接的DMMySQL schema2) 不展示projec06~10中创建或对接的DMMySQL schema3) 不展示schema - project11",1
+以租户维度数据隔离,验证「自定义函数-Schema列表」租户隔离功能生效(DMMySQL),"1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:<br />Create database Project11;<br />
+<div><br /></div>","1. 进入离线开发-周期任务, 租户 A 进入Project01 项目
+2. 使用租户 A, 进入离线开发-Project03-【函数管理-DMMySQL-自定义函数】页面, 检查Schema列表
+3. 查询框搜索project06~11创建或对接的Schema名称
+4. 选择Schema后, 检查自定义函数保存功能","1. 成功进入离线开发-周期任务, 租户 A 进入Project01 项目页面，页面内容正常加载显示，无报错
+2. 1) 仅展示租户A中project01~05中创建或对接的schema
+2) 不展示租户B中project06~10中创建或对接的schema
+3) 不展示外部平台中创建的schema-project11
+3. 暂无数据, 依旧不展示project06~11中的Schema
+4. 保存功能正常，功能行为符合预期，无报错或异常",2
+以租户维度数据隔离,验证「自定义函数-Schema列表」租户隔离功能生效(Hive SQL),"1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:<br />Create database Project11;<br />
+<div><br /></div>","1. 进入离线开发, 租户 A 进入【函数管理-HiveSQL-自定义函数】页面, 检查Schema列表
+2. 查询框搜索project06~11创建或对接的Schema名称
+3. 选择Schema后, 检查自定义函数保存功能","1. 1) 仅展示租户A中project01~05中创建或对接的schema2) 不展示租户B中project06~10中创建或对接的schema3) 不展示外部平台中创建的schema-project11
+2. 暂无数据, 依旧不展示project06~11中的Schema
+3. 保存功能正常，功能行为符合预期，无报错或异常",2
+以租户维度数据隔离,验证「表查询-Schema列表」租户隔离功能生效（初始化方式: 不创建且不对接Schema),"1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:<br />Create database Project11;<br />
+<div><br /></div>
+<br />","1. 进入离线开发, 租户 A 进入Project03-表查询-Hive Schema页面
+2. 查询框搜索project01~11创建或对接的Schema名称
+3. 依次进入project01~05中的Schema
+4. 进入表查询-Doris Schema页面, 重复步骤1~3
+5. 进入表查询-DMMySQL Schema页面, 重复步骤1~3","1. 1) 仅展示租户A中project01~05中创建或对接的schema
+2) 不展示租户B中project06~10中创建或对接的schema
+3) 不展示外部平台中创建的schema-project11
+2. 1) 仅查询到project01~05中创建或对接的Schema
+2) 查询不到project06~11中的Schema
+3. 正常展示hive表的字段信息、分区信息、数据预览
+4. Doris Schema租户隔离功能正常，功能行为符合预期，无报错或异常
+5. DMMySQL Schema租户隔离功能正常，功能行为符合预期，无报错或异常",2
+以租户维度数据隔离,验证「表查询-Schema列表」租户隔离功能生效（初始化方式: 对接已有Schema）,"1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+4、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎
+5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:
+Create database Project11;","1. 进入离线开发, 租户 A 进入Project02-表查询-Hive Schema页面
+2. 查询框搜索project01~11创建或对接的Schema名称
+3. 依次进入project01~05中的Schema
+4. 进入表查询-Doris Schema页面, 重复步骤1~3
+5. 进入表查询-DMMySQL Schema页面, 重复步骤1~3","1. 1) 仅展示租户A中project01~05中创建或对接的schema
+2) 不展示租户B中project06~10中创建或对接的schema
+3) 不展示外部平台中创建的schema-project11
+2. 1) 仅查询到project01~05中创建或对接的Schema
+2) 查询不到project06~11中的Schema
+3. 正常展示doris表的字段信息、分区信息、数据预览
+4. Doris Schema租户隔离功能正常，功能行为符合预期，无报错或异常
+5. DMMySQL Schema租户隔离功能正常，功能行为符合预期，无报错或异常",2
+以租户维度数据隔离,验证「表查询-Schema列表」租户隔离功能生效（初始化方式: 创建）,"1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:<br />Create database Project11;<br /> 
+<div><br /></div>","1. 进入离线开发, 租户 A 进入Project01-表查询-Hive Schema页面
+2. 查询框搜索project01~11创建或对接的Schema名称
+3. 依次进入project01~05中的Schema
+4. 进入表查询-Doris Schema页面, 重复步骤1~3
+5. 进入表查询-DMMySQL Schema页面, 重复步骤1~3","1. 1) 仅展示租户A中project01~05中创建或对接的schema
+2) 不展示租户B中project06~10中创建或对接的schema
+3) 不展示外部平台中创建的schema-project11
+2. 1) 仅查询到project01~05中创建或对接的Schema
+2) 查询不到project06~11中的Schema
+3. 正常展示hive表的字段信息、分区信息、数据预览
+4. Doris Schema租户隔离功能正常，功能行为符合预期，无报错或异常
+5. DMMySQL Schema租户隔离功能正常，功能行为符合预期，无报错或异常",1
+以租户维度数据隔离,验证「整库同步-Sink端Schema列表」 租户隔离功能不生效(初始化方式: 对接已有Schema),"1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+开启离线配置项:
+default.data.source.show.all.schema = true
+4、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎
+5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:
+Create database Project11;","1. 进入离线开发, 租户 A 在Project03-数据源中选择一个数据源, 点击整库同步
+2. 数据同步目标选择Hive数据源后, 展开Schema下拉框
+3. 数据同步目标选择Doris数据源后, 展开Schema下拉框
+4. 数据同步目标选择DMmysql数据源后, 展开Schema下拉框
+5. 创建整库同步任务, 检查整库同步功能
+6. 数据同步目标依次选择Doris、DMMySQL(非meta源), 检查Schema列表
+7. 创建整库同步任务, 检查整库同步功能","1. 进入整库同步页面
+2. 1) 仅展示projec01~05中创建或对接的hive schema
+2) 不展示projec06~10中创建或对接的hive schema
+3) 不展示schema - project11
+3. 1) 仅展示projec01~05中创建或对接的doris schema
+2) 不展示projec06~10中创建或对接的doris schema
+3) 不展示schema - project11
+4. 1) 仅展示projec01~05中创建或对接的DMMySQL schema
+2) 不展示projec06~10中创建或对接的DMMySQL schema
+3) 不展示schema - project11
+5. 功能操作结果符合预期，无报错或异常提示
+6. 展示Doris、DMMySQL数据源所有的Schema
+7. 功能操作结果符合预期，无报错或异常提示",2
+以租户维度数据隔离,验证「整库同步-Sink端Schema列表」 租户隔离功能生效(初始化方式: 创建),"1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+开启离线配置项:
+default.data.source.show.all.schema = true
+4、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎
+5、Hive、Doris、Dmmysql分别在外部平台中创建Schema:
+Create database Project11;","1. 进入离线开发, 租户 A 在Project03-数据源中选择一个数据源, 点击整库同步
+2. 数据同步目标选择Hive数据源后, 展开Schema下拉框
+3. 数据同步目标选择Doris数据源后, 展开Schema下拉框
+4. 数据同步目标选择DMmysql数据源后, 展开Schema下拉框
+5. 创建整库同步任务, 检查整库同步功能
+6. 数据同步目标依次选择Doris、DMMySQL(非meta源), 检查Schema列表
+7. 创建整库同步任务, 检查整库同步功能","1. 进入整库同步页面
+2. 1) 仅展示projec01~05中创建或对接的hive schema2) 不展示projec06~10中创建或对接的hive schema3) 不展示schema - project11
+3. 1) 仅展示projec01~05中创建或对接的doris schema2) 不展示projec06~10中创建或对接的doris schema3) 不展示schema - project11
+4. 1) 仅展示projec01~05中创建或对接的DMMySQL schema2) 不展示projec06~10中创建或对接的DMMySQL schema3) 不展示schema - project11
+5. 功能操作结果符合预期，无报错或异常提示
+6. 展示Doris、DMMySQL数据源所有的Schema
+7. 功能操作结果符合预期，无报错或异常提示",2
+以租户维度数据隔离,验证「映射配置-Schema列表」租户隔离功能生效(初始化方式: 不创建且不对接Schema),"1、控制台已准备Hive、Doris、Dmmysql计算组件<br />2、数据源中心已准备Doris、Dmmysql数据源<br />3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)<br /><br />4、租户 A<br />Project01（创建新schema）<br />Project02(对接已有 schema)<br />Project03（不创建且不对接 Schema）<br />Project04（创建过的Schema被删除的项目）<br />Project05（对接过的Schema被删除的项目）<br /><br />租户 B<br />Project06（创建新schema）<br />Project07(对接已有 schema)<br />Project08（不创建且不对接 Schema）<br />Project09（创建过的Schema被删除的项目）<br />Project10（对接过的Schema被删除的项目）<br /><br />以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎<br /><br />5、将Project03和Project08绑定为发布关系:<br />Project03 > Project08<br />","1. 进入离线开发, 使用租户 A 进入【Project03-数据源】页面, 选择Hive数据源, 点击【映射配置】
+2. 【发布目标】选择Project08中Hive数据源名称后, 新增一行Schema映射, 检查当前Schema和目标Schema下拉框
+3. 当前Schema、目标Schema下拉框中, 分别输入project01~10中创建或对接的Schema
+4. 选择Doris数据源, 点击【映射配置】, 重复步骤2~3
+5. 选择DMMySQL数据源, 点击【映射配置】, 重复步骤2~3","1. 进入【映射配置(${Hive数据源名称})】页面
+2. 1) 当前Schema下拉框展示: 租户A下项目已创建或已对接的 Schema (project01~05创建或对接的schema)
+2) 目标Schema 下拉框展示: 租户B下项目已创建或已对接的 Schema(project06~10创建或对接的schema)
+3. 1) 当前Schema下拉框仅查询到租户A中创建或对接的Schema(project01~05), 无法查询其它租户项目中的Schema(project06~10)
+2) 目标Schema下拉框仅查询到租户B中创建或对接的Schema(project06~10), 无法查询其它租户项目中的Schema(project01~05)
+4. Doris映射配置中的Schema租户隔离功能正常，功能行为符合预期，无报错或异常
+5. DMMySQL映射配置中的Schema租户隔离功能正常",1
+以租户维度数据隔离,验证「映射配置-Schema列表」租户隔离功能生效(初始化方式: 对接已有Schema),"1、控制台已准备Hive、Doris、Dmmysql计算组件
+2、数据源中心已准备Doris、Dmmysql数据源
+3、已存在至少两个租户TenantA, TenantB (对接同一套集群和数据源)
+
+4、租户 A
+Project01（创建新schema）
+Project02(对接已有 schema)
+Project03（不创建且不对接 Schema）
+Project04（创建过的Schema被删除的项目）
+Project05（对接过的Schema被删除的项目）
+
+租户 B
+Project06（创建新schema）
+Project07(对接已有 schema)
+Project08（不创建且不对接 Schema）
+Project09（创建过的Schema被删除的项目）
+Project10（对接过的Schema被删除的项目）
+
+以上每个项目的计算引擎均创建、对接、不创建且不对接的方式, 对接hive、doris、dmmysql三种计算引擎
+
+5、将Project02和Project07绑定为发布关系:
+Project02 > Project07","1. 进入离线开发, 使用租户 A 进入【Project02-数据源】页面, 选择Hive数据源, 点击【映射配置】
+2. 【发布目标】选择Project07中Hive数据源名称后, 新增一行Schema映射, 检查当前Schema和目标Schema下拉框
+3. 当前Schema、目标Schema下拉框中, 分别输入project01~10中创建或对接的Schema
+4. 选择Doris数据源, 点击【映射配置】, 重复步骤2~3
+5. 选择DMMySQL数据源, 点击【映射配置】, 重复步骤2~3","1. 进入【映射配置(${Hive数据源名称})】页面
+2. 1) 当前Schema下拉框仅展示: ${project02对接的Schema}2) 目标Schema 下拉框仅展示: ${project07对接的Schema}
+3. 1) 当前Schema下拉框仅查询到测试项目中对接的Schema(project02), 无法查询当前租户其它项目或其它租户项目中的Schema2) 目标Schema下拉框仅查询到生产项目中对接的Schema(project07), 无法查询当前租户其它项目或其它租户项目中的Schema
+4. Doris映射配置中的Schema租户隔离功能正常，功能行为符合预期，无报错或异常
+5. DMMySQL映射配置中的Schema租户隔离功能正常",2

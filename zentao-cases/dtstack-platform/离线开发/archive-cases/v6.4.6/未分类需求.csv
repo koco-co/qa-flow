@@ -1,0 +1,499 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+任务依赖提示优化,验证【任务依赖校验提示】的弹窗展示正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】的弹窗展示正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 弹窗名
+4. 原有的列表拆分为两个独立的表格
+5. 列表数据限制
+6. 右下方按钮：取消、仍要提交（仍要提交按钮为红色）","1. 成功进入【【任务依赖校验提示】的弹窗展示正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 根据任务与表的血缘解析结果，当前任务可能存在以下依赖问题，请检查
+4. 缺失的上游依赖任务（位于上方），字段展示：任务，任务类型，租户，项目，操作；
+冗余的上游依赖任务（位于下方），字段展示：任务，任务类型，租户，项目，操作；
+5. 展示百分之数据栏80%，其他数据滚动展示
+6. ",1
+任务依赖提示优化,验证【任务依赖校验提示】暂无数据提示正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务I,j进入调度属性，手动添加依赖任务A-F，不提交
+任务I：
+select * from A;
+
+新建任务J，不提交
+任务J：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】暂无数据提示正确】页面
+2. 数据开发-周期任务，选择任务I，点击提交按钮
+3. 缺失的上游依赖任务：暂无数据，冗余的上游依赖任务：展示5条冗余数据（任务B-F）
+4. 数据开发-周期任务，选择任务J，点击提交按钮
+5. 缺失的上游依赖任务：展示5条数据（任务A，任务A_1-D_1），冗余的上游依赖任务：暂无数据","1. 成功进入【【任务依赖校验提示】暂无数据提示正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 展示正确，内容与预期完全一致，无异常或错误
+4. 弹出任务依赖校验提示弹窗
+5. 展示正确，内容与预期完全一致，无异常或错误",2
+任务依赖提示优化,验证【任务依赖校验提示】的新增任务类型和操作展示正确,"sql任务：项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;
+
+数据同步任务：
+1）数据源信息：
+a）数据源A：mysql_A数据源；
+b）数据源B：hive_A数据源
+2）数据同步任务（租户A下，在项目A已提交）：
+a）数据同步任务A：源表：数据源A下schema_A.table_A，目标表：数据源A下schema_A.table_B；
+b）数据同步任务B：源表：数据源A下schema_A.table_A，目标表：数据源B下schema_B.table_B；
+3）新建数据同步任务C（不提交）
+源表：数据源A下schema_A.table_B，目标表：数据源A下schema_A.table_C","1. 进入数据开发模块，新建向导模式的数据同步任务
+2. 数据开发-周期任务，选择任务H，同步任务C，点击提交
+3. 列表字段新增任务类型
+4. 列表新增操作字段","1. 成功进入数据开发模块，新建向导模式的数据同步任务，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 展示任务的类型，如Spark SQL、数据同步等
+4. 缺失的上游依赖依赖的操作：添加依赖
+冗余的上游依赖任务的操作：移除依赖",2
+任务依赖提示优化,验证【任务依赖校验提示】依赖操作交互正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】依赖操作交互正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 点击添加依赖按钮
+4. 点击取消添加按钮
+5. 点击移除依赖按钮
+6. 点击取消移除按钮","1. 成功进入【【任务依赖校验提示】依赖操作交互正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 按钮文案变为 【取消添加】
+4. 按钮文案变为 【添加依赖】
+5. 按钮文案变为 【取消移除】
+6. 按钮文案变为 【移除依赖】",1
+任务依赖提示优化,验证【任务依赖校验提示】逻辑正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】逻辑正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 所有任务添加依赖/移除依赖操作完成后，仍要提交按钮改为“确定”，颜色变为蓝色
+4. 提交成功后，查看此任务的调度属性和依赖视图","1. 成功进入【【任务依赖校验提示】逻辑正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 点击确定，提交成功，系统给出提交成功提示，状态更新为下一处理阶段
+4. 调度属性和依赖视图的任务依赖展示正确，内容与预期完全一致，无异常或错误",2
+任务依赖提示优化,验证【任务依赖校验提示】的任务名称跳转正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】的任务名称跳转正确】页面
+2. 任务名称显示为蓝色，可点击","1. 成功进入【【任务依赖校验提示】的任务名称跳转正确】页面，页面内容正常加载显示，无报错
+2. 点击后新开浏览器页面，并跳转到对应任务页面",2
+任务依赖提示优化,验证【任务依赖校验提示】的弹窗展示正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】的弹窗展示正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 弹窗名
+4. 原有的列表拆分为两个独立的表格
+5. 列表数据限制
+6. 右下方按钮：取消、仍要提交（仍要提交按钮为红色）","1. 成功进入【【任务依赖校验提示】的弹窗展示正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 根据任务与表的血缘解析结果，当前任务可能存在以下依赖问题，请检查
+4. 缺失的上游依赖任务（位于上方），字段展示：任务，任务类型，租户，项目，操作；
+冗余的上游依赖任务（位于下方），字段展示：任务，任务类型，租户，项目，操作；
+5. 展示百分之数据栏80%，其他数据滚动展示
+6. ",1
+任务依赖提示优化,验证【任务依赖校验提示】暂无数据提示正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务I,j进入调度属性，手动添加依赖任务A-F，不提交
+任务I：
+select * from A;
+
+新建任务J，不提交
+任务J：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】暂无数据提示正确】页面
+2. 数据开发-周期任务，选择任务I，点击提交按钮
+3. 缺失的上游依赖任务：暂无数据，冗余的上游依赖任务：展示5条冗余数据（任务B-F）
+4. 数据开发-周期任务，选择任务J，点击提交按钮
+5. 缺失的上游依赖任务：展示5条数据（任务A，任务A_1-D_1），冗余的上游依赖任务：暂无数据","1. 成功进入【【任务依赖校验提示】暂无数据提示正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 展示正确，内容与预期完全一致，无异常或错误
+4. 弹出任务依赖校验提示弹窗
+5. 展示正确，内容与预期完全一致，无异常或错误",2
+任务依赖提示优化,验证【任务依赖校验提示】的新增任务类型和操作展示正确,"sql任务：项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;
+
+数据同步任务：
+1）数据源信息：
+a）数据源A：mysql_A数据源；
+b）数据源B：hive_A数据源
+2）数据同步任务（租户A下，在项目A已提交）：
+a）数据同步任务A：源表：数据源A下schema_A.table_A，目标表：数据源A下schema_A.table_B；
+b）数据同步任务B：源表：数据源A下schema_A.table_A，目标表：数据源B下schema_B.table_B；
+3）新建数据同步任务C（不提交）
+源表：数据源A下schema_A.table_B，目标表：数据源A下schema_A.table_C","1. 进入数据开发模块，新建向导模式的数据同步任务
+2. 数据开发-周期任务，选择任务H，同步任务C，点击提交
+3. 列表字段新增任务类型
+4. 列表新增操作字段","1. 成功进入数据开发模块，新建向导模式的数据同步任务，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 展示任务的类型，如Spark SQL、数据同步等
+4. 缺失的上游依赖依赖的操作：添加依赖
+冗余的上游依赖任务的操作：移除依赖",2
+任务依赖提示优化,验证【任务依赖校验提示】依赖操作交互正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】依赖操作交互正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 点击添加依赖按钮
+4. 点击取消添加按钮
+5. 点击移除依赖按钮
+6. 点击取消移除按钮","1. 成功进入【【任务依赖校验提示】依赖操作交互正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 按钮文案变为 【取消添加】
+4. 按钮文案变为 【添加依赖】
+5. 按钮文案变为 【取消移除】
+6. 按钮文案变为 【移除依赖】",1
+任务依赖提示优化,验证【任务依赖校验提示】逻辑正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】逻辑正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 所有任务添加依赖/移除依赖操作完成后，仍要提交按钮改为“确定”，颜色变为蓝色
+4. 提交成功后，查看此任务的调度属性和依赖视图","1. 成功进入【【任务依赖校验提示】逻辑正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 点击确定，提交成功，系统给出提交成功提示，状态更新为下一处理阶段
+4. 调度属性和依赖视图的任务依赖展示正确，内容与预期完全一致，无异常或错误",2
+任务依赖提示优化,验证【任务依赖校验提示】的任务名称跳转正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】的任务名称跳转正确】页面
+2. 任务名称显示为蓝色，可点击","1. 成功进入【【任务依赖校验提示】的任务名称跳转正确】页面，页面内容正常加载显示，无报错
+2. 点击后新开浏览器页面，并跳转到对应任务页面",2
+任务依赖提示优化,验证【任务依赖校验提示】的弹窗展示正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】的弹窗展示正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 弹窗名
+4. 原有的列表拆分为两个独立的表格
+5. 列表数据限制
+6. 右下方按钮：取消、仍要提交（仍要提交按钮为红色）","1. 成功进入【【任务依赖校验提示】的弹窗展示正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 根据任务与表的血缘解析结果，当前任务可能存在以下依赖问题，请检查
+4. 缺失的上游依赖任务（位于上方），字段展示：任务，任务类型，租户，项目，操作；
+冗余的上游依赖任务（位于下方），字段展示：任务，任务类型，租户，项目，操作；
+5. 展示百分之数据栏80%，其他数据滚动展示
+6. ",1
+任务依赖提示优化,验证【任务依赖校验提示】暂无数据提示正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务I,j进入调度属性，手动添加依赖任务A-F，不提交
+任务I：
+select * from A;
+
+新建任务J，不提交
+任务J：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】暂无数据提示正确】页面
+2. 数据开发-周期任务，选择任务I，点击提交按钮
+3. 缺失的上游依赖任务：暂无数据，冗余的上游依赖任务：展示5条冗余数据（任务B-F）
+4. 数据开发-周期任务，选择任务J，点击提交按钮
+5. 缺失的上游依赖任务：展示5条数据（任务A，任务A_1-D_1），冗余的上游依赖任务：暂无数据","1. 成功进入【【任务依赖校验提示】暂无数据提示正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 展示正确，内容与预期完全一致，无异常或错误
+4. 弹出任务依赖校验提示弹窗
+5. 展示正确，内容与预期完全一致，无异常或错误",2
+任务依赖提示优化,验证【任务依赖校验提示】的新增任务类型和操作展示正确,"sql任务：项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;
+
+数据同步任务：
+1）数据源信息：
+a）数据源A：mysql_A数据源；
+b）数据源B：hive_A数据源
+2）数据同步任务（租户A下，在项目A已提交）：
+a）数据同步任务A：源表：数据源A下schema_A.table_A，目标表：数据源A下schema_A.table_B；
+b）数据同步任务B：源表：数据源A下schema_A.table_A，目标表：数据源B下schema_B.table_B；
+3）新建数据同步任务C（不提交）
+源表：数据源A下schema_A.table_B，目标表：数据源A下schema_A.table_C","1. 进入数据开发模块，新建向导模式的数据同步任务
+2. 数据开发-周期任务，选择任务H，同步任务C，点击提交
+3. 列表字段新增任务类型
+4. 列表新增操作字段","1. 成功进入数据开发模块，新建向导模式的数据同步任务，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 展示任务的类型，如Spark SQL、数据同步等
+4. 缺失的上游依赖依赖的操作：添加依赖
+冗余的上游依赖任务的操作：移除依赖",2
+任务依赖提示优化,验证【任务依赖校验提示】依赖操作交互正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】依赖操作交互正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 点击添加依赖按钮
+4. 点击取消添加按钮
+5. 点击移除依赖按钮
+6. 点击取消移除按钮","1. 成功进入【【任务依赖校验提示】依赖操作交互正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 按钮文案变为 【取消添加】
+4. 按钮文案变为 【添加依赖】
+5. 按钮文案变为 【取消移除】
+6. 按钮文案变为 【移除依赖】",1
+任务依赖提示优化,验证【任务依赖校验提示】逻辑正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】逻辑正确】页面
+2. 数据开发-周期任务，选择任务H，点击提交按钮
+3. 所有任务添加依赖/移除依赖操作完成后，仍要提交按钮改为“确定”，颜色变为蓝色
+4. 提交成功后，查看此任务的调度属性和依赖视图","1. 成功进入【【任务依赖校验提示】逻辑正确】页面，页面内容正常加载显示，无报错
+2. 弹出任务依赖校验提示弹窗
+3. 点击确定，提交成功，系统给出提交成功提示，状态更新为下一处理阶段
+4. 调度属性和依赖视图的任务依赖展示正确，内容与预期完全一致，无异常或错误",2
+任务依赖提示优化,验证【任务依赖校验提示】的任务名称跳转正确,"项目A，hive数据源A，创建以下任务并提交
+任务A:create table A(id int);
+任务B:create table A(id int);
+任务C:create table A(id int);
+任务D:create table A(id int);
+任务E:create table A(id int);
+任务F:create table A(id int);
+任务A_1:create table A_1(id int);
+任务B_1:create table B_1(id int);
+任务C:_1create table C_1(id int);
+任务D_1:create table D_1(id int);
+新建任务H,j进入调度属性，手动添加依赖任务A-F，不提交
+任务H：
+select * from A;
+select * from A_1;
+select * from B_1;
+select * from C_1;
+select * from D_1;","1. 进入【【任务依赖校验提示】的任务名称跳转正确】页面
+2. 任务名称显示为蓝色，可点击","1. 成功进入【【任务依赖校验提示】的任务名称跳转正确】页面，页面内容正常加载显示，无报错
+2. 点击后新开浏览器页面，并跳转到对应任务页面",2

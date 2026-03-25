@@ -1,0 +1,465 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+知识库同步优化,验证【知识库同步优化】验证元数据知识库同步优化效果,"<p>数据库metadata_data_table、metadata_data_table_column这两张表，各存在1万条数据</p>
+<p><br /></p>
+<p><br /></p>
+<p><br /></p>
+<p>URL：</p>
+<p>http://shuzhan60-test-zxjt.k8s.dtstack.cn/dmetadata/v1/ai/getTablesByPage<br /><br />Header：<br />{ “Cookie“:“dt_expire_cycle=0; sysLoginType=%7B%22sysId%22%3A1%2C%22sysName%22%3A%22UIC%u8D26%u53F7%u767B%u5F55%22%2C%22sysType%22%3A0%7D; dt_user_id=1; dt_username=admin%40dtstack.com; dt_can_redirect=false; sysLoginType=%7B%22sysId%22%3A1%2C%22sysName%22%3A%22UIC%E8%B4%A6%E5%8F%B7%E7%99%BB%E5%BD%95%22%2C%22sysType%22%3A0%7D; dt_cookie_time=2025-09-04+16%3A29%3A15; DT_SESSION_ID=6b84672a-f98c-412c-b505-d3bc653b3dea; dt_tenant_id=1; dt_tenant_name=DT_demo; dt_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnRfaWQiOiIxIiwidXNlcl9pZCI6IjEiLCJ1c2VyX25hbWUiOiJhZG1pbkBkdHN0YWNrLmNvbSIsImV4cCI6MTc1NzIzMzc1NSwiaWF0IjoxNzU2NzE1MzU2fQ.KxBwFuBedx-fMlD7KWYLphULCHEGalSC8pR7giBztQA; dt_is_tenant_admin=true; dt_is_tenant_creator=false; dt_expire_cycle=0; dt_product_code=RDOS“}<br /><br /><br />请求参数：<br />{<br /> “currentPage“:1,<br /> “pageSize“:100<br />}</p>","1. 进入【【知识库同步优化】】页面
+2. 1）release分支，进入dtai-知识库-创建知识库
+知识库名称：metadata0，
+选择数据源：通过API导入数据，
+配置API信息：
+类型：元数据
+名称：metadata0
+url、请求方式post、Header、请求参数见前置条件
+点击保存，进行知识库同步
+2）同步结束后，查看开始时间和结束时间
+3. 1）hotfix分支，进入dtai-知识库-创建知识库
+知识库名称：metadata1，
+选择数据源：通过API导入数据，
+配置API信息：
+类型：元数据
+名称：metadata1
+url、请求方式post、Header、请求参数见前置条件
+点击保存，进行知识库同步
+2）同步结束后，查看开始时间和结束时间","1. 成功进入【【知识库同步优化】】页面，页面内容正常加载显示，无报错
+2. 同步正常，功能行为符合预期，无报错或异常
+3. 1）同步正常，功能行为符合预期，无报错或异常
+2）同步时间缩短",3
+导入数据支持中途停止测试,验证本地数据导入时取消导入功能正常(GP),"csv文件内容如下:<br /><br />employee_id,full_name,job_title,salary,hire_date,is_fulltime,tech_stack<br />1,zhangsan,后端工程师,25000.0,2022-03-15,1,“Java,Spring,MySQL“<br />102,lisi,数据科学家,32000.5,2021-11-01,1,“Python,TensorFlow,Spark“<br />103,wangwu,前端工程师,22000.0,2023-01-10,1,“JavaScript,React,Vue“<br />104,zhaoliu,DevOps工程师,28000.75,2020-07-22,1,“Kubernetes,Docker,AWS“<br />105,chenqi,产品经理,22000.0,2021-05-30,1,“Axure,SQL,PPT“<br />106,liuba,测试工程师,21000.0,2023-08-14,0,“Selenium,Jmeter,Python“<br /><br /><br />gp建表语句:<br /> 
+<div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco,;“>
+  <div><span style=“color:#0000ff;“>CREATE</span> <span style=“color:#0000ff;“>TABLE</span> <span style=“color:#0000ff;“>IF</span> <span style=“color:#0000ff;“>NOT</span> <span style=“color:#0000ff;“>EXISTS</span> <span style=“color:#001080;“>dtstack_employees_gp</span> <span style=“color:#0431fa;“>(</span></div>
+  <div><span style=“color:#001080;“>employee_id</span> <span style=“color:#267f99;“>INT</span> <span style=“color:#0000ff;“>CONSTRAINT</span> <span style=“color:#001080;“>uq_employee_id</span> <span style=“color:#0000ff;“>UNIQUE</span>,</div>
+  <div><span style=“color:#001080;“>full_name</span> <span style=“color:#267f99;“>VARCHAR</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>50</span><span style=“color:#0431fa;“>)</span>,</div>
+  <div><span style=“color:#001080;“>job_title</span> <span style=“color:#267f99;“>VARCHAR</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>30</span><span style=“color:#0431fa;“>)</span>,</div>
+  <div><span style=“color:#001080;“>salary</span> <span style=“color:#267f99;“>NUMERIC</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>10</span>,<span style=“color:#098658;“>2</span><span style=“color:#0431fa;“>)</span>,</div>
+  <div><span style=“color:#001080;“>hire_date</span> <span style=“color:#267f99;“>DATE</span>,</div>
+  <div><span style=“color:#001080;“>is_fulltime</span> <span style=“color:#267f99;“>BOOLEAN</span>,</div>
+  <div><span style=“color:#001080;“>tech_stack</span> <span style=“color:#267f99;“>VARCHAR</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>200</span><span style=“color:#0431fa;“>)</span></div>
+  <div><span style=“color:#0431fa;“>)</span>;</div>
+</div>
+<br />","1. 进入数据开发-周期任务页面, 选中任一任务后, 点击导入, 选择csv文件后, 点击下一步
+2. 表类型选择gp, 点击新建表, 输入gp建表语句后确定
+3. 导入模式选择【覆盖】后, 点击导入, 检查页面窗口右上角样式
+4. 点击【取消导入】
+5. 点击【确认】
+6. 创建gp任务, 执行sql: select * from dtstack_employees_gp; 检查表数据
+7. 重新点击导入, 依次选择相同的csv文件、gp表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入","1. 1) 导入csv文件后, 弹出本地数据导入页面, 并将csv文件内容自动解析2) 点击下一步后, 可以选择表类型和表
+2. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+3. 1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+4. 展示二次确认弹窗: 1) 确认取消导入吗?2) 按钮: 取消、确认
+5. toast提示“已取消导入”
+6. 数据库操作为非事务，已导入的数据无需回滚，【停止】后的未导入的数据停止insert操作
+7. 导入成功, 执行追加操作",2
+导入数据支持中途停止测试,验证本地数据导入时取消导入功能正常(oboracle),"csv文件内容如下:<br /> 
+<p><span style=“color:#111133;font-family:-apple-system, blinkmacsystemfont,;“>ID,NAME,LENGTH,SALARY,BIRTHDAY </span></p>
+<p><span style=“color:#111133;font-family:-apple-system, blinkmacsystemfont,;“>2,Imd,22222222,2000.22,2002-02-02 00:00:00 </span></p>
+<p><span style=“color:#111133;font-family:-apple-system, blinkmacsystemfont,;“>3,Imdd,33333333,3000.33,2003-03-03 00:00:00</span></p>
+<br />
+<div style=“background-color:#FFFFFE;“>
+  <p style=“color:#000000;“>选择oboracle表</p>
+  <p style=“color:#000000;“>schema: SDPW_TEST</p>
+  <p style=“color:#000000;“>table: <span style=“color:#001080;font-family:Menlo, Monaco,;“>TEST_SIDE</span></p>
+  <p style=“color:#000000;“><span style=“color:#001080;font-family:Menlo, Monaco,;“><br /></span></p>
+  <p><span style=“font-family:Menlo, Monaco,;“><span>Tips: </span> </span></p>
+  <div style=“background-color:#FFFFFE;font-family:Menlo, Monaco,;“>
+    <div style=“color:#000000;“><span style=“color:#008000;“>-- 查询当前账号有权访问的表</span></div>
+    <div><span style=“color:#0000FF;“>SELECT</span> <span style=“color:#001080;“>owner</span><span>, </span><span style=“color:#001080;“>table_name</span><span> </span><span style=“color:#0000FF;“>FROM</span> <span style=“color:#001080;“>all_tables</span><span>;</span></div>
+  </div>
+<span></span>
+<p><br /></p>
+</div>","1. 进入数据开发-周期任务页面, 选中任一任务后, 点击导入, 选择csv文件后, 点击下一步
+2. 表类型选择oboracle, 点击新建表, 输入oboracle建表语句后确定
+3. 导入模式选择【覆盖】后, 点击导入, 检查页面窗口右上角样式
+4. 点击【取消导入】
+5. 点击【确认】
+6. 创建oboracle任务, 执行sql: select * from SDPW_TEST.TEST_SIDE; 检查表数据","1. 1) 导入csv文件后, 弹出本地数据导入页面, 并将csv文件内容自动解析2) 点击下一步后, 可以选择表类型和表
+2. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+3. 1) 正在导入的loading
+2) 导入的表名+进度条
+3) 【取消导入】按钮
+4. 展示二次确认弹窗: 1) 确认取消导入吗?2) 按钮: 取消、确认
+5. toast提示“已取消导入”
+6. 数据库操作为非事务，已导入的数据无需回滚，【停止】后的未导入的数据停止insert操作",2
+导入数据支持中途停止测试,验证本地数据导入时取消导入功能正常(dmoracle),"csv文件内容如下:<br /><br />employee_id,full_name,job_title,salary,hire_date,is_fulltime,tech_stack<br />1,zhangsan,后端工程师,25000.0,2022-03-15,1,“Java,Spring,MySQL“<br />102,lisi,数据科学家,32000.5,2021-11-01,1,“Python,TensorFlow,Spark“<br />103,wangwu,前端工程师,22000.0,2023-01-10,1,“JavaScript,React,Vue“<br />104,zhaoliu,DevOps工程师,28000.75,2020-07-22,1,“Kubernetes,Docker,AWS“<br />105,chenqi,产品经理,22000.0,2021-05-30,1,“Axure,SQL,PPT“<br />106,liuba,测试工程师,21000.0,2023-08-14,0,“Selenium,Jmeter,Python“<br /><br /><br />dmoracle建表语句:<br /><br />CREATE TABLE dtstack_employees_dmoracle (<br />    employee_id INT CONSTRAINT uq_employee_id UNIQUE, -- 唯一约束<br />    full_name VARCHAR(50),<br />    job_title VARCHAR(30),<br />    salary DECIMAL(10,2),<br />    hire_date DATE,<br />    is_fulltime NUMBER(1),<br />    tech_stack VARCHAR(200)<br />);<br />
+<div><br /></div>
+<br />","1. 进入数据开发-周期任务页面, 选中任一任务后, 点击导入, 选择csv文件后, 点击下一步
+2. 表类型选择dmoracle, 点击新建表, 输入dmoracle建表语句后确定
+3. 导入模式选择【覆盖】后, 点击导入, 检查页面窗口右上角样式
+4. 点击【取消导入】
+5. 点击【确认】
+6. 创建dmoracle任务, 执行sql: select * from dtstack_employees_dmoracle; 检查表数据
+7. 重新点击导入, 依次选择相同的csv文件、dmOracle表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入
+8. 创建oracle任务, 删除唯一约束: ALTER TABLE dtstack_employees_dmoracle DROP CONSTRAINT uq_employee_id;
+9. 重新点击导入, 依次选择相同的csv文件、dmoracle表类型和表名(选择上述的脏数据表), 导入模式选择【覆盖】后, 点击导入
+10. 重新点击导入, 依次选择相同的csv文件、dmoracle表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入","1. 1) 导入csv文件后, 弹出本地数据导入页面, 并将csv文件内容自动解析2) 点击下一步后, 可以选择表类型和表
+2. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+3. 1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+4. 展示二次确认弹窗: 1) 确认取消导入吗?2) 按钮: 取消、确认
+5. toast提示“已取消导入”
+6. 数据库操作为非事务，已导入的数据无需回滚，【停止】后的未导入的数据停止insert操作
+7. employee_id有唯一约束, 导入失败并给出弹窗报错
+8. 约束删除成功，系统给出删除成功提示，该记录从列表中消失
+9. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+10. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮",2
+导入数据支持中途停止测试,验证本地数据导入时取消导入功能正常(Oracle),"<p>csv文件内容如下:<br /><br />employee_id,full_name,job_title,salary,hire_date,is_fulltime,tech_stack<br />1,zhangsan,后端工程师,25000.0,2022-03-15,1,“Java,Spring,MySQL“<br />102,lisi,数据科学家,32000.5,2021-11-01,1,“Python,TensorFlow,Spark“<br />103,wangwu,前端工程师,22000.0,2023-01-10,1,“JavaScript,React,Vue“<br />104,zhaoliu,DevOps工程师,28000.75,2020-07-22,1,“Kubernetes,Docker,AWS“<br />105,chenqi,产品经理,22000.0,2021-05-30,1,“Axure,SQL,PPT“<br />106,liuba,测试工程师,21000.0,2023-08-14,0,“Selenium,Jmeter,Python“<br /><br /><br />Oracle建表语句<br />DROP table dtstack_employees_oracle;<br />CREATE TABLE dtstack_employees_oracle (<br />    employee_id INT CONSTRAINT uq_employee_id UNIQUE, -- 唯一约束<br />    full_name VARCHAR2(50),<br />    job_title VARCHAR2(30),<br />    salary NUMBER(10,2),<br />    hire_date DATE,<br />    is_fulltime NUMBER(1),<br />    tech_stack VARCHAR2(200)<br />);<br /></p>","1. 进入数据开发-周期任务页面, 选中任一任务后, 点击导入, 选择csv文件后, 点击下一步
+2. 表类型选择Oracle, 并选择dtstack_employees_oracle表
+3. 导入模式选择【覆盖】后, 点击导入, 检查页面窗口右上角样式
+4. 点击【取消导入】
+5. 点击【确认】
+6. 创建oracle任务, 执行sql: select * from dtstack_employees_oracle; 检查表数据
+7. 重新点击导入, 依次选择相同的csv文件、Oracle表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入
+8. 创建oracle任务, 删除唯一约束: ALTER TABLE dtstack_employees_oracle DROP CONSTRAINT uq_employee_id;
+9. 重新点击导入, 依次选择相同的csv文件、oracle表类型和表名(选择上述的脏数据表), 导入模式选择【覆盖】后, 点击导入
+10. 重新点击导入, 依次选择相同的csv文件、oracle表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入","1. 1) 导入csv文件后, 弹出本地数据导入页面, 并将csv文件内容自动解析2) 点击下一步后, 可以选择表类型和表
+2. 选择项已高亮/回显选中状态，相关联动字段随之更新
+3. 1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+4. 展示二次确认弹窗: 1) 确认取消导入吗?2) 按钮: 取消、确认
+5. toast提示“已取消导入”
+6. 数据库操作为非事务，已导入的数据无需回滚，【停止】后的未导入的数据停止insert操作
+7. employee_id有唯一约束, 导入失败并给出弹窗报错
+8. 约束删除成功，系统给出删除成功提示，该记录从列表中消失
+9. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+10. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮",1
+导入数据支持中途停止测试,验证本地数据导入时取消导入功能正常(Oushu),"csv文件内容如下:<br /><br />employee_id,full_name,job_title,salary,hire_date,tech_stack<br />1,zhangsan,后端工程师,25000.0,2022-03-15,“Java,Spring,MySQL“<br />102,lisi,数据科学家,32000.5,2021-11-01,“Python,TensorFlow,Spark“<br />103,wangwu,前端工程师,22000.0,2023-01-10,“JavaScript,React,Vue“<br />104,zhaoliu,DevOps工程师,28000.75,2020-07-22,“Kubernetes,Docker,AWS“<br />105,chenqi,产品经理,22000.0,2021-05-30,“Axure,SQL,PPT“<br />106,liuba,测试工程师,21000.0,2023-08-14,“Selenium,Jmeter,Python“<br /><br /><br />Oushu建表语句:<br /> 
+<div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco,;“>
+  <div><span style=“color:#0000ff;“>CREATE</span> <span style=“color:#0000ff;“>TABLE</span> <span style=“color:#0000ff;“>IF</span> <span style=“color:#0000ff;“>NOT</span> <span style=“color:#0000ff;“>EXISTS</span></div>
+  <div><span style=“color:#001080;“>dtstack_employees_oushu</span> <span style=“color:#0431fa;“>(</span></div>
+  <div><span style=“color:#001080;“>employee_id</span> <span style=“color:#267f99;“>INTEGER</span>,</div>
+  <div><span style=“color:#001080;“>full_name</span> <span style=“color:#267f99;“>VARCHAR</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>50</span><span style=“color:#0431fa;“>)</span>,</div>
+  <div><span style=“color:#001080;“>job_title</span> <span style=“color:#267f99;“>VARCHAR</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>30</span><span style=“color:#0431fa;“>)</span>,</div>
+  <div><span style=“color:#001080;“>salary</span> <span style=“color:#267f99;“>NUMERIC</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>10</span>, <span style=“color:#098658;“>2</span><span style=“color:#0431fa;“>)</span>,</div>
+  <div><span style=“color:#001080;“>hire_date</span> <span style=“color:#267f99;“>DATE</span>,</div>
+  <div><span style=“color:#001080;“>tech_stack</span> <span style=“color:#267f99;“>VARCHAR</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>200</span><span style=“color:#0431fa;“>)</span></div>
+  <div><span style=“color:#0431fa;“>)</span> <span style=“color:#001080;“>DISTRIBUTED</span> <span style=“color:#0000ff;“>BY</span> <span style=“color:#0431fa;“>(</span><span style=“color:#001080;“>employee_id</span><span style=“color:#0431fa;“>)</span>;</div>
+</div>
+<div><br /></div>
+<br />","1. 进入数据开发-周期任务页面, 选中任一任务后, 点击导入, 选择csv文件后, 点击下一步
+2. 表类型选择Oushu, 点击新建表, 输入Oushu建表语句后确定
+3. 导入模式选择【覆盖】后, 点击导入, 检查页面窗口右上角样式
+4. 点击【取消导入】
+5. 点击【确认】
+6. 创建oushu任务, 执行sql: select * from dtstack_employees_oushu; 检查表数据
+7. 重新点击导入, 依次选择相同的csv文件、Oushu表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入","1. 1) 导入csv文件后, 弹出本地数据导入页面, 并将csv文件内容自动解析
+2) 点击下一步后, 可以选择表类型和表
+2. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+3. 1) 正在导入的loading
+2) 导入的表名+进度条
+3) 【取消导入】按钮
+4. 展示二次确认弹窗: 1) 确认取消导入吗?
+2) 按钮: 取消、确认
+5. toast提示“已取消导入”
+6. 数据库操作为非事务，已导入的数据无需回滚，【停止】后的未导入的数据停止insert操作
+7. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:
+1) 正在导入的loading
+2) 导入的表名+进度条
+3) 【取消导入】按钮",2
+导入数据支持中途停止测试,验证本地数据导入时取消导入功能正常(SR),"csv文件内容如下:<br /><br />employee_id,full_name,job_title,salary,hire_date,is_fulltime,tech_stack<br />1,zhangsan,后端工程师,25000.0,2022-03-15,1,“Java,Spring,MySQL“<br />102,lisi,数据科学家,32000.5,2021-11-01,1,“Python,TensorFlow,Spark“<br />103,wangwu,前端工程师,22000.0,2023-01-10,1,“JavaScript,React,Vue“<br />104,zhaoliu,DevOps工程师,28000.75,2020-07-22,1,“Kubernetes,Docker,AWS“<br />105,chenqi,产品经理,22000.0,2021-05-30,1,“Axure,SQL,PPT“<br />106,liuba,测试工程师,21000.0,2023-08-14,0,“Selenium,Jmeter,Python“<br /><br /><br />SR唯一约束表<br />CREATE TABLE if not exists ${schema}.dtstack_employees_sr (<br /> employee_id INT COMMENT '员工ID',<br /> full_name VARCHAR(50) COMMENT '姓名',<br /> job_title VARCHAR(30) COMMENT '职位',<br /> salary DECIMAL(10,2) COMMENT '薪资',<br /> hire_date DATE COMMENT '入职日期',<br /> is_fulltime BOOLEAN COMMENT '是否全职',<br /> tech_stack VARCHAR(200) COMMENT '技术栈'<br />)<br />UNIQUE KEY(employee_id)<br />COMMENT '员工信息表_StarRocks'<br />DISTRIBUTED BY HASH(employee_id) BUCKETS 3<br />PROPERTIES(“replication_num“ = “1“);<br /><br />SR无约束表:<br /><span>CREATE TABLE if not exists ${schema}.dtstack_employees_sr2 (</span><br /> employee_id INT COMMENT '员工ID',<br /> full_name VARCHAR(50) COMMENT '姓名',<br /> job_title VARCHAR(30) COMMENT '职位',<br /> salary DECIMAL(10,2) COMMENT '薪资',<br /> hire_date DATE COMMENT '入职日期',<br /> is_fulltime BOOLEAN COMMENT '是否全职',<br /> tech_stack VARCHAR(200) COMMENT '技术栈'<br />)<br />DUPLICATE KEY(employee_id)<br />COMMENT '员工信息表_StarRocks'<br />DISTRIBUTED BY HASH(employee_id) BUCKETS 3<br />PROPERTIES(“replication_num“ = “1“);<br /> 
+<div><br /></div>
+<br />","1. 进入数据开发-周期任务页面, 选中任一任务后, 点击导入, 选择csv文件后, 点击下一步
+2. 表类型选择SR, 点击新建表, 输入SR唯一约束建表语句后确定
+3. 导入模式选择【覆盖】后, 点击导入, 检查页面窗口右上角样式
+4. 点击【取消导入】
+5. 点击【确认】
+6. 创建sr任务, 执行sql: select * from dtstack_employees_sr2; 检查表数据
+7. 重新点击导入, 依次选择相同的csv文件、SR表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入
+8. 重新点击导入, 选择相同的csv文件, 表类型选择SR, 点击新建表, 输入SR无约束表语句后确定, 导入模式选择【覆盖】后, 点击【导入】
+9. 重新点击导入, 选择相同的csv文件, SR表类型和表名(无约束表), 点击新建表, 输入SR无约束表语句后确定, 导入模式选择【追加】后, 点击【导入】","1. 1) 导入csv文件后, 弹出本地数据导入页面, 并将csv文件内容自动解析2) 点击下一步后, 可以选择表类型和表
+2. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+3. 1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+4. 展示二次确认弹窗: 1) 确认取消导入吗?2) 按钮: 取消、确认
+5. toast提示“已取消导入”
+6. 数据库操作为非事务，已导入的数据无需回滚，【停止】后的未导入的数据停止insert操作
+7. 导入成功, 触发数据库的upsert操作, 页面窗口右上角显示:
+1) 正在导入的loading
+2) 导入的表名+进度条
+3) 【取消导入】按钮
+执行select * from 得到的表数据存在一份csv文件记录
+8. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+9. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮",2
+导入数据支持中途停止测试,验证本地数据导入时取消导入功能正常(MySQL),"csv文件内容如下:<br /><br />employee_id,full_name,job_title,salary,hire_date,is_fulltime,tech_stack<br />1,zhangsan,后端工程师,25000.0,2022-03-15,1,“Java,Spring,MySQL“<br />102,lisi,数据科学家,32000.5,2021-11-01,1,“Python,TensorFlow,Spark“<br />103,wangwu,前端工程师,22000.0,2023-01-10,1,“JavaScript,React,Vue“<br />104,zhaoliu,DevOps工程师,28000.75,2020-07-22,1,“Kubernetes,Docker,AWS“<br />105,chenqi,产品经理,22000.0,2021-05-30,1,“Axure,SQL,PPT“<br />106,liuba,测试工程师,21000.0,2023-08-14,0,“Selenium,Jmeter,Python“<br /><br /><br />MySQL唯一约束表:<br />CREATE TABLE dtstack_employees_mysql (<br />    employee_id INT PRIMARY KEY COMMENT '员工ID',<br />    full_name VARCHAR(50) COMMENT '姓名',<br />    job_title VARCHAR(30) COMMENT '职位',<br />    salary DECIMAL(10,2) COMMENT '薪资',<br />    hire_date DATE COMMENT '入职日期',<br />    is_fulltime BOOLEAN COMMENT '是否全职',<br />    tech_stack VARCHAR(200) COMMENT '技术栈'<br />) COMMENT '员工信息表_MySQL'<br />ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;<br />
+<div><br /></div>
+<br />","1. 进入数据开发-周期任务页面, 选中任一任务后, 点击导入, 选择csv文件后, 点击下一步
+2. 表类型选择MySQL, 点击新建表, 输入MySQL建表语句后确定
+3. 导入模式选择【覆盖】后, 点击导入, 检查页面窗口右上角样式
+4. 点击【取消导入】
+5. 点击【确认】
+6. 创建mysql任务, 执行sql: select * from dtstack_employees_mysql; 检查表数据
+7. 重新点击导入, 依次选择相同的csv文件、MySQL表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入
+8. 创建msyql任务, 删除唯一约束: ALTER TABLE dtstack_employees_mysql DROP PRIMARY KEY;
+9. 重新点击导入, 依次选择相同的csv文件、MySQL表类型和表名(选择上述的脏数据表), 导入模式选择【覆盖】后, 点击导入
+10. 重新点击导入, 依次选择相同的csv文件、MySQL表类型和表名(选择上述的脏数据表), 导入模式选择【追加】后, 点击导入","1. 1) 导入csv文件后, 弹出本地数据导入页面, 并将csv文件内容自动解析2) 点击下一步后, 可以选择表类型和表
+2. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+3. 1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+4. 展示二次确认弹窗: 1) 确认取消导入吗?2) 按钮: 取消、确认
+5. toast提示“已取消导入”
+6. 数据库操作为非事务，已导入的数据无需回滚，【停止】后的未导入的数据停止insert操作
+7. employee_id有唯一约束, 导入失败并给出弹窗报错
+8. 约束删除成功，系统给出删除成功提示，该记录从列表中消失
+9. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮
+10. 导入成功, 触发数据库的insert操作, 页面窗口右上角显示:1) 正在导入的loading2) 导入的表名+进度条3) 【取消导入】按钮",1
+python实时输出日志测试,验证pyagent任务运行支持实时打印任务运行日志,"-- 复杂py任务<br /><br /># -*- coding: utf-8 -*-<br />from __future__ import print_function<br />import sys, time<br /><br />if sys.version_info[0] < 3:<br /> # Py2：打印中文时编码为 UTF-8<br /> def uprint(s):<br /> sys.stdout.write((s if isinstance(s, str) else s.encode('utf-8')) + '\n')<br />else:<br /> # Py3：正常打印<br /> def uprint(s):<br /> print(s)<br /><br />count = 0  # 全局计数器<br /><br />def hanoi_tower(num, a, b, c):<br /> global count<br /> if num == 1:<br /> count += 1<br /> uprint(u“第{}步: 第1个轮盘从:{}柱->{}柱“.format(count, a, c))<br /> else:<br /> hanoi_tower(num - 1, a, c, b)<br /> count += 1<br /> uprint(u“第{}步: 第{}个轮盘从:{}柱->{}柱“.format(count, num, a, c))<br /> hanoi_tower(num - 1, b, a, c)<br /> time.sleep(1)<br /><br /><br />if __name__ == “__main__“:<br /> hanoi_tower(5, u“A“, u“B“, u“C“)<br /> uprint(u“\n总移动步数: {}“.format(count))<br /><br /><br />-- 简单py任务<br />import time<br />for i in range(60):<br /> print(i) <br /> time.sleep(1) <br /> 
+<div><br /></div>
+<br />","1. 进入数据开发-手动任务页面, 创建pyagent任务, 配置环境参数中的节点标签后, 临时运行py脚本
+2. 注释掉sleep等待, 重新临时运行py2脚本
+3. 创建pyagent任务, 临时运行py简单脚本
+4. 注释掉sleep等待, 重新临时运行py2脚本","1. 1) 日志内容支持滚动, 不会被新的日志中断2) pyagent日志内容格式大致如下:[17:24:12] <info> 正在提交...[17:24:12] <info> 任务开始执行===========任务信息===========${py脚本内容}============================[17:24:13] <info> 等待运行.....[17:25:16] <info> 等待运行.....2025-08-11 17:24:57: 第1步: 第1个轮盘从:A柱->C柱2025-08-11 17:24:59: 第2步: 第2个轮盘从:A柱->B柱........2025-08-11 17:25:30: 第31步: 第1个轮盘从:A柱->C柱2025-08-11 17:25:33: 总移动步数: 312025-08-11 17:25:34: rm: remove regular file ‘/tmp/tmp.wcw3JPhsMu’? 完整日志下载地址：logDownload [17:25:39] <info> 任务执行时长：0h 1m 27s
+2. 1) 日志内容支持滚动, 不会被新的日志中断
+2) pyagent日志内容格式大致如下:
+[17:24:12] <info> 正在提交...
+[17:24:12] <info> 任务开始执行
+===========任务信息===========
+${py脚本内容}
+============================
+[17:24:13] <info> 等待运行.....
+[17:25:16] <info> 等待运行.....
+2025-08-11 17:24:57: 第1步: 第1个轮盘从:A柱->C柱
+第2步: 第2个轮盘从:A柱->B柱
+........
+第31步: 第1个轮盘从:A柱->C柱
+总移动步数: 31
+完整日志下载地址：logDownload
+[17:25:39] <info> 任务执行时长：0h 1m 27s
+3. 1) 日志内容支持滚动, 不会被新的日志中断
+2) pyagent日志内容格式大致如下:
+[17:24:12] <info> 正在提交...
+[17:24:12] <info> 任务开始执行
+===========任务信息===========
+${py脚本内容}
+============================
+[17:24:13] <info> 等待运行.....
+[17:25:16] <info> 等待运行.....
+2025-08-11 17:24:57: 0
+1
+2025-08-11 17:24:58: 2
+........
+2025-08-11 17:25:35: 59
+完整日志下载地址：logDownload
+[17:25:39] <info> 任务执行时长：0h 1m 27s
+4. 1) 日志内容支持滚动, 不会被新的日志中断
+2) pyagent日志内容格式大致如下:
+[17:24:12] <info> 正在提交...
+[17:24:12] <info> 任务开始执行
+===========任务信息===========
+${py脚本内容}
+============================
+[17:24:13] <info> 等待运行.....
+[17:25:16] <info> 等待运行.....
+2025-08-11 17:24:57: 0
+1
+2
+........
+59
+完整日志下载地址：logDownload
+[17:25:39] <info> 任务执行时长：0h 1m 27s",2
+python实时输出日志测试,验证pyagent任务运行支持实时打印任务运行日志,"-- 复杂py任务<br /><br /># -*- coding: utf-8 -*-<br />from __future__ import print_function<br />import sys, time<br /><br />if sys.version_info[0] < 3:<br /> # Py2：打印中文时编码为 UTF-8<br /> def uprint(s):<br /> sys.stdout.write((s if isinstance(s, str) else s.encode('utf-8')) + '\n')<br />else:<br /> # Py3：正常打印<br /> def uprint(s):<br /> print(s)<br /><br />count = 0  # 全局计数器<br /><br />def hanoi_tower(num, a, b, c):<br /> global count<br /> if num == 1:<br /> count += 1<br /> uprint(u“第{}步: 第1个轮盘从:{}柱->{}柱“.format(count, a, c))<br /> else:<br /> hanoi_tower(num - 1, a, c, b)<br /> count += 1<br /> uprint(u“第{}步: 第{}个轮盘从:{}柱->{}柱“.format(count, num, a, c))<br /> hanoi_tower(num - 1, b, a, c)<br /> time.sleep(1)<br /><br /><br />if __name__ == “__main__“:<br /> hanoi_tower(5, u“A“, u“B“, u“C“)<br /> uprint(u“\n总移动步数: {}“.format(count))<br /><br /><br />-- 简单py任务<br />import time<br />for i in range(60):<br /> print(i) <br /> time.sleep(1)    ","1. 进入数据开发-周期任务页面, 创建pyagent任务, 配置环境参数中的节点标签后, 临时运行py脚本
+2. 注释掉sleep等待, 重新临时运行py脚本
+3. 创建pyagent任务, 临时运行py简单脚本
+4. 注释掉sleep等待, 重新临时运行py2脚本","1. 1) 日志内容支持滚动, 不会被新的日志中断
+2) pyagent日志内容格式大致如下:
+[17:24:12] <info> 正在提交...
+[17:24:12] <info> 任务开始执行
+===========任务信息===========
+${py脚本内容}
+============================
+[17:24:13] <info> 等待运行.....
+[17:25:16] <info> 等待运行.....
+2025-08-11 17:24:57: 第1步: 第1个轮盘从:A柱->C柱
+2025-08-11 17:24:59: 第2步: 第2个轮盘从:A柱->B柱
+........
+2025-08-11 17:25:30: 第31步: 第1个轮盘从:A柱->C柱
+2025-08-11 17:25:33: 总移动步数: 31
+2025-08-11 17:25:34: rm: remove regular file ‘/tmp/tmp.wcw3JPhsMu’?
+完整日志下载地址：logDownload
+[17:25:39] <info> 任务执行时长：0h 1m 27s
+2. 1) 日志内容支持滚动, 不会被新的日志中断
+2) pyagent日志内容格式大致如下:
+[17:24:12] <info> 正在提交...
+[17:24:12] <info> 任务开始执行
+===========任务信息===========
+${py脚本内容}
+============================
+[17:24:13] <info> 等待运行.....
+[17:25:16] <info> 等待运行.....
+2025-08-11 17:24:57: 第1步: 第1个轮盘从:A柱->C柱
+第2步: 第2个轮盘从:A柱->B柱
+........
+第31步: 第1个轮盘从:A柱->C柱
+总移动步数: 31
+完整日志下载地址：logDownload
+[17:25:39] <info> 任务执行时长：0h 1m 27s
+3. 1) 日志内容支持滚动, 不会被新的日志中断
+2) pyagent日志内容格式大致如下:
+[17:24:12] <info> 正在提交...
+[17:24:12] <info> 任务开始执行
+===========任务信息===========
+${py脚本内容}
+============================
+[17:24:13] <info> 等待运行.....
+[17:25:16] <info> 等待运行.....
+2025-08-11 17:24:57: 0
+1
+2025-08-11 17:24:58: 2
+........
+2025-08-11 17:25:35: 59
+完整日志下载地址：logDownload
+[17:25:39] <info> 任务执行时长：0h 1m 27s
+4. 1) 日志内容支持滚动, 不会被新的日志中断
+2) pyagent日志内容格式大致如下:
+[17:24:12] <info> 正在提交...
+[17:24:12] <info> 任务开始执行
+===========任务信息===========
+${py脚本内容}
+============================
+[17:24:13] <info> 等待运行.....
+[17:25:16] <info> 等待运行.....
+2025-08-11 17:24:57: 0
+1
+2
+........
+59
+完整日志下载地址：logDownload
+[17:25:39] <info> 任务执行时长：0h 1m 27s",1
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证Oushu任务运行进度展示显示&交互正确,无,"1. 进入【数据开发-手动任务】页面, 创建Oushu任务
+2. 执行测试语句: Select 1; 检查日志区域内容展示","1. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+2. 1) 第一条日志记录时间为: ${start_time}, 最后一条日志记录时间为${end_time}
+2) 初始时长为: 00:00,  最终格式为: 任务执行时长：${end_time - start_time}",1
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证GP任务运行进度展示显示&交互正确,无,"1. 进入【数据开发-手动任务】页面, 创建GP任务
+2. 执行测试语句: Select 1; 检查日志区域内容展示","1. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+2. 1) 第一条日志记录时间为: ${start_time}, 最后一条日志记录时间为${end_time}
+2) 初始时长为: 00:00,  最终格式为: 任务执行时长：${end_time - start_time}",2
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证Oushu任务运行进度展示显示&交互正确,无,"1. 进入【数据开发-周期任务】页面, 创建Oushu任务
+2. 执行测试语句: Select 1; 检查日志区域内容展示","1. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+2. 1) 第一条日志记录时间为: ${start_time}, 最后一条日志记录时间为${end_time}
+2) 初始时长为: 00:00,  每秒刷新一次,最终格式为: 任务执行时长：${end_time - start_time}",2
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证GP任务运行进度展示显示&交互正确,无,"1. 进入【数据开发-周期任务】页面, 创建GP任务
+2. 执行测试语句: Select 1; 检查日志区域内容展示","1. 系统提示创建成功，列表中出现新创建的记录，记录内容与填写一致
+2. 1) 第一条日志记录时间为: ${start_time}, 最后一条日志记录时间为${end_time}
+2) 初始时长为: 00:00, 每秒刷新一次, 最终格式为: 任务执行时长：${end_time - start_time}",1
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证【状态】筛选功能正确(多条件筛选),"<p>已有不同状态的补数据实例（运行中、成功、取消、失败、等待运行）。</p>
+<p><br /></p>
+<p>任务和实例状态关联关系：</p>
+<p>1. 等待运行：所有实例状态均为等待运行，则补数据实例的状态为等待运行。</p>
+<p>2. 运行中：有运行中状态的实例，则补数据实例的状态为运行中。</p>
+<p>3. 失败：没有等待中、运行中状态的实例，只要有一个失败状态实例，则补数据实例的状态即为失败。</p>
+<p>4. 成功：所有实例的状态均为成功，则补数据实例的状态即为成功。</p>
+<p>5. 取消：补数据实例存在手动取消或自动取消，任务变为取消状态</p>","1. 进入【运维中心-周期任务-补数据实例】页面, 点击状态筛选框，勾选【运行中】，再输入任务名称${task_name} → 确定
+2. 点击状态筛选框，勾选【失败 + 成功】，再选择业务日期${start_time} → 确定
+3. 点击状态筛选框，勾选【取消 + 等待运行】，并按操作人${owner}筛选 → 确定","1. 仅显示状态为运行中且任务名称包含${task_name} 的记录
+2. 仅显示状态为失败或成功，且在业务日期${start_time}~${end_time}内的记录
+3. 仅显示状态为取消或等待运行，且执行人为${owner}的记录",1
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证【状态】筛选功能正确(全选 / 全不选),"<p>已有不同状态的补数据实例（运行中、成功、取消、失败、等待运行）。</p>
+<p><br /></p>
+<p>任务和实例状态关联关系：</p>
+<p>1. 等待运行：所有实例状态均为等待运行，则补数据实例的状态为等待运行。</p>
+<p>2. 运行中：有运行中状态的实例，则补数据实例的状态为运行中。</p>
+<p>3. 失败：没有等待中、运行中状态的实例，只要有一个失败状态实例，则补数据实例的状态即为失败。</p>
+<p>4. 成功：所有实例的状态均为成功，则补数据实例的状态即为成功。</p>
+<p>5. 取消：补数据实例存在手动取消或自动取消，任务变为取消状态</p>","1. 进入【运维中心-周期任务-补数据实例】页面, 点击状态筛选框，勾选全部状态（全选）→ 确定
+2. 点击状态筛选框，全部状态取消勾选（全不选）→ 确定","1. 显示所有补数据实例
+2. 显示所有补数据实例",2
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证【状态】筛选功能正确(多选场景),"<p>已有不同状态的补数据实例（运行中、成功、取消、失败、等待运行）。</p>
+<p><br /></p>
+<p>任务和实例状态关联关系：</p>
+<p>1. 等待运行：所有实例状态均为等待运行，则补数据实例的状态为等待运行。</p>
+<p>2. 运行中：有运行中状态的实例，则补数据实例的状态为运行中。</p>
+<p>3. 失败：没有等待中、运行中状态的实例，只要有一个失败状态实例，则补数据实例的状态即为失败。</p>
+<p>4. 成功：所有实例的状态均为成功，则补数据实例的状态即为成功。</p>
+<p>5. 取消：补数据实例存在手动取消或自动取消，任务变为取消状态.</p>","1. 进入【运维中心-周期任务-补数据实例】页面, 点击状态筛选框，仅勾选【运行中 + 成功】→ 确定
+2. 点击状态筛选框，仅勾选【失败 + 成功】→ 确定
+3. 点击状态筛选框，仅勾选【运行中 + 取消 + 失败】→ 确定
+4. 点击状态筛选框，仅勾选【等待运行 + 成功】→ 确定","1. 显示状态为运行中或成功的记录
+2. 显示状态为失败或成功的记录
+3. 显示状态为运行中、取消、失败的记录
+4. 显示状态为等待运行或成功的记录",2
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证【状态】筛选功能正确(单选场景),"<p>已有不同状态的补数据实例（运行中、成功、取消、失败、等待运行）。</p>
+<p><br /></p>
+<p>任务和实例状态关联关系：</p>
+<p>1. 等待运行：所有实例状态均为等待运行，则补数据实例的状态为等待运行。</p>
+<p>2. 运行中：有运行中状态的实例，则补数据实例的状态为运行中。</p>
+<p>3. 失败：没有等待中、运行中状态的实例，只要有一个失败状态实例，则补数据实例的状态即为失败。</p>
+<p>4. 成功：所有实例的状态均为成功，则补数据实例的状态即为成功。</p>
+<p>5. 取消：补数据实例存在手动取消或自动取消，任务变为取消状态.</p>","1. 进入【运维中心-周期任务-补数据实例】页面, 点击状态筛选框，仅勾选【运行中】→ 确定
+2. 点击状态筛选框，仅勾选【成功】→ 确定
+3. 点击状态筛选框，仅勾选【取消】→ 确定
+4. 点击状态筛选框，仅勾选【失败】→ 确定
+5. 点击状态筛选框，仅勾选【等待运行】→ 确定","1. 仅显示状态为运行中的记录
+2. 仅显示状态为成功的记录
+3. 仅显示状态为取消的记录
+4. 仅显示状态为失败的记录
+5. 仅显示状态为等待运行的记录",1
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证补数据实例状态校验(取消),"<p>1) 在【数据开发】中新建 3 个 GP 任务：</p>
+task07：
+<div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco,;“><span style=“color:#0000ff;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431fa;“>(1</span><span style=“color:#098658;“>0</span><span style=“color:#0431fa;“>)</span>;</div>
+<br />
+task08：
+<div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco,;“><span style=“color:#0000ff;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431fa;“>(2</span><span style=“color:#098658;“>0</span><span style=“color:#0431fa;“>)</span>;</div>
+<br />
+task09：
+<div style=“color:#000000;background-color:#FFFFFE;font-family:Menlo, Monaco,;“><span style=“color:#0000ff;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431fa;“>(</span><span style=“color:#098658;“>30</span><span style=“color:#0431fa;“>)</span>;</div>
+<br />
+<br />2) 保存并提交上述任务。<br /><br />","1. 进入 【运维中心 → 周期任务 → 周期任务管理】 页面，勾选 task07、task08、task09，点击 补数据 按钮
+2. 在【批量任务补数据】弹窗中保持默认选项，点击 确定. 在补数据实例页面找到刚提交的 ${补数据实例} 记录，进入其详情页查看 3 个任务实例的状态
+3. 1) 确保task07任务实例的状态为运行中, task08手动取消, task09成功
+2) 返回【补数据实例】页面查看该补数据实例的状态。
+4. 1) 确保task08任务实例的状态为取消, task07和task09任务已结束(成功或失败)
+2) 返回【补数据实例】页面查看该补数据实例的状态。
+5. 1) 确保 3个任务实例的状态均取消(杀死全部实例)
+2) 返回【补数据实例】页面查看该补数据实例的状态。","1. 右侧弹出【批量任务补数据】页面
+2. 1) 3 个任务实例的状态均为 等待运行
+2) 补数据实例状态为【等待运行】
+3. 补数据实例的状态为【运行中】
+4. 补数据实例的状态为【取消】
+5. 补数据实例状态为 【取消】",2
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证补数据实例状态校验(失败),"<p><span style=“background-color:#FFFFFF;font-size:14px;“>1) 在【数据开发】中新建 3 个 GP 任务：</span></p>
+<p><span style=“font-size:14px;background-color:#FFFFFF;“>task04：</span> </p>
+<div style=“font-size:14px;color:#000000;background-color:#FFFFFE;“><span style=“color:#0000FF;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431FA;“>(1</span><span style=“color:#098658;“>0</span><span style=“color:#0431FA;“>)</span>;</div>
+<span style=“font-size:14px;background-color:#FFFFFF;“>task05：</span> 
+<div style=“font-size:14px;color:#000000;background-color:#FFFFFE;“><span style=“color:#0000FF;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431FA;“>(2</span><span style=“color:#098658;“>0</span><span style=“color:#0431FA;“>)</span>;</div>
+<span style=“font-size:14px;background-color:#FFFFFF;“>task06：</span> 
+<div style=“font-size:14px;color:#000000;background-color:#FFFFFE;“><span style=“color:#0000FF;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431FA;“>(</span><span style=“color:#098658;“>30</span><span style=“color:#0431FA;“>)</span>;</div>
+1 select;<br />
+<br /><span style=“font-size:14px;background-color:#FFFFFF;“>2) 保存并提交上述任务。</span>
+<p><br /></p>","1. 进入 【运维中心 → 周期任务 → 周期任务管理】 页面，勾选 task04、task05、task06，点击 补数据 按钮
+2. 在【批量任务补数据】弹窗中保持默认选项，点击 确定. 在补数据实例页面找到刚提交的 ${补数据实例} 记录，进入其详情页查看 3 个任务实例的状态
+3. 1) 确保 3 个任务实例的状态均为 等待运行。
+2) 返回【补数据实例】页面查看该补数据实例的状态。
+4. 1)等待 3 个任务实例中至少有 1 个任务实例状态变为 运行中（其余状态任意）。
+2)返回【补数据实例】页面查看该补数据实例的状态。
+5. 1) 等待task04、task05状态变为成功；task06状态变为失败。
+2) 返回【补数据实例】页面查看该补数据实例的状态。","1. 右侧弹出【批量任务补数据】页面
+2. 
+3. 补数据实例状态为【等待运行】
+4. 补数据实例的状态为【运行中】
+5. 补数据实例的状态为【失败】",2
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证补数据实例状态校验(成功),"<p><br /></p>
+<p style=“font-size:14px;background-color:#FFFFFF;“>1) 在【数据开发】中新建 3 个 GP 任务：</p>
+<span style=“font-size:14px;background-color:#FFFFFF;“>task01：</span> 
+<div style=“font-size:14px;color:#000000;background-color:#FFFFFE;“><span style=“color:#0000FF;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431FA;“>(1</span><span style=“color:#098658;“>0</span><span style=“color:#0431FA;“>)</span>;</div>
+<br />
+<span style=“font-size:14px;background-color:#FFFFFF;“>task02：</span> 
+<div style=“font-size:14px;color:#000000;background-color:#FFFFFE;“><span style=“color:#0000FF;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431FA;“>(2</span><span style=“color:#098658;“>0</span><span style=“color:#0431FA;“>)</span>;</div>
+<br />
+<span style=“font-size:14px;background-color:#FFFFFF;“>task03：</span> 
+<div style=“font-size:14px;color:#000000;background-color:#FFFFFE;“><span style=“color:#0000FF;“>SELECT</span> <span style=“color:#001080;“>pg_sleep</span><span style=“color:#0431FA;“>(</span><span style=“color:#098658;“>30</span><span style=“color:#0431FA;“>)</span>;</div>
+<p><br /></p>
+<p><br /></p>
+<p>2) 保存并提交上述任务。</p>","1. 进入 【运维中心 → 周期任务 → 周期任务管理】 页面，勾选 task01、task02、task03，点击 补数据 按钮
+2. 在【批量任务补数据】弹窗中保持默认选项，点击 确定. 在补数据实例页面找到刚提交的 ${补数据实例} 记录，进入其详情页查看 3 个任务实例的状态
+3. 1) 确保 3 个任务实例的状态均为 等待提交。
+2) 返回【补数据实例】页面查看该补数据实例的状态。
+4. 1)等待 3 个任务实例中至少有 1 个任务实例状态变为 运行中（其余状态任意）。
+2)返回【补数据实例】页面查看该补数据实例的状态。
+5. 1) 等待 3 个任务实例均为 成功 状态。
+2) 返回【补数据实例】页面查看该补数据实例的状态。","1. 右侧弹出【批量任务补数据】页面
+2. 
+3. 补数据实例状态为【等待运行】
+4. 补数据实例的状态为【运行中】
+5. 补数据实例的状态为【成功】",1
+补数据状态支持筛选&amp;amp;amp;amp;amp;任务运行进度展示测试,验证【状态】筛选项显示&交互正确,无,"1. 进入【运维中心-周期任务-补数据实例】页面, 点击状态旁的筛选icon, 检查筛选内容
+2. 选择状态筛选并点击【确定】，刷新页面
+3. 选择状态筛选，点击【重置】按钮","1. 1) 支持等待运行、运行中、成功、取消、失败5种筛选状态
+2) 重置和确定两个按钮
+3) 重置默认置灰, 勾选任一状态后可点击重置按钮
+2. 筛选条件清空
+3. 清除所有状态筛选，显示全部数据",1

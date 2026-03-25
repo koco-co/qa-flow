@@ -1,0 +1,2673 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+数据资产-数据质量-规则集管理,"验证删除规则集后, 对已配置过历史规则的任务不生效","建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 新建监控规则, 配置监控对象(dwd_voyah_vehicle_sales_dates)后点击下一步
+4. 引入规则包rule01中所有校验规则
+5. 保存规则任务task01后, 立即执行
+6. 删除规则集1
+7. 重新运行历史规则任务task01, 在【校验结果查询】中查看运行状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+4. 引入成功, 配置参数正确，内容与预期完全一致，无异常或错误
+5. 任务运行成功, 校验结果正确: 校验不通过
+6. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+7. 任务运行成功, 校验结果正确: 校验不通过",2
+数据资产-数据质量-规则集管理,"验证编辑规则集后, 对已配置过历史规则的任务不生效","建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 新建监控规则, 配置监控对象(dwd_voyah_vehicle_sales_dates)后点击下一步
+4. 引入规则包rule01中所有校验规则
+5. 保存规则任务task01后, 立即执行
+6. 修改【规则集-规则包rule01】中的校验规则:- 期望值: >= -200
+7. 新建规则任务task02并立即执行:1) 监控对象: t2 (与dwd_voyah_vehicle_sales_dates同表结构同数据)2) 监控规则: rule01中的校验规则
+8. 重新运行历史规则任务task01, 在【校验结果查询】中查看运行状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+4. 引入成功, 配置参数正确，内容与预期完全一致，无异常或错误
+5. 任务运行成功, 校验结果: 校验不通过
+6. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+7. 任务运行成功, 校验结果: 校验通过
+8. 任务运行成功, 校验结果: 校验不通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(20规则包 * 1校验规则),"1) 已存在规则任务, 监控规则配置如下
+监控对象:
+- 规则名称: rule01
+- 数据表: dwd_voyah_vehicle_sales_dates
+- 选择已有分区: /
+
+监控规则: 引入20规则包, 每个包含1个校验规则
+
+1、完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空串数
+- 期望值: = 0
+
+2、完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空值数
+- 期望值: = 0
+
+3、完整性校验:
+- 生效范围: 字段级
+- 字段: order_id
+- 统计函数: 空值数
+- 期望值: = 0
+
+4、完整性校验:
+- 生效范围: 字段级
+- 字段: car_model
+- 统计函数: 空值数
+- 期望值: = 0
+
+5、完整性校验:
+- 生效范围: 字段级
+- 字段: guide_price
+- 统计函数: 空值数
+- 期望值: = 0
+
+6、完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 空值数
+- 期望值: = 0
+
+7、完整性校验:
+- 生效范围: 字段级
+- 字段: dealer_name
+- 统计函数: 空值数
+- 期望值: = 0
+
+8、完整性校验:
+- 生效范围: 字段级
+- 字段: order_status
+- 统计函数: 空值数
+- 期望值: = 0
+
+9、完整性校验:
+- 生效范围: 字段级
+- 字段: factory_date
+- 统计函数: 空值数
+- 期望值: = 0
+
+10、完整性校验:
+- 生效范围: 字段级
+- 字段: sale_date
+- 统计函数: 空值数
+- 期望值: = 0
+
+11、完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 字段取值校验
+- 期望值: >= 0
+
+12、完整性校验:
+- 生效范围: 单表
+- 统计函数: 表行数
+- 期望值: >= 0
+
+13、完整性校验:
+- 生效范围: 多表数据行数对比
+- 对比表: dwd_voyah_vehicle_sales_dates
+- 分区: factory_date=20260202/sale_date=20260202
+
+14、有效性校验:
+- 字段: vin
+- 统计规则: 字符串长度
+- 期望值> 0
+
+15、有效性校验:
+- 字段: guide_price
+- 统计规则: 数值-取值范围
+- 期望值: 0 <= x <= 1000000
+
+16、有效性校验:
+- 字段: car_model
+- 统计规则: 数值-枚举个数
+- 期望值: = 3
+
+17、有效性校验:
+- 字段: order_id
+- 统计规则: 重复数
+- 期望值: = 0
+
+18、有效性校验:
+- 字段: vin
+- 统计规则: 重复数
+- 期望值: = 0
+
+19、唯一性校验
+- 字段: order_id
+- 统计函数: 重复数
+- 期望值: =0
+
+20、唯一性校验
+- 字段: order_id
+- 统计函数: 重复率
+- 期望值: =0
+
+
+调度属性:
+- 调度周期: 时
+- 生效日期: T~T+1
+- 间隔时间: 1小时
+- 其它默认
+
+2) 建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 选择任务rule01, 立即执行
+3. 进入【校验结果查询】, 检查规则任务详情页
+4. SQL验证:SELECT *FROM ( SELECT *, -- [辅助计算] 针对规则 17,19,20: 计算 order_id 重复数 COUNT(1) OVER(PARTITION BY order_id) as calc_order_dup_count, -- [辅助计算] 针对规则 18: 计算 vin 重复数 COUNT(1) OVER(PARTITION BY vin) as calc_vin_dup_count FROM dwd_voyah_vehicle_sales_dates) tWHERE -- ========================================================= -- A. 完整性校验 (规则 1-10: 这里的逻辑是“找出为空或NULL的数据“) -- ========================================================= -- 规则1: vin 空串 (trim(vin) = '') OR -- 规则2-10: 各关键字段判空 (vin IS NULL) OR (order_id IS NULL) OR (car_model IS NULL) OR (guide_price IS NULL) OR (final_price IS NULL) OR (dealer_name IS NULL) OR (order_status IS NULL) OR (factory_date IS NULL) OR (sale_date IS NULL) -- ========================================================= -- B. 取值范围与有效性 (规则 11, 14, 15, 16) -- ========================================================= OR -- 规则11: final_price < 0 (final_price < 0) OR -- 规则14: vin 长度 <= 0 (注: 空串/NULL已被上面捕获，此处兜底) (length(vin) <= 0) OR -- 规则15: guide_price 超出 [0, 1000000] 范围 (guide_price < 0 OR guide_price > 1000000) OR -- 规则16: car_model 枚举校验 (假设标准值为3个: FREE, 梦想家, 追光) -- 如果当前值不在这3个里面，且不是NULL，则视为脏数据 (car_model IS NOT NULL AND car_model NOT IN ('岚图FREE', '岚图梦想家', '岚图追光')) -- ========================================================= -- C. 唯一性与重复性 (规则 17, 18, 19, 20) -- ========================================================= OR -- 规则17,19,20: order_id 出现重复 (统计数 > 1) (calc_order_dup_count > 1) OR -- 规则18: vin 出现重复 (统计数 > 1) (calc_vin_dup_count > 1);
+5. 编辑规则任务rule01, 变更分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 执行成功, 校验结果: 校验不通过
+3. 显示表数据中未通过的数据
+4. 返回的数据与规则过滤出的数据一致
+5. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 10校验规则),"1) 已存在规则任务, 监控规则配置如下
+监控对象:
+- 规则名称: rule01
+- 数据表: dwd_voyah_vehicle_sales_dates
+- 选择已有分区: /
+
+监控规则: 引入规则包, 包含10个校验规则
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空串数
+- 期望值: = 0
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: car_model
+- 统计函数: 空值数
+- 期望值: = 0
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 字段取值校验
+- 期望值: >= 0
+
+完整性校验:
+- 生效范围: 单表
+- 统计函数: 表行数
+- 期望值: >= 0
+
+完整性校验:
+- 生效范围: 多表数据行数对比
+- 对比表: dwd_voyah_vehicle_sales_dates
+- 分区: factory_date=20260202/sale_date=20260202
+
+有效性校验:
+- 字段: vin
+- 统计规则: 字符串长度
+- 期望值> 0
+
+有效性校验:
+- 字段: guide_price
+- 统计规则: 数值-取值范围
+- 期望值: 0 <= x <= 1000000
+
+有效性校验:
+- 字段: car_model
+- 统计规则: 数值-枚举个数
+- 期望值: = 3
+
+唯一性校验
+- 字段: order_id
+- 统计函数: 重复数
+- 期望值: =0
+
+唯一性校验
+- 字段: order_id
+- 统计函数: 重复率
+- 期望值: =0
+
+
+
+调度属性:
+- 调度周期: 时
+- 生效日期: T~T+1
+- 间隔时间: 1小时
+- 其它默认
+
+2) 建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 选择任务rule01, 立即执行
+3. 进入【校验结果查询】, 检查规则任务详情页
+4. SQL验证:SELECT *FROM ( SELECT *, -- [辅助计算] 唯一性校验: 计算 order_id 的重复次数 COUNT(1) OVER(PARTITION BY order_id) as order_dup_count FROM dwd_voyah_vehicle_sales_dates) tWHERE -- --------------------------------------------------------- -- 1. 完整性校验 (字段级) -- --------------------------------------------------------- -- 规则: vin 空串数=0 (即: 找出 vin 为空串的数据) (trim(vin) = '') OR -- 规则: car_model 空值数=0 (即: 找出 car_model 为 NULL 的数据) (car_model IS NULL) OR -- 规则: final_price 期望值 >= 0 (即: 找出 < 0 的数据) (final_price < 0) -- --------------------------------------------------------- -- 2. 有效性校验 -- --------------------------------------------------------- -- 规则: vin 字符串长度 > 0 (即: 找出长度 <= 0 或 NULL 的数据) -- 注: 此规则与上面的“空串数“、“空值数“有重叠，此处做兜底 OR (length(vin) <= 0 OR vin IS NULL) -- 规则: guide_price 取值范围 [0, 1000000] (即: 找出在此范围之外的数据) OR (guide_price < 0 OR guide_price > 1000000) -- 规则: car_model 枚举个数 = 3 (即: 找出不属于这3个标准车型的数据) -- 假设标准枚举值为: 岚图FREE, 岚图梦想家, 岚图追光 -- 注: NULL值已被前面的完整性校验捕获，此处主要校验“未知枚举值“ OR (car_model IS NOT NULL AND car_model NOT IN ('岚图FREE', '岚图梦想家', '岚图追光')) -- --------------------------------------------------------- -- 3. 唯一性校验 -- --------------------------------------------------------- -- 规则: order_id 重复数/重复率期望为0 (即: 找出重复出现的订单) OR (order_dup_count > 1);
+5. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 执行成功, 校验结果: 校验不通过
+3. 显示表数据中未通过的数据
+4. 返回的数据与规则过滤出的数据一致
+5. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(2规则包 * 2校验规则),"建表语句如下:
+创建两个表: dwd_voyah_sales_time_quality、dwd_voyah_sales_time_quality02
+-- =========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: dwd_voyah_sales_time_quality
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_sales_time_quality;
+
+CREATE TABLE IF NOT EXISTS dwd_voyah_sales_time_quality (
+order_id        BIGINT          COMMENT '订单自增ID (用于验证单调递增)',
+vin             STRING          COMMENT '车辆识别码',
+order_time      TIMESTAMP       COMMENT '下定时间 (基准时间字段)',
+payment_time    TIMESTAMP       COMMENT '支付时间 (用于比较行内时间差)',
+delivery_status INT             COMMENT '交付状态'
+)
+COMMENT '岚图汽车销售时效校验表'
+PARTITIONED BY (
+pt_date         STRING          COMMENT '一级分区: yyyyMMdd',
+data_type       STRING          COMMENT '二级分区: normal(正常)/abnormal_xx(异常场景)'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML)
+-- =========================================================
+
+-- ---------------------------------------------------------
+-- 场景A: [正常数据]
+-- 分区: 20260201 / normal
+-- 验证通过:
+-- 1. payment_time > order_time (行内时间差合理)
+-- 2. order_time 相邻行有间隔 (相邻行时间差合理)
+-- 3. order_id 随时间推移严格递增 (单调性符合)
+-- ---------------------------------------------------------
+INSERT INTO TABLE dwd_voyah_sales_time_quality PARTITION (pt_date='20260201', data_type='normal')
+VALUES
+(10001, 'LTV001', '2026-02-01 10:00:00', '2026-02-01 10:05:00', 1),
+(10002, 'LTV002', '2026-02-01 10:10:00', '2026-02-01 10:15:00', 1),
+(10003, 'LTV003', '2026-02-01 10:30:00', '2026-02-01 10:35:00', 1),
+(10004, 'LTV004', '2026-02-01 11:00:00', '2026-02-01 11:02:00', 1);
+
+-- ---------------------------------------------------------
+-- 场景B: [异常数据 - 规则1: 行内字段时间差校验]
+-- 分区: 20260202 / abnormal_diff_row
+-- 异常点: ID 20002 的支付时间 早于 下定时间 (逻辑错误)
+-- ---------------------------------------------------------
+INSERT INTO TABLE dwd_voyah_sales_time_quality PARTITION (pt_date='20260202', data_type='abnormal_diff_row')
+VALUES
+(20001, 'LTV_ERR_01', '2026-02-02 09:00:00', '2026-02-02 09:10:00', 1), -- 正常
+(20002, 'LTV_ERR_02', '2026-02-02 09:30:00', '2026-02-02 09:29:59', 1); -- 异常: 支付比下单早1秒
+
+-- ---------------------------------------------------------
+-- 场景C: [异常数据 - 规则2: 相邻两行时间差校验]
+-- 分区: 20260203 / abnormal_diff_adjacent
+-- 异常点: ID 30002 和 30003 的 order_time 完全一致 (时间差为0)
+-- 假设规则要求: 订单系统处理能力限制，相邻订单间隔必须 >= 1秒
+-- ---------------------------------------------------------
+INSERT INTO TABLE dwd_voyah_sales_time_quality PARTITION (pt_date='20260203', data_type='abnormal_diff_adjacent')
+VALUES
+(30001, 'LTV_GAP_01', '2026-02-03 14:00:00', '2026-02-03 14:05:00', 1),
+(30002, 'LTV_GAP_02', '2026-02-03 14:00:05', '2026-02-03 14:10:00', 1),
+(30003, 'LTV_GAP_03', '2026-02-03 14:00:05', '2026-02-03 14:12:00', 1); -- 异常: 与上一行时间差为0
+
+-- ---------------------------------------------------------
+-- 场景D: [异常数据 - 规则3: 字段单调性校验]
+-- 分区: 20260204 / abnormal_monotonicity
+-- 异常点: order_id 出现乱序 (40003 在 40002 之前出现)
+-- 预期: 按照 order_time 排序后，order_id 应该也是递增的
+-- ---------------------------------------------------------
+INSERT INTO TABLE dwd_voyah_sales_time_quality PARTITION (pt_date='20260204', data_type='abnormal_monotonicity')
+VALUES
+(40001, 'LTV_SORT_01', '2026-02-04 15:00:00', '2026-02-04 15:05:00', 1),
+(40003, 'LTV_SORT_03', '2026-02-04 15:10:00', '2026-02-04 15:15:00', 1), -- 异常: ID跳变
+(40002, 'LTV_SORT_02', '2026-02-04 15:20:00', '2026-02-04 15:25:00', 1); -- 异常: 时间晚但ID小 (破坏单调递增)
+
+
+
+
+-- =========================================================
+-- 1. 建表语句 (补充对比表)
+-- 表名: dwd_voyah_sales_time_quality02
+-- 结构: 与原表完全一致
+-- =========================================================
+CREATE TABLE IF NOT EXISTS dwd_voyah_sales_time_quality02 LIKE dwd_voyah_sales_time_quality;
+
+-- =========================================================
+-- 2. 数据插入语句 (构造对比数据)
+-- 分区: 对应规则配置中的 pt_date=20260203 / data_type='normal'
+-- 数据: 故意构造与原表(20260204分区)完全不同的数据，以确保“一致性校验“失败
+-- =========================================================
+INSERT INTO TABLE dwd_voyah_sales_time_quality02 PARTITION (pt_date='20260203', data_type='normal')
+VALUES
+-- 这里的 Order_ID (300xx) 与原表测试分区 (400xx) 完全不同，确保主键对比失败
+(30001, 'LTV_REF_01', '2026-02-03 10:00:00', '2026-02-03 10:05:00', 1),
+(30002, 'LTV_REF_02', '2026-02-03 10:10:00', '2026-02-03 10:15:00', 1),
+(30003, 'LTV_REF_03', '2026-02-03 10:20:00', '2026-02-03 10:25:00', 1);","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_sales_time_quality- 选择分区: pt_date='20260204' / data_type='abnormal_monotonicity'2) 监控规则: 引入规则包1(一致性校验、合理性校验)、规则包2(时效性校验)一致性校验: - 校验类型: 多表数据一致性对比- 校验字段: /- 校验表主键: order_id- 对比表1: dwd_voyah_sales_time_quality02- 输入分区: pt_date=20260203/data_type='normal'- 对比表主键: order_id合理性校验:- 字段: order_id- 统计函数: 数据变化趋势- 过滤条件: /- 排序字段: order_id- 校验方法: 单调递增时效性校验- 字段: order_id- 统计函数: 周期性校验（单字段时间差校验）- 过滤条件: /- 排序字段: order_id- 时间差: <= 1 秒时效性校验- 字段: order_id- 统计函数: 及时性校验（多字段时间差校验）- 对比字段组1: order_time, payment_time- 时间差: <= 1 秒- 大小关系: order_time < payment_time3) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. 编辑规则任务rule01, 分区: pt_date='20260201' / data_type='normal'其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 
+3. 执行成功, 校验结果: 校验不通过
+4. 显示表数据中未通过的数据
+5. 执行成功, 校验结果: 校验通过
+5. 功能操作成功，页面数据状态更新为最新，无报错提示",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 3校验规则),"建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验、有效性校、唯一性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 0有效性校验:- 字段: vin- 统计规则: 字符串长度 - 校验方法: 固定制- 期望值> 0唯一性校验- 字段: order_id- 统计函数: 重复数- 校验方法: 固定值- 期望值: =03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. SQL验证:SELECT * FROM dwd_voyah_vehicle_sales_dates WHERE -- 1. 完整性校验异常 (final_price < 0 或为 NULL) (final_price < 0 OR final_price IS NULL) OR -- 2. 有效性校验异常 (vin 长度 <= 0，包含 NULL 或 纯空格字符串) (length(trim(vin)) = 0 OR vin IS NULL) OR -- 3. 唯一性校验异常 (order_id 重复) order_id IN ( SELECT order_id FROM dwd_voyah_vehicle_sales_dates GROUP BY order_id HAVING COUNT(1) > 1 );
+6. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 执行成功, 校验结果: 校验不通过
+4. 1) 显示表数据中未通过的数据2) 状态: 只要有一个未通过, 状态为: 校验异常
+5. 返回的数据与规则过滤出的数据一致
+6. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 1校验规则),"建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. SQL验证:SELECT * FROM dwd_voyah_vehicle_sales_dates WHERE final_price < 0 OR final_price IS NULL;
+6. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 执行成功, 校验结果: 校验不通过
+4. 显示表数据中未通过的数据
+5. 返回的数据与规则过滤出的数据一致
+6. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,"验证删除规则集后, 对已配置过历史规则的任务不生效","建表语句如下:
+-- =========================================================
+-- 1. 建表语句 (Doris DDL)
+-- Doris 建议使用 OLAP 引擎，并根据 key 进行分桶
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        VARCHAR(64)     COMMENT '销售订单号',
+vin             VARCHAR(64)     COMMENT '车辆识别代码(VIN)',
+car_model       VARCHAR(128)    COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     VARCHAR(255)    COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付',
+factory_date    VARCHAR(8)      NOT NULL COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       VARCHAR(8)      NOT NULL COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+ENGINE=OLAP
+DUPLICATE KEY(order_id, vin)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITION BY LIST (factory_date, sale_date) (
+PARTITION p20260115_20260201 VALUES IN ((“20260115“, “20260201“)),
+PARTITION p20251220_20260201 VALUES IN ((“20251220“, “20260201“)),
+PARTITION p20260301_20260201 VALUES IN ((“20260301“, “20260201“)),
+PARTITION p20260201_20260201 VALUES IN ((“20260201“, “20260201“)),
+PARTITION p20260202_20260202 VALUES IN ((“20260202“, “20260202“))
+)
+DISTRIBUTED BY HASH(order_id) BUCKETS 10
+PROPERTIES (
+“replication_num“ = “1“
+);
+
+-- =========================================================
+-- 2. 数据插入语句 (Doris DML)
+-- Doris 会根据 factory_date 和 sale_date 的值自动进入对应分区
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+(order_id, vin, car_model, guide_price, final_price, dealer_name, order_status, factory_date, sale_date)
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3, '20260115', '20260201');
+
+-- 【场景B：库存积压】 3条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3, '20251220', '20260201');
+
+-- 【场景C：逻辑脏数据】 2条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3, '20260301', '20260201'),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3, '20260301', '20260201');
+
+-- 【场景D：极速产销】 1条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3, '20260201', '20260201');
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3, '20260202', '20260202'),
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_BLANK', '    ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3, '20260202', '20260202');
+
+-- 查询分区信息（Doris 语法）
+SHOW PARTITIONS FROM dwd_voyah_vehicle_sales_dates;
+
+-- 全表查询
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 新建监控规则, 配置监控对象(dwd_voyah_vehicle_sales_dates)后点击下一步
+4. 引入规则包rule01中所有校验规则
+5. 保存规则任务task01后, 立即执行
+6. 删除规则集1
+7. 重新运行历史规则任务task01, 在【校验结果查询】中查看运行状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+4. 引入成功, 配置参数正确，内容与预期完全一致，无异常或错误
+5. 任务运行成功, 校验结果正确: 校验不通过
+6. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+7. 任务运行成功, 校验结果正确: 校验不通过",2
+数据资产-数据质量-规则集管理,"验证编辑规则集后, 对已配置过历史规则的任务不生效","建表语句如下:
+-- =========================================================
+-- 1. 建表语句 (Doris DDL)
+-- Doris 建议使用 OLAP 引擎，并根据 key 进行分桶
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        VARCHAR(64)     COMMENT '销售订单号',
+vin             VARCHAR(64)     COMMENT '车辆识别代码(VIN)',
+car_model       VARCHAR(128)    COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     VARCHAR(255)    COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付',
+factory_date    VARCHAR(8)      NOT NULL COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       VARCHAR(8)      NOT NULL COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+ENGINE=OLAP
+DUPLICATE KEY(order_id, vin)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITION BY LIST (factory_date, sale_date) (
+PARTITION p20260115_20260201 VALUES IN ((“20260115“, “20260201“)),
+PARTITION p20251220_20260201 VALUES IN ((“20251220“, “20260201“)),
+PARTITION p20260301_20260201 VALUES IN ((“20260301“, “20260201“)),
+PARTITION p20260201_20260201 VALUES IN ((“20260201“, “20260201“)),
+PARTITION p20260202_20260202 VALUES IN ((“20260202“, “20260202“))
+)
+DISTRIBUTED BY HASH(order_id) BUCKETS 10
+PROPERTIES (
+“replication_num“ = “1“
+);
+
+-- =========================================================
+-- 2. 数据插入语句 (Doris DML)
+-- Doris 会根据 factory_date 和 sale_date 的值自动进入对应分区
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+(order_id, vin, car_model, guide_price, final_price, dealer_name, order_status, factory_date, sale_date)
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3, '20260115', '20260201');
+
+-- 【场景B：库存积压】 3条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3, '20251220', '20260201');
+
+-- 【场景C：逻辑脏数据】 2条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3, '20260301', '20260201'),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3, '20260301', '20260201');
+
+-- 【场景D：极速产销】 1条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3, '20260201', '20260201');
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3, '20260202', '20260202'),
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_BLANK', '    ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3, '20260202', '20260202');
+
+-- 查询分区信息（Doris 语法）
+SHOW PARTITIONS FROM dwd_voyah_vehicle_sales_dates;
+
+-- 全表查询
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 新建监控规则, 配置监控对象(dwd_voyah_vehicle_sales_dates)后点击下一步
+4. 引入规则包rule01中所有校验规则
+5. 保存规则任务task01后, 立即执行
+6. 修改【规则集-规则包rule01】中的校验规则:- 期望值: >= -200
+7. 新建规则任务task02并立即执行:1) 监控对象: t2 (与dwd_voyah_vehicle_sales_dates同表结构同数据)2) 监控规则: rule01中的校验规则
+8. 重新运行历史规则任务task01, 在【校验结果查询】中查看运行状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+4. 引入成功, 配置参数正确，内容与预期完全一致，无异常或错误
+5. 任务运行成功, 校验结果: 校验不通过
+6. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+7. 任务运行成功, 校验结果: 校验通过
+8. 任务运行成功, 校验结果: 校验不通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(20规则包 * 1校验规则),"1) 已存在规则任务, 监控规则配置如下
+监控对象:
+- 规则名称: rule01
+- 数据表: dwd_voyah_vehicle_sales_dates
+- 选择已有分区: /
+
+监控规则: 引入20规则包, 每个包含1个校验规则
+
+1、完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空串数
+- 期望值: = 0
+
+2、完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空值数
+- 期望值: = 0
+
+3、完整性校验:
+- 生效范围: 字段级
+- 字段: order_id
+- 统计函数: 空值数
+- 期望值: = 0
+
+4、完整性校验:
+- 生效范围: 字段级
+- 字段: car_model
+- 统计函数: 空值数
+- 期望值: = 0
+
+5、完整性校验:
+- 生效范围: 字段级
+- 字段: guide_price
+- 统计函数: 空值数
+- 期望值: = 0
+
+6、完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 空值数
+- 期望值: = 0
+
+7、完整性校验:
+- 生效范围: 字段级
+- 字段: dealer_name
+- 统计函数: 空值数
+- 期望值: = 0
+
+8、完整性校验:
+- 生效范围: 字段级
+- 字段: order_status
+- 统计函数: 空值数
+- 期望值: = 0
+
+9、完整性校验:
+- 生效范围: 字段级
+- 字段: factory_date
+- 统计函数: 空值数
+- 期望值: = 0
+
+10、完整性校验:
+- 生效范围: 字段级
+- 字段: sale_date
+- 统计函数: 空值数
+- 期望值: = 0
+
+11、完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 字段取值校验
+- 期望值: >= 0
+
+12、完整性校验:
+- 生效范围: 单表
+- 统计函数: 表行数
+- 期望值: >= 0
+
+13、完整性校验:
+- 生效范围: 多表数据行数对比
+- 对比表: dwd_voyah_vehicle_sales_dates
+- 分区: factory_date=20260202/sale_date=20260202
+
+14、有效性校验:
+- 字段: vin
+- 统计规则: 字符串长度
+- 期望值> 0
+
+15、有效性校验:
+- 字段: guide_price
+- 统计规则: 数值-取值范围
+- 期望值: 0 <= x <= 1000000
+
+16、有效性校验:
+- 字段: car_model
+- 统计规则: 数值-枚举个数
+- 期望值: = 3
+
+17、有效性校验:
+- 字段: order_id
+- 统计规则: 重复数
+- 期望值: = 0
+
+18、有效性校验:
+- 字段: vin
+- 统计规则: 重复数
+- 期望值: = 0
+
+19、唯一性校验
+- 字段: order_id
+- 统计函数: 重复数
+- 期望值: =0
+
+20、唯一性校验
+- 字段: order_id
+- 统计函数: 重复率
+- 期望值: =0
+
+
+调度属性:
+- 调度周期: 时
+- 生效日期: T~T+1
+- 间隔时间: 1小时
+- 其它默认
+
+2) 建表语句如下:
+-- =========================================================
+-- 1. 建表语句 (Doris DDL)
+-- Doris 建议使用 OLAP 引擎，并根据 key 进行分桶
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        VARCHAR(64)     COMMENT '销售订单号',
+vin             VARCHAR(64)     COMMENT '车辆识别代码(VIN)',
+car_model       VARCHAR(128)    COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     VARCHAR(255)    COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付',
+factory_date    VARCHAR(8)      NOT NULL COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       VARCHAR(8)      NOT NULL COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+ENGINE=OLAP
+DUPLICATE KEY(order_id, vin)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITION BY LIST (factory_date, sale_date) (
+PARTITION p20260115_20260201 VALUES IN ((“20260115“, “20260201“)),
+PARTITION p20251220_20260201 VALUES IN ((“20251220“, “20260201“)),
+PARTITION p20260301_20260201 VALUES IN ((“20260301“, “20260201“)),
+PARTITION p20260201_20260201 VALUES IN ((“20260201“, “20260201“)),
+PARTITION p20260202_20260202 VALUES IN ((“20260202“, “20260202“))
+)
+DISTRIBUTED BY HASH(order_id) BUCKETS 10
+PROPERTIES (
+“replication_num“ = “1“
+);
+
+-- =========================================================
+-- 2. 数据插入语句 (Doris DML)
+-- Doris 会根据 factory_date 和 sale_date 的值自动进入对应分区
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+(order_id, vin, car_model, guide_price, final_price, dealer_name, order_status, factory_date, sale_date)
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3, '20260115', '20260201');
+
+-- 【场景B：库存积压】 3条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3, '20251220', '20260201');
+
+-- 【场景C：逻辑脏数据】 2条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3, '20260301', '20260201'),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3, '20260301', '20260201');
+
+-- 【场景D：极速产销】 1条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3, '20260201', '20260201');
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3, '20260202', '20260202'),
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_BLANK', '    ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3, '20260202', '20260202');
+
+-- 查询分区信息（Doris 语法）
+SHOW PARTITIONS FROM dwd_voyah_vehicle_sales_dates;
+
+-- 全表查询
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 选择任务rule01, 立即执行
+3. 进入【校验结果查询】, 检查规则任务详情页
+4. SQL验证:SELECT *FROM ( SELECT *, -- [辅助计算] 针对规则 17,19,20: 计算 order_id 重复数 COUNT(1) OVER(PARTITION BY order_id) as calc_order_dup_count, -- [辅助计算] 针对规则 18: 计算 vin 重复数 COUNT(1) OVER(PARTITION BY vin) as calc_vin_dup_count FROM dwd_voyah_vehicle_sales_dates) tWHERE -- ========================================================= -- A. 完整性校验 -- ========================================================= -- 规则1: vin 空串 (trim(vin) = '') OR -- 规则2-10: 各关键字段判空 (vin IS NULL) OR (order_id IS NULL) OR (car_model IS NULL) OR (guide_price IS NULL) OR (final_price IS NULL) OR (dealer_name IS NULL) OR (order_status IS NULL) OR (factory_date IS NULL) OR (sale_date IS NULL) -- ========================================================= -- B. 取值范围与有效性 (规则 11, 14, 15, 16) -- ========================================================= OR -- 规则11: final_price < 0 (final_price < 0) OR -- 规则14: vin 长度 <= 0 (注: 空串/NULL已被上面捕获，此处兜底) (length(vin) <= 0) OR -- 规则15: guide_price 超出 [0, 1000000] 范围 (guide_price < 0 OR guide_price > 1000000) OR -- 规则16: car_model 枚举校验 (假设标准值为3个: FREE, 梦想家, 追光) -- 如果当前值不在这3个里面，且不是NULL，则视为脏数据 (car_model IS NOT NULL AND car_model NOT IN ('岚图FREE', '岚图梦想家', '岚图追光')) -- ========================================================= -- C. 唯一性与重复性 (规则 17, 18, 19, 20) -- ========================================================= OR -- 规则17,19,20: order_id 出现重复 (统计数 > 1) (calc_order_dup_count > 1) OR -- 规则18: vin 出现重复 (统计数 > 1) (calc_vin_dup_count > 1);
+5. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 执行成功, 校验结果: 校验不通过
+3. 显示表数据中未通过的数据
+4. 返回的数据与规则过滤出的数据一致
+5. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 10校验规则),"1) 已存在规则任务, 监控规则配置如下
+监控对象:
+- 规则名称: rule01
+- 数据表: dwd_voyah_vehicle_sales_dates
+- 选择已有分区: /
+
+监控规则: 引入规则包, 包含10个校验规则
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空串数
+- 期望值: = 0
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: car_model
+- 统计函数: 空值数
+- 期望值: = 0
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 字段取值校验
+- 期望值: >= 0
+
+完整性校验:
+- 生效范围: 单表
+- 统计函数: 表行数
+- 期望值: >= 0
+
+完整性校验:
+- 生效范围: 多表数据行数对比
+- 对比表: dwd_voyah_vehicle_sales_dates
+- 分区: factory_date=20260202/sale_date=20260202
+
+有效性校验:
+- 字段: vin
+- 统计规则: 字符串长度
+- 期望值> 0
+
+有效性校验:
+- 字段: guide_price
+- 统计规则: 数值-取值范围
+- 期望值: 0 <= x <= 1000000
+
+有效性校验:
+- 字段: car_model
+- 统计规则: 数值-枚举个数
+- 期望值: = 3
+
+唯一性校验
+- 字段: order_id
+- 统计函数: 重复数
+- 期望值: =0
+
+唯一性校验
+- 字段: order_id
+- 统计函数: 重复率
+- 期望值: =0
+
+
+
+调度属性:
+- 调度周期: 时
+- 生效日期: T~T+1
+- 间隔时间: 1小时
+- 其它默认
+
+2) 建表语句如下:
+-- =========================================================
+-- 1. 建表语句 (Doris DDL)
+-- Doris 建议使用 OLAP 引擎，并根据 key 进行分桶
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        VARCHAR(64)     COMMENT '销售订单号',
+vin             VARCHAR(64)     COMMENT '车辆识别代码(VIN)',
+car_model       VARCHAR(128)    COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     VARCHAR(255)    COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付',
+factory_date    VARCHAR(8)      NOT NULL COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       VARCHAR(8)      NOT NULL COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+ENGINE=OLAP
+DUPLICATE KEY(order_id, vin)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITION BY LIST (factory_date, sale_date) (
+PARTITION p20260115_20260201 VALUES IN ((“20260115“, “20260201“)),
+PARTITION p20251220_20260201 VALUES IN ((“20251220“, “20260201“)),
+PARTITION p20260301_20260201 VALUES IN ((“20260301“, “20260201“)),
+PARTITION p20260201_20260201 VALUES IN ((“20260201“, “20260201“)),
+PARTITION p20260202_20260202 VALUES IN ((“20260202“, “20260202“))
+)
+DISTRIBUTED BY HASH(order_id) BUCKETS 10
+PROPERTIES (
+“replication_num“ = “1“
+);
+
+-- =========================================================
+-- 2. 数据插入语句 (Doris DML)
+-- Doris 会根据 factory_date 和 sale_date 的值自动进入对应分区
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+(order_id, vin, car_model, guide_price, final_price, dealer_name, order_status, factory_date, sale_date)
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3, '20260115', '20260201');
+
+-- 【场景B：库存积压】 3条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3, '20251220', '20260201');
+
+-- 【场景C：逻辑脏数据】 2条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3, '20260301', '20260201'),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3, '20260301', '20260201');
+
+-- 【场景D：极速产销】 1条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3, '20260201', '20260201');
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3, '20260202', '20260202'),
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_BLANK', '    ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3, '20260202', '20260202');
+
+-- 查询分区信息（Doris 语法）
+SHOW PARTITIONS FROM dwd_voyah_vehicle_sales_dates;
+
+-- 全表查询
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 选择任务rule01, 立即执行
+3. 进入【校验结果查询】, 检查规则任务详情页
+4. SQL验证:SELECT *FROM ( SELECT *, -- [辅助计算] 唯一性校验: 计算 order_id 的重复次数 COUNT(1) OVER(PARTITION BY order_id) as order_dup_count FROM dwd_voyah_vehicle_sales_dates) tWHERE -- --------------------------------------------------------- -- 1. 完整性校验 (字段级) -- --------------------------------------------------------- -- 规则: vin 空串数=0 (即: 找出 vin 为空串的数据) (trim(vin) = '') OR -- 规则: car_model 空值数=0 (即: 找出 car_model 为 NULL 的数据) (car_model IS NULL) OR -- 规则: final_price 期望值 >= 0 (即: 找出 < 0 的数据) (final_price < 0) -- --------------------------------------------------------- -- 2. 有效性校验 -- --------------------------------------------------------- -- 规则: vin 字符串长度 > 0 (即: 找出长度 <= 0 或 NULL 的数据) -- 注: 此规则与上面的“空串数“、“空值数“有重叠，此处做兜底 OR (length(vin) <= 0 OR vin IS NULL) -- 规则: guide_price 取值范围 [0, 1000000] (即: 找出在此范围之外的数据) OR (guide_price < 0 OR guide_price > 1000000) -- 规则: car_model 枚举个数 = 3 (即: 找出不属于这3个标准车型的数据) -- 假设标准枚举值为: 岚图FREE, 岚图梦想家, 岚图追光 -- 注: NULL值已被前面的完整性校验捕获，此处主要校验“未知枚举值“ OR (car_model IS NOT NULL AND car_model NOT IN ('岚图FREE', '岚图梦想家', '岚图追光')) -- --------------------------------------------------------- -- 3. 唯一性校验 -- --------------------------------------------------------- -- 规则: order_id 重复数/重复率期望为0 (即: 找出重复出现的订单) OR (order_dup_count > 1);
+5. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 执行成功, 校验结果: 校验不通过
+3. 显示表数据中未通过的数据
+4. 返回的数据与规则过滤出的数据一致
+5. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(2规则包 * 2校验规则),"建表语句如下:
+-- =========================================================
+-- 1. 建表语句 (Doris DDL)
+-- Doris 建议使用 OLAP 引擎，并根据 key 进行分桶
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        VARCHAR(64)     COMMENT '销售订单号',
+vin             VARCHAR(64)     COMMENT '车辆识别代码(VIN)',
+car_model       VARCHAR(128)    COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     VARCHAR(255)    COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付',
+factory_date    VARCHAR(8)      NOT NULL COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       VARCHAR(8)      NOT NULL COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+ENGINE=OLAP
+DUPLICATE KEY(order_id, vin)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITION BY LIST (factory_date, sale_date) (
+PARTITION p20260115_20260201 VALUES IN ((“20260115“, “20260201“)),
+PARTITION p20251220_20260201 VALUES IN ((“20251220“, “20260201“)),
+PARTITION p20260301_20260201 VALUES IN ((“20260301“, “20260201“)),
+PARTITION p20260201_20260201 VALUES IN ((“20260201“, “20260201“)),
+PARTITION p20260202_20260202 VALUES IN ((“20260202“, “20260202“))
+)
+DISTRIBUTED BY HASH(order_id) BUCKETS 10
+PROPERTIES (
+“replication_num“ = “1“
+);
+
+-- =========================================================
+-- 2. 数据插入语句 (Doris DML)
+-- Doris 会根据 factory_date 和 sale_date 的值自动进入对应分区
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+(order_id, vin, car_model, guide_price, final_price, dealer_name, order_status, factory_date, sale_date)
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3, '20260115', '20260201');
+
+-- 【场景B：库存积压】 3条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3, '20251220', '20260201');
+
+-- 【场景C：逻辑脏数据】 2条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3, '20260301', '20260201'),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3, '20260301', '20260201');
+
+-- 【场景D：极速产销】 1条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3, '20260201', '20260201');
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3, '20260202', '20260202'),
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_BLANK', '    ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3, '20260202', '20260202');
+
+-- 查询分区信息（Doris 语法）
+SHOW PARTITIONS FROM dwd_voyah_vehicle_sales_dates;
+
+-- 全表查询
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_sales_time_quality- 选择分区: pt_date='20260204' / data_type='abnormal_monotonicity'2) 监控规则: 引入规则包1(一致性校验、合理性校验)、规则包2(时效性校验)一致性校验: - 校验类型: 多表数据一致性对比- 校验字段: /- 校验表主键: order_id- 对比表1: dwd_voyah_sales_time_quality02- 输入分区: pt_date=20260203/data_type='normal'- 对比表主键: order_id合理性校验:- 字段: order_id- 统计函数: 数据变化趋势- 过滤条件: /- 排序字段: order_id- 校验方法: 单调递增时效性校验- 字段: order_id- 统计函数: 周期性校验（单字段时间差校验）- 过滤条件: /- 排序字段: order_id- 时间差: <= 1 秒时效性校验- 字段: order_id- 统计函数: 及时性校验（多字段时间差校验）- 对比字段组1: order_time, payment_time- 时间差: <= 1 秒- 大小关系: order_time < payment_time3) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. SQL验证:WITH iqr_stats AS ( -- 计算 guide_price 的四分位数和 IQR 阈值 SELECT percentile_approx(guide_price, 0.25) as q1, percentile_approx(guide_price, 0.75) as q3, (percentile_approx(guide_price, 0.75) - percentile_approx(guide_price, 0.25)) * 1.5 as iqr_range FROM dwd_voyah_vehicle_sales_dates),duplicate_orders AS ( -- 识别 order_id 重复的数据 SELECT order_id FROM dwd_voyah_vehicle_sales_dates GROUP BY order_id HAVING COUNT(1) > 1)SELECT t.*, CASE WHEN t.final_price < 0 OR t.final_price IS NULL THEN '完整性校验异常:成交价<0或为空' WHEN length(trim(t.vin)) = 0 OR t.vin IS NULL THEN '有效性校验异常:VIN长度<=0' WHEN d.order_id IS NOT NULL THEN '唯一性校验异常:订单号重复' WHEN t.guide_price < (i.q1 - i.iqr_range) OR t.guide_price > (i.q3 + i.iqr_range) THEN '统计性校验异常:指导价IQR离群' ELSE NULL END AS error_reasonFROM dwd_voyah_vehicle_sales_dates tCROSS JOIN iqr_stats iLEFT JOIN duplicate_orders d ON t.order_id = d.order_idWHERE -- 1. 完整性校验: final_price < 0 或 NULL (t.final_price < 0 OR t.final_price IS NULL) -- 2. 有效性校验: vin 长度 <= 0 (含纯空格或NULL) OR (length(trim(t.vin)) = 0 OR t.vin IS NULL) -- 3. 唯一性校验: order_id 重复 OR (d.order_id IS NOT NULL) -- 4. 统计性校验: guide_price 为 IQR 离群点 OR (t.guide_price < (i.q1 - i.iqr_range) OR t.guide_price > (i.q3 + i.iqr_range));
+6. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 执行成功, 校验结果: 校验不通过
+4. 显示表数据中未通过的数据
+5. 返回的数据与规则过滤出的数据一致
+6. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 3校验规则),"建表语句如下:
+-- =========================================================
+-- 1. 建表语句 (Doris DDL)
+-- Doris 建议使用 OLAP 引擎，并根据 key 进行分桶
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        VARCHAR(64)     COMMENT '销售订单号',
+vin             VARCHAR(64)     COMMENT '车辆识别代码(VIN)',
+car_model       VARCHAR(128)    COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     VARCHAR(255)    COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付',
+factory_date    VARCHAR(8)      NOT NULL COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       VARCHAR(8)      NOT NULL COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+ENGINE=OLAP
+DUPLICATE KEY(order_id, vin)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITION BY LIST (factory_date, sale_date) (
+PARTITION p20260115_20260201 VALUES IN ((“20260115“, “20260201“)),
+PARTITION p20251220_20260201 VALUES IN ((“20251220“, “20260201“)),
+PARTITION p20260301_20260201 VALUES IN ((“20260301“, “20260201“)),
+PARTITION p20260201_20260201 VALUES IN ((“20260201“, “20260201“)),
+PARTITION p20260202_20260202 VALUES IN ((“20260202“, “20260202“))
+)
+DISTRIBUTED BY HASH(order_id) BUCKETS 10
+PROPERTIES (
+“replication_num“ = “1“
+);
+
+-- =========================================================
+-- 2. 数据插入语句 (Doris DML)
+-- Doris 会根据 factory_date 和 sale_date 的值自动进入对应分区
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+(order_id, vin, car_model, guide_price, final_price, dealer_name, order_status, factory_date, sale_date)
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3, '20260115', '20260201');
+
+-- 【场景B：库存积压】 3条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3, '20251220', '20260201');
+
+-- 【场景C：逻辑脏数据】 2条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3, '20260301', '20260201'),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3, '20260301', '20260201');
+
+-- 【场景D：极速产销】 1条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3, '20260201', '20260201');
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3, '20260202', '20260202'),
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_BLANK', '    ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3, '20260202', '20260202');
+
+-- 查询分区信息（Doris 语法）
+SHOW PARTITIONS FROM dwd_voyah_vehicle_sales_dates;
+
+-- 全表查询
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 0有效性校验:- 字段: vin- 统计规则: 字符串长度 - 校验方法: 固定制- 期望值> 0唯一性校验- 字段: order_id- 统计函数: 重复数- 校验方法: 固定值- 期望值: =03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. SQL验证:SELECT * FROM dwd_voyah_vehicle_sales_dates WHERE -- 1. 完整性校验异常 (final_price < 0 或为 NULL) (final_price < 0 OR final_price IS NULL) OR -- 2. 有效性校验异常 (vin 长度 <= 0，包含 NULL 或 纯空格字符串) (length(trim(vin)) = 0 OR vin IS NULL) OR -- 3. 唯一性校验异常 (order_id 重复) order_id IN ( SELECT order_id FROM dwd_voyah_vehicle_sales_dates GROUP BY order_id HAVING COUNT(1) > 1 );
+6. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 执行成功, 校验结果: 校验不通过
+4. 显示表数据中未通过的数据
+5. 返回的数据与规则过滤出的数据一致
+6. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 1校验规则),"建表语句如下:
+-- =========================================================
+-- 1. 建表语句 (Doris DDL)
+-- Doris 建议使用 OLAP 引擎，并根据 key 进行分桶
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        VARCHAR(64)     COMMENT '销售订单号',
+vin             VARCHAR(64)     COMMENT '车辆识别代码(VIN)',
+car_model       VARCHAR(128)    COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     VARCHAR(255)    COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付',
+factory_date    VARCHAR(8)      NOT NULL COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       VARCHAR(8)      NOT NULL COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+ENGINE=OLAP
+DUPLICATE KEY(order_id, vin)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITION BY LIST (factory_date, sale_date) (
+PARTITION p20260115_20260201 VALUES IN ((“20260115“, “20260201“)),
+PARTITION p20251220_20260201 VALUES IN ((“20251220“, “20260201“)),
+PARTITION p20260301_20260201 VALUES IN ((“20260301“, “20260201“)),
+PARTITION p20260201_20260201 VALUES IN ((“20260201“, “20260201“)),
+PARTITION p20260202_20260202 VALUES IN ((“20260202“, “20260202“))
+)
+DISTRIBUTED BY HASH(order_id) BUCKETS 10
+PROPERTIES (
+“replication_num“ = “1“
+);
+
+-- =========================================================
+-- 2. 数据插入语句 (Doris DML)
+-- Doris 会根据 factory_date 和 sale_date 的值自动进入对应分区
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+(order_id, vin, car_model, guide_price, final_price, dealer_name, order_status, factory_date, sale_date)
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3, '20260115', '20260201'),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3, '20260115', '20260201');
+
+-- 【场景B：库存积压】 3条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3, '20251220', '20260201'),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3, '20251220', '20260201');
+
+-- 【场景C：逻辑脏数据】 2条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3, '20260301', '20260201'),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3, '20260301', '20260201');
+
+-- 【场景D：极速产销】 1条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3, '20260201', '20260201');
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO dwd_voyah_vehicle_sales_dates
+VALUES
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3, '20260202', '20260202'),
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3, '20260202', '20260202'),
+('ORD_ERR_BLANK', '    ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3, '20260202', '20260202');
+
+-- 查询分区信息（Doris 语法）
+SHOW PARTITIONS FROM dwd_voyah_vehicle_sales_dates;
+
+-- 全表查询
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. SQL验证:SELECT * FROM dwd_voyah_vehicle_sales_dates WHERE final_price < 0 OR final_price IS NULL;
+6. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 执行成功, 校验结果: 校验不通过
+4. 显示表数据中未通过的数据
+5. 返回的数据与规则过滤出的数据一致
+6. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,"验证删除规则集后, 对已配置过历史规则的任务不生效","建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 新建监控规则, 配置监控对象(dwd_voyah_vehicle_sales_dates)后点击下一步
+4. 引入规则包rule01中所有校验规则
+5. 保存规则任务task01后, 立即执行
+6. 删除规则集1
+7. 重新运行历史规则任务task01, 在【校验结果查询】中查看运行状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+4. 引入成功, 配置参数正确，内容与预期完全一致，无异常或错误
+5. 任务运行成功, 校验结果正确: 校验不通过
+6. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+7. 任务运行成功, 校验结果正确: 校验不通过",2
+数据资产-数据质量-规则集管理,"验证编辑规则集后, 对已配置过历史规则的任务不生效","<span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>建表语句如下:</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>=========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 1. 建表语句 (DDL)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 表名: 岚图汽车销售双日期分区表</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 分区: factory_date (出厂日期) / sale_date (出售日期)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    order_id        STRING          COMMENT '销售订单号',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    vin             STRING          COMMENT '车辆识别代码(VIN)',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    car_model       STRING          COMMENT '车型名称',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    guide_price     DECIMAL(20,2)   COMMENT '官方指导价',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    final_price     DECIMAL(20,2)   COMMENT '最终成交价',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    dealer_name     STRING          COMMENT '交付中心',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    order_status    INT             COMMENT '状态: 3-已交付'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>COMMENT '岚图汽车销售表-用于规则配置测试'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PARTITIONED BY (</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>STORED AS ORC</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>TBLPROPERTIES ('orc.compress'='SNAPPY');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 2. 数据插入语句 (DML) - 共10条数据</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- =========================================================</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景A：正常数据】 4条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 用于测试：基础的分区扫描功能</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景B：库存积压】 3条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景C：逻辑脏数据】 2条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景D：极速产销】 1条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 用于测试：边界值校验</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景E：字段级异常 (脏数据)】 4条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 1. [NULL异常]: 车型名称为 NULL</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 2. [空串异常]: 交付中心为 Empty String ('')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 3. [数值异常]: 最终成交价为负数 (-100.00)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 查询已创建的分区信息</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;</span><br /><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>SELECT * FROM dwd_voyah_vehicle_sales_dates;</span><br />","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 引入规则包rule01中所有校验规则
+4. 保存规则任务task01后, 立即执行
+5. 修改【规则集-规则包rule01】中的校验规则:- 期望值: >= -200
+6. 新建规则任务task02并立即执行:1) 监控对象: t2 (与dwd_voyah_vehicle_sales_dates同表结构同数据)2) 监控规则: rule01中的校验规则
+7. 重新运行历史规则任务task01, 在【校验结果查询】中查看运行状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 引入成功, 配置参数正确，内容与预期完全一致，无异常或错误
+4. 任务运行成功, 校验结果: 校验不通过
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 任务运行成功, 校验结果: 校验通过
+7. 任务运行成功, 校验结果: 校验不通过",1
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(20规则包 * 1校验规则),"1) 已存在规则任务, 监控规则配置如下
+监控对象:
+- 规则名称: rule01
+- 数据表: dwd_voyah_vehicle_sales_dates
+- 选择已有分区: /
+
+监控规则: 引入20规则包, 每个包含1个校验规则
+
+1、完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空串数
+- 期望值: = 0
+
+2、完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空值数
+- 期望值: = 0
+
+3、完整性校验:
+- 生效范围: 字段级
+- 字段: order_id
+- 统计函数: 空值数
+- 期望值: = 0
+
+4、完整性校验:
+- 生效范围: 字段级
+- 字段: car_model
+- 统计函数: 空值数
+- 期望值: = 0
+
+5、完整性校验:
+- 生效范围: 字段级
+- 字段: guide_price
+- 统计函数: 空值数
+- 期望值: = 0
+
+6、完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 空值数
+- 期望值: = 0
+
+7、完整性校验:
+- 生效范围: 字段级
+- 字段: dealer_name
+- 统计函数: 空值数
+- 期望值: = 0
+
+8、完整性校验:
+- 生效范围: 字段级
+- 字段: order_status
+- 统计函数: 空值数
+- 期望值: = 0
+
+9、完整性校验:
+- 生效范围: 字段级
+- 字段: factory_date
+- 统计函数: 空值数
+- 期望值: = 0
+
+10、完整性校验:
+- 生效范围: 字段级
+- 字段: sale_date
+- 统计函数: 空值数
+- 期望值: = 0
+
+11、完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 字段取值校验
+- 期望值: >= 0
+
+12、完整性校验:
+- 生效范围: 单表
+- 统计函数: 表行数
+- 期望值: >= 0
+
+13、完整性校验:
+- 生效范围: 多表数据行数对比
+- 对比表: dwd_voyah_vehicle_sales_dates
+- 分区: factory_date=20260202/sale_date=20260202
+
+14、有效性校验:
+- 字段: vin
+- 统计规则: 字符串长度
+- 期望值> 0
+
+15、有效性校验:
+- 字段: guide_price
+- 统计规则: 数值-取值范围
+- 期望值: 0 <= x <= 1000000
+
+16、有效性校验:
+- 字段: car_model
+- 统计规则: 数值-枚举个数
+- 期望值: = 3
+
+17、有效性校验:
+- 字段: order_id
+- 统计规则: 重复数
+- 期望值: = 0
+
+18、有效性校验:
+- 字段: vin
+- 统计规则: 重复数
+- 期望值: = 0
+
+19、唯一性校验
+- 字段: order_id
+- 统计函数: 重复数
+- 期望值: =0
+
+20、唯一性校验
+- 字段: order_id
+- 统计函数: 重复率
+- 期望值: =0
+
+
+调度属性:
+- 调度周期: 时
+- 生效日期: T~T+1
+- 间隔时间: 1小时
+- 其它默认
+
+2) 建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 选择任务rule01, 立即执行
+3. 进入【校验结果查询】, 检查规则任务详情页
+4. SQL验证:SELECT *FROM ( SELECT *, -- [辅助计算] 针对规则 17,19,20: 计算 order_id 重复数 COUNT(1) OVER(PARTITION BY order_id) as calc_order_dup_count, -- [辅助计算] 针对规则 18: 计算 vin 重复数 COUNT(1) OVER(PARTITION BY vin) as calc_vin_dup_count FROM dwd_voyah_vehicle_sales_dates) tWHERE -- ========================================================= -- A. 完整性校验 -- ========================================================= -- 规则1: vin 空串 (trim(vin) = '') OR -- 规则2-10: 各关键字段判空 (vin IS NULL) OR (order_id IS NULL) OR (car_model IS NULL) OR (guide_price IS NULL) OR (final_price IS NULL) OR (dealer_name IS NULL) OR (order_status IS NULL) OR (factory_date IS NULL) OR (sale_date IS NULL) -- ========================================================= -- B. 取值范围与有效性 -- ========================================================= OR -- 规则11: final_price < 0 (final_price < 0) OR -- 规则14: vin 长度 <= 0 (注: 空串/NULL已被上面捕获，此处兜底) (length(vin) <= 0) OR -- 规则15: guide_price 超出 [0, 1000000] 范围 (guide_price < 0 OR guide_price > 1000000) OR -- 规则16: car_model 枚举校验 (假设标准值为3个: FREE, 梦想家, 追光) -- 如果当前值不在这3个里面，且不是NULL，则视为脏数据 (car_model IS NOT NULL AND car_model NOT IN ('岚图FREE', '岚图梦想家', '岚图追光')) -- ========================================================= -- C. 唯一性与重复性 -- ========================================================= OR -- 规则17,19,20 (calc_order_dup_count > 1) OR -- 规则18 (calc_vin_dup_count > 1);
+5. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 执行成功, 校验结果: 校验不通过
+3. 显示表数据中未通过的数据
+4. 返回的数据与规则过滤出的数据一致
+5. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 10校验规则),"1) 已存在规则任务, 监控规则配置如下
+监控对象:
+- 规则名称: rule01
+- 数据表: dwd_voyah_vehicle_sales_dates
+- 选择已有分区: /
+
+监控规则: 引入规则包, 包含10个校验规则
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: vin
+- 统计函数: 空串数
+- 期望值: = 0
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: car_model
+- 统计函数: 空值数
+- 期望值: = 0
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 字段取值校验
+- 期望值: >= 0
+
+完整性校验:
+- 生效范围: 单表
+- 统计函数: 表行数
+- 期望值: >= 0
+
+完整性校验:
+- 生效范围: 多表数据行数对比
+- 对比表: dwd_voyah_vehicle_sales_dates
+- 分区: factory_date=20260202/sale_date=20260202
+
+有效性校验:
+- 字段: vin
+- 统计规则: 字符串长度
+- 期望值> 0
+
+有效性校验:
+- 字段: guide_price
+- 统计规则: 数值-取值范围
+- 期望值: 0 <= x <= 1000000
+
+有效性校验:
+- 字段: car_model
+- 统计规则: 数值-枚举个数
+- 期望值: = 3
+
+唯一性校验
+- 字段: order_id
+- 统计函数: 重复数
+- 期望值: =0
+
+唯一性校验
+- 字段: order_id
+- 统计函数: 重复率
+- 期望值: =0
+
+
+
+调度属性:
+- 调度周期: 时
+- 生效日期: T~T+1
+- 间隔时间: 1小时
+- 其它默认
+
+2) 建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 选择任务rule01, 立即执行
+3. 进入【校验结果查询】, 检查规则任务详情页
+4. SQL验证:SELECT *FROM ( SELECT *, -- [辅助计算] 唯一性校验: 计算 order_id 的重复次数 COUNT(1) OVER(PARTITION BY order_id) as order_dup_count FROM dwd_voyah_vehicle_sales_dates) tWHERE -- --------------------------------------------------------- -- 1. 完整性校验 (字段级) -- --------------------------------------------------------- -- 规则: vin 空串数=0 (即: 找出 vin 为空串的数据) (trim(vin) = '') OR -- 规则: car_model 空值数=0 (即: 找出 car_model 为 NULL 的数据) (car_model IS NULL) OR -- 规则: final_price 期望值 >= 0 (即: 找出 < 0 的数据) (final_price < 0) -- --------------------------------------------------------- -- 2. 有效性校验 -- --------------------------------------------------------- -- 规则: vin 字符串长度 > 0 (即: 找出长度 <= 0 或 NULL 的数据) -- 注: 此规则与上面的“空串数“、“空值数“有重叠，此处做兜底 OR (length(vin) <= 0 OR vin IS NULL) -- 规则: guide_price 取值范围 [0, 1000000] (即: 找出在此范围之外的数据) OR (guide_price < 0 OR guide_price > 1000000) -- 规则: car_model 枚举个数 = 3 (即: 找出不属于这3个标准车型的数据) -- 假设标准枚举值为: 岚图FREE, 岚图梦想家, 岚图追光 -- 注: NULL值已被前面的完整性校验捕获，此处主要校验“未知枚举值“ OR (car_model IS NOT NULL AND car_model NOT IN ('岚图FREE', '岚图梦想家', '岚图追光')) -- --------------------------------------------------------- -- 3. 唯一性校验 -- --------------------------------------------------------- -- 规则: order_id 重复数/重复率期望为0 (即: 找出重复出现的订单) OR (order_dup_count > 1);
+5. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 执行成功, 校验结果: 校验不通过
+3. 显示表数据中未通过的数据
+4. 返回的数据与规则过滤出的数据一致
+5. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(2规则包 * 2校验规则),"<span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>建表语句如下: </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>创建两个表: dwd_voyah_sales_time_quality、dwd_voyah_sales_time_quality02</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 1. 建表语句 (DDL)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 表名: dwd_voyah_sales_time_quality</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>DROP TABLE IF EXISTS dwd_voyah_sales_time_quality;</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE IF NOT EXISTS dwd_voyah_sales_time_quality (</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    order_id        BIGINT          COMMENT '订单自增ID (用于验证单调递增)',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    vin             STRING          COMMENT '车辆识别码',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    order_time      TIMESTAMP       COMMENT '下定时间 (基准时间字段)',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    payment_time    TIMESTAMP       COMMENT '支付时间 (用于比较行内时间差)',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    delivery_status INT             COMMENT '交付状态'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>COMMENT '岚图汽车销售时效校验表'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>PARTITIONED BY (</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    pt_date         STRING          COMMENT '一级分区: yyyyMMdd',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>    data_type       STRING          COMMENT '二级分区: normal(正常)/abnormal_xx(异常场景)'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>STORED AS ORC</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>TBLPROPERTIES ('orc.compress'='SNAPPY');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 2. 数据插入语句 (DML)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- =========================================================</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- ---------------------------------------------------------</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 场景A: [正常数据]</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 分区: 20260201 / normal</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 验证通过:</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 1. payment_time > order_time (行内时间差合理)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 2. order_time 相邻行有间隔 (相邻行时间差合理)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 3. order_id 随时间推移严格递增 (单调性符合)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- ---------------------------------------------------------</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO TABLE dwd_voyah_sales_time_quality PARTITION (pt_date='20260201', data_type='normal')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(10001, 'LTV001', '2026-02-01 10:00:00', '2026-02-01 10:05:00', 1),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(10002, 'LTV002', '2026-02-01 10:10:00', '2026-02-01 10:15:00', 1),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(10003, 'LTV003', '2026-02-01 10:30:00', '2026-02-01 10:35:00', 1),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(10004, 'LTV004', '2026-02-01 11:00:00', '2026-02-01 11:02:00', 1);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- ---------------------------------------------------------</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 场景B: [异常数据 - 规则1: 行内字段时间差校验]</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 分区: 20260202 / abnormal_diff_row</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 异常点: ID 20002 的支付时间 早于 下定时间 (逻辑错误)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- ---------------------------------------------------------</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO TABLE dwd_voyah_sales_time_quality PARTITION (pt_date='20260202', data_type='abnormal_diff_row')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(20001, 'LTV_ERR_01', '2026-02-02 09:00:00', '2026-02-02 09:10:00', 1), -- 正常</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(20002, 'LTV_ERR_02', '2026-02-02 09:30:00', '2026-02-02 09:29:59', 1); -- 异常: 支付比下单早1秒</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- ---------------------------------------------------------</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 场景C: [异常数据 - 规则2: 相邻两行时间差校验]</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 分区: 20260203 / abnormal_diff_adjacent</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 异常点: ID 30002 和 30003 的 order_time 完全一致 (时间差为0)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 假设规则要求: 订单系统处理能力限制，相邻订单间隔必须 >= 1秒</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- ---------------------------------------------------------</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO TABLE dwd_voyah_sales_time_quality PARTITION (pt_date='20260203', data_type='abnormal_diff_adjacent')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(30001, 'LTV_GAP_01', '2026-02-03 14:00:00', '2026-02-03 14:05:00', 1),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(30002, 'LTV_GAP_02', '2026-02-03 14:00:05', '2026-02-03 14:10:00', 1),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(30003, 'LTV_GAP_03', '2026-02-03 14:00:05', '2026-02-03 14:12:00', 1); -- 异常: 与上一行时间差为0</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- ---------------------------------------------------------</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 场景D: [异常数据 - 规则3: 字段单调性校验]</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 分区: 20260204 / abnormal_monotonicity</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 异常点: order_id 出现乱序 (40003 在 40002 之前出现)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 预期: 按照 order_time 排序后，order_id 应该也是递增的</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- ---------------------------------------------------------</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO TABLE dwd_voyah_sales_time_quality PARTITION (pt_date='20260204', data_type='abnormal_monotonicity')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(40001, 'LTV_SORT_01', '2026-02-04 15:00:00', '2026-02-04 15:05:00', 1),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(40003, 'LTV_SORT_03', '2026-02-04 15:10:00', '2026-02-04 15:15:00', 1), -- 异常: ID跳变</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(40002, 'LTV_SORT_02', '2026-02-04 15:20:00', '2026-02-04 15:25:00', 1); -- 异常: 时间晚但ID小 (破坏单调递增)</span><br /><br /><br /><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 1. 建表语句 (补充对比表)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 表名: dwd_voyah_sales_time_quality02</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 结构: 与原表完全一致</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>CREATE TABLE IF NOT EXISTS dwd_voyah_sales_time_quality02 LIKE dwd_voyah_sales_time_quality;</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 2. 数据插入语句 (构造对比数据)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 分区: 对应规则配置中的 pt_date=20260203 / data_type='normal'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 数据: 故意构造与原表(20260204分区)完全不同的数据，以确保“一致性校验“失败</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>INSERT INTO TABLE dwd_voyah_sales_time_quality02 PARTITION (pt_date='20260203', data_type='normal')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>-- 这里的 Order_ID (300xx) 与原表测试分区 (400xx) 完全不同，确保主键对比失败</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(30001, 'LTV_REF_01', '2026-02-03 10:00:00', '2026-02-03 10:05:00', 1),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(30002, 'LTV_REF_02', '2026-02-03 10:10:00', '2026-02-03 10:15:00', 1),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, “ background-color:rgba(245,=““ 246,=““ 247,=““ 0.92);“=““>(30003, 'LTV_REF_03', '2026-02-03 10:20:00', '2026-02-03 10:25:00', 1);</span><br />","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:
+1) 监控对象:
+- 规则名称: rule01
+- 数据表: dwd_voyah_sales_time_quality
+- 选择分区: pt_date='20260204' / data_type='abnormal_monotonicity'
+2) 监控规则: 引入规则包1(完整性校验、合理性校验)、规则包2(时效性校验)
+完整性校验:
+- 生效范围: 字段级
+- 字段: order_id
+- 统计函数: 字段取值校验
+- 期望值: >= 0
+合理性校验:
+- 字段: order_id
+- 统计函数: 数据变化趋势
+- 过滤条件: /
+- 排序字段: order_id
+- 校验方法: 单调递增
+有效性校验:
+- 字段: vin
+- 统计规则: 字符串长度
+- 校验方法: 固定制
+- 期望值> 0
+唯一性校验
+- 字段: order_id
+- 统计函数: 重复数
+- 校验方法: 固定值
+- 期望值: =0
+3) 调度属性:
+- 调度周期: 时
+- 生效日期: T~T+1
+- 间隔时间: 1小时
+- 其它默认
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. 编辑规则任务rule01, 分区: pt_date='20260201' / data_type='normal'其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 
+3. 执行成功, 校验结果: 校验不通过
+4. 显示表数据中未通过的数据
+5. 执行成功, 校验结果: 校验通过
+5. 功能操作成功，页面数据状态更新为最新，无报错提示",1
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 3校验规则),"1) 已存在规则任务, 监控规则配置如下
+监控对象:
+- 规则名称: rule01
+- 数据表: dwd_voyah_vehicle_sales_dates
+- 选择已有分区: /
+
+监控规则: 引入规则包、规则类型(完整性校验、有效性校、唯一性校验)
+
+完整性校验:
+- 生效范围: 字段级
+- 字段: final_price
+- 统计函数: 字段取值校验
+- 期望值: >= 0
+
+有效性校验:
+- 字段: vin
+- 统计规则: 字符串长度
+- 校验方法: 固定制
+- 期望值> 0
+
+唯一性校验
+- 字段: order_id
+- 统计函数: 重复数
+- 校验方法: 固定值
+- 期望值: =0
+
+
+调度属性:
+- 调度周期: 时
+- 生效日期: T~T+1
+- 间隔时间: 1小时
+- 其它默认
+
+2) 建表语句如下:
+=========================================================
+-- 1. 建表语句 (DDL)
+-- 表名: 岚图汽车销售双日期分区表
+-- 分区: factory_date (出厂日期) / sale_date (出售日期)
+-- =========================================================
+DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;
+CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (
+order_id        STRING          COMMENT '销售订单号',
+vin             STRING          COMMENT '车辆识别代码(VIN)',
+car_model       STRING          COMMENT '车型名称',
+guide_price     DECIMAL(20,2)   COMMENT '官方指导价',
+final_price     DECIMAL(20,2)   COMMENT '最终成交价',
+dealer_name     STRING          COMMENT '交付中心',
+order_status    INT             COMMENT '状态: 3-已交付'
+)
+COMMENT '岚图汽车销售表-用于规则配置测试'
+PARTITIONED BY (
+factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',
+sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'
+)
+STORED AS ORC
+TBLPROPERTIES ('orc.compress'='SNAPPY');
+
+-- =========================================================
+-- 2. 数据插入语句 (DML) - 共10条数据
+-- =========================================================
+
+-- 【场景A：正常数据】 4条
+-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)
+-- 用于测试：基础的分区扫描功能
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')
+VALUES
+('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),
+('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),
+('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),
+('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);
+
+-- 【场景B：库存积压】 3条
+-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)
+-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')
+VALUES
+('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),
+('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),
+('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);
+
+-- 【场景C：逻辑脏数据】 2条
+-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)
+-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')
+VALUES
+('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),
+('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);
+
+-- 【场景D：极速产销】 1条
+-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)
+-- 用于测试：边界值校验
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')
+VALUES
+('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);
+
+-- 【场景E：字段级异常 (脏数据)】 4条
+INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')
+VALUES
+-- 1. [NULL异常]: 车型名称为 NULL
+('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),
+-- 2. [空串异常]: 交付中心为 Empty String ('')
+('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),
+-- 3. [数值异常]: 最终成交价为负数 (-100.00)
+('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),
+-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失
+('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);
+
+-- 查询已创建的分区信息
+SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;
+
+
+SELECT * FROM dwd_voyah_vehicle_sales_dates;","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 0有效性校验:- 字段: vin- 统计规则: 字符串长度 - 校验方法: 固定制- 期望值> 0唯一性校验- 字段: order_id- 统计函数: 重复数- 校验方法: 固定值- 期望值: =03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. SQL验证:SELECT * FROM dwd_voyah_vehicle_sales_dates WHERE -- 1. 完整性校验异常 (final_price < 0 或为 NULL) (final_price < 0 OR final_price IS NULL) OR -- 2. 有效性校验异常 (vin 长度 <= 0，包含 NULL 或 纯空格字符串) (length(trim(vin)) = 0 OR vin IS NULL) OR -- 3. 唯一性校验异常 (order_id 重复) order_id IN ( SELECT order_id FROM dwd_voyah_vehicle_sales_dates GROUP BY order_id HAVING COUNT(1) > 1 );
+6. 编辑规则任务rule01, 分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 执行成功, 校验结果: 校验不通过
+4. 显示表数据中未通过的数据
+5. 返回的数据与规则过滤出的数据一致
+6. 执行成功, 校验结果: 校验通过",2
+数据资产-数据质量-规则集管理,验证规则任务配置规则包后校验正常(1规则包 * 1校验规则),"<span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>建表语句如下:</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>=========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 1. 建表语句 (DDL)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 表名: 岚图汽车销售双日期分区表</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 分区: factory_date (出厂日期) / sale_date (出售日期)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>DROP TABLE IF EXISTS dwd_voyah_vehicle_sales_dates;</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>CREATE TABLE IF NOT EXISTS dwd_voyah_vehicle_sales_dates (</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    order_id        STRING          COMMENT '销售订单号',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    vin             STRING          COMMENT '车辆识别代码(VIN)',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    car_model       STRING          COMMENT '车型名称',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    guide_price     DECIMAL(20,2)   COMMENT '官方指导价',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    final_price     DECIMAL(20,2)   COMMENT '最终成交价',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    dealer_name     STRING          COMMENT '交付中心',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    order_status    INT             COMMENT '状态: 3-已交付'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>COMMENT '岚图汽车销售表-用于规则配置测试'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>PARTITIONED BY (</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    factory_date    STRING          COMMENT '一级分区: 出厂日期 yyyyMMdd',</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>    sale_date       STRING          COMMENT '二级分区: 出售日期 yyyyMMdd'</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>STORED AS ORC</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>TBLPROPERTIES ('orc.compress'='SNAPPY');</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- =========================================================</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 2. 数据插入语句 (DML) - 共10条数据</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- =========================================================</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景A：正常数据】 4条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 出厂: 20260115 -> 出售: 20260201 (产销周期约半个月，正常)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 用于测试：基础的分区扫描功能</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260115', sale_date='20260201')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_001', 'LTV_FREE_001', '岚图FREE', 266900.00, 261900.00, '武汉交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_002', 'LTV_DREAM_002', '岚图梦想家', 369900.00, 365000.00, '杭州交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_003', 'LTV_PASSION_003', '岚图追光', 252800.00, 252800.00, '深圳交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_004', 'LTV_FREE_004', '岚图FREE', 266900.00, 260000.00, '成都交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景B：库存积压】 3条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 出厂: 20251220 -> 出售: 20260201 (去年生产今年卖，跨年跨月)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 用于测试：手动输入分区范围查询 (例如 factory_date < '20260101')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20251220', sale_date='20260201')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_005', 'LTV_DREAM_OLD_01', '岚图梦想家', 339900.00, 330000.00, '武汉交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_006', 'LTV_FREE_OLD_02', '岚图FREE', 266900.00, 250000.00, '上海交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_20260201_007', 'LTV_PASSION_OLD_03', '岚图追光', 252800.00, 248000.00, '北京交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景C：逻辑脏数据】 2条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 出厂: 20260301 -> 出售: 20260201 (出厂日期晚于出售日期，逻辑错误)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 用于测试：质量规则校验 (WHERE factory_date > sale_date 应该触发告警)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260301', sale_date='20260201')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_001', 'LTV_FUTURE_001', '岚图FREE', 266900.00, 266900.00, '广州交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_002', 'LTV_FUTURE_002', '岚图梦想家', 369900.00, 369900.00, '西安交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景D：极速产销】 1条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 出厂: 20260201 -> 出售: 20260201 (当天生产当天卖)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 用于测试：边界值校验</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260201', sale_date='20260201')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_FAST_001', 'LTV_SPEED_001', '岚图追光', 252800.00, 252800.00, '武汉交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 【场景E：字段级异常 (脏数据)】 4条</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>INSERT INTO TABLE dwd_voyah_vehicle_sales_dates PARTITION (factory_date='20260202', sale_date='20260202')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>VALUES </span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 1. [NULL异常]: 车型名称为 NULL</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_NULL', 'LTV_NULL_VAL', NULL, 266900.00, 260000.00, '北京交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 2. [空串异常]: 交付中心为 Empty String ('')</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_EMPTY', 'LTV_EMPTY_STR', '岚图追光', 252800.00, 252800.00, '', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 3. [数值异常]: 最终成交价为负数 (-100.00)</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_NEG', 'LTV_NEG_PRICE', '岚图梦想家', 369900.00, -100.00, '成都交付中心', 3),</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 4. [空值异常]: VIN码为纯空格 ('   '), 且官方指导价丢失</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>('ORD_ERR_BLANK', '   ', '岚图FREE', NULL, 0.00, '重庆交付中心', 3);</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>-- 查询已创建的分区信息</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>SHOW PARTITIONS dwd_voyah_vehicle_sales_dates;</span><br /><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>SELECT * FROM dwd_voyah_vehicle_sales_dates;</span><br />","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置如下:1) 监控对象: - 规则名称: rule01- 数据表: dwd_voyah_vehicle_sales_dates- 选择分区: /2) 监控规则: 引入规则包、规则类型(完整性校验)完整性校验: - 生效范围: 字段级- 字段: final_price- 统计函数: 字段取值校验- 期望值: >= 03) 调度属性:- 调度周期: 时- 生效日期: T~T+1- 间隔时间: 1小时- 其它默认- 实例生成方式: 【立即生成】
+3. 选择任务rule01, 立即执行
+4. 进入【校验结果查询】, 检查规则任务详情页
+5. SQL验证:SELECT * FROM dwd_voyah_vehicle_sales_dates WHERE final_price < 0 OR final_price IS NULL;
+6. 编辑规则任务rule01, 变更分区: factory_date=20260115/sale_date=20260201其它配置不变, 保存后重新执行任务","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 执行成功, 校验结果: 校验不通过
+4. 显示表数据中未通过的数据
+5. 返回的数据与规则过滤出的数据一致
+6. 执行成功, 校验结果: 校验通过",1
+数据资产-数据质量-规则集管理,验证规则集引用规则仅支持删除,"规则集管理中已配置记录:
+hive2.x的表hive_table, 规则包配置:
+
+1) hive_rulePkg01: 完整性校验 * 1
+
+2) hive_rulePkg02: 唯一性校验 * 10
+
+3) hive_rulePkg03: (完整性校验~自定义SQL、一致性校验、时效性校验、合理性校验) * 1","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置监控对象(hive_table)后点击下一步
+3. 选择hive_rulePkg03规则包, 勾选所有校验规则, 并引入
+4. 检查完整性校验规则块
+5. 点击删除, 并二次确认删除
+6. 依次检查后面7个校验规则块
+7. 依次删除并二次确认
+8. 再次引入hive_rulePkg03规则包中的所有规则类型, 保存","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+3. 引入成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 规则块仅支持删除按钮, 其余编辑操作全部禁用(置灰), 包括克隆按钮
+5. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+6. 仅支持删除, 其余编辑操作、克隆操作均不再支持
+7. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+8. 引入、保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态",2
+数据资产-数据质量-规则集管理,"验证更换规则包但不引入, 校验规则配置不变",监控规则-规则包中1、2已存在校验规则,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置基础信息内容, 点击下一步
+3. 选择已配置校验规则的规则包1并引入
+4. 更换为规则包2 (不引入)
+5. 保存后, 检查规则任务配置信息","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 进入监控规则配置页面
+3. 规则包1中的校验规则引入成功, 配置信息正确，内容与预期完全一致，无异常或错误
+4. 规则包下的校验规则配置内容不变
+5. 保存成功, 配置内容不变:1) 规则包: 规则包12) 校验规则: 规则包1中的校验规则",2
+数据资产-数据质量-规则集管理,验证规则集引用功能正常(覆盖引入),"<span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>规则集管理中已配置记录:</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>hive2.x的表hive_table, 规则包配置:</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>1) hive_rulePkg01: 完整性校验 * 1</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>2) hive_rulePkg02: 唯一性校验 * 10</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>3) hive_rulePkg03: (完整性校验~自定义SQL、一致性校验、时效性校验、合理性校验) * 1</span><br />","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置监控对象(hive_table)后点击下一步
+3. 选择hive_rulePkg01规则包, 完整性校验, 并引入
+4. 选择hive_rulePkg02规则包, 完整性校验, 并引入
+5. 确认引入后, 检查校验规则配置
+6. 保存规则任务后, 检查规则任务详情页","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+3. 引入成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 提示: 引入后会对已有规则进行覆盖引入，请确认是否引入
+5. 引入后对已有规则配置进行覆盖
+6. 规则配置为: 引入后的规则",1
+数据资产-数据质量-规则集管理,验证规则集引用功能正常(规则包选择全部),"规则集管理中已配置记录:
+hive2.x的表hive_table, 规则包配置:
+
+1) hive_rulePkg01: 完整性校验 * 1
+
+2) hive_rulePkg02: 唯一性校验 * 10
+
+3) hive_rulePkg03: (完整性校验~自定义SQL、一致性校验、时效性校验、合理性校验) * 1","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置监控对象(hive_table)后点击下一步
+3. 选择hive_rulePkg01、02、03规则包, 检查规则类型下拉框数据
+4. 勾选所有规则类型后, 点击【引入】","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+3. 支持选择完整性校验~合理性校验共8项
+4. 引入成功, 不同规则包间的相同校验规则均被引入至规则任务: 完整性校验*2 + 唯一性校验*11 + 其它6种校验*1",2
+数据资产-数据质量-规则集管理,验证规则集引用功能正常(规则包多选),"<span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>规则集管理中已配置记录:</span><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>hive2.x的表hive_table, 规则包配置:</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>1) hive_rulePkg01: 完整性校验 * 1</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>2) hive_rulePkg02: 唯一性校验 * 10</span><br /><br /><span style=“color:#27292A;font-family:NeverMindUI, -apple-system, ""background-color:rgba(245, 246, 247, 0.92);“>3) hive_rulePkg03: (完整性校验~自定义SQL、一致性校验、时效性校验、合理性校验) * 1</span><br />","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置监控对象(hive_table)后点击下一步
+3. 选择hive_rulePkg01、02规则包, 检查规则类型下拉框数据
+4. 勾选所有规则类型后, 点击【引入】","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+3. 仅支持选择: 完整性校验和唯一性校验
+4. 引入完整性校验 * 1 + 唯一性校验 * 10 , 引入配置正确",1
+数据资产-数据质量-规则集管理,验证规则集引用功能正常(规则包单选),"规则集管理中已配置记录:
+hive2.x的表hive_table, 规则包配置:
+
+1) hive_rulePkg01: 完整性校验 * 1
+
+2) hive_rulePkg02: 唯一性校验 * 10
+
+3) hive_rulePkg03: (完整性校验~自定义SQL、一致性校验、时效性校验、合理性校验) * 1","1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 新建监控规则, 配置监控对象(hive_table)后点击下一步
+3. 检查规则包下拉框数据
+4. 选择hive_rulePkg01规则包, 检查规则类型下拉框数据
+5. 勾选【完整性校验】后, 点击【引入】
+6. 正常配置调度属性后, 保存
+7. 重新配置监控规则页面: 选择hive_rulePkg02规则包, 检查规则类型下拉框数据
+8. 勾选【唯一性校验】后, 点击【引入】
+9. 正常配置调度属性后, 保存
+10. 重新配置监控规则页面: 选择hive_rulePkg03规则包, 检查规则类型下拉框数据
+11. 勾选所有校验类型后, 点击【引入】
+12. 正常配置调度属性后, 保存","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+3. 支持选择全部、hive_rulePkg01~04共5个选项
+4. 存在级联关系, 仅筛选出该规则包下的规则类型: 完整性校验
+5. 成功引入一个【完整性校验】, 配置正确，内容与预期完全一致，无异常或错误
+6. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+7. 筛选结果: 唯一性校验
+8. 成功引入十个【唯一性校验】, 配置正确，内容与预期完全一致，无异常或错误
+9. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+10. 筛选结果: 完整性校验~合理性校验共8项
+11. 成功引入所有校验类型, 配置正确，内容与预期完全一致，无异常或错误
+12. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态",2
+数据资产-数据质量-规则集管理,验证监控规则页面变更,无,"1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 点击新建监控规则, 配置监控对象后点击下一步
+3. 检查【监控规则】页面变更","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【新建单表校验规则 ❯ 监控规则】配置页面
+3. 1) 新增规则包(必填)、规则类型(非必填)下拉框、引入按钮2) 原右上角按钮(添加规则、查看全局参数)隐藏",2
+数据资产-数据质量-规则集管理,验证列表字段名称变更(规则名称 ❯ 任务名称),无,"1. 进入【数据资产】-【数据质量】-【规则任务管理】页面
+2. 检查规则任务管理列表字段","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 原列表字段名称(规则名称)变更为: 任务名称",3
+数据资产-数据质量-规则集管理,验证规则集详情页面显示正常(20规则包 * 10校验规则),"1、规则集管理列表中已存在一条记录rule01
+
+2、 rule01中存在20个规则包rulePkg01~20
+
+3、 每个规则包都配置10个校验规则(完整性校验、统计性校验等...)","1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 选择规则集rule01, 点击表名
+3. 检查【规则集详情页】中的基本信息
+4. 检查【规则集详情页】中的规则详情
+5. 进入【规则任务管理】中, 配置规则任务引入所有规则包、规则类型并保存
+6. 检查【规则任务详情页】
+7. 运行规则任务后, 进入【校验结果查询】, 检查【校验结果详情页】","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 右侧展开详情页, 包含基本信息和规则详情
+3. 数据显示正确, 规则包数量、规则数量分别为20、200
+4. 数据显示正确, 页面显示正常, 溢出数据通过列表下滑查看
+5. 系统提示保存成功，修改内容已生效并在页面中更新显示
+6. 显示规则任务关联的规则包中, 所有的校验规则
+7. 显示规则任务关联的规则包中, 所有的校验规则",3
+数据资产-数据质量-规则集管理,验证规则集详情数据正确,规则集管理列表中已存在一条记录rule01,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 选择规则集rule01, 点击表名
+3. 检查【规则集详情页】中的基本信息&规则详情数据
+4. 进入【规则任务管理】中, 配置规则任务引入该规则包并保存
+5. 检查【规则任务详情页】
+6. 运行规则任务后, 进入【校验结果查询】, 检查【校验结果详情页】","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 右侧抽屉形式展开详情页, 包含基本信息和规则详情, 具体如下:1) 标题: ${数据表名称}规则集详情2) 基本信息: 包含表名、所属数据库、所属数据源、规则包数量、规则数量、规则集描述、更新人、更新时间3) 规则详情: - 展示该规则集记录中已配置的规则包内容, 包含规则包名称及关联的校验规则- 每个规则包支持折叠, 默认展开
+3. 1) 基本信息与规则集列表记录保持一致2) 规则详情与规则集记录中配置的规则包内容一致
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 显示规则任务关联的规则包中, 所有的校验规则
+6. 显示规则任务关联的规则包中, 所有的校验规则",2
+数据资产-数据质量-规则集管理,"验证更换规则包名称后, 校验规则配置不变",监控规则-规则包中1、2已存在校验规则,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 编辑规则集rule01, 点击下一步
+2. 将原规则包1更换为规则包2","1. 进入【编辑规则集 ❯ 监控规则】配置页面
+2. 规则包下的校验规则配置内容不变",2
+数据资产-数据质量-规则集管理,验证校验规则增删改功能正常,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 编辑规则集rule01, 点击下一步
+2. 选择规则包rule01, 点击【添加规则】按钮
+3. 添加完整性校验, 正常配置后, 点击保存
+4. 添加有效性校验, 正常配置后, 点击保存
+5. 添加唯一性校验, 正常配置后, 点击保存
+6. 添加统计性校验, 正常配置后, 点击保存
+7. 添加自定义SQL, 正常配置后, 点击保存
+8. 添加至10个校验规则
+9. 选择校验规则A, 点击删除
+10. 选择校验规则B, 编辑内容
+11. 选择校验规则C, 点击克隆","1. 进入【编辑规则集 ❯ 基础信息】配置页面
+2. 支持完整性校验、有效性校验、唯一性校验、统计性校验、自定义SQL
+3. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+4. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+5. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+6. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+7. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+8. 上限10个, 无法再次添加
+9. 删除成功, 可再次添加
+10. 系统提示编辑成功，修改内容已更新，页面显示最新内容
+11. 克隆成功, 配置内容保持一致",3
+数据资产-数据质量-规则集管理,验证查看全局参数功能正常,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 编辑规则集rule01, 点击下一步
+2. 在规则包配置中, 点击【查看全局参数】按钮","1. 进入【编辑规则集 ❯ 监控规则】配置页面
+2. 进入全局参数弹窗, 展示全局参数名称列表",3
+数据资产-数据质量-规则集管理,验证规则包增删改功能,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 编辑规则集rule01, 点击下一步
+2. 折叠/展开规则包
+3. 添加至20个规则包
+4. 删除任一规则包
+5. 二次确认删除
+6. 删除至1个规则包
+7. 编辑规则包中的校验规则内容, 并保存","1. 进入【编辑规则集 ❯ 监控规则】配置页面
+2. 系统提示操作成功，页面/数据状态更新为最新
+3. 增加按钮消失
+4. 二次弹窗确认: 删除时进行二次确认提示: 删除规则包后该规则包下已经配置好的规则会同步被删除，请确认是否删除?
+5. 1) Toast提示: 删除成功2) 可再次添加规则包
+6. 删除按钮消失
+7. 保存并配置成功，系统给出配置成功提示，配置已生效，页面显示最新配置",3
+数据资产-数据质量-规则集管理,验证规则包下拉框数据正常,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 编辑规则集rule01, 点击下一步
+2. 展开规则包下拉框
+3. 检查规则包下拉框数据","1. 进入【编辑规则集 ❯ 监控规则】配置页面
+2. 下拉框数据为基础信息配置页面中添加的规则包名称
+3. 已选择过的规则包(rule01)不支持再次选择",3
+数据资产-数据质量-规则集管理,验证规则包名称不可重复,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 编辑规则集rule01
+2. 在规则包配置中, 点击增加按钮, 添加规则包
+3. 配置内容:1) 规则包1: rule012) 规则包2: rule01","1. 进入【编辑规则集 ❯ 基础信息】配置页面
+2. 添加成功, 从第二个规则包开始均提供删除按钮
+3. 置红提示: 规则包名称不可重复",3
+数据资产-数据质量-规则集管理,验证规则包名称增删改功能,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 编辑规则集rule01
+2. 在规则包名称配置中, 点击增加按钮, 添加规则包名称
+3. 添加至20个规则包名称
+4. 删除任一规则包名称
+5. 删除至1个规则包名称
+6. 规则包名称输入框输入51字符
+7. 输入50字符, 点击下一步","1. 进入【编辑规则集 ❯ 基础信息】配置页面
+2. 添加成功, 从第二个规则包名称开始均提供删除按钮
+3. 增加按钮消失
+4. 可再次添加
+5. 删除按钮消失
+6. 置红提示: 规则包名称不可重复
+7. 系统提示配置成功，配置项已生效，页面显示最新配置状态",3
+数据资产-数据质量-规则集管理,验证选择数据表选项过滤已配置的表,规则集管理中已配置过hive2.x/sparkthrift2.x/doris3.x的表tableA,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 编辑规则集rule01
+2. 选择已配置过规则的数据源(hive2.x)、数据库后, 查看选择数据表下拉选项
+3. 选择已配置过规则的数据源(sparkthrift2.x)、数据库后, 查看选择数据表下拉选项
+4. 选择已配置过规则的数据源(doris3.x)、数据库后, 查看选择数据表下拉选项","1. 进入【编辑规则集 ❯ 基础信息】配置页面
+2. 过滤已配置的hive表tableA
+3. 过滤已配置的sparkthrift表tableA
+4. 过滤已配置的doris表tableA",2
+数据资产-数据质量-规则集管理,验证选择数据表配置功能正常,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 选择规则集记录rule01, 点击编辑
+3. 切换选择数据源配置后, 正常配置规则集并保存
+4. 切换选择数据库配置后, 正常配置规则集并保存
+5. 切换选择数据表配置后, 正常配置规则集并保存
+6. 切换选择规则集描述后, 正常配置规则集并保存","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【编辑规则集 ❯ 基础信息】配置页面
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 系统提示配置成功，配置项已生效，页面显示最新配置状态",3
+数据资产-数据质量-规则集管理,验证编辑规则集配置页面,规则集列表已存在规则集记录rule01,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 选择规则集记录rule01, 点击编辑
+3. 基础信息UICHECK
+4. 点击下一步
+5. 监控规则UICHECK","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【编辑规则集 ❯ 基础信息】配置页面, 所有字段均可编辑
+3. 1) 选择数据表: ${最近一次编辑保存时的配置记录}2) 规则包: ${最近一次编辑保存时的规则包名称}3) 按钮: 取消/下一步
+4. 进入【编辑规则集 ❯ 监控规则】配置页面
+5. 1) 规则包&校验规则: ${最近一次编辑保存时的规则包&校验规则}2) 按钮: 下一步/保存",2
+数据资产-数据质量-规则集管理,"验证更换规则包名称后, 校验规则配置不变",监控规则-规则包中1、2已存在校验规则,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置基础信息内容, 点击下一步
+3. 选择规则包1, 添加并配置校验规则1
+4. 切换为规则包2, 检查校验规则配置信息","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 进入【监控规则】配置页面
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 规则配置不变: 更换选择不同的规则包名称不影响已经配置的规则",2
+数据资产-数据质量-规则集管理,验证【完整性校验】字段变更(规则类型 ❯ 生效范围),无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置基础信息内容, 点击下一步
+3. 添加【完整性校验】, 检查配置字段","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 进入监控规则配置页面
+3. 原配置字段名称(规则类型)变更为: 生效范围",3
+数据资产-数据质量-规则集管理,验证校验规则增删改功能正常,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置基础信息内容, 点击下一步
+3. 在规则包配置中, 点击【添加规则】按钮
+4. 添加完整性校验, 正常配置后, 点击保存
+5. 添加有效性校验, 正常配置后, 点击保存
+6. 添加唯一性校验, 正常配置后, 点击保存
+7. 添加统计性校验, 正常配置后, 点击保存
+8. 添加自定义SQL, 正常配置后, 点击保存
+9. 添加至10个校验规则
+10. 选择校验规则A, 点击删除
+11. 选择校验规则B, 编辑内容
+12. 选择校验规则C, 点击克隆","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 进入监控规则配置页面
+3. 支持完整性校验、有效性校验、唯一性校验、统计性校验、自定义SQL
+4. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+5. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+6. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+7. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+8. 配置保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+9. 上限10个, 无法再次添加
+10. 删除成功, 可再次添加
+11. 系统提示编辑成功，修改内容已更新，页面显示最新内容
+12. 克隆成功, 配置内容保持一致",3
+数据资产-数据质量-规则集管理,验证查看全局参数功能正常,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置基础信息内容, 点击下一步
+3. 在规则包配置中, 点击【查看全局参数】按钮","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 进入监控规则配置页面
+3. 进入全局参数弹窗, 展示全局参数名称列表",3
+数据资产-数据质量-规则集管理,验证规则包增删改功能,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置基础信息内容, 点击下一步
+3. 在规则包配置中, 点击增加按钮, 添加规则包
+4. 折叠/展开规则包
+5. 添加至20个规则包
+6. 删除任一规则包
+7. 二次确认删除
+8. 删除至1个规则包
+9. 编辑规则包中的校验规则内容, 保存","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 进入监控规则配置页面
+3. 1)添加成功, 从第二个规则包开始均提供删除按钮2) 每个规则包都支持查看全局参数和添加规则按钮3) 规则包支持折叠和展开, 默认展开
+4. 系统提示操作成功，页面/数据状态更新为最新
+5. 增加按钮消失
+6. 二次弹窗确认: 删除时进行二次确认提示: 删除规则包后该规则包下已经配置好的规则会同步被删除，请确认是否删除?
+7. 1) Toast提示: 删除成功2) 可再次添加规则包
+8. 删除按钮消失
+9. 系统提示保存成功，修改内容已生效并在页面中更新显示",3
+数据资产-数据质量-规则集管理,验证规则包下拉框数据正常,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置基础信息内容, 点击下一步
+3. 展开规则包下拉框
+4. 选择规则包rule01, 点击增加
+5. 检查规则包下拉框数据","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 进入监控规则配置页面
+3. 下拉框数据为基础信息配置页面中添加的规则包名称
+4. 新增一个规则包模块
+5. 已选择过的规则包(rule01)不支持再次选择",3
+数据资产-数据质量-规则集管理,验证规则包名称不可重复,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置选择数据表内容
+3. 在规则包配置中, 点击增加按钮, 添加规则包
+4. 配置内容:1) 规则包1: rule012) 规则包2: rule01","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 添加成功, 从第二个规则包开始均提供删除按钮
+4. 置红提示: 规则包名称不可重复",3
+数据资产-数据质量-规则集管理,验证规则包名称增删改功能,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 正常配置选择数据表内容
+3. 在规则包名称配置中, 点击增加按钮, 添加规则包名称
+4. 添加至20个规则包名称
+5. 删除任一规则包名称
+6. 删除至1个规则包名称
+7. 规则包名称输入框输入51字符
+8. 输入50字符, 点击下一步","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+3. 添加成功, 从第二个规则包名称开始均提供删除按钮
+4. 增加按钮消失
+5. 可再次添加
+6. 删除按钮消失
+7. 置红提示: 规则包名称最大50个字符
+8. 系统提示配置成功，配置项已生效，页面显示最新配置状态",2
+数据资产-数据质量-规则集管理,验证选择数据表选项过滤已配置的表,规则集管理中已配置过hive2.x/sparkthrift2.x/doris3.x的表tableA,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面, 点击新增规则集
+2. 选择已配置过规则的数据源(hive2.x)、数据库后, 查看选择数据表下拉选项
+3. 选择已配置过规则的数据源(sparkthrift2.x)、数据库后, 查看选择数据表下拉选项
+4. 选择已配置过规则的数据源(doris3.x)、数据库后, 查看选择数据表下拉选项","1. 进入【新建规则集 ❯ 基础信息】配置页面
+2. 过滤已配置的hive表tableA
+3. 过滤已配置的sparkthrift表tableA
+4. 过滤已配置的doris表tableA",1
+数据资产-数据质量-规则集管理,验证选择数据表配置功能正常,规则集管理中已配置过hive2.x/sparkthrift2.x/doris3.x的表tableA,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 点击新增规则集
+3. 配置选择数据源
+4. 配置选择数据库
+5. 配置选择数据表
+6. 配置规则集描述","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【新建规则集 ❯ 基础信息】配置页面
+3. 1)下拉显示在平台管理中已授权的数据源2)支持选择的数据源类型包括hive2.x/sparkthrift2.x/doris3.x
+4. 下拉显示所选数据源下的数据库配置
+5. 下拉显示所选数据库下的数据表配置, 已配置过规则的表被过滤
+6. 规则集描述最大支持255字符, 超过会置红提示",3
+数据资产-数据质量-规则集管理,验证新建规则集配置页面,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 点击新增规则集
+3. 基础信息UICHECK
+4. 正常配置基础信息内容, 点击下一步
+5. 监控规则UICHECK","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【新建规则集 ❯ 基础信息】配置页面, 支持配置基础信息和监控规则
+3. 支持配置选择数据表、规则包:1) 选择数据表: 选择数据源(必填)、选择数据库(必填)、选择数据表(必填)、规则集描述2) 规则包: 支持对规则包名称进行增删改, 必填3) 按钮: 取消/下一步
+4. 进入【新建规则集 ❯ 监控规则】配置页面
+5. 1)支持对每一个规则包配置不同的校验规则2)支持规则包的增删改操作3) 支持对规则包中的校验规则增删改和克隆操作4) 支持查看全局参数5) 按钮: 下一步/保存",2
+数据资产-数据质量-规则集管理,验证分页组件功能正常,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 分页组件UICHECK
+3. 切换数字页码
+4. 切换前后页箭头页码
+5. 切换10、20、50、100页数","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 1) 共x条数据, 每页显示xx条2) 支持数字页码切换3) 支持前/后页箭头页码切换4) 支持10、20、50、100 页数切换
+3. 页码切换成功, 数据显示正常，功能行为符合预期，无报错或异常
+4. 页码切换成功, 数据显示正常，功能行为符合预期，无报错或异常
+5. 页数切换成功, 数据显示正常，功能行为符合预期，无报错或异常",3
+数据资产-数据质量-规则集管理,验证规则集管理删除功能,"存在三条规则集
+1) 规则集1: 未关联任何规则任务
+2) 规则集2: 关联规则任务A, 但是关闭检测
+3) 规则集3: 关联规则任务B","1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 选择规则集1, 点击删除
+3. 确认删除
+4. 选择规则集2, 点击删除
+5. 确认删除
+6. 选择规则集3, 点击删除
+7. 确认删除
+8. 进入【规则任务管理】, 删除规则任务B
+9. 进入【规则集管理】, 再次删除规则集3并确认","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 二次确认弹窗, 提示: 删除规则集不会影响已经建好的规则任务，若需要删除已有规则任务，需要前往规则任务模块进行任务删除或关闭检测。请确认是否删除?
+3. Toast提示: 删除成功，系统给出删除成功提示，该记录从列表中消失
+4. 二次确认弹窗提示
+5. Toast提示: 删除成功，系统给出删除成功提示，该记录从列表中消失
+6. 二次确认弹窗提示
+7. 删除失败, 需要先删除关联的规则任务
+8. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+9. 系统提示删除成功，该条记录从列表中消失，总记录数减1",1
+数据资产-数据质量-规则集管理,验证规则集管理页面,无,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 检查页面UI
+3. 检查列表数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 1、支持规则集列表展示, 包含表名、所属数据库、所属数据源、规则包数量、规则数量、规则集描述、更新人、更新时间、操作2、支持对规则集的增删改查3、支持对规则集分页列表展示
+3. 1) 表名: ${最后一次编辑规则集时的表名}2) 所属数据库: ${最后一次编辑规则集时的数据库}3) 所属数据源: ${最后一次编辑规则集时的数据源}4) 规则包数量: ${最后一次编辑规则集时的规则包数量, 不超过20}5) 规则数量: ${最后一次编辑规则集时的规则数量}6) 规则集描述: ${最后一次编辑规则集时的规则集描述}7) 更新人: ${最后一次编辑规则集时的账号}8) 更新时间: ${最后一次编辑规则集时的时间}",2
+数据资产-数据质量-规则集管理,验证规则集管理查询功能,规则集管理列表已存在至少一条记录,"1. 进入【数据资产】-【数据质量】-【规则集管理】页面
+2. 检查查询框
+3. 输入表部分名查询
+4. 输入表全名查询","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 1、提示: 输入表名搜索2、支持回车查询、搜索icon查询
+3. 模糊查询成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 列表按查询条件刷新，仅显示符合条件的记录，不满足条件的记录不显示",3

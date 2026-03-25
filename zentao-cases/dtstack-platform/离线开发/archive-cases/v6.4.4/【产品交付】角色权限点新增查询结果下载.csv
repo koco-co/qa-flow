@@ -1,0 +1,1334 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+离线开发-控制台-角色管理,验证运维/访客/自定义角色默认无查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在自定义角色；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，运维、访客、自定义角色默认不拥有查询结果下载权限",2
+离线开发-控制台-角色管理,验证项目所有者/项目管理员/数据开发角色默认拥有查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在自定义角色；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，项目所有者、项目管理员、数据开发角色默认拥有查询结果下载权限",1
+离线开发-控制台-角色管理,验证正常【关闭】查询结果下载权限——使用【已有角色】在【任务管理】、【临时查询管理】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在自定义角色；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置
+3. 关闭自定义角色任务管理、临时查询管理的查询结果下载权限","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，项目所有者、项目管理员、数据开发角色默认拥有查询结果下载权限
+3. 权限关闭成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+离线开发-控制台-角色管理,验证正常【开启】查询结果下载权限——使用【自定义角色】在【任务管理】、【临时查询管理】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在自定义角色；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置
+3. 开启自定义角色任务管理、临时查询管理的查询结果下载权限","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，项目所有者、项目管理员、数据开发角色默认拥有查询结果下载权限
+3. 权限开启成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+离线开发-控制台-角色管理,验证【项目管理-角色管理】对应角色不展示——【删除】【已开启】查询结果下载权限的【自定义角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在自定义角色（开启查询结果下载权限）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置
+3. 删除已经打开查询结果下载权限的自定义角色
+4. 使用用户xiaoqi_1进入项目管理-角色管理查看","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，项目所有者、项目管理员、数据开发角色默认拥有查询结果下载权限
+3. 角色删除成功，系统给出删除成功提示，该记录从列表中消失
+4. 对应自定义角色已被删除不展示",2
+离线开发-控制台-角色管理,验证【项目管理-角色管理】对应权限显示正常——【已有角色】【编辑】【任务管理】、【临时查询管理】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置
+3. 编辑运维角色任务管理、临时查询管理的查询结果下载权限
+4. 使用用户xiaoqi_1进入项目管理-角色管理查看运维角色权限","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，项目所有者、项目管理员、数据开发角色默认拥有查询结果下载权限
+3. 权限编辑成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 更新为编辑后内容",1
+离线开发-控制台-角色管理,验证【项目管理-角色管理】对应权限显示正常——【已有角色】【开启】【任务管理】、【临时查询管理】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置
+3. 开启运维角色任务管理、临时查询管理的查询结果下载权限
+4. 使用用户xiaoqi_1进入项目管理-角色管理查看运维角色权限","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，项目所有者、项目管理员、数据开发角色默认拥有查询结果下载权限
+3. 权限开启成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 更新为开启后内容",2
+离线开发-控制台-角色管理,验证【项目管理-角色管理】对应权限显示正常——【自定义角色】【编辑】【任务管理】、【临时查询管理】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置
+3. 编辑自定义角色任务管理、临时查询管理的查询结果下载权限
+4. 使用用户xiaoqi_1进入项目管理-角色管理查看自定义角色权限","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，项目所有者、项目管理员、数据开发角色默认拥有查询结果下载权限
+3. 权限编辑成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 更新为编辑后内容",1
+离线开发-控制台-角色管理,验证【项目管理-角色管理】对应权限显示正常——【自定义角色】【开启】【任务管理】、【临时查询管理】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用超管用户","1. 进入【控制台】-【角色管理】-【离线开发】页面
+2. 查看页面中各角色的查询结果下载权限配置
+3. 开启自定义角色任务管理、临时查询管理的查询结果下载权限
+4. 使用用户xiaoqi_1进入项目管理-角色管理查看自定义角色权限","1. 成功进入【控制台】-【角色管理】-【离线开发】页面，页面内容正常加载显示，无报错
+2. 页面正常显示，项目所有者、项目管理员、数据开发角色默认拥有查询结果下载权限
+3. 权限开启成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 更新为开启后内容",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【sql任务菜单下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【sql任务菜单下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【sql任务菜单下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（关闭）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【sql任务菜单下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（关闭）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【项目管理-操作设置下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【项目管理-操作设置下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【项目管理-操作设置下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（关闭）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【项目管理-操作设置下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（关闭）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【控制台下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【控制台下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【控制台下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（关闭）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【控制台下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（关闭）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】，查询语句为【复杂查询】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001 where id > 1;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(2,'kako')",3
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】在【任务管理】开启查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（在任务管理开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——添加【只开启】查询结果下载权限的【自定义角色1】和【只开启】编辑权限的【自定义角色2】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色1（开启查询结果下载权限）&自定义角色2（开启编辑权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——添加【已开启】查询结果下载权限但【未开启】编辑权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限，关闭编辑权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行失败，弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【添加多个】已开启查询结果下载权限的【自定义角色】后【删除其中一个】角色,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）&自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 使用超管用户进入【控制台】-【角色管理】-【离线开发】页面，删除新增的自定义角色
+5. 重新使用用户xiaoqi_1进入任务test_001，点击结果框下载按钮
+6. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 自定义角色删除成功，系统给出删除成功提示，该记录从列表中消失
+5. 弹出数据下载弹窗
+6. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】已开启查询结果下载权限的【自定义角色】后【删除】该角色,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 使用超管用户进入【控制台】-【角色管理】-【离线开发】页面，删除新增的自定义角色
+5. 重新使用用户xiaoqi_1进入任务test_001，点击结果框下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 自定义角色删除成功，系统给出删除成功提示，该记录从列表中消失
+5. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【自定义角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】【未开启】查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",1
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【添加包含】已开启查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）&运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【sql任务菜单下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【sql任务菜单下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【sql任务菜单下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（关闭）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【sql任务菜单下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（关闭）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【项目管理-操作设置下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【项目管理-操作设置下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【项目管理-操作设置下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（关闭）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【项目管理-操作设置下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（关闭）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【控制台下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【控制台下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【控制台下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（关闭）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【控制台下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（关闭）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】【未开启】查询结果下载权限的【已有角色】，【工作流内子任务】下载查询结果,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在工作流内子任务hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】，【工作流内子任务】下载查询结果,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在工作流内子任务hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",3
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】，查询语句为【复杂查询】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001 where id > 1;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(2,'kako')",3
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——添加【只开启】查询结果下载权限的【自定义角色1】和【只开启】编辑权限的【自定义角色2】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色1（开启查询结果下载权限）&自定义角色2（开启编辑权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——添加【已开启】查询结果下载权限但【未开启】编辑权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限，关闭编辑权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行失败，弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【添加多个】已开启查询结果下载权限的【自定义角色】后【删除其中一个】角色,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）&自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 使用超管用户进入【控制台】-【角色管理】-【离线开发】页面，删除新增的自定义角色
+5. 重新使用用户xiaoqi_1进入任务test_001，点击结果框下载按钮
+6. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 自定义角色删除成功，系统给出删除成功提示，该记录从列表中消失
+5. 弹出数据下载弹窗
+6. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】已开启查询结果下载权限的【自定义角色】后【删除】该角色,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 使用超管用户进入【控制台】-【角色管理】-【离线开发】页面，删除新增的自定义角色
+5. 重新使用用户xiaoqi_1进入任务test_001，点击结果框下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 自定义角色删除成功，系统给出删除成功提示，该记录从列表中消失
+5. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【自定义角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】【未开启】查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",1
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【添加包含】已开启查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）&运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【sql任务菜单下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【sql任务菜单下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【sql任务菜单下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（关闭）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【sql任务菜单下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（关闭）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【项目管理-操作设置下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【项目管理-操作设置下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【项目管理-操作设置下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（关闭）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【项目管理-操作设置下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（关闭）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【开启】【控制台下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【开启】【控制台下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【控制台下载开关】，用户【不具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（关闭）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【关闭】【控制台下载开关】，用户【具有】查询结果下载权限,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（关闭）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')，结果框无下载按钮",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】【未开启】查询结果下载权限的【已有角色】，【灵瞳内】下载查询结果,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 进入灵瞳问答界面，询问：表test_001内有哪些数据
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 灵瞳返回询问结果，返回数据为(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】，【灵瞳内】下载查询结果,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在任务hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 进入灵瞳问答界面，询问：表test_001内有哪些数据
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 灵瞳返回询问结果，返回数据为(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",3
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】【未开启】查询结果下载权限的【已有角色】，【工作流内子任务】下载查询结果,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在工作流内子任务hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】，【工作流内子任务】下载查询结果,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在工作流内子任务hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",3
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】【未开启】查询结果下载权限的【已有角色】，【业务流程内子任务】下载查询结果,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在业务流程子任务hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】，【业务流程内子任务】下载查询结果,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在业务流程子任务hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",3
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】，查询语句为【复杂查询】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001 where id > 1;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(2,'kako')",3
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】在【临时查询管理】开启查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（在临时查询管理开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——添加【只开启】查询结果下载权限的【自定义角色1】和【只开启】编辑权限的【自定义角色2】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色1（开启查询结果下载权限）&自定义角色2（开启编辑权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——添加【已开启】查询结果下载权限但【未开启】编辑权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限，关闭编辑权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行失败，弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【添加多个】已开启查询结果下载权限的【自定义角色】后【删除其中一个】角色,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）&自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 使用超管用户进入【控制台】-【角色管理】-【离线开发】页面，删除新增的自定义角色
+5. 重新使用用户xiaoqi_1进入任务test_001，点击结果框下载按钮
+6. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 自定义角色删除成功，系统给出删除成功提示，该记录从列表中消失
+5. 弹出数据下载弹窗
+6. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】已开启查询结果下载权限的【自定义角色】后【删除】该角色,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 使用超管用户进入【控制台】-【角色管理】-【离线开发】页面，删除新增的自定义角色
+5. 重新使用用户xiaoqi_1进入任务test_001，点击结果框下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 自定义角色删除成功，系统给出删除成功提示，该记录从列表中消失
+5. 弹出提示无权限",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【自定义角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——自定义角色（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1
+离线开发-控制台-角色管理,验证用户【无法】下载查询结果——【只添加】【未开启】查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出提示无权限",1
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【添加包含】已开启查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）&运维（关闭查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",2
+离线开发-控制台-角色管理,验证用户【正常】下载查询结果——【只添加】已开启查询结果下载权限的【已有角色】,"控制台-多集群管理-绑定租户-通用信息-是否允许下载select查询结果（开启）
+项目管理-项目设置-操作设置-下载select结果（开启）
+sql任务菜单-下载结果（开启）
+存在用户xiaoqi_1——数据开发（开启查询结果下载权限）
+存在可用的hive数据源，可正常创建hivesql任务
+存在hivesql任务test_001、hive表：
+DROP table if exists test_001;
+CREATE TABLE if NOT EXISTS test_001(id INT,name VARCHAR(255));
+INSERT INTO test_001 VALUES (1,'mengfei'),(2,'kako');；使用用户xiaoqi_1","1. 进入任务test_001
+2. 查看任务界面，确认当前状态显示正常
+3. 输入sql：SELECT * from test_001;后点击保存、临时运行
+4. 点击下载按钮
+5. 点击下载按钮","1. 成功进入任务test_001，页面内容正常加载显示，无报错
+2. 正常打开任务test_001
+3. 任务保存、运行成功，返回结果(1,'mengfei'),(2,'kako')
+4. 弹出数据下载弹窗
+5. 数据开始下载，下载完成后打开文件，下载结果显示(1,'mengfei'),(2,'kako')",1

@@ -1,0 +1,20 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+数据资产-数据模型,验证底层创建表，资产元数据同步是否正常,"<p><br /></p>
+<div style=“background-color:#ffffff;padding:0px 0px 0px 2px;“>
+  <div style=“color:#000000;font-family:Consolas;font-size:10pt;“>
+    <p><span style=“color:#800000;font-weight:bold;“>CREATE</span> <span style=“color:#800000;font-weight:bold;“>TABLE</span> ks_001 (</p>
+    <p>product_id <span style=“color:#000080;font-weight:bold;“>INT</span> COMMENT <span style=“color:#000080;“>“用户ID“</span>,</p>
+    <p>amount <span style=“color:#000080;font-weight:bold;“>int</span> COMMENT <span style=“color:#000080;“>“用户姓名“</span></p>
+    <p>)</p>
+    <p>DISTRIBUTED <span style=“color:#800000;font-weight:bold;“>BY</span> HASH(product_id) BUCKETS <span style=“color:#0000ff;“>10</span></p>
+    <p>PROPERTIES (</p>
+    <p><span style=“color:#000080;“>“replication_num“</span> = <span style=“color:#000080;“>“1“</span></p>
+    <p>)<span style=“color:#ff0000;“>;</span></p>
+  </div>
+</div>
+<p><br /></p>；在DBeaver连接数据源，创建前置条件中的表，然后","1. 进入资产-元数据同步，新增同步，选择数据源、数据库，查看数据表
+2. 选中表进行元数据同步
+3. 选择立即同步，选择负责人，同步成功后查看结果","1. 成功进入资产-元数据同步，新增同步，选择数据源、数据库，查看数据表，页面内容正常加载显示，无报错
+2. 数据表中有底层创建的表
+3. 同步成功，表结构、数据预览、技术属性、血缘关系等正确
+  （补充：4. 负责人正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示）",2

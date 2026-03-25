@@ -1,0 +1,280 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+离线开发-运维中心-补数据任务,验证运维中心补数据任务的补数据任务实例,无,"1. 进入【离线开发】-【运维中心】-【补数据任务】页面
+2. 创建并提交周期任务
+3. 在周期任务-周期任务管理中选择对应任务，进行补数据（直接点击确定）
+4. 在补数据任务-补数据任务管理，周期运行tab中查找对应任务并点击运行
+5. 进入补数据任务- 补数据任务实例，查找对应任务实例，进入补数据任务实例详情，点击对应任务名称并点击查看更多详情，切换至运行记录tab，查看运行日志","1. 成功进入【离线开发】-【运维中心】-【补数据任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+5. 校验运行日志内容",1
+离线开发-运维中心-手动任务,验证运维中心手动任务的手动任务实例日志,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. 创建并提交手动任务
+3. 手动任务管理中查询对应手动任务并运行
+4. 进入任务实例详情，选择对应任务并点击查看更多详情，切换至运行记录tab，查看运行日志","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 校验运行日志内容",1
+离线开发-运维中心-周期任务,验证运维中心周期任务的周期任务实例日志,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. 创建并提交周期任务
+3. 周期任务实例生成并运行成功后，进入任务实例详情，选择对应任务并点击查看更多详情，切换至运行记录tab，查看运行日志","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 校验运行日志内容",1
+离线开发-数据开发-临时查询,验证临时查询中的SQL Server类型的临时查询临时运行,"添加必要的计算引擎
+----
+--建表
+CREATE TABLE Customers (
+CustomerID INT PRIMARY KEY,
+Name NVARCHAR(100)
+);
+-- 插入示例数据
+INSERT INTO Customers (CustomerID, Name) VALUES (1, N'John Doe');
+INSERT INTO Customers (CustomerID, Name) VALUES (2, N'Jane Smith');
+INSERT INTO Customers (CustomerID, Name) VALUES (3, N'Michael Johnson');
+--建表
+CREATE TABLE Customers (
+CustomerID INT PRIMARY KEY,
+Name NVARCHAR(100)
+);
+-- 插入示例数据
+INSERT INTO Customers (CustomerID, Name) VALUES (1, N'John Doe');
+INSERT INTO Customers (CustomerID, Name) VALUES (2, N'Jane Smith');
+INSERT INTO Customers (CustomerID, Name) VALUES (3, N'Michael Johnson');","1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. 创建SQL Server类型的临时查询
+3. 创建SQL Server数据库表，并插入数据
+4. 调用SQL Server函数，点击运行
+5. 下载运行日志
+6. 在运行历史中，点击查看日志","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 查看控制台输出，校验输出结果
+5. 校验下载内容
+6. 校验日志内容",1
+离线开发-数据开发-临时查询,验证临时查询中的OuShuDB类型的临时查询临时运行,"添加必要的计算引擎
+----
+-- 创建表
+CREATE TABLE IF NOT EXISTS my_table (
+id SERIAL PRIMARY KEY,
+name VARCHAR(100),
+description TEXT
+);
+
+-- 向表中插入数据
+INSERT INTO my_table (name, description) VALUES
+('Book1', 'This is a book about SQL.'),
+('Book2', 'Learn SQL the easy way.'),
+('Book3', 'Advanced SQL techniques.');
+
+-- 调用存储过程
+SELECT * FROM example_procedure('SQL');
+-- 获取输出参数的值
+SELECT total_count, matched_count FROM example_procedure('SQL');","1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. 创建OuShuDB类型的临时查询
+3. 创建OuShuDB数据库表，并插入数据
+4. 调用OuShuDB函数，点击运行
+5. 下载运行日志
+6. 在运行历史中，点击查看日志","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 查看控制台输出，校验输出结果
+5. 校验下载内容
+6. 校验日志内容",1
+离线开发-数据开发-手动任务,验证手动任务中的SQL Server类型的手动任务临时运行,"添加必要的计算引擎
+----
+--建表
+CREATE TABLE Customers (
+CustomerID INT PRIMARY KEY,
+Name NVARCHAR(100)
+);
+-- 插入示例数据
+INSERT INTO Customers (CustomerID, Name) VALUES (1, N'John Doe');
+INSERT INTO Customers (CustomerID, Name) VALUES (2, N'Jane Smith');
+INSERT INTO Customers (CustomerID, Name) VALUES (3, N'Michael Johnson');
+-- 调用存储过程
+EXEC SearchCustomers @searchTerm = N'John';
+-- 获取返回的总计数和匹配计数
+SELECT @totalCount AS TotalCount, @matchedCount AS MatchedCount;","1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. 创建SQL Server类型的手动任务
+3. 创建SQL Server数据库表，并插入数据
+4. 调用SQL Server函数，点击运行
+5. 在运行历史中，点击查看日志","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 查看控制台输出，校验输出结果
+5. 校验日志内容",1
+离线开发-数据开发-手动任务,验证手动任务中的OuShuDB类型的手动任务临时运行,"添加必要的计算引擎
+----
+-- 创建表
+CREATE TABLE IF NOT EXISTS my_table (
+id SERIAL PRIMARY KEY,
+name VARCHAR(100),
+description TEXT
+);
+
+-- 向表中插入数据
+INSERT INTO my_table (name, description) VALUES
+('Book1', 'This is a book about SQL.'),
+('Book2', 'Learn SQL the easy way.'),
+('Book3', 'Advanced SQL techniques.');
+
+-- 调用存储过程
+SELECT * FROM example_procedure('SQL');
+-- 获取输出参数的值
+SELECT total_count, matched_count FROM example_procedure('SQL');","1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. 创建OuShuDB类型的手动任务
+3. 创建OuShuDB数据库表，并插入数据
+4. 调用OuShuDB函数，点击运行
+5. 下载运行日志
+6. 在运行历史中，点击查看日志","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 查看控制台输出，校验输出结果
+5. 校验下载内容
+6. 校验日志内容",1
+离线开发-数据开发-周期任务,验证周期任务中的SQL Server类型的周期任务临时运行,"添加必要的计算引擎
+----
+--包含DDL、DML、DQL、raise notice以及游标，其中DQL语句涉及简单查询和复杂查询，匿名代码段，包含入参和出参
+-- 如果存储过程已经存在，先删除它
+IF OBJECT_ID('dbo.GetEmployeeDetails_001', 'P') IS NOT NULL
+DROP PROCEDURE dbo.GetEmployeeDetails_001;
+-- 创建存储过程
+CREATE PROCEDURE dbo.GetEmployeeDetails_001
+@InputEmployeeID INT
+AS
+BEGIN
+-- 声明局部变量以保存员工姓名和平均薪资
+DECLARE @LocalEmployeeID INT,
+@simple_result VARCHAR(500),
+@complex_result VARCHAR(500),
+@lambda_sign DECIMAL(10, 2),
+@EmployeeName VARCHAR(100),
+@AvgSalary DECIMAL(10, 2);
+-- DQL: 简单查询
+SELECT @simple_result = FirstName + ' ' + LastName
+FROM sqlserver_table
+WHERE EmployeeID = @InputEmployeeID;
+-- DQL: 复杂查询
+set @complex_result =
+(SELECT CONCAT(EmployeeID, FirstName, LastName, Salary) AS complex_result
+FROM sqlserver_table
+WHERE Salary > (SELECT AVG(Salary) FROM sqlserver_table));
+-- RAISERROR: 抛出错误信息
+IF @InputEmployeeID > 5
+BEGIN
+RAISERROR('Employee not found', 16, 1);
+END
+-- 匿名代码段
+SELECT @AvgSalary = AVG(Salary) FROM sqlserver_table;
+PRINT 'Average Salary: ' + CAST(@AvgSalary AS NVARCHAR(50));
+--输出结果
+SELECT @InputEmployeeID AS InputEmployeeID, @simple_result AS simple_result, @complex_result AS complex_result, @AvgSalary AS AvgSalary;
+END;
+--建表
+CREATE TABLE Customers (
+CustomerID INT PRIMARY KEY,
+Name NVARCHAR(100)
+);
+-- 插入示例数据
+INSERT INTO Customers (CustomerID, Name) VALUES (1, N'John Doe');
+INSERT INTO Customers (CustomerID, Name) VALUES (2, N'Jane Smith');
+INSERT INTO Customers (CustomerID, Name) VALUES (3, N'Michael Johnson');
+-- 调用存储过程,@InputEmployeeID>5时会抛出异常
+EXEC dbo.GetEmployeeDetails_001  @InputEmployeeID = 1;","1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. 创建SQL Server类型的周期任务
+3. 创建SQL Server数据库表，并插入数据
+4. 调用SQL Server函数，点击运行
+5. 在运行历史中，点击查看日志","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 查看控制台输出，校验输出结果
+5. 校验日志内容",1
+离线开发-数据开发-周期任务,验证周期任务中的OuShuDB类型的周期任务临时运行,"添加必要的计算引擎
+----
+--包含DDL、DML、DQL以及raise notice、以及游标，其中DQL语句涉及简单查询和复杂查询，匿名代码段，包含入参和出参
+CREATE OR REPLACE FUNCTION oushu_procedure(IN search_term VARCHAR(255), OUT total_count INT, OUT matched_count INT)
+RETURNS SETOF oushu_table
+AS $$
+DECLARE
+-- 定义游标
+cur CURSOR FOR
+-- 简单查询：查找包含特定搜索词的所有记录
+SELECT * FROM oushu_table WHERE description LIKE '%' || search_term || '%';
+-- 游标变量
+rec oushu_table%ROWTYPE;
+BEGIN
+/*
+-- 创建表（DDL）
+CREATE TABLE IF NOT EXISTS oushu_table (
+id SERIAL PRIMARY KEY,
+name VARCHAR(100),
+description TEXT
+);
+
+-- 插入数据（DML）
+INSERT INTO oushu_table (name, description) VALUES
+('Book1', 'This is a book about SQL.'),
+('Book2', 'Learn SQL the easy way.'),
+('Book3', 'Advanced SQL techniques.');
+*/
+-- 初始化计数器
+total_count := 0;
+matched_count := 0;
+RAISE NOTICE 'Initialization: total_count = %, matched_count = %', total_count, matched_count;
+
+-- 简单查询，计算总记录数
+SELECT COUNT(*) INTO total_count FROM oushu_table;
+RAISE NOTICE 'Total records in table: %', total_count;
+
+-- 打开游标
+OPEN cur;
+RAISE NOTICE 'Cursor opened for search term: %', search_term;
+
+-- 处理游标中的数据
+LOOP
+FETCH cur INTO rec;
+EXIT WHEN NOT FOUND;
+-- 复杂查询：检查记录是否匹配搜索词
+IF rec.description LIKE '%' || search_term || '%' THEN
+matched_count := matched_count + 1;
+END IF;
+END LOOP;
+
+-- 关闭游标
+CLOSE cur;
+RAISE NOTICE 'Cursor closed';
+
+-- 返回匹配的记录
+RETURN QUERY SELECT * FROM oushu_table WHERE description LIKE '%' || search_term || '%';
+RAISE NOTICE 'Returning records that match search term: %', search_term;
+
+END;
+$$ LANGUAGE plpgsql;
+--DROP FUNCTION IF EXISTS get_employee_info(integer); --修改存储过程需要执行删除存储过程
+
+-- 创建表
+CREATE TABLE IF NOT EXISTS my_table (
+id SERIAL PRIMARY KEY,
+name VARCHAR(100),
+description TEXT
+);
+
+-- 向表中插入数据
+INSERT INTO my_table (name, description) VALUES
+('Book1', 'This is a book about SQL.'),
+('Book2', 'Learn SQL the easy way.'),
+('Book3', 'Advanced SQL techniques.');
+
+-- 调用存储过程
+SELECT * FROM example_procedure('SQL');
+-- 获取输出参数的值
+SELECT total_count, matched_count FROM example_procedure('SQL');","1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. 创建OuShuDB类型的周期任务
+3. 创建OuShuDB数据库表，并插入数据
+4. 调用OuShuDB函数，点击运行
+5. 下载运行日志
+6. 在运行历史中，点击查看日志","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 查看控制台输出，校验输出结果
+5. 校验下载内容
+6. 校验日志内容",1

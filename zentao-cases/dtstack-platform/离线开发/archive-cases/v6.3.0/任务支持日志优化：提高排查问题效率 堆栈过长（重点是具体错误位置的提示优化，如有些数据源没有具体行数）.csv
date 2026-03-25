@@ -1,0 +1,510 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+离线开发-运维中心-补数据任务,验证运维中心- 补数据任务 补数据任务实例校验,无,"1. 进入【离线开发】-【运维中心】-【补数据任务 补数据任务实例校验】页面
+2. 创建并提交周期任务
+3. 在周期任务-周期任务管理中选择对应任务，进行补数据（直接点击确定）
+4. 在补数据任务-补数据任务管理，周期运行tab中查找对应任务并点击运行
+5. 进入补数据任务- 补数据任务实例，查找对应任务实例，进入补数据任务实例详情，点击对应任务名称并点击查看更多详情，切换至运行记录tab，查看运行日志","1. 成功进入【离线开发】-【运维中心】-【补数据任务 补数据任务实例校验】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+5. 校验运行日志内容",1
+离线开发-运维中心-手动任务,验证运维中心- 手动任务 手动任务实例日志校验,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. 创建并提交手动任务
+3. 手动任务管理中查询对应手动任务并运行
+4. 进入任务实例详情，选择对应任务并点击查看更多详情，切换至运行记录tab，查看运行日志","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 校验运行日志内容",1
+离线开发-运维中心-周期任务,验证运维中心- 周期任务 周期任务实例日志校验,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. 创建并提交周期任务
+3. 周期任务实例生成并运行成功后，进入任务实例详情，选择对应任务并点击查看更多详情，切换至运行记录tab，查看运行日志","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 校验运行日志内容",1
+离线开发-数据开发-组件管理,验证组件管理中的连接异常- 数据库连接异常,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. 创建SQL Server周期任务
+3. 调整数据库连接配置，如：[⚠️F04 请替换为具体测试数据]修改数据库服务器所在地址、修改数据库账号密码等
+4. 再次执行SQL Server周期任务","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的违反约束- 违反非空约束,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. CREATE TABLE notnull_table (
+EmployeeName VARCHAR(50) NOT NULL
+);
+3. INSERT into notnull_table values('abc'),(null);","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的违反约束- 违反检查约束,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. CREATE TABLE Employees (
+EmployeeAge INT,
+CHECK (EmployeeAge >= 18 AND EmployeeAge <= 65)
+);
+3. INSERT into check_table values(1), (22);","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的违反约束- 违反外键约束,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. -- 创建Departments1表
+CREATE TABLE Departments1 (
+DepartmentID INT CONSTRAINT PK_Departments PRIMARY KEY,
+DepartmentName VARCHAR(50) NOT NULL
+);
+-- 向Departments表插入数据
+INSERT INTO Departments1 (DepartmentID, DepartmentName)
+VALUES
+(1, 'Sales'),
+(2, 'Marketing');
+CREATE TABLE Employees1 (
+EmployeeID INT CONSTRAINT PK_Employees PRIMARY KEY,
+FirstName VARCHAR(50) NOT NULL,
+LastName VARCHAR(50) NOT NULL,
+DepartmentID INT,
+Salary DECIMAL(10, 2) DEFAULT 0
+,FOREIGN KEY (DepartmentID) REFERENCES Departments1(DepartmentID)
+);
+-- 插入数据
+INSERT INTO Employees1
+(EmployeeID, FirstName, LastName, DepartmentID,  Salary)
+VALUES
+(1, 'John', 'Doe', 1,  5000),
+(2, 'Jane', 'Smith', 2,  6000),
+(3, 'David', 'Johnson', 1,  4500);
+3. -- 插入数据（外键验证）
+INSERT INTO Employees1 (EmployeeID, FirstName, LastName, DepartmentID,  Salary)
+VALUES (4, 'tom', 'Min', 3,  5500);
+4. --更新Departments1表中被引用的部门记录 （外键验证）
+update Departments1 set  DepartmentID=3;
+5. --删除Departments1表中被引用的部门记录 （外键验证）
+delete from Departments1 where  DepartmentID=1;","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现
+4. 仅出现SQL相关错误日志，java程序相关内容不出现
+5. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的违反约束- 违反唯一约束,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. CREATE TABLE unique_table (
+EmployeeEmail VARCHAR(100) UNIQUE,
+EmployeeName VARCHAR(50)
+);
+3. INSERT into unique_table values('a', 'aa'), ('a', 'bb');","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的违反约束- 违反主键约束,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. CREATE TABLE primarykey_table (
+EmployeeID INT PRIMARY KEY,
+EmployeeName VARCHAR(50)
+);
+3. insert into Employees values(1, 'aa'),(1, 'bb');","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-组件管理,验证组件管理中的对象名错误- 表字段不存在,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. select abc from SYS.DATABASES","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的对象名错误- 数据库表不存在,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. select * from tablename","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的对象名错误- 数据库名不存在,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. use abc_database","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-组件管理,验证组件管理中的类型错误- 定义数据库中不存在数据库类型,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. DECLARE @simple_result string","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的类型错误- sql中字段类型对应错误,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. CREATE TABLE mysql_table (
+id int,
+name varchar(200),
+age int default 20
+);
+select * from mysql_table where age = 'GG Bone'","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-组件管理,验证组件管理中的语法错误- 条件语法错误,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. select * from SYS.DATABASES where name = null","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的语法错误- 引用未定义的变量,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. selcet @abc","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的语法错误- sql语句中存在非法符号（非为英文输入法下输入的符号）,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. SELECT ‘233’","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的语法错误- 多条sql语句中分号缺失,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. select 1 select2","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的语法错误- 单条sql语句中符号缺失,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. CREATE TABLE mysql_table (
+EmployeeID INT PRIMARY KEY,
+FirstName VARCHAR(50)
+LastName VARCHAR(50)
+Department VARCHAR(50),
+Salary DECIMAL(10, 2)
+);","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的语法错误- sql语句中关键字输入错误,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. seelct 1","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-组件管理,验证组件管理中的语法错误- sql语句中关键字缺失,无,"1. 进入【离线开发】-【数据开发】-【组件管理】页面
+2. select * tablename","1. 成功进入【离线开发】-【数据开发】-【组件管理】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-临时查询,验证临时查询中的连接异常- 数据库连接异常,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. 创建SQL Server周期任务
+3. 调整数据库连接配置，如：[⚠️F04 请替换为具体测试数据]修改数据库服务器所在地址、修改数据库账号密码等
+4. 再次执行SQL Server周期任务","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的违反约束- 违反非空约束,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. CREATE TABLE notnull_table (
+EmployeeName VARCHAR(50) NOT NULL
+);
+3. INSERT into notnull_table values('abc'),(null);","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的违反约束- 违反检查约束,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. CREATE TABLE Employees (
+EmployeeAge INT,
+CHECK (EmployeeAge >= 18 AND EmployeeAge <= 65)
+);
+3. INSERT into check_table values(1), (22);","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的违反约束- 违反外键约束,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. -- 创建Departments1表
+CREATE TABLE Departments1 (
+DepartmentID INT CONSTRAINT PK_Departments PRIMARY KEY,
+DepartmentName VARCHAR(50) NOT NULL
+);
+-- 向Departments表插入数据
+INSERT INTO Departments1 (DepartmentID, DepartmentName)
+VALUES
+(1, 'Sales'),
+(2, 'Marketing');
+CREATE TABLE Employees1 (
+EmployeeID INT CONSTRAINT PK_Employees PRIMARY KEY,
+FirstName VARCHAR(50) NOT NULL,
+LastName VARCHAR(50) NOT NULL,
+DepartmentID INT,
+Salary DECIMAL(10, 2) DEFAULT 0
+,FOREIGN KEY (DepartmentID) REFERENCES Departments1(DepartmentID)
+);
+-- 插入数据
+INSERT INTO Employees1
+(EmployeeID, FirstName, LastName, DepartmentID,  Salary)
+VALUES
+(1, 'John', 'Doe', 1,  5000),
+(2, 'Jane', 'Smith', 2,  6000),
+(3, 'David', 'Johnson', 1,  4500);
+3. -- 插入数据（外键验证）
+INSERT INTO Employees1 (EmployeeID, FirstName, LastName, DepartmentID,  Salary)
+VALUES (4, 'tom', 'Min', 3,  5500);
+4. --更新Departments1表中被引用的部门记录 （外键验证）
+update Departments1 set  DepartmentID=3;
+5. --删除Departments1表中被引用的部门记录 （外键验证）
+delete from Departments1 where  DepartmentID=1;","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现
+4. 仅出现SQL相关错误日志，java程序相关内容不出现
+5. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的违反约束- 违反唯一约束,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. CREATE TABLE unique_table (
+EmployeeEmail VARCHAR(100) UNIQUE,
+EmployeeName VARCHAR(50)
+);
+3. INSERT into unique_table values('a', 'aa'), ('a', 'bb');","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的违反约束- 违反主键约束,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. CREATE TABLE primarykey_table (
+EmployeeID INT PRIMARY KEY,
+EmployeeName VARCHAR(50)
+);
+3. insert into Employees values(1, 'aa'),(1, 'bb');","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-临时查询,验证临时查询中的对象名错误- 表字段不存在,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. select abc from SYS.DATABASES","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的对象名错误- 数据库表不存在,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. select * from tablename","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的对象名错误- 数据库名不存在,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. use abc_database","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-临时查询,验证临时查询中的类型错误- 定义数据库中不存在数据库类型,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. DECLARE @simple_result string","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的类型错误- sql中字段类型对应错误,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. CREATE TABLE mysql_table (
+id int,
+name varchar(200),
+age int default 20
+);
+select * from mysql_table where age = 'GG Bone'","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-临时查询,验证临时查询中的语法错误- 条件语法错误,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. select * from SYS.DATABASES where name = null","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的语法错误- 引用未定义的变量,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. selcet @abc","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的语法错误- sql语句中存在非法符号（非为英文输入法下输入的符号）,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. SELECT ‘233’","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的语法错误- 多条sql语句中分号缺失,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. select 1 select2","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的语法错误- 单条sql语句中符号缺失,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. CREATE TABLE mysql_table (
+EmployeeID INT PRIMARY KEY,
+FirstName VARCHAR(50)
+LastName VARCHAR(50)
+Department VARCHAR(50),
+Salary DECIMAL(10, 2)
+);","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的语法错误- sql语句中关键字输入错误,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. seelct 1","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-临时查询,验证临时查询中的语法错误- sql语句中关键字缺失,无,"1. 进入【离线开发】-【数据开发】-【临时查询】页面
+2. select * tablename","1. 成功进入【离线开发】-【数据开发】-【临时查询】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-手动任务,验证手动任务中的连接异常- 数据库连接异常,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. 创建SQL Server周期任务
+3. 调整数据库连接配置，如：[⚠️F04 请替换为具体测试数据]修改数据库服务器所在地址、修改数据库账号密码等
+4. 再次执行SQL Server周期任务","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的违反约束- 违反非空约束,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. CREATE TABLE notnull_table (
+EmployeeName VARCHAR(50) NOT NULL
+);
+3. INSERT into notnull_table values('abc'),(null);","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的违反约束- 违反检查约束,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. CREATE TABLE Employees (
+EmployeeAge INT,
+CHECK (EmployeeAge >= 18 AND EmployeeAge <= 65)
+);
+3. INSERT into check_table values(1), (22);","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的违反约束- 违反外键约束,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. -- 创建Departments1表
+CREATE TABLE Departments1 (
+DepartmentID INT CONSTRAINT PK_Departments PRIMARY KEY,
+DepartmentName VARCHAR(50) NOT NULL
+);
+-- 向Departments表插入数据
+INSERT INTO Departments1 (DepartmentID, DepartmentName)
+VALUES
+(1, 'Sales'),
+(2, 'Marketing');
+CREATE TABLE Employees1 (
+EmployeeID INT CONSTRAINT PK_Employees PRIMARY KEY,
+FirstName VARCHAR(50) NOT NULL,
+LastName VARCHAR(50) NOT NULL,
+DepartmentID INT,
+Salary DECIMAL(10, 2) DEFAULT 0
+,FOREIGN KEY (DepartmentID) REFERENCES Departments1(DepartmentID)
+);
+-- 插入数据
+INSERT INTO Employees1
+(EmployeeID, FirstName, LastName, DepartmentID,  Salary)
+VALUES
+(1, 'John', 'Doe', 1,  5000),
+(2, 'Jane', 'Smith', 2,  6000),
+(3, 'David', 'Johnson', 1,  4500);
+3. -- 插入数据（外键验证）
+INSERT INTO Employees1 (EmployeeID, FirstName, LastName, DepartmentID,  Salary)
+VALUES (4, 'tom', 'Min', 3,  5500);
+4. --更新Departments1表中被引用的部门记录 （外键验证）
+update Departments1 set  DepartmentID=3;
+5. --删除Departments1表中被引用的部门记录 （外键验证）
+delete from Departments1 where  DepartmentID=1;","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现
+4. 仅出现SQL相关错误日志，java程序相关内容不出现
+5. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的违反约束- 违反唯一约束,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. CREATE TABLE unique_table (
+EmployeeEmail VARCHAR(100) UNIQUE,
+EmployeeName VARCHAR(50)
+);
+3. INSERT into unique_table values('a', 'aa'), ('a', 'bb');","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的违反约束- 违反主键约束,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. CREATE TABLE primarykey_table (
+EmployeeID INT PRIMARY KEY,
+EmployeeName VARCHAR(50)
+);
+3. insert into Employees values(1, 'aa'),(1, 'bb');","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-手动任务,验证手动任务中的对象名错误- 表字段不存在,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. select abc from SYS.DATABASES","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的对象名错误- 数据库表不存在,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. select * from tablename","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的对象名错误- 数据库名不存在,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. use abc_database","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-手动任务,验证手动任务中的类型错误- 定义数据库中不存在数据库类型,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. DECLARE @simple_result string","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的类型错误- sql中字段类型对应错误,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. CREATE TABLE mysql_table (
+id int,
+name varchar(200),
+age int default 20
+);
+select * from mysql_table where age = 'GG Bone'","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-手动任务,验证手动任务中的语法错误- 条件语法错误,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. select * from SYS.DATABASES where name = null","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的语法错误- 引用未定义的变量,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. selcet @abc","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的语法错误- sql语句中存在非法符号（非为英文输入法下输入的符号）,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. SELECT ‘233’","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的语法错误- 多条sql语句中分号缺失,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. select 1 select2","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的语法错误- 单条sql语句中符号缺失,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. CREATE TABLE mysql_table (
+EmployeeID INT PRIMARY KEY,
+FirstName VARCHAR(50)
+LastName VARCHAR(50)
+Department VARCHAR(50),
+Salary DECIMAL(10, 2)
+);","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的语法错误- sql语句中关键字输入错误,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. seelct 1","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-手动任务,验证手动任务中的语法错误- sql语句中关键字缺失,无,"1. 进入【离线开发】-【数据开发】-【手动任务】页面
+2. select * tablename","1. 成功进入【离线开发】-【数据开发】-【手动任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-周期任务,验证周期任务中的连接异常- 数据库连接异常,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. 创建SQL Server周期任务
+3. 调整数据库连接配置，如：[⚠️F04 请替换为具体测试数据]修改数据库服务器所在地址、修改数据库账号密码等
+4. 再次执行SQL Server周期任务","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+4. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的违反约束- 违反非空约束,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. CREATE TABLE notnull_table (
+EmployeeName VARCHAR(50) NOT NULL
+);
+3. INSERT into notnull_table values('abc'),(null);","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的违反约束- 违反检查约束,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. CREATE TABLE Employees (
+EmployeeAge INT,
+CHECK (EmployeeAge >= 18 AND EmployeeAge <= 65)
+);
+3. INSERT into check_table values(1), (22);","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的违反约束- 违反外键约束,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. -- 创建Departments1表
+CREATE TABLE Departments1 (
+DepartmentID INT CONSTRAINT PK_Departments PRIMARY KEY,
+DepartmentName VARCHAR(50) NOT NULL
+);
+-- 向Departments表插入数据
+INSERT INTO Departments1 (DepartmentID, DepartmentName)
+VALUES
+(1, 'Sales'),
+(2, 'Marketing');
+CREATE TABLE Employees1 (
+EmployeeID INT CONSTRAINT PK_Employees PRIMARY KEY,
+FirstName VARCHAR(50) NOT NULL,
+LastName VARCHAR(50) NOT NULL,
+DepartmentID INT,
+Salary DECIMAL(10, 2) DEFAULT 0
+,FOREIGN KEY (DepartmentID) REFERENCES Departments1(DepartmentID)
+);
+-- 插入数据
+INSERT INTO Employees1
+(EmployeeID, FirstName, LastName, DepartmentID,  Salary)
+VALUES
+(1, 'John', 'Doe', 1,  5000),
+(2, 'Jane', 'Smith', 2,  6000),
+(3, 'David', 'Johnson', 1,  4500);
+3. -- 插入数据（外键验证）
+INSERT INTO Employees1 (EmployeeID, FirstName, LastName, DepartmentID,  Salary)
+VALUES (4, 'tom', 'Min', 3,  5500);
+4. --更新Departments1表中被引用的部门记录 （外键验证）
+update Departments1 set  DepartmentID=3;
+5. --删除Departments1表中被引用的部门记录 （外键验证）
+delete from Departments1 where  DepartmentID=1;","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现
+4. 仅出现SQL相关错误日志，java程序相关内容不出现
+5. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的违反约束- 违反唯一约束,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. CREATE TABLE unique_table (
+EmployeeEmail VARCHAR(100) UNIQUE,
+EmployeeName VARCHAR(50)
+);
+3. INSERT into unique_table values('a', 'aa'), ('a', 'bb');","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的违反约束- 违反主键约束,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. CREATE TABLE primarykey_table (
+EmployeeID INT PRIMARY KEY,
+EmployeeName VARCHAR(50)
+);
+3. insert into Employees values(1, 'aa'),(1, 'bb');","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 任务执行成功，状态显示为【执行成功/成功】，结果符合预期
+3. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-周期任务,验证周期任务中的对象名错误- 表字段不存在,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. select abc from SYS.DATABASES","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的对象名错误- 数据库表不存在,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. select * from tablename","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的对象名错误- 数据库名不存在,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. use abc_database","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-周期任务,验证周期任务中的类型错误- 定义数据库中不存在数据类型,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. DECLARE @simple_result string","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的类型错误- sql中字段类型对应错误,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. CREATE TABLE mysql_table (
+id int,
+name varchar(200),
+age int default 20
+);
+select * from mysql_table where age = 'GG Bone'","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1
+离线开发-数据开发-周期任务,验证周期任务中的语法错误- 条件语法错误,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. select * from SYS.DATABASES where name = null","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的语法错误- 引用未定义的变量,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. selcet @abc","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的语法错误- sql语句中存在非法符号（非为英文输入法下输入的符号）,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. SELECT ‘233’","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的语法错误- 多条sql语句中分号缺失,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. select 1 select2","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的语法错误- 单条sql语句中符号缺失,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. CREATE TABLE mysql_table (
+EmployeeID INT PRIMARY KEY,
+FirstName VARCHAR(50)
+LastName VARCHAR(50)
+Department VARCHAR(50),
+Salary DECIMAL(10, 2)
+);","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的语法错误- sql语句中关键字输入错误,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. seelct 1","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",2
+离线开发-数据开发-周期任务,验证周期任务中的语法错误- sql语句中关键字缺失,无,"1. 进入【离线开发】-【数据开发】-【周期任务】页面
+2. select * tablename","1. 成功进入【离线开发】-【数据开发】-【周期任务】页面，页面内容正常加载显示，无报错
+2. 仅出现SQL相关错误日志，java程序相关内容不出现",1

@@ -2,7 +2,15 @@
  * json-to-xmind.mjs
  * 将中间 JSON 格式转换为 .xmind 文件
  *
- * 用法: node json-to-xmind.mjs <input.json> <output.xmind>
+ * 用法:
+ *   node json-to-xmind.mjs <input.json> <output.xmind>
+ *   node json-to-xmind.mjs <input1.json> <input2.json> <output.xmind>
+ *   node json-to-xmind.mjs --append <input.json> <existing.xmind>
+ *
+ * --append 模式:
+ *   当目标 .xmind 文件已存在时，将新的 L1 节点追加进去而非覆盖。
+ *   同名 rootTopic（project_name 相同）：追加新 L1 到已有 root。
+ *   不同 rootTopic：作为新 sheet 添加。
  *
  * XMind 层级结构:
  * Root (project_name)
@@ -14,7 +22,7 @@
  *                            └── 预期结果
  */
 
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
 import { resolve } from 'path'
 import { Topic, RootTopic, Marker, Workbook, writeLocalFile } from 'xmind-generator'
 
@@ -30,8 +38,7 @@ function buildCaseTopic(testCase) {
     Topic(step).children([Topic(expected)])
   )
 
-  const caseTopic = Topic(testCase.title)
-    .markers([marker])
+  const caseTopic = Topic(testCase.title).markers([marker])
 
   if (testCase.precondition) {
     caseTopic.note(testCase.precondition)
@@ -45,7 +52,6 @@ function buildCaseTopic(testCase) {
 }
 
 function buildModuleTopic(mod) {
-  // 含子分组结构
   if (mod.sub_groups && mod.sub_groups.length > 0) {
     const subGroupTopics = mod.sub_groups.map((group) => {
       const caseTopics = (group.test_cases ?? []).map(buildCaseTopic)
@@ -54,7 +60,6 @@ function buildModuleTopic(mod) {
     return Topic(mod.name).children(subGroupTopics)
   }
 
-  // 无子分组结构
   const caseTopics = (mod.test_cases ?? []).map(buildCaseTopic)
   return Topic(mod.name).children(caseTopics)
 }
@@ -68,13 +73,11 @@ function buildXmind(data) {
 
   const moduleTopics = (modules ?? []).map(buildModuleTopic)
 
-  const workbook = Workbook(
+  return Workbook(
     RootTopic(meta.project_name).children([
       Topic(l1Title).children(moduleTopics),
     ])
   )
-
-  return workbook
 }
 
 function mergeJsonFiles(inputPaths) {
@@ -85,30 +88,87 @@ function mergeJsonFiles(inputPaths) {
 
   if (all.length === 1) return all[0]
 
-  // 多文件合并：保留第一个 meta，合并所有 modules
-  const merged = {
+  return {
     meta: all[0].meta,
     modules: all.flatMap((d) => d.modules ?? []),
   }
-  return merged
+}
+
+async function appendToExisting(data, outputPath) {
+  const { default: JSZip } = await import('jszip')
+
+  // 1. 生成新 workbook 到临时文件，提取 L1 节点 JSON
+  const tempPath = resolve(outputPath) + '.tmp_append'
+  writeLocalFile(buildXmind(data), tempPath)
+
+  const tempZip = await JSZip.loadAsync(readFileSync(tempPath))
+  const newContentStr = await tempZip.file('content.json').async('string')
+  const newSheets = JSON.parse(newContentStr)
+  const newL1Nodes = newSheets[0]?.rootTopic?.children?.attached ?? []
+  unlinkSync(tempPath)
+
+  // 2. 读取现有 .xmind
+  const existingZip = await JSZip.loadAsync(readFileSync(resolve(outputPath)))
+  const existingContentStr = await existingZip.file('content.json').async('string')
+  const existingSheets = JSON.parse(existingContentStr)
+
+  // 3. 查找同名 rootTopic（按 project_name 匹配）
+  const targetSheet = existingSheets.find(
+    (s) => s.rootTopic?.title === data.meta.project_name
+  )
+
+  if (targetSheet) {
+    if (!targetSheet.rootTopic.children) {
+      targetSheet.rootTopic.children = { attached: [] }
+    }
+    if (!targetSheet.rootTopic.children.attached) {
+      targetSheet.rootTopic.children.attached = []
+    }
+    targetSheet.rootTopic.children.attached.push(...newL1Nodes)
+    console.log(
+      `已追加 ${newL1Nodes.length} 个 L1 节点到 "${data.meta.project_name}" sheet`
+    )
+  } else {
+    existingSheets.push(newSheets[0])
+    console.log(`已添加新 sheet "${data.meta.project_name}" 到现有文件`)
+  }
+
+  // 4. 写回
+  existingZip.file('content.json', JSON.stringify(existingSheets))
+  const buffer = await existingZip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
+  writeFileSync(resolve(outputPath), buffer)
 }
 
 // --- Main ---
 const args = process.argv.slice(2)
-if (args.length < 2) {
-  console.error('Usage: node json-to-xmind.mjs <input1.json> [input2.json ...] <output.xmind>')
-  console.error('Example: node json-to-xmind.mjs cases.json output.xmind')
+const appendMode = args.includes('--append')
+const filteredArgs = args.filter((a) => a !== '--append')
+
+if (filteredArgs.length < 2) {
+  console.error('Usage:')
+  console.error('  node json-to-xmind.mjs <input.json> <output.xmind>')
+  console.error('  node json-to-xmind.mjs <input1.json> <input2.json> <output.xmind>')
+  console.error('  node json-to-xmind.mjs --append <input.json> <existing.xmind>')
   process.exit(1)
 }
 
-const outputPath = args[args.length - 1]
-const inputPaths = args.slice(0, args.length - 1)
+const outputPath = filteredArgs[filteredArgs.length - 1]
+const inputPaths = filteredArgs.slice(0, filteredArgs.length - 1)
 
 try {
   const data = mergeJsonFiles(inputPaths)
-  const workbook = buildXmind(data)
-  writeLocalFile(workbook, resolve(outputPath))
-  console.log(`XMind file written to: ${resolve(outputPath)}`)
+
+  if (appendMode && existsSync(resolve(outputPath))) {
+    appendToExisting(data, outputPath)
+      .then(() => console.log(`XMind 文件已更新（追加模式）: ${resolve(outputPath)}`))
+      .catch((err) => {
+        console.error('追加失败:', err.message)
+        process.exit(1)
+      })
+  } else {
+    writeLocalFile(buildXmind(data), resolve(outputPath))
+    console.log(`XMind 文件已生成: ${resolve(outputPath)}`)
+  }
 } catch (err) {
   console.error('Error generating XMind file:', err.message)
   process.exit(1)

@@ -1,0 +1,787 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+数据资产-数据模型,验证【废弃】验证勾选“不展示层级”临时保存，编辑功能(没有临时保存功能),无,"1. 进入数据模型-新建表，选择原始数仓层级，勾选“不展示层级”，临时保存
+2. 查看数据
+3. 编辑不展示层级选择框，点击建表","1. 系统提示保存成功，修改内容已生效并在页面中更新显示
+2. 回填正确，不展示层级选择框勾选结果正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+3. 结果正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",2
+数据资产-数据模型,验证不勾选“不展示层级”建表后，编辑功能,无,"1. 进入数据模型-新建表，选择原始数仓层级，不勾选“不展示层级”，进行建表
+2. 点击编辑按钮","1. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+2. 回填正确，不展示层级选择框置灰",2
+数据资产-数据模型,验证勾选“不展示层级”建表后，编辑功能,无,"1. 进入数据模型-新建表，选择原始数仓层级，勾选“不展示层级”，进行建表
+2. 点击编辑按钮","1. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+2. 回填正确，不展示层级选择框置灰",2
+数据资产-数据模型,验证勾选“不展示层级”建表，层级筛选是否正确,无,"1. 进入数据模型-新建表，选择原始数仓层级，取消勾选“不展示层级”，进行建表
+2. 进入数据模型-新建表，选择明细原始数仓层级，取消勾选“不展示层级”，进行建表
+3. 在数据模型页面，点击原始数仓层级查看表
+4. 在数据模型页面，点击明细数仓层级查看表","1. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+2. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+3. 展示步骤一中的表
+4. 展示步骤二中的表",2
+数据资产-元数据-元数据采集,验证【元数据同步】_【视图表】同步正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）点击【元数据】-【元数据同步】-【新增周期同步任务】2）选择数据源${DATASOURCE_TYPE}3）选择数据库${DATABASE}4）选择视图表${TABLE}5）依次点击【添加】_【下一步】_【新增】按钮","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1. 提示“新增周期同步任务”成功2. 任务列表展示同步任务，列信息正确，同步状态展示正常",2
+数据资产-元数据-元数据采集,验证【元数据同步】_【过滤表】功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1） 创建元数据同步任务：2）设置数据表过滤条件：customer.*3）点击【立即同步】；4）查看实例
+3. 1）等待任务实例同步成功，查看数据地图","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1）生成任务实例2）“已同步”数量不包含customer开头的表和视图
+3. customer开头的表和视图不同步至数据地图",3
+数据资产-元数据-元数据采集,验证【元数据同步】_【表负责人】同步逻辑正确,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看“是否指定表负责人”默认值
+3. “是否指定表负责人”，选择【否】
+4. “是否指定表负责人”，选择【是】
+5. 支持【准确搜索】表负责人
+6. 支持【模糊搜索】表负责人
+7. 查看下拉列表用户选项
+8. 1）选择表负责人${TABLE_OWNER}2）立即同步，同步完成后，查看表详情","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 默认的是否指定表负责人是“否”
+3. 不弹出下拉框
+4. 弹出下拉框
+5. 可以精确查找到负责人
+6. 可以模糊查找到负责人
+7. 展示的是在该租户下，数据资产权限是【数据开发】和【管理员】的用户
+8. 表详情内显示表负责人为${TABLE_OWNER}",3
+数据资产-数据地图,验证离线建表自动同步至数据地图,"准备离线SQL任务，包含${DATASOURCE_TYPE}数据源类型的常用建表语句;
+例如:
+create table if not exists ${TABLE_NAME} (
+id int ,
+name varchar(255)
+);
+alter table ${TABLE_NAME} add ${COL_NAME} varchar(255);
+insert into ${TABLE_NAME} values(1,'test','xx');
+select * from ${TABLE_NAME};","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 运行任务
+3. 查看各表详情页-操作记录","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 查询数据地图，任务建的表均同步至数据地图
+3. DDL记录正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",2
+数据资产-数据地图,验证血缘解析功能正常,"准备离线SQL任务，SQL包含CTAS语句，以及INSERT...SELECT...语句；
+SQL中相关表均已同步至资产数据地图","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）执行并提交离线任务；2）查看对应表血缘关系","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 表级血缘/字段级血缘正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",1
+数据资产-元数据-元数据采集,验证已接入数据源统计数据正确,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看“已接入数据源”
+3. 查看统计数据：昨日新增表数、源数、库数、表数以及存储量","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示截止前一天为止接入的数据源类型的统计卡片
+3. 统计数据为对应数据源类型下前一天的统计数据",2
+数据资产-数据地图,验证数据地图分布图数据正确,执行curl -X POST localhost:8876/dassets/v1/scheduleJob/saveOneDayDataDistribution,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看数据源类型下拉列表
+3. 1）筛选不同数据源类型；2）“分布属性”选择“负责人”3）切换到${DATASOURCE_TYPE}类型数据源","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示所有资产支持的数据源类型
+3. ${DATASOURCE_TYPE}数据源类型的“负责人”属性统计数据正确",2
+数据资产-元数据-元数据采集,验证数据目录分布图数据正确,执行curl -X POST localhost:8876/dassets/v1/scheduleJob/saveTodayResourceDistribution,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看各资产类型统计数量
+3. 查看数据目录分布数据","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 各资产类型的数量统计正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+3. 数据目录分布饼图正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",2
+数据资产-元数据-元数据采集,验证数据价值排行图数据正确,执行curl -X POST curl -X POST localhost:8876/dassets/v1/scheduleJob/affectCountStatistic,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看数据源类型下拉列表
+3. 1）筛选不同数据源类型；2）分别查看“近7天”/“近一个月”/“近一年”的数据
+4. 按照“查询次数”排序
+5. 按照“使用次数”排序
+6. 按照“影响表次数”排序","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示所有资产支持的数据源类型
+3. 1）“近7天”/“近一个月”/“近一年”数据正确；2）“近7天”数据，与各表的热度统计数据一致
+4. 排序功能正常，功能行为符合预期，无报错或异常
+5. 排序功能正常，功能行为符合预期，无报错或异常
+6. 排序功能正常，功能行为符合预期，无报错或异常",3
+数据资产-元数据-元数据采集,验证存储资源情况图数据正确,执行curl -X POST localhost:8876/dassets/v1/scheduleJob/saveTop10TableData,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看各资产类型存储情况排行
+3. 查看各资产类型表行数情况排行","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 各资产类型的存储数据统计正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+3. 各资产类型的表行数数据统计正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",3
+数据资产-元数据-元数据采集,验证元数据变化趋势图数据正确,执行curl -X POST localhost:8876/dassets/v1/scheduleJob/saveTodayPreviewData,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看数据源类型下拉列表
+3. 1）筛选不同数据源类型；2）分别查看“近7天”/“近一个月”/“近一年”的“新增数”和“变化数”趋势
+4. Hover曲线","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示所有资产支持的数据源类型
+3. “近7天”/“近一个月”/“近一年”“新增数”和“变化数”数据正确；
+4. 显示hover时间点的“新增数”和“变化数”",3
+数据资产-元数据-元数据采集,验证资产查询趋势图数据正确,执行curl -X POST localhost:8876/dassets/v1/scheduleJob/saveTodaySearchStatistic,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 按查询次数，查看“近7天”/“近一个月”/“近一年”的数据
+3. 按登录次数，查看“近7天”/“近一个月”/“近一年”的数据
+4. 按登录人数，查看“近7天”/“近一个月”/“近一年”的数据
+5. Hover曲线","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. “近7天”/“近一个月”/“近一年”数据正确；
+3. “近7天”/“近一个月”/“近一年”数据正确；
+4. “近7天”/“近一个月”/“近一年”数据正确；
+5. 显示hover时间点的数据",3
+数据资产-数据质量-规则任务配置,验证单表校验-编辑功能,待测数据源类型：MySQL、Oracle、SQLServer、Hive1.下、Hive2.x、Hive3.x、Doris2.下、SR2.x、SR3.x、Greenplumn、ADB for PG,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 修改规则名称
+3. 修改监控规则
+4. 添加监控规则
+5. 删除监控规则
+6. 编辑调度属性","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 名称能够修改成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 规则修改成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+5. 规则删除成功，系统给出删除成功提示，该记录从列表中消失
+6. 调度属性编辑成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-数据质量-规则任务配置,验证多表比对-创建功能,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）【规则任务配置】新建多表比对规则；2）数据表选择${DATASOURCE_TYPE}数据源类型的表；3）按流程完善信息；
+3. 规则列表页，点击表名","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 任务创建流程正常，功能行为符合预期，无报错或异常
+3. 1）弹出任务详情抽屉；2）任务详情面板正常弹出，任务名称、数据源、调度周期等字段内容与实际配置一致，无异常",2
+数据资产-数据质量-规则任务配置,验证多表比对-编辑功能,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 修改规则名称
+3. 修改规则
+4. 编辑调度属性","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 名称能够修改成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 修改规则流程正常，功能行为符合预期，无报错或异常
+4. 调度属性编辑成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-数据质量-规则任务配置,验证多表比对-运行校验通过功能,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）【规则任务配置】新建多表比对规则；2）数据表选择${DATASOURCE_TYPE}数据源类型的表，且两张表数据一致3）按流程完善信息
+3. 任务运行成功
+4. 查看“监控报告”（点击表名）
+5. 查看“表级报告”（点击表名）","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 任务状态流转正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+3. 任务状态为校验通过
+4. 监控报告显示数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+5. 表级报告展示的数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",1
+数据资产-数据质量,验证脏数据管理-查询功能,待测数据源类型：MySQL、Oracle、SQLServer、Hive1.下、Hive2.x、Hive3.x、Doris2.下、SR2.x、SR3.x、Greenplumn、ADB for PG,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 开启“独立存储”
+3. 查看“数据源类型”下拉项
+4. “数据源类型”选择${DATASOURCE_TYPE}数据源类型","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 列表展示${DATASOURCE_TYPE}数据源类型的数据源记录
+3. 下拉项包含${DATASOURCE_TYPE}数据源类型
+4. 列表返回${DATASOURCE_TYPE}数据源类型的数据源记录",3
+数据资产-数据质量,验证脏数据管理-设置功能,"1、待测数据源类型：MySQL、Oracle、SQLServer、Hive1.下、Hive2.x、Hive3.x、Doris2.下、SR2.x、SR3.x、Greenplumn、ADB for PG
+
+2、开启独立存储","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 开启“脏数据存储”
+3. 关闭“脏数据存储”","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 异常任务，查看明细显示异常数据并能下载成功，系统给出成功反馈，相关页面/数据状态更新为最新
+3. 异常任务，查看明细不显示异常数据且不支持下载",3
+数据资产-元数据-元数据采集,验证概览-任务数量统计功能,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击质量的概览页，查看“单表规则总数”和“多表规则总数”
+3. 查看运维指标-按任务数量统计
+4. 查看运维指标-按任务状态统计","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 单表规则总数、多表规则总数正确；
+3. 显示所选时间段内创建的任务总数、单表任务、多表任务数量
+4. 显示所选时间段内的不同任务状态的统计数量：1）校验通过、校验异常、其他状态的数量统计正确；2）校验异常数据包括校验不通过和运行失败的数据；3）其他数据包括除了校验异常、校验通过外的所有状态，如：运行中、冻结、取消、停止中等",2
+数据资产-元数据-元数据采集,验证概览-告警趋势功能,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 筛选1天，查看告警趋势
+3. 筛选2天或以上，查看告警趋势","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示所选一天中，不同时刻的告警数统计
+3. 显示所选时间段内，每天的告警数统计",2
+数据资产-元数据-元数据采集,验证创建不同类型sparkThrift表功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 创建Hive PARQUET非事务内部表：	- “表类型”选择“内部表”	- “hdfs存储路径”为空
+3. 创建Hive ORC非事务内部表：	- “表类型”选择“内部表”	- “hdfs存储路径”为空
+4. 创建Hive TEXTFILE非事务内部表：	- “表类型”选择“内部表”	- “hdfs存储路径”为指定路径（非默认路径）
+5. 创建Hive外部表：	- “表类型”选择“外部表”	- “hdfs存储路径”为指定路径（非默认路径）
+6. 创建Hive分区表","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 生成的建表语句正确；PARQUET表创建成功；
+3. 生成的建表语句正确；ORC表创建成功；
+4. 生成的建表语句正确；TEXTFILE表创建成功；
+5. 生成的建表语句正确；事务表创建成功；该表存储路径正确
+6. 生成的建表语句正确；分区表创建成功；该表分区字段正确",2
+数据资产-数据模型,验证建表语句解析功能,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');",1. 每个字段解析正确；所属标准匹配成功；分区字段解析正确,1
+数据资产-元数据-元数据采集,验证CSV表-查看详情功能,无,1. 进入表详情页,1. 所建表的基本信息、技术属性、字段信息、建表语句等信息正确,2
+数据资产-数据模型,验证建表语句解析,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 主键表建表语句解析
+3. 范围分区表语句解析
+4. 各数据类型字段解析","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 字段名、字段中文名、字段类型、字符长度、数值长度、字段精度、主键、分区字段、分区类型等解析成功
+3. 1）字段名、字段中文名、字段类型、字符长度、数值长度、字段精度、主键、分区字段、分区类型等解析成功2）范围分区信息解析成功
+4. 所有支持的字段类型均解析",2
+数据资产-元数据-元数据采集,验证“引入数据源”弹窗列表展示待引入数据源正确,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. license开启了“引入外部数据源”
+3. license关闭了“引入外部数据源”","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. “引入数据源”弹窗列表展示数据为：数据源中心授权给资产的所有未引入的数据源
+3. 1）“引入数据源”弹窗列表展示数据为：数据源中心授权给资产的所有未引入的meta数据源；2）数据源管理列表不显示“虚拟数据源”以及跳转至数据源中心的提示",2
+数据资产-元数据-元数据采集,验证数据源质量授权功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）点击【质量项目授权】；2）选择项目进行保存","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 质量授权成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-元数据-元数据采集,验证离线项目自动引入meta数据源,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 离线创建项目，对接数据源计算引擎","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1）资产数据源管理自动引入该项目的meta数据源2）资产元数据同步页面，新增对应meta数据源的周期同步任务",2
+数据资产-元数据-元数据采集,验证数据源删除-交互,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 数据源A只配置了元数据同步任务；
+3. 数据源A删除了所有元数据同步任务；
+4. 数据源B只配置了质量校验规则；
+5. 数据源B删除了所有质量校验规则；
+6. 删除数据源D
+7. 删除数据源D后，进入引入数据源弹窗","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 删除按钮置灰
+3. 删除按钮可用
+4. 删除按钮置灰
+5. 删除按钮可用
+6. 1）删除成功；2）列表刷新，不显示数据源D
+7. 可以看到数据源D为待引入数据源",2
+数据资产-元数据-元数据采集,验证数据源删除-逻辑,"${DATASOURCE_TYPE}数据源下，包含以下数据：
+1. 存在已同步的表
+3. 存在已应用脱敏规则
+4. 存在数据模型表
+6. 存在数据权限配置
+7. 存在数据分级数据
+8. 存在表的标准映射数据","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 删除数据源D
+3. 查看引入数据源弹窗
+4. 查看数据地图，该数据源下原先已同步的表
+5. 查看元数据管理-数据源列表
+6. 查看订阅的数据
+7. 查看数据标准-标准映射
+8. 查看数据模型-建表","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1）删除成功；2）列表刷新，不显示数据源D
+3. 可以看到数据源D为待引入数据源
+4. 1）该数据源下已同步的表均被删除（数据地图中无法查询到）2）该数据源下已同步的表与数据目录的关系清空
+5. 数据源列表不显示该数据源
+6. 订阅列表不显示对应已删除的表
+7. 映射记录中对应已删除表的原先标准映射数据不显示
+8. 列表中不展示该数据源下创建的模型",2
+数据资产-元数据-元数据采集,验证数据源列表-搜索,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）输入搜索内容2）点击搜索图标","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 模糊匹配返回数据源名称相符或数据源描述相符的数据源",2
+数据资产-元数据-元数据采集,验证数据源列表-状态筛选,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 筛选“正常”
+3. 筛选“连接失败”
+4. 重置","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 返回连接正常的数据源
+3. 返回连接连接的数据源
+4. 返回所有数据源",3
+数据资产-元数据-元数据采集,验证数据源列表-数据源类型筛选,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看列表“数据源类型”下拉项
+3. 筛选“数据源类型”","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 包含所有资产支持的数据源类型
+3. 列表返回对应数据源类型的所有已引入的数据源，且数据正确",3
+数据资产-元数据-元数据采集,验证移除用户-验证权限转让交互,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击【移出产品】
+3. 1）所选用户A角色包括：管理员、开发、访客2）查看“选择转让人”，下拉列表
+4. 1）所选用户A角色包括：开发、访客2）查看“选择转让人”，下拉列表","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示【用户权限】弹窗：	- 选择转让人：单选下拉框	- 提示文案：注意：该用户已绑定权限模块包含数据治理、数据安全、元数据模块，请确认该用户的权限转让人，配置后平台将把该用户的记录信息修改为新的被转让人信息，同时转让人会拥有该用户的所有权限。转让人只能选择该用户所属角色下的用户。	- 【取消】/【确定】按钮
+3. 下拉列表为管理员角色下的所有用户
+4. 下拉列表为开发角色下的所有用户",3
+数据资产-元数据-元数据采集,验证移除用户-验证用户组移出产品,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 所选用户组内，存在用户A为资产用户；点击【移出产品】
+3. 所选用户组内，不存在用户为资产用户；点击【移出产品】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1）弹窗提示：“该用户组内存在用户还未移除产品，移除用户组后该用户组内的用户默认归属用户组为空，且该用户组角色将会全部移除”2）确认移出后，用户A所属用户组为空
+3. 1）弹窗提示：“移除后该用户组角色将会全部移除”2）确认移出后，该用户组记录被删除",3
+数据资产-元数据-元数据采集,验证移除用户-验证用户移出产品,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）点击用户A的移出产品2）二次确认
+3. 登陆该用户A，进入资产平台","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1）提示移出成员成功!2）该用户角色不显示在用户列表中
+3. 提示：该用户无权限进入",3
+数据资产-元数据-元数据采集,验证用户管理-验证添加用户,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击【添加用户】按钮
+3. 查看用户下拉框
+4. 1）选择用户A，分配“管理员”角色，质量项目配置某具体项目2）点击【确定】
+5. 1）选择用户B，分配“数据开发”角色，质量项目配置某具体项目2）点击【确定】
+6. 1）选择用户C，分配“访客”角色，质量项目配置某具体项目2）点击【确定】
+7. 1）选择用户B，分配“数据开发”角色，质量项目配置“全部”2）点击【确定】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. title为添加成员的弹窗弹出用户下拉框；角色：管理员、数据开发、访客质量模块所属项目下拉框
+3. 显示未添加进资产且有资产权限的用户
+4. 用户A添加成功，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+5. 用户B添加成功，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+6. 用户C添加成功，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+7. 用户B添加成功，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",2
+数据资产-元数据-元数据采集,验证用户管理-验证编辑角色,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击【编辑角色】
+3. 1）修改个人角色和质量模块所属项目2）点击确定","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 只能修改个人角色和质量模块所属项目
+3. 用户角色编辑成功，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",3
+数据资产-元数据-元数据采集,验证用户管理-验证添加用户组,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 添加用户组B，点击取消按钮
+3. 添加用户组B，点击确定按钮","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 用户组未添加
+3. 1）用户组添加成功：2）用户组数量统计正确；",3
+数据资产-元数据-元数据采集,验证角色管理-验证非自定义角色显示交互,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 登陆超管账号，点击资产平台右上角设置icon下的角色管理，查看非自定义角色的样式","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 角色名称右侧只显示查看和编辑icon",3
+数据资产-元数据-元数据采集,验证角色管理-验证权限生效,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 登录访客用户，查看访客可查看的模块是否齐全
+3. 登录数据开发用户，查看访客可查看的模块是否齐全
+4. 登录管理员用户，查看访客可查看的模块是否齐全","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 用户可访问模块与访客配置的权限点一致
+3. 用户可访问模块与数据开发配置的权限点一致
+4. 用户可访问模块与管理员配置的权限点一致",2
+数据资产-元数据-元数据采集,验证通知中心- 入口,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1. 进入资产平台2. 点击平台管理
+3. 1. 进入资产平台2. 点击平台管理3. 点击通知中心","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 新增通知中心tab页面
+3. 展示通知配置/通知记录tab按钮",2
+数据资产-元数据-元数据采集,验证通知中心- 通知配置页面内容展示,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1. 进入资产页面2. 点击平台管理-通知中心-通知配置3. 页面UI内容校验","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1. 展示【接收人】/【通知内容】/【查询】/【重置】/【新增】/【分页】按钮2. 展示配置记录【接收人/通知模块/操作】列",2
+数据资产-元数据-元数据采集,验证通知中心- 通知配置- 删除,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1. 进入资产页面2. 点击平台管理-通知中心-通知配置3. 点击删除按钮4. 删除弹窗UI 校验
+3. 1. 进入资产页面2. 点击平台管理-通知中心-通知配置3. 点击删除按钮4. 点击取消删除按钮5. 点击确认删除按钮","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 正确展示二次确认弹窗文案信息
+3. 1. 取消删除，删除不生效2. 确认删除，删除生效，通知配置失效",2
+数据资产-元数据-元数据采集,验证通知中心- 通知配置- 查看详情,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1. 进入资产页面2. 点击平台管理-通知中心-通知配置3. 点击查看详情按钮
+3. 1. 进入资产页面2. 点击平台管理-通知中心-通知配置3. 编辑配置后更新配置，再次点击查看详情按钮","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 通知配置详情信息展示内容完整，各字段值与系统记录一致，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+3. 通知配置信息更新正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",2
+数据资产-元数据-元数据采集,验证通知中心- 通知配置- 筛选,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 根据接收人查询
+3. 根据通知模块查询","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 返回接收人为所选人的通知配置
+3. 返回通知模块为所选模块的通知配置",2
+数据资产-元数据-元数据采集,验证通知中心- 通知配置- 重置,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1. 进入资产页面2. 点击平台管理-通知中心-通知配置3. 筛选文本框内输入xx,点击重置按钮
+3. 1. 进入资产页面2. 点击平台管理-通知中心-通知配置3. 筛选文本框内为空，点击重置按钮","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 重置成功，筛选文本框内内容清空
+3. 系统提示重置成功，数据/配置已恢复为默认值，页面显示重置后的状态",2
+数据资产-元数据-元数据采集,验证通知中心- 元数据实时同步告警配置通知功能,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）新增通知配置-模块选择元数据实时同步2）选择接收人，输入必填信息3）点击确认按钮，元数据实时同步任务触发告警","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 接收人正常接收告警通知",2
+数据资产-数据质量,验证通知中心- 数据质量规则触发告警配置通知功能,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）新增通知配置-模块选择数据质量规则2）选择接收人，输入必填信息3）点击确认按钮，数据质量规则任务触发告警","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 接收人正常接收告警通知",2
+数据资产-元数据-元数据采集,验证通知中心- 通知记录页面UI展示,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）进入资产平台2）点击平台管理-通知中心-通知记录3）页面UI 校验","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1） 消息记录展示【通知模块/接收人/通知方式/webhook/通知内容/通知时间】列2） 展示【通知模块】/【接收人】/【通知方式】/【通知时间】/【查询】/【重置】按钮",2
+数据资产-元数据-元数据采集,验证通知中心- 通知记录页面按钮功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）进入资产平台2）点击平台管理-通知中心-通知记录3）输入通知模块/接收人/通知方式/通知时间，模糊查询","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 成功匹配出符合条件的通知记录",2
+数据资产-元数据-元数据采集,验证通知中心- 不同告警渠道-告警通知正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）进入资产平台2）点击平台管理-通知中心-通知配置3）点击新增按钮，选择接收人a 4）选择模块【元数据实时同步】5）选择告警渠道为钉钉6）输入必填信息，保存。7）任务触发告警
+3. 1）进入资产平台2）点击平台管理-通知中心-通知配置3）点击新增按钮，选择接收人a 4）选择模块【元数据实时同步】5）选择告警渠道为短信6）输入必填信息，保存。7）任务触发告警
+4. 1）进入资产平台2）点击平台管理-通知中心-通知配置3）点击新增按钮，选择接收人a 4）选择模块【元数据实时同步】5）选择告警渠道为短信6）输入必填信息，保存。7）任务触发告警
+5. 1）进入资产平台2）点击平台管理-通知中心-通知配置3）点击新增按钮，选择接收人a 4）选择模块【元数据实时同步】5）选择告警渠道为自定义jar形式6）输入必填信息，保存。7）任务触发告警","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. a用户接收到告警信息，通知渠道为钉钉
+3. a用户接收到告警信息，通知渠道为短信
+4. a用户接收到告警信息，通知渠道为短信
+5. a用户接收到告警信息，通知渠道为自定义jar",2
+数据资产-数据标准-词根管理,验证数据建模，中文名/字段名输入匹配词根/标准正确,"准备词根：支付；
+准备标准：支付方式","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 数据建模时，中文名输入框输入“支付”
+3. 选择匹配的词根“支付”
+4. 选择匹配的词根“支付方式”","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 自动展示词根或数据标准中包含“支付”的数据
+3. 词根的中文名、词根简称，能够回填至中文名和字段名
+4. 标准的中文名、英文缩写，能够回填至中文名和字段名",3
+数据资产-元数据-元数据采集,验证标准目录-查询,无,"1. 进入“标准定义”页面，查看“标准目录”
+2. 逐层查看子目录
+3. 展开/收缩目录
+4. 查看过长名称的目录
+5. 搜索一级目录名称
+6. 搜索二级或以上目录名称","1. 以树形目录形式展示目录结构
+2. 子目录展示内容完整，各字段值与系统记录一致，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+3. 展开/收缩功能正常，功能行为符合预期，无报错或异常
+4. 目录过长部分省略号显示
+5. 展示相符的一级目录
+6. 展示相符的目录名称，并展开显示该目录的层级结构",2
+数据资产-元数据-元数据采集,验证标准目录-创建,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）点击目录区域右上角的“+”号；2）在下方显示的输入框中输入目录名称XXX，回车
+3. 1）hover已有目录YYY；2）在右侧点击“...”，点击“新建目录”3）在输入框中输入目录名称“ZZZ”，回车
+4. 重复第2步，新增同名目录
+5. 1）hover已有目录XXX；2）在右侧点击“...”，点击“新建目录”3）在输入框中输入目录名称“ZZZ”，回车","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 目录创建成功，下方目录结构中展示该一级目录XXX
+3. 目录创建成功，YYY目录显示ZZZ这个子目录
+4. 提示“同级节点不能重名”
+5. 目录创建成功，XXX目录显示ZZZ这个子目录",2
+数据资产-元数据-元数据采集,验证标准目录-编辑,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）hover已有目录YYY；2）在右侧点击“...”，点击“编辑”3）在输入框中输入目录名称“yyyy”，回车
+3. 1）hover已有目录NNN（NNN与YYY同级）；2）在右侧点击“...”，点击“编辑”3）在输入框中输入目录名称“YYY”，回车
+4. 1）hover已有目录NNN（NNN同级目录下无XXX目录）；2）在右侧点击“...”，点击“编辑”3）在输入框中输入目录名称“XXX”，回车","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 目录编辑成功，YYY目录更新为“yyyy”
+3. 提示“同级节点不能重名”
+4. 目录编辑成功，NNN目录更新为“XXX”",2
+数据资产-元数据-元数据采集,验证标准目录-删除,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）一级目录A1下无数据标准；2）二次确认删除
+3. 1）二级目录B1下无数据标准；2）二次确认删除
+4. 1）一级目录A2下存在数据标准和标准映射结果；2）二次确认删除3）当前页面查看A2下的数据标准4）进入【标准映射】页查看目录","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+3. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+4. 1）一级目录A2删除成功；2）A2下的数据标准被删除成功；3）A2下的该目录下的标准映射结果被删除成功",3
+数据资产-数据标准,验证数据标准-编辑,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）点击数据标准A的【编辑】按钮；2）对数据标准A所有可编辑属性进行修改；3）点击【保存】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 保存成功，且各属性修改正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",2
+数据资产-数据标准,验证数据标准-删除,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）对待上线的数据标准，点击【删除】2）二次确认","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 数据标准删除成功，系统给出删除成功提示，该记录从列表中消失",3
+数据资产-元数据-元数据采集,验证标准映射-验证创建标准映射功能正常,"准备表：
+create table active_users (
+user_id bigint NOT NULL COMMENT '用户ID',
+name string NOT NULL COMMENT '用户姓名',
+email string NULL COMMENT '邮箱地址',
+address string NULL COMMENT '住址（邮寄地址）',
+age tinyint NULL COMMENT '用户年龄',
+sex tinyint NULL COMMENT '用户性别（男/女）',
+last_active datetime COMMENT '最近活跃时间 最近登陆时间',
+property0 tinyint NOT NULL,
+property1 tinyint NOT NULL,
+property2 tinyint NOT NULL,
+property3 tinyint NOT NULL
+)
+DISTRIBUTED BY HASH(`user_id`)
+PROPERTIES(
+“replication_num“ = “1“
+);
+
+
+准备数据标准：
+email（邮箱地址）","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）点击【标准映射】2）查看创建标准映射弹窗
+3. “数据源类型”选择${DATASOURCE_TYPE}数据源类型
+4. “数据源”选择${DATASOURCE_TYPE}数据源类型下的数据源
+5. 1）选择数据库2）点击【添加】3）点击【确定】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 
+3. “数据源”下拉项显示${DATASOURCE_TYPE}数据源类型下的数据源
+4. “数据库”下拉项显示所选数据源下所有已同步的数据库
+5. 创建标准映射成功，系统给出成功反馈，相关页面/数据状态更新为最新",1
+数据资产-元数据-元数据采集,验证标准映射-验证标准映射字段绑功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）点击邮箱地址的【字段映射】；2）查看字段绑定弹窗
+3. “数据源类型”选择${DATASOURCE_TYPE}数据源类型
+4. “数据源”选择${DATASOURCE_TYPE}数据源类型下的数据源
+5. “数据库”选择数据库
+6. 选择“数据表”，点击【确定】
+7. 查看对数据标准的“映射记录”","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 
+3. “数据源”下拉项显示${DATASOURCE_TYPE}数据源类型下的数据源
+4. “数据库”下拉项显示所选数据源下所有已同步的数据库
+5. “数据表”选择所选库下所有已同步的数据表
+6. 字段绑定成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 映射记录显示新绑定字段",3
+数据资产-元数据-元数据采集,验证小文件治理-验证[周期治理]/[一次性治理]-支持“治理模式”配置,"1）小文件生成方式：
+多次执行insert语句（动态分区插入数据语法，执行N次就生成N个小文件）：
+INSERT INTO TABLE test_v53x_new_asset.page_view_left PARTITION (ldt,lcountry) VALUES ('8b20fa34-ce77-46d6-ac39-5c128d2b56dc', 74, 100643, 'www.cba.com/register', 'www.cba.com', '117.41.186.167','2022-01-02','US');
+2）技术文档：https://dtstack.yuque.com/rd-center/sm6war/pkfyu0isrro0kcw1
+3）操作的表最新元数据信息必须已经同步至数据地图","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）进入[周期治理]TAB页；2）点击【新建治理规则】；3）查看新增治理规则页面
+3. 选择“local”模式，保存治理规则
+4. 选择“remote”模式，保存治理规则","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1）增加“治理模式”选项；2）下拉项为“local”，“remote”
+3. 治理规则保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态
+4. 治理规则保存成功，系统给出保存成功提示，配置/数据已持久化，页面更新为最新状态",2
+数据资产-元数据-元数据采集,验证小文件治理-验证[周期治理]/[一次性治理]-local模式治理ORC表成功,"1）小文件生成方式：
+多次执行insert语句（动态分区插入数据语法，执行N次就生成N个小文件）：
+INSERT INTO TABLE test_v53x_new_asset.page_view_left PARTITION (ldt,lcountry) VALUES ('8b20fa34-ce77-46d6-ac39-5c128d2b56dc', 74, 100643, 'www.cba.com/register', 'www.cba.com', '117.41.186.167','2022-01-02','US');
+2）技术文档：https://dtstack.yuque.com/rd-center/sm6war/pkfyu0isrro0kcw1
+3）操作的表最新元数据信息必须已经同步至数据地图","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）ORC格式表O生成10个小文件，且表存储大小为5M，并重新将表同步至数据地图；2）配置治理规则并保存：- 圈定该表对应数据源- 文件数量>=10，占用存储<=10M（该值大于表O存储大小即可）- 治理模式：local3）等待下一个周期小文件治理任务运行完成；4）查看【文件治理记录】
+3. 进入HDFS服务器查看表O的分区路径下的文件数量
+4. 在底层通过SQL查询表O数据","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 文件治理记录，显示当前任务运行情况，且任务运行状态流转正确
+3. 表O小文件合并成功并以merged-开头，表O分区路径下数据文件数量减少；
+4. 表O数据完整并正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",2
+数据资产-数据安全,验证数据脱敏验证表脱敏功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）准备“全部脱敏”类型规则2）“全部脱敏”脱敏应用XX表的username字段；3）查看该表数据预览
+3. 1）准备“部分脱敏”类型规则2）“部分脱敏”脱敏应用XX表的username字段；3）查看该表数据预览","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 该表username字段数据全脱敏
+3. 该表username字段数据部分脱敏",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-添加流程,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击自动分级页面的【添加】icon
+3. 填写必填内容，点击下一步
+4. 选择${DATASOURCE_TYPE}数据源类型，填写其他必填内容，点击立即生效","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 跳转至添加规则的基础信息页面
+3. 跳转至配置规则页面
+4. 该数据源类型的符合识别规则的字段被分级成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-数据识别-元数据字段识别,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 添加/编辑自动分级配置数据识别1）配置“数据识别”为“元数据字段识别”-“字段名识别”；2）输入内容为“order*price”
+3. 添加/编辑自动分级配置数据识别1）配置“数据识别”为“元数据字段识别”-“字段名排除”；2）输入内容为“order*price”","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 分级打标对象为：${DATASOURCE_TYPE}数据源类型下所有字段名符合的字段（如：order_price、order_total_price、orderprice等）
+3. 分级打标对象为：${DATASOURCE_TYPE}数据源类型下所有字段名不符合的字段（如：order_price、order_total_price、orderprice等诸如此类字段不会被打标）",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-数据识别-字段备注识别,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 添加/编辑自动分级配置数据识别1）配置“数据识别”为“元数据字段识别”-“备注识别”；2）输入内容为“订单*金额”
+3. 添加/编辑自动分级配置数据识别1）配置“数据识别”为“元数据字段识别”-“备注排除”；2）输入内容为“订单*金额”","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 分级打标对象为：${DATASOURCE_TYPE}数据源类型下所有字段备注名符合的字段（如：订单金额、订单总金额、订单-金额等）
+3. 分级打标对象为：${DATASOURCE_TYPE}数据源类型下所有字段备注不符合的字段（如：订单金额、订单总金额、订单-金额等诸如此类字段不会被打标）",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-重新生效,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看重新生效icon的展示
+3. 点击重新生效icon
+4. 等待分级结束","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 状态为分级中的icon置灰不可点击，状态为已生效的icon为蓝色可点击状态
+3. 1）该规则状态更改为分级中，icon置灰不可点击；2）更新时间显示为重新生效的时间
+4. 规则状态更改为已生效，icon变为蓝色可点击状态",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-分类-添加,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击分类右侧的“+”icon
+3. 不输入内容，回车
+4. 输入与一级分类同名的分类名称，回车
+5. 输入与不同级分类同名的分类名称，回车","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 分类搜索框下新增一个输入框
+3. 提示：“分类名称不能为空或空字符串”
+4. 提示：“同级目录下名称不可重复”
+5. 分类新增成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-分类-编辑,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击分类的编辑icon
+3. 编辑分类名称，回车","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 分类变为可编辑状态
+3. 1）分类名称显示为编辑后的内容；2）规则列表的分类显示为编辑后的内容",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-分类-删除,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击不存在子类别或规则的分类删除icon
+3. 点击确认
+4. 点击存在子类别的分类删除icon
+5. 点击确认
+6. 点击存在正在分级中规则的分类删除icon
+7. 点击存在分级数据的分类删除icon
+8. 点击既存在正在分级中规则又存在分级数据的分类删除icon","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 弹窗提示：“删除分类时，会同步删除该分类下的子节点、规则，是否确认删除？”
+3. 该分类删除成功，系统给出删除成功提示，该记录从列表中消失
+4. 弹窗提示：“删除分类时，会同步删除该分类下的子节点、规则，是否确认删除？”
+5. 分类与分类下的子分类都被删除成功，系统给出删除成功提示，该记录从列表中消失
+6. 弹框提示：“该分类下存在分级中的规则，暂时无法删除，请分级结束后再删除！”
+7. 弹窗提示：“该分类下存在分级字段，需要下架该分类下的全部分级字段才可以删除分类”
+8. 弹窗提示：“该分类下存在分级中的规则，暂时无法删除，请分级结束后再删除！”",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-批量删除,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 不勾选规则，查看删除按钮
+3. 勾选规则，查看删除按钮
+4. 勾选状态为已生效的规则，点击删除按钮
+5. 点击确认","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 删除按钮置灰，不可点击
+3. 删除按钮变为白色可点击状态
+4. 弹窗提示：“您确认要删除吗？”【确认/取消】
+5. 提示：“删除成功！”",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-规则详情-编辑规则,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击【编辑规则】
+3. 编辑内容，点击【立即生效】
+4. 点击该规则名称，查看规则详情页","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 跳转至编辑规则界面除规则名称不可编辑，其他为可编辑状态
+3. 跳转至分级设置界面
+4. 规则详情显示为编辑后的内容，生效时间更新为编辑后生效时间",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证自动分级-规则详情-数据,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击规则，查看详情页中规则信息的显示
+3. 生效时间","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 右侧抽屉展示规则详情；显示规则名称、规则信息、分级数据、生效时间；分级数据显示：字段名、字段中文名、表名、数据库、数据源、分级时间；分级数据默认加载20条记录，按照分级时间倒序；
+3. 默认展示最新的生效时间",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-手动分级-添加,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击手动分级，进入添加手动分级页面
+3. 查看分类下拉项
+4. 检查“数据源类型”、“数据源”、“数据库”，以及手动分级栏中数据表、字段选项的级联查询
+5. 1）输入分类2）添加若干[⚠️F04 请替换为具体测试数据]组分级和表、字段3）点击发布","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 
+3. 展示所有未删除的分类
+4. 级联查询功能正常，功能行为符合预期，无报错或异常
+5. 添加手动分级成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-手动分级-编辑,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 不修改级别和分类，点击确定
+3. 修改级别和分类，点击取消
+4. 修改级别和分类，点击确定","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 编辑成功；列表数据不变；历史记录新增一条数据一样的历史记录数据；
+3. 编辑成功；列表数据不变；历史记录无新增；
+4. 编辑成功；列表数据显示修改后的数据；历史记录新增一条历史记录数据；",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-列表数据,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看列头显示
+3. 如果列过长，查看列头显示
+4. 查看筛选项显示
+5. 查看列表数据显示_列表为空
+6. 查看列表排序
+7. 查看翻页
+8. 查看操作列显示","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 多选框、字段名、级别、字段中文名、分类、分级方式、表名、数据库、数据源、数据源类型、分级时间、操作
+3. 1）多选框、字段名、操作列固定；2）其余可左右移动
+4. 1）显示在分类、分级方式、数据源类型右侧；2）显示筛选图标
+5. 显示暂无数据
+6. 根据分级时间倒序排列（assets_data_rank_link表中的update_at）
+7. 每页默认显示20条数据，可正常切换每页显示条数
+8. 历史记录、下架、编辑",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-批量下架,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 选择一个分级数据，点击下架，二次确认后
+3. 选择多个分级数据，点击下架，二次确认后","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 提示：下架成功；列表不显示当前分级数据；metadata_data_rank_link表对应的数据的is_deleted=1；metadata_data_rank_link_history表对应当前字段的分级历史的is_deleted=0；
+3. 提示：下架成功；列表不显示选中的分级数据；metadata_data_rank_link表对应的数据的is_deleted=1；metadata_data_rank_link_history表对应当前字段的分级历史的is_deleted=0；",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-下架,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 选择分级数据后，点击下架
+3. 查看二次确认弹框显示
+4. 点击确定
+5. 点击取消","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示二次确认弹框
+3. 您确认下架该字段分级，恢复至未分级状态吗？”【确认/取消】
+4. 提示：下架成功；列表不显示当前分级数据；assets_data_rank_link表对应的数据的is_deleted=1；assets_data_rank_link_history表对应当前字段的分级历史的is_deleted=0；
+5. 取消下架功能",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-字段修改后分级数据显示,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 表中修改字段名称后，同步该表到资产，查看分级数据显示","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 该字段对应的数据分级标记为：(该字段已不存在)",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-字段删除后分级数据显示,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 表中删除该字段后，同步该表数据到资产，查看分级数据显示
+3. 表中删除该表后，进行源库对比，查看分级数据显示
+4. 删除该字段对应的库后，查看分级数据显示
+5. 取消引入该数据源后，查看分级数据显示","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 该字段对应的分级数据标记为不存在
+3. 不显示该表中所有字段的分级数据
+4. 不显示该库中所有字段的分级数据
+5. 不显示该数据源中所有字段的分级数据",3
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-发布,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 当前界面同一个字段对应不同的分级，点击发布
+3. 当前界面同一个分级对应多个字段，点击发布","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 发布成功，列表该字段对应级别更高的分级
+3. 发布成功，列表显示所有字段对应的分级",2
+数据资产-数据安全,验证数据分级分类-数据分级分类验证分级数据-查询,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 选择左侧级别后，再次输入关键字搜索和筛选分类
+3. 选择左侧级别，再次输入关键字搜索和筛选分类后，点击关键字搜索框的重置按钮
+4. 选择左侧级别，再次输入关键字搜索和筛选分类后，点击筛选分类的重置按钮
+5. 选择左侧级别，再次输入关键字搜索和筛选分类后，点击选择的级别","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 列表同时显示根据级别和搜索以及筛选后的分级数据
+3. 列表显示根据级别筛选出来的分级数据
+4. 列表同时显示根据级别和搜索后的分级数据
+5. 列表同时显示根据搜索和筛选后的分级数据",2
+数据资产-数据地图,验证【数据地图】验证视图搜索功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查询结果类型选择“视图”进行搜索","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1) 搜索结果显示所有已同步的视图2) “资产类型”显示为“视图”，“表中文名”改为“视图中文名”且数据显示内容完整，与系统配置和实际数据一致",2
+数据资产-数据地图,验证【数据地图】验证表删除功能正常,"涉及两个页面：
+1）数据地图，某表详情页的删除icon
+2）元数据管理，进入某库的数据表页面的，批量删除操作","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 数据地图-表详情页，进行删除元数据表操作
+3. 数据地图-表详情页，进行删除源表操作
+4. 元数据管理-表列表页，进行批量删除元数据表操作
+5. 元数据管理-表列表页，进行批量删除源表操作","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 对应表在数据地图被删除，底层不被删除
+3. 对应表在数据地图被删除，底层也被删除
+4. 对应表在数据地图被删除，底层不被删除
+5. 对应表在数据地图被删除，底层也被删除",2
+数据资产-数据地图,验证【数据地图】验证表详情页_批量编辑,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）进入批量编辑状态；2）修改字段描述；3）修改字段中文名4）新增/删除字段标签；点击【保存】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 保存成功；字段描述/字段中文名/字段标签更新成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-数据地图,验证【数据地图】验证数据地图搜索结果页支持查询${DATASOURCE_TYPE}类型表,进入数据地图，搜索结果页面,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看“数据源类型”
+3. “数据源类型”选择${DATASOURCE_TYPE}
+4. “数据源”选择${DATASOURCE_TYPE}数据源
+5. 选择“数据库”","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 下拉选择包含${DATASOURCE_TYPE}
+3. “数据源”下拉项为${DATASOURCE_TYPE}类型的数据源
+4. “数据库”下拉项为所选数据源所有已同步至资产的数据库
+5. 结果页展示所选数据库下所有已同步的表",2
+数据资产-数据地图,验证【数据地图】离线任务详情页-任务SQL-验证血缘解析成功,"直接提交离线任务（涉及表均已创建）：
+SELECT * FROM page_view_text;
+
+INSERT INTO TABLE page_view_text PARTITION (dt,country) SELECT * FROM page_view;
+
+SELECT * FROM page_view_text;","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看数据地图-该离线任务详情页；点击【查看SQL】-【SQL解析日志】
+3. 点击【查看血缘图谱】-【表级血缘】
+4. 点击【查看血缘图谱】-【字段级血缘】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 新增3条SQL解析记录：	第一条： SQL语句：SELECT * FROM page_view_text; 解析结果：成功 解析时间：【当前SQL解析时间】 操作：无操作	第二条： SQL语句：INSERT INTO TABLE page_view_text PARTITION (dt,country) SELECT * FROM page_view; 解析结果：成功 解析时间：【当前SQL解析时间】 操作：【查看血缘】	第三条： SQL语句：SELECT * FROM page_view_text; 解析结果：成功 解析时间：【当前SQL解析时间】 操作：无操作
+3. page_view、page_view_text和离线任务的血缘图正确展示上下游表的血缘链路，关系类型与实际数据流向一致
+4. 去掉这个字段级血缘tab",2
+数据资产-元数据-元数据采集,验证【元数据同步】_【过滤表】功能正常,"1）在数据源下创建不同类型的表或视图
+2）包含customer开头的表和视图","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1） 创建元数据同步任务：2）设置数据表过滤条件：customer.*3）点击【立即同步】；4）查看实例
+3. 1）等待任务实例同步成功，查看数据地图","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1）生成任务实例2）“已同步”数量不包含customer开头的表和视图
+3. customer开头的表和视图不同步至数据地图",2
+数据资产-数据地图,验证离线建表自动同步至数据地图,"准备离线SQL任务，包含${DATASOURCE_TYPE}数据源类型的常用建表语句;
+例如:
+create table if not exists ${TABLE_NAME} (
+id int ,
+name varchar(255)
+);
+alter table ${TABLE_NAME} add ${COL_NAME} varchar(255);
+insert into ${TABLE_NAME} values(1,'test','xx');
+select * from ${TABLE_NAME};","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 运行任务
+3. 查看各表详情页-操作记录","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 查询数据地图，任务建的表均同步至数据地图
+3. DDL记录正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",1
+数据资产-数据地图,验证离线建视图同步数据地图成功,"CREATE OR REPLACE VIEW ${VIEW_NAME} AS
+SELECT ${COL_1}, ${COL_2}
+FROM ${TABLE_NAME}
+WHERE ${COL_3} = ${VALUE};","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）离线SQL任务执行SQL2）等待任务执行成功3）查看数据地图","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 表/视图成功同步至数据地图，且元数据信息正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",3
+数据资产-元数据-元数据采集,验证【技术属性】初始化模块功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查看${DATASOURCE_TYPE}类型的技术属性列表
+3. 查看SparkThrift2.x、Greenplum、Oracle、OushuDB、SAP HANA 1.x、SAP HANA 2.x","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. ${DATASOURCE_TYPE}类型的技术属性初始化且显示正确
+3. 技术属性列表包含视图属性：源表名、视图描述",2
+数据资产-元数据-元数据采集,验证通用业务属性功能正常,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 查询功能
+3. 新增
+4. 生效功能
+5. 编辑
+6. 删除","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 1）进入元数据-元模型管理-${DATASOURCE_TYPE}的元模型管理页面2）点击【通用业务属性】
+3. 交互
+4. 进入${DATASOURCE_TYPE}数据源类型的数据表详情页，查看右侧【业务属性】
+5. 交互
+6. 交互",2
+数据资产-元数据-元数据采集,验证个性业务属性功能正常_新增,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）进入元数据-元模型管理-${DATASOURCE_TYPE}的元模型管理页面-个性业务属性页面2）选择某子模型，点击【新增个性属性】
+3. 必填项校验：只输入必填项，点击【确定】
+4. 必填项校验：存在一个必填项未输入，点击【确定】
+5. 必填项校验：输入所有表单元素值，点击【确定】
+6. 查看属性类型选项
+7. 属性类型选择“枚举”
+8. 属性类型选择“文本框”
+9. 属性类型选择“树形目录”
+10. 新增枚举属性：1）属性类型为“枚举”2）输入表单内容3）点击【确定】
+11. 新增string类型文本框属性：1）属性类型为“文本框”，字段类型为“string”2）输入表单内容3）点击【确定】
+12. 新增bigint类型文本框属性：1）属性类型为“文本框”，字段类型为“bigint”2）输入表单内容3）点击【确定】
+13. 新增树形目录属性：1）属性类型为“树形目录”2）输入表单内容3）点击【确定】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示新增弹窗
+3. 1）弹窗关闭，提示新建成功2）列表刷新
+4. 提示必填项不能空
+5. 1）弹窗关闭，提示新建成功2）列表刷新
+6. 选项包括“枚举”、“文本框”、“树形目录”
+7. 下方显示“选项”配置区
+8. 下方显示“字段类型”下拉项，下拉选项为：string和bigint
+9. 下方显示“编辑目录”配置项
+10. 列表中显示新建的业务属性，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+11. 列表中显示新建的业务属性，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+12. 列表中显示新建的业务属性，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+13. 列表中显示新建的业务属性，且数据正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",3
+数据资产-元数据-元数据采集,验证个性业务属性功能正常_编辑,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）进入元数据-元模型管理-${DATASOURCE_TYPE}的元模型管理页面-个性业务属性页面2）选择一个业务属性，点击【编辑】
+3. 只输入必填项，点击【确定】
+4. 存在一个必填项未输入，点击【确定】
+5. 输入所有表单元素值，点击【确定】
+6. 查看不可编辑项
+7. 1）在编辑弹窗中，修改所有元素值2）点击【确定】
+8. 进入${DATASOURCE_TYPE}数据源类型的数据表详情页，查看【业务属性】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示编辑弹窗
+3. 1）弹窗关闭，提示编辑成功2）列表刷新
+4. 提示必填项不能空
+5. 1）弹窗关闭，提示编辑成功2）列表刷新
+6. 属性名、属性类型为不可编辑状态
+7. 列表中该业务属性数据更新正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+8. 显示该业务属性名更新",3
+数据资产-元数据-元数据采集,验证个性业务属性功能正常_删除,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 1）进入元数据-元模型管理-${DATASOURCE_TYPE}的元模型管理页面-个性业务属性页面2）选择一个业务属性，点击【删除】
+3. 二次确认后
+4. 删除业务属性${X}","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示二次确认弹窗
+3. 提示删除成功，列表刷新
+4. 列表不显示业务属性${X}",3
+数据资产-元数据-元数据采集,验证元数据管理页，页面跳转正确,无,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 位置：元数据-元数据管理
+3. 点击${DATASOURCE _TYPE}数据源
+4. 点击具体数据库","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示数据源列表
+3. 进入该数据源的数据库列表页；面包屑显示：[数据源名称]（[数据源类型]）> 数据库
+4. 进入该数据库的数据表列表页；面包屑显示：[数据源名称]（[数据源类型]）> [数据库名称] > 数据表",3
+数据资产-元数据-元数据采集,验证数据源列表,无,1. 进入元数据-元数据管理查看列表,1. 列表展示数据源信息正确： 数据源名称、数据库数量、数据表数量、数据源类型、存储大小、更新时间数据库数量：当前数据源已同步至资产的数据库总数数据表数量：当前数据源已同步至资产的数据表总数存储大小：当前数据源所有已同步至资产的数据表的存储大小之和更新时间：当前数据源下最近更新的数据表的更新时间,3
+数据资产-元数据-元数据采集,验证数据库列表,无,1. 进入元数据-元数据管理-${DATASOURCE_TYPE}数据源查看列表,1. 列表展示当前数据源下数据库信息正确： 数据库名称、数据表数量、存储大小、更新时间数据表数量：当前数据库已同步至资产的数据表+视图总数存储大小：当前数据库下所有已同步至资产的数据表的存储大小之和更新时间：当前数据库下最近更新的数据表/视图的更新时间,3
+数据资产-元数据-元数据采集,验证数据表列表,无,1. 进入元数据-元数据管理-${DATASOURCE _TYPE}数据源-某数据库查看列表,1. 列表展示当前数据库下数据表+视图信息正确（数据与表详情页一直即可）： 表名、表中文名、创建时间、存储大小、更新时间,2
+数据资产-元数据-元数据采集,验证完整度分析_查询,"页面：元数据质量-完整度分析
+手动触发完整度分析：curl -X POST localhost:8876/dassets/v1/scheduleJob/saveFillRate","1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 触发完整度分析定时任务：curl -X POST localhost:8875/dmetadata/v1/scheduleJob/saveFillRate
+3. 查看“质量统计”，统计类型选择“表”
+4. 查看“质量分析”，“分析方式”选择数据源
+5. 查看“质量分析”，“分析方式”选择业务属性
+6. “元模型”选择待测数据源类型","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 任务执行成功未报错
+3. “质量统计”显示${DATASOURCE_TYPE}数据源类型数据源的统计信息
+4. 列表数据显示${DATASOURCE_TYPE}数据源类型数据源的分析信息
+5. “元模型”筛选项显示正确，页面内容与实际数据一致，各字段显示正常，无报错或异常提示
+6. 列表数据显示${DATASOURCE_TYPE}数据源类型元模型属性的分析信息",2
+数据资产-数据地图,验证血缘分析_创建,页面：元数据质量-完整度分析,"1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');
+2. 点击【添加数据库】
+3. “数据源类型”选择${DATASOURCE_TYPE}数据源类型
+4. “数据源”选择${DATASOURCE_TYPE}数据源类型数据源
+5. 选择数据库，点击【确定】","1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (`busine_line_id` STRING COMMENT '业务线ID',`busine_line` INT COMMENT '业务线',`bu_id` STRING COMMENT '事业 部ID',`bu_name` STRING COMMENT '事业部',`busi_team` STRING COMMENT '隶属商务团队',`busi_team_date` STRING COMMENT '隶属时间',`load_dt` TIMESTAMP COMMENT '隶属时间')COMMENT 'dim维度表_新核心业务线'PARTITIONED BY (`data_dt` STRING COMMENT '数据时间',`is_save` INT COMMENT '数据是否保留：0-否，1-是')STORED AS PARQUETTBLPROPERTIES ('transactional'='true');页面，页面内容正常加载显示，无报错
+2. 显示添加血缘分析弹窗
+3. “数据源”下拉项显示${DATASOURCE_TYPE}数据源类型数据源
+4. “数据库”下拉项显示所选数据源下所有已同步的数据库
+5. 创建血缘监控成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-数据地图,验证血缘分析_查询 “数据源类型”选择${DATASOURCE_TYPE}数据源类型 列表返回已同步${DATASOURCE_TYPE}数据源类型数据库库的分析数据,无,1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53,1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53，页面内容正常加载显示，无报错,2
+数据资产-数据地图,验证血缘分析_查询 查看列表数据 包含${DATASOURCE_TYPE}数据源类型数据库的分析数据,无,1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53,1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53，页面内容正常加载显示，无报错,2
+数据资产-数据地图,验证血缘分析_监控 触发血缘分析定时任务；curl -X POST localhost:8875/dmetadata/v1/scheduleJob/dbLineageStatistics 1）任务执行成功未报错；2）统计数据正确,无,1. 进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53,1. 成功进入建表流程-“表结构”步骤；选择“建表语句解析模式”；输入建表语句，进行解析：CREATE TABLE IF NOT EXISTS `batch_test_v53，页面内容正常加载显示，无报错,2
+数据资产-数据安全,验证添加脱敏表，选择doris数据源，页面交互功能,无,"1. 进入数据安全-数据脱敏管理-脱敏应用，添加脱敏表
+2. 选择doris数据源，查看弹窗展示
+3. 选择其他数据源，查看弹窗展示","1. 弹出添加脱敏表弹窗
+2. 1）在数据源类型上方展示：注意：doris类型若需生效至离线开发平台需要注册udf函数，系统会自动尝试注册，如果权限不足需要手动注册udf函数，规则包：xxxx下载2）xxxx下载为蓝色可以点击的状态
+3. 不会展示步骤二中的提示",2
+数据资产-数据模型,验证取消勾选“不展示层级”建表功能,无,"1. 进入数据模型-新建表，选择原始数仓层级，取消勾选“不展示层级”，进行建表
+2. 查看原始数仓层级目录下是否存在步骤一中的表","1. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+2. 表存在",1
+数据资产-数据模型,验证勾选“不展示层级”建表功能,无,"1. 进入数据模型-新建表，选择原始数仓层级，勾选“不展示层级”，进行建表
+2. 查看原始数仓层级目录下是否存在步骤一中的表","1. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+2. 表存在",2
+数据资产-数据模型,验证不展示层级选项勾选/取消勾选功能,无,"1. 进入数据模型-新建表，选择数仓层级
+2. 查看表名
+3. 取消勾选不展示层级
+4. 切换勾选/取消勾选","1. 表名后展示“不展示层级”，默认勾选
+2. 表名前展示层级前缀
+3. 表名前不展示层级前缀，模型元素的名称依旧展示
+4. 层级前缀展示内容完整，各字段值与系统记录一致，页面内容与实际数据一致，各字段显示正常，无报错或异常提示",2
+数据资产-数据模型,验证数据模型建表，选择数仓层级后展示“不展示层级”选项,无,"1. 进入数据模型-新建表，选择数仓层级
+2. 切换各种类型的数据源","1. 表名后展示“不展示层级”，默认勾选
+2. “不展示层级”都会展示",2

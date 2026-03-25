@@ -1,0 +1,235 @@
+{
+  "main": {
+    "id": "4eabc7c5136b1c3f",
+    "type": "split",
+    "children": [
+      {
+        "id": "108d91aeca282d3b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "51b202db6814f7ce",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/PRD-26-数据质量-质量问题台账.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "PRD-26-数据质量-质量问题台账"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "6117dd1a7b21f819",
+    "type": "split",
+    "children": [
+      {
+        "id": "bdedd1b8c0513eea",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "63d5e98b1f8f4a0f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "d687ddc0eeed3a27",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "475bd8e39605419b",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 468.5
+  },
+  "right": {
+    "id": "b9f65bfe3e707893",
+    "type": "split",
+    "children": [
+      {
+        "id": "ff11dd51968c30dc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3bd6ecf896e64d5b",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/PRD-26-数据质量-质量问题台账.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "PRD-26-数据质量-质量问题台账 的反向链接列表"
+            }
+          },
+          {
+            "id": "857400bfce3b35e0",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/PRD-26-数据质量-质量问题台账.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "PRD-26-数据质量-质量问题台账 的出链列表"
+            }
+          },
+          {
+            "id": "98038271933d2c62",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "0e3335ad8050c1fd",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "27e6dfd43c450b1a",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/PRD-26-数据质量-质量问题台账.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "PRD-26-数据质量-质量问题台账 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "51b202db6814f7ce",
+  "lastOpenFiles": [
+    "README.md",
+    "CLAUDE.md",
+    "未命名文件夹",
+    "zentao-cases/XMind/BatchWorks/离线开发-主流程用例_6.3.x.xmind",
+    "zentao-cases/XMind/BatchWorks/离线开发-主流程用例_6.3.xmind",
+    "zentao-cases/XMind/DataAssets/数据资产-主流程用例.xmind",
+    "zentao-cases/XMind/DataAssets/数据资产_岚图标品用例整理.xmind",
+    "zentao-cases/XMind/DataAssets/数据资产_岚图标品用例整理（更全一点）.xmind",
+    "zentao-cases/dtstack-platform/数据资产/archive-reqs/Story/Story-15648-v6.4.9.md",
+    "zentao-cases/dtstack-platform/数据资产/archive-reqs/Story/Story-15603-v6.4.9.md",
+    "zentao-cases/dtstack-platform/数据资产/archive-reqs/Story/Story-15602-v6.4.9.md",
+    "zentao-cases/dtstack-platform/数据资产/archive-reqs/Story",
+    "zentao-cases/dtstack-platform/数据资产/archive-reqs",
+    "zentao-cases/dtstack-platform/数据资产/Requirements",
+    "zentao-cases/dtstack-platform/数据资产/requirements",
+    "zentao-cases/XMind/DataAssets/Story/Story-15603-v6.4.9.md",
+    "zentao-cases/XMind/DataAssets/Story/Story-15648-v6.4.9.md",
+    "zentao-cases/XMind/DataAssets/Story/Story-15602-v6.4.9.md",
+    "zentao-cases/XMind/Assets/img/Pasted image 20260325142059.png",
+    "zentao-cases/XMind/Assets/img/Pasted image 20260317160706.png",
+    "zentao-cases/XMind/Assets/img/Pasted image 20260317160541.png",
+    "zentao-cases/XMind/Assets/img/Pasted image 20260317155214.png",
+    "zentao-cases/XMind/Assets/img/Pasted image 20260317160311.png",
+    "zentao-cases/XMind/Assets/img/Pasted image 20260316170939.png",
+    "zentao-cases/XMind/Assets/img/Pasted image 20260317155720.png",
+    "zentao-cases/XMind/未命名.md",
+    "zentao-cases/xmind-cases/DataAssets/Story/Story-15648-v6.4.9.md",
+    "zentao-cases/xmind-cases/DataAssets/Story/Story-15603-v6.4.9.md",
+    "zentao-cases/xmind-cases/DataAssets/Story/Story-15602-v6.4.9.md",
+    "zentao-cases/xmind-cases/DataAssets/Story/Story.md",
+    "zentao-cases/xmind-cases/DataAssets/Story/Story-15648.md",
+    "zentao-cases/xmind-cases/DataAssets/Story/Story-15603.md",
+    "zentao-cases/xmind-cases/DataAssets/Story/Story-15602.md",
+    "zentao-cases/xmind-cases/Assets/img/Pasted image 20260325142059.png",
+    "zentao-cases/xmind-cases/Assets/img/Pasted image 20260317160706.png",
+    "zentao-cases/xmind-cases/Assets/img/Pasted image 20260317160541.png",
+    "zentao-cases/xmind-cases/未命名.md",
+    "zentao-cases/XmindCase/DataAssets/Story/Story.md",
+    "zentao-cases/XmindCase/DataAssets/Story/Story-15602.md",
+    "zentao-cases/XmindCase/DataAssets/Story/Story-15603.md",
+    "zentao-cases/XmindCase/DataAssets/Story/Story-15648.md",
+    "zentao-cases/XmindCase/未命名.md",
+    "zentao-cases/customItem-platform/信永中和/Requirement/Story-20260127/prd-20260127-流程中心.md",
+    "zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/PRD-30-数据货架管理-数据集管理&数据货架-数据集.md",
+    "zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/PRD-29-数据货架管理-拓展属性管理.md",
+    "zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/PRD-28-数据目录-数据目录台账.md"
+  ]
+}

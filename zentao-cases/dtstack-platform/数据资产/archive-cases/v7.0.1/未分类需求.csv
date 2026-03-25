@@ -1,0 +1,2687 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+数据资产-数据标准,验证标准-字段绑定页面功能正确,"已存在标准id
+已存在数据源 Mysql/SparkThrift
+数据表ddl: create table test_table(id int,name varchar(255));
+
+标准已绑定字段","1. 进入数据资产-数据标准-标准定义页面
+2. 选择标准，点击字段绑定数字
+3. 输入数据表名test_table,点击搜索
+4. 输入字段名id,点击搜索
+5. 输入不存在的字符串，点击搜索
+6. 使用test用户下线再上线标准，查看标准详情页时间
+7. 点击字段名id
+8. 数据源类型筛选
+9. 绑定时间排序
+10. 绑定来源筛选
+11. 分页设置pageSize为10/20/50/100
+12. 点击<>,点击current_page","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 下钻到标准绑定字段页面
+3. 成功匹配test_table信息
+4. 成功匹配所有id信息
+5. 展示缺省页
+6. 创建时间，最近发布时间，最近发布用户展示正确，内容与预期完全一致，无异常或错误
+7. 跳转到数据地图-对应数据表详情页
+8. 筛选结果正确，内容与预期完全一致，无异常或错误
+9. 排序功能正确，内容与预期完全一致，无异常或错误
+10. 筛选结果正确，内容与预期完全一致，无异常或错误
+11. 页面数据展示正确，内容与预期完全一致，无异常或错误
+12. 页面跳转正确，数据展示正确，内容与预期完全一致，无异常或错误",1
+数据资产-数据标准,验证标准-字段绑定-绑定来源统计正确,"1. 已存在标准id,并发布上线
+2. 数据地图已同步表A，表A存在id字段","1. 进入数据资产-数据模型-建表页面
+2. 点击新建表， 选择数据源、写入数据库，输入表名test、表中文名，点击下一步
+3. 添加id字段，关联已发布上线的标准id
+4. 生成建表语句，建表
+5. 进入数据资产-数据标准-标准映射页面
+6. 点击标准映射，配置标准目录，数据标准，映射目标，点击确定
+7. 点击字段绑定，选择表A字段id，进行字段绑定
+8. 调用定时任务接口，进入标准定义-查看标准绑定字段列数据
+9. 点击数字2
+10. 查看绑定来源
+11. 点击test表id字段名
+12. 点击A表id字段名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入字段配置页面
+3. 系统提示关联成功，关联关系已建立，页面显示关联的目标对象
+4. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+5. 成功进入目标页面，页面内容正常加载显示，无报错
+6. 映射成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 标准绑定字段成功，系统给出成功反馈，相关页面/数据状态更新为最新
+8. 展示绑定字段数为2
+9. 成功下钻
+10. test表展示为建表绑定，A表为映射绑定
+11. 跳转test表数据地图详情页
+12. 跳转A表数据地图详情页",2
+数据资产-数据标准,验证标准-字段绑定页面数据展示正确,"已存在标准id
+已存在数据源 Mysql/SparkThrift
+数据表ddl: create table test_table(id int,name varchar(255));
+
+标准已绑定字段","1. 进入数据资产-数据标准-标准定义页面
+2. 选择标准，点击字段绑定数字
+3. 校验页面UI","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 下钻到标准绑定字段页面
+3. 展示如下：$标准名字段绑定$标准名创建时间，最近发布时间，最近发布用户字段名/表名搜索框字段名，来源表，数据源类型，数据源，绑定时间，绑定来源，分页器",3
+数据资产-数据标准,验证字段绑定列-数据展示及下钻功能正确,无,"1. 进入数据资产-数据标准-标准定义页面
+2. 当前标准已下线状态
+3. 当前标准待审批状态
+4. 当前标准绑定上线状态，字段绑定数为0
+5. 当前标准绑定上线状态，字段绑定数为N","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 字段绑定列展示为“--”，无法点击下钻
+3. 字段绑定列展示为“--”，无法点击下钻
+4. 字段绑定列展示为0，无法点击下钻
+5. 字段绑定列展示为N，点击可下钻",3
+数据资产-数据标准,验证数据标准页面-业务定义列后新增字段绑定列,无,"1. 进入数据资产-数据标准-标准定义页面
+2. 查看业务定义列后一列","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 为新增的字段绑定列",1
+数据资产-数据质量-规则任务配置,验证单表/多表质量校验任务-关联离线任务流程正确,已存在离线提交任务A,"1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】按钮
+3. 输入必填项，点击下一步
+4. 【任务关联】点击“添加关联”，关联离线任务A
+5. 点击“保存”按钮
+6. 查看规则详情页","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【监控对象】配置页面
+3. 进入【编辑调度属性】页面
+4. 系统提示添加成功，列表中出现新添加的记录，记录内容与填写一致
+5. 系统提示保存成功，修改内容已生效并在页面中更新显示
+6. 【关联任务】栏正确展示关联任务信息",2
+数据资产-数据质量-规则任务配置,验证单表质量校验任务-新增远程触发-功能正常,已存在单表质量校验规则A,"1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击规则A，点击“远程触发”按钮
+3. 点击新增远程触发
+4. 分区表/正常表 点击全选，点击“生成远程调用API”
+5. 点击“编辑”远程调用API
+6. 点击“删除”远程触发API
+7. 切换不同规则，查看不同规则远程触发API","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转创建远程触发页面
+3. 弹【配置远程调用】弹窗
+4. 成功生成API
+5. 弹【编辑远程调用API】弹窗
+6. 二次确认后，删除成功，系统给出删除成功提示，该记录从列表中消失
+7. 正确切换，数据展示正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-规则任务配置,验证单表质量校验任务-不同任务切换-任务信息展示正确,已存在单表质量校验任务A/B,"1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击A校验规则查看
+3. 点击B校验规则查看","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 展示A校验规则详情信息
+3. 展示B校验规则详情信息",3
+数据资产-数据质量-规则任务配置,验证质量校验-单表校验规则-运行-逆向逻辑正确,无,"1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】按钮
+3. 配置如下-【规则名称】： test【选择数据源】： dataSourceName【选择数据库】： databaseName【选择数据表】： tableName【选择分区】： partitionName
+4. 点击“下一步”按钮
+5. 点击“添加规则”按钮
+6. 规则配置完整性校验、准确性校验、规范性校验、唯一性校验、自定义SQL
+7. 立即运行规则
+8. 查看“监控报告”（点击表名）
+9. “监控报告“-查看明细
+10. “监控报告”-“查看明细”-下载
+11. 查看“表级报告”（点击表名）","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【监控对象】配置页面
+3. 配置正确，内容与预期完全一致，无异常或错误
+4. 跳转配置【监控规则】页面
+5. 下拉框展示【完整性、准确性、规范性、唯一性、自定义SQL】选项
+6. 系统提示任务创建成功，任务列表中出现新创建的任务记录
+7. 运行失败
+8. 监控报告显示校验规则正确，内容与预期完全一致，无异常或错误
+9. 异常数据展示正确，内容与预期完全一致，无异常或错误
+10. 1）下载文件成功；2）文件显示异常数据正确，内容与预期完全一致，无异常或错误
+11. 表级报告展示的数据正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-规则任务配置,验证质量校验-单表校验规则-运行-正向逻辑正确,无,"1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】按钮
+3. 配置如下-【规则名称】： test【选择数据源】： dataSourceName【选择数据库】： databaseName【选择数据表】： tableName【选择分区】： partitionName
+4. 点击“下一步”按钮
+5. 点击“添加规则”按钮
+6. 规则配置完整性校验、准确性校验、规范性校验、唯一性校验、自定义SQL
+7. 立即运行规则
+8. 查看“监控报告”（点击表名）
+9. 查看“表级报告”（点击表名）","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【监控对象】配置页面
+3. 配置正确，内容与预期完全一致，无异常或错误
+4. 跳转配置【监控规则】页面
+5. 下拉框展示【完整性、准确性、规范性、唯一性、自定义SQL】选项
+6. 系统提示任务创建成功，任务列表中出现新创建的任务记录
+7. 规则运行结果符合预期
+8. 监控报告显示校验规则正确，内容与预期完全一致，无异常或错误
+9. 表级报告展示的数据正确，内容与预期完全一致，无异常或错误",1
+数据资产-数据质量-规则任务配置,验证质量校验-单表校验规则-编辑流程正常,无,"1. 进入数据资产-数据质量-规则任务配置页面
+2. 选择规则A，点击编辑
+3. 修改规则名称
+4. 修改监控规则
+5. 添加监控规则
+6. 关闭检测
+7. 删除监控规则
+8. 全局参数查看
+9. 编辑调度属性","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹编辑弹窗
+3. 名称能够修改成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 规则修改成功，系统给出成功反馈，相关页面/数据状态更新为最新
+5. 规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+6. 关闭检测成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 规则删除成功，系统给出删除成功提示，该记录从列表中消失
+8. 展示正确，内容与预期完全一致，无异常或错误
+9. 调度属性编辑成功，系统给出成功反馈，相关页面/数据状态更新为最新",2
+数据资产-数据质量-规则任务配置,验证质量校验-单表校验规则-创建流程正常,待测数据源类型： mysql/sparkThrift/doris/sr,"1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】按钮
+3. 配置如下-【规则名称】： test【选择数据源】： dataSourceName【选择数据库】： databaseName【选择数据表】： tableName【选择分区】： partitionName
+4. 点击“下一步”按钮
+5. 点击“添加规则”按钮
+6. 规则配置完整性校验、准确性校验、规范性校验、唯一性校验、自定义SQL
+7. 规则列表页，点击表名
+8. 详情抽屉中点击“规则SQL”的【查看】","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【监控对象】配置页面
+3. 配置正确，内容与预期完全一致，无异常或错误
+4. 跳转配置【监控规则】页面
+5. 下拉框展示【完整性、准确性、规范性、唯一性、自定义SQL】选项
+6. 系统提示任务创建成功，任务列表中出现新创建的任务记录
+7. 1）弹出任务详情抽屉；2）任务详情显示正确，内容与预期完全一致，无异常或错误
+8. 显示当前任务拼接的SQL",1
+数据资产-数据质量-多表比对,验证多表对比规则-同源数据对比-分区表对比正确,"1. 已存在hive数据源为Hjve
+2. 公共配置全局参数${year} = ’2025‘
+3. 数据源下分别存在分区表如下：
+hive:
+CREATE TABLE database_hive.table (
+id INT,
+name STRING,
+age INT
+)
+PARTITIONED BY (year STRING);
+
+# 插入3条数据
+INSERT INTO database_hive.table PARTITION(year='2023')
+VALUES(1,'test1',11);
+
+INSERT INTO database_hive.table PARTITION(year='2024')
+VALUES(2,'test2',12);
+
+INSERT INTO database_hive.table PARTITION(year='2025')
+VALUES(3,'test3',13);
+
+
+
+CREATE TABLE database_hive.table2 (
+id INT,
+name STRING,
+age INT
+)
+PARTITIONED BY (year STRING);
+
+# 插入3条数据
+INSERT INTO database_hive2.table PARTITION(year='2023')
+VALUES(1,'test1',11);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Hive 【数据库】选择database_hive 【选择左侧表】 table 【输入分区】 -手动分区(partition = ${year}) 【全局参数】partition = ${year} 【过滤条件】 age > 10【对照表】- 【数据源】 选择Hive 【数据库】选择database_hive 【选择左侧表】 table 【输入分区】 -选择已有分区(2023) 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数数量差异】，设置为“1”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",1
+数据资产-数据质量-多表比对,验证多表比对规则-同源数据比对-sr/sr数据源比对结果正确,"1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 15【主键】选择id【比对规则】 勾选【记录数数量差异】，设置为“1”条
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【主键】选择id【比对规则】 勾选【记录数数量差异】，设置为“1”条
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-同源数据比对-mysql/mysql数据源比对结果正确,"1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 15【主键】选择id【比对规则】 勾选【记录数数量差异】，设置为“1”条
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【主键】选择id【比对规则】 勾选【记录数数量差异】，设置为“1”条
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-同源数据比对-hive/hive数据源比对结果正确,"1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 15【主键】选择id【比对规则】 勾选【记录数数量差异】，设置为“1”条
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【主键】选择id【比对规则】 勾选【记录数数量差异】，设置为“1”条
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-同源数据比对-Doris/Doris数据源比对结果正确,"1. 已存在Doris可用数据源Doris(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 15【主键】选择id【比对规则】 勾选【记录数数量差异】，设置为“1”条
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 同源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【主键】选择id【比对规则】 勾选【记录数数量差异】，设置为“1”条
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表对比规则-跨源数据对比-分区表对比正确,"1. 已存在Doris/hive数据源 分别为Doris/Hjve
+2. 公共配置全局参数${year} = ’2025‘
+3. 数据源下分别存在分区表如下：
+
+doris:
+CREATE TABLE IF NOT EXISTS example_db.composite_partitioned_table
+(
+id BIGINT,
+name VARCHAR(50),
+age INT,
+salary DOUBLE,
+hire_date DATE,
+department_id INT
+)
+PARTITION BY RANGE(hire_date)
+SUBPARTITION BY LIST(department_id)
+(
+PARTITION p2023 VALUES LESS THAN ('2024-01-01')
+(
+SUBPARTITION dept_1_2023 VALUES IN (1, 2),
+SUBPARTITION dept_3_2023 VALUES IN (3, 4)
+),
+PARTITION p2024 VALUES LESS THAN ('2025-01-01')
+(
+SUBPARTITION dept_1_2024 VALUES IN (1, 2),
+SUBPARTITION dept_3_2024 VALUES IN (3, 4)
+)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 10;
+
+
+hive:
+CREATE TABLE employees_partitioned (
+id INT,
+name STRING,
+age INT
+)
+PARTITIONED BY (year STRING);
+
+# 插入3条数据
+INSERT INTO employees_partitioned PARTITION(year='2023')
+VALUES(1,'test1',11);
+
+INSERT INTO employees_partitioned PARTITION(year='2024')
+VALUES(2,'test2',12);
+
+INSERT INTO employees_partitioned PARTITION(year='2025')
+VALUES(3,'test3',13);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 -选择已有分区 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Hive 【数据库】选择database_hive 【选择左侧表】 table 【输入分区】 -手动分区(partition = ${year}) 【全局参数】无 【过滤条件】 age > 20【比对规则】 勾选【记录数数量差异】，设置为“1”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",1
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-sr/hive数据源比对结果正确,"1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-oracle/hive数据源比对结果正确,"1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-oracle/sr数据源比对结果正确,"1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-mysql/hive数据源比对结果正确,"1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",1
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-mysql/sr数据源比对结果正确,"1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-mysql/oracle数据源比对结果正确,"1. 已存在oracle/mysql可用数据源oracle/Mysql(已开启脏数据管理)
+2. oracle存在database_oracle.table,database_oracle.table2如下：
+create table if not exists database_oracle.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_oracle.table values(1,'张三',11);
+insert into database_oracle.table values(2',张三2',12);
+insert into database_oracle.table values(3,'张三3',13);
+insert into database_oracle.table values(4,'张三4',14);
+insert into database_oracle.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_oracle.table2 values(1,'张三',11);
+insert into database_oracle.table2 values(2',张三2',12);
+insert into database_oracle.table2 values(3,'张三3',13);
+insert into database_oracle.table2 values(4,'张三4',14);
+insert into database_oracle.table2 values(5,'张三5',15);
+insert into database_oracle.table2 values(6,'张三6',16);
+insert into database_oracle.table2 values(7',张三7',17);
+insert into database_oracle.table2 values(8,'张三8',18);
+insert into database_oracle.table2 values(9,'张三9',19);
+insert into database_oracle.table2 values(10,'张三10',20);
+3. mysql 存在database_mysql.table,database_mysql.table2如下：
+create table if not exists database_mysql.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_mysql.table values(1,'张三',11);
+insert into database_mysql.table values(2',张三2',12);
+insert into database_mysql.table values(3,'张三3',13);
+insert into database_mysql.table values(4,'张三4',14);
+insert into database_mysql.table values(5,'张三5',15);
+
+
+create table if not exists database_mysql.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_mysql.table2 values(1,'张三',11);
+insert into database_mysql.table2 values(2',张三2',12);
+insert into database_mysql.table2 values(3,'张三3',13);
+insert into database_mysql.table2 values(4,'张三4',14);
+insert into database_mysql.table2 values(5,'张三5',15);
+insert into database_mysql.table2 values(6,'张三6',16);
+insert into database_mysql.table2 values(7',张三7',17);
+insert into database_mysql.table2 values(8,'张三8',18);
+insert into database_mysql.table2 values(9,'张三9',19);
+insert into database_mysql.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Oracle 【数据库】选择database_oracle 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Oracle 【数据库】选择database_oracle 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Oracle 【数据库】选择database_Oracle 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Oracle 【数据库】选择database_oracle 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Mysql 【数据库】选择database_mysql 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-Doris/hive数据源比对结果正确,"1. 已存在Doris/hive可用数据源Doris/hive(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. hive 存在database_hive.table,database_hive.table2如下：
+create table if not exists database_hive.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_hive.table values(1,'张三',11);
+insert into database_hive.table values(2',张三2',12);
+insert into database_hive.table values(3,'张三3',13);
+insert into database_hive.table values(4,'张三4',14);
+insert into database_hive.table values(5,'张三5',15);
+
+
+create table if not exists database_hive.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_hive.table2 values(1,'张三',11);
+insert into database_hive.table2 values(2',张三2',12);
+insert into database_hive.table2 values(3,'张三3',13);
+insert into database_hive.table2 values(4,'张三4',14);
+insert into database_hive.table2 values(5,'张三5',15);
+insert into database_hive.table2 values(6,'张三6',16);
+insert into database_hive.table2 values(7',张三7',17);
+insert into database_hive.table2 values(8,'张三8',18);
+insert into database_hive.table2 values(9,'张三9',19);
+insert into database_hive.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Hive 【数据库】选择database_hive 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Hive 【数据库】选择database_hive 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Hive 【数据库】选择database_hive 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Hive 【数据库】选择database_hive 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-Doris/SR数据源比对结果正确,"1. 已存在Doris/sr可用数据源Doris/sr(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. sr 存在database_sr.table,database_sr.table2如下：
+create table if not exists database_sr.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_sr.table values(1,'张三',11);
+insert into database_sr.table values(2',张三2',12);
+insert into database_sr.table values(3,'张三3',13);
+insert into database_sr.table values(4,'张三4',14);
+insert into database_sr.table values(5,'张三5',15);
+
+
+create table if not exists database_sr.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_sr.table2 values(1,'张三',11);
+insert into database_sr.table2 values(2',张三2',12);
+insert into database_sr.table2 values(3,'张三3',13);
+insert into database_sr.table2 values(4,'张三4',14);
+insert into database_sr.table2 values(5,'张三5',15);
+insert into database_sr.table2 values(6,'张三6',16);
+insert into database_sr.table2 values(7',张三7',17);
+insert into database_sr.table2 values(8,'张三8',18);
+insert into database_sr.table2 values(9,'张三9',19);
+insert into database_sr.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Sr 【数据库】选择database_sr 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Sr 【数据库】选择database_Sr 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Sr 【数据库】选择database_sr 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Sr 【数据库】选择database_sr 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",1
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-Doris/oracle数据源比对结果正确,"1. 已存在Doris/oracle可用数据源Doris/oracle(已开启脏数据管理)
+2. Doris存在database_doris.table,database_doris.table2如下：
+create table if not exists database_doris.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_doris.table values(1,'张三',11);
+insert into database_doris.table values(2',张三2',12);
+insert into database_doris.table values(3,'张三3',13);
+insert into database_doris.table values(4,'张三4',14);
+insert into database_doris.table values(5,'张三5',15);
+
+create table if not exists database.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_doris.table2 values(1,'张三',11);
+insert into database_doris.table2 values(2',张三2',12);
+insert into database_doris.table2 values(3,'张三3',13);
+insert into database_doris.table2 values(4,'张三4',14);
+insert into database_doris.table2 values(5,'张三5',15);
+insert into database_doris.table2 values(6,'张三6',16);
+insert into database_doris.table2 values(7',张三7',17);
+insert into database_doris.table2 values(8,'张三8',18);
+insert into database_doris.table2 values(9,'张三9',19);
+insert into database_doris.table2 values(10,'张三10',20);
+3. oracle 存在database_oracle.table,database_oracle.table2如下：
+create table if not exists database_oracle.table(
+id int ,
+name varchar(255),
+age int
+);
+# 插入5条数据
+insert into database_oracle.table values(1,'张三',11);
+insert into database_oracle.table values(2',张三2',12);
+insert into database_oracle.table values(3,'张三3',13);
+insert into database_oracle.table values(4,'张三4',14);
+insert into database_oracle.table values(5,'张三5',15);
+
+
+create table if not exists database_oracle.table2(
+id int ,
+name varchar(255),
+age int
+);
+# 插入10条数据
+insert into database_oracle.table2 values(1,'张三',11);
+insert into database_oracle.table2 values(2',张三2',12);
+insert into database_oracle.table2 values(3,'张三3',13);
+insert into database_oracle.table2 values(4,'张三4',14);
+insert into database_oracle.table2 values(5,'张三5',15);
+insert into database_oracle.table2 values(6,'张三6',16);
+insert into database_oracle.table2 values(7',张三7',17);
+insert into database_oracle.table2 values(8,'张三8',18);
+insert into database_oracle.table2 values(9,'张三9',19);
+insert into database_oracle.table2 values(10,'张三10',20);","1. 进入数据资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【多表比对规则】
+3. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Oracle 【数据库】选择database_oracle 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+4. 点击下一步，输入必填信息，保存
+5. 立即运行，查看实例运行结果
+6. 编辑规则
+7. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Oracle 【数据库】选择database_oracle 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数树量差异】，设置为“1”
+8. 点击下一步，输入必填信息，保存
+9. 立即运行，查看实例运行结果
+10. 编辑规则
+11. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Oracle 【数据库】选择database_oracle 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【比对规则】 勾选【记录数百分比差异】，设置为“10%”
+12. 点击下一步，输入必填信息，保存
+13. 立即运行，查看实例运行结果
+14. 编辑规则
+15. 规则配置-【对比规则】： 跨源数据对比【主表】- 【数据源】 选择Doris 【数据库】选择database_doris 【选择左侧表】 table2 【输入分区】 无 【全局参数】无 【过滤条件】 age > 10【对照表】- 【数据源】 选择Oracle 【数据库】选择database_oracle 【选择左侧表】 table 【输入分区】 无 【全局参数】无 【过滤条件】 age > 12【比对规则】 勾选【记录数树量差异】，设置为“1”
+16. 点击下一步，输入必填信息，保存
+17. 立即运行，查看实例运行结果","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【多表比对规则配置】页面
+3. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+4. 系统提示保存成功，修改内容已生效并在页面中更新显示
+5. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+6. 成功进入编辑页面
+7. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+8. 系统提示保存成功，修改内容已生效并在页面中更新显示
+9. 任务运行成功，状态显示为【运行成功/成功】，无报错信息
+10. 成功进入编辑页面
+11. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+12. 系统提示保存成功，修改内容已生效并在页面中更新显示
+13. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误
+14. 成功进入编辑页面
+15. 规则配置内容与设置一致，配置项显示准确，无遗漏或错误
+16. 系统提示保存成功，修改内容已生效并在页面中更新显示
+17. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-多表比对,验证多表比对规则-跨源数据比对-Doris/mysql数据源比对结果正确,1. 已存在Doris/mysql可用数据源Doris/Mysql(已开启脏数据管理)“,1. 进入数据资产-数据质量-规则任务配置页面,1. 成功进入数据资产-数据质量-规则任务配置页面，页面内容正常加载显示，无报错,
+数据资产-数据质量-多表比对,验证多表比对规则-跨源-规则实例详情页展示正确,已存在跨源比对规则实例记录A,1. 进入数据资产-数据质量-任务实例查询页面“,"1. 
+1. 功能操作成功，页面数据状态更新为最新，无报错提示",
+数据资产-数据质量-多表比对,验证多表对比规则-编辑页面-新增字段展示正确,已存在同源/跨源数据对比规则A和B,1. 进入数据资产-数据质量-规则任务配置页面“,"1. 
+1. 功能操作成功，页面数据状态更新为最新，无报错提示",
+数据资产-数据质量-多表比对,验证多表对比规则-跨源数据对比页面展示正确,无,1. 进入数据资产-数据质量-规则任务配置页面“,"1. 
+1. 功能操作成功，页面数据状态更新为最新，无报错提示",
+数据资产-数据质量-多表比对,验证多表比对规则-左侧表/右侧表改名,无,1. 进入数据资产-数据质量-规则任务配置页面“,"1. 
+1. 功能操作成功，页面数据状态更新为最新，无报错提示",
+数据资产-数据质量-多表比对,验证质量任务-多表对比规则-支持跨源数据对比,无,1. 进入数据资产-数据质量-规则任务配置页面“,"1. 
+1. 功能操作成功，页面数据状态更新为最新，无报错提示",
+数据资产-数据模型,验证Doris建表语句模式建表-客户SQL校验,"CREATE TABLE `ods_gate_common_rebate_ref_code_df` (
+`part_date` date NULL COMMENT '分区字段 按日分区',
+`id` bigint NULL COMMENT '业务主键ID',
+`ref_code` varchar(255) NULL COMMENT '邀请码',
+`uid` int NULL COMMENT '用户uid',
+`type` tinyint NULL COMMENT '类型',
+`updated_at` datetime(6) NULL COMMENT '更新时间',
+`created_at` datetime(6) NULL COMMENT '创建时间',
+`status` tinyint NULL COMMENT '状态'
+) ENGINE=OLAP
+UNIQUE KEY(`part_date`, `id`)
+COMMENT '用户邀请码表'
+PARTITION BY RANGE(`part_date`)
+(PARTITION p20250624 VALUES [('2025-06-24'), ('2025-06-25')),
+PARTITION p20250625 VALUES [('2025-06-25'), ('2025-06-26')),
+PARTITION p20250626 VALUES [('2025-06-26'), ('2025-06-27')),
+PARTITION p20250627 VALUES [('2025-06-27'), ('2025-06-28')),
+PARTITION p20250628 VALUES [('2025-06-28'), ('2025-06-29')),
+PARTITION p20250629 VALUES [('2025-06-29'), ('2025-06-30')),
+PARTITION p20250630 VALUES [('2025-06-30'), ('2025-07-01')),
+PARTITION p20250701 VALUES [('2025-07-01'), ('2025-07-02')),
+PARTITION p20250702 VALUES [('2025-07-02'), ('2025-07-03')))
+DISTRIBUTED BY HASH(`id`) BUCKETS 3
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“dynamic_partition.enable“ = “true“,
+“dynamic_partition.time_unit“ = “DAY“,
+“dynamic_partition.time_zone“ = “Etc/UTC“,
+“dynamic_partition.start“ = “-7“,
+“dynamic_partition.end“ = “1“,
+“dynamic_partition.prefix“ = “p“,
+“dynamic_partition.replication_allocation“ = “tag.location.default: 3“,
+“dynamic_partition.buckets“ = “3“,
+“dynamic_partition.create_history_partition“ = “false“,
+“dynamic_partition.history_partition_num“ = “-1“,
+“dynamic_partition.hot_partition_num“ = “0“,
+“dynamic_partition.reserved_history_periods“ = “NULL“,
+“dynamic_partition.storage_policy“ = “,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gateio_social_mt_vote_user_hi` (
+`id` int NULL COMMENT '自增id',
+`uid` varchar(255) NULL COMMENT '用户id',
+`mid` int NULL COMMENT '帖子id',
+`vid` int NULL COMMENT '选项id',
+`create_timest` datetime NULL COMMENT '此条数据创建时间',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`id`)
+COMMENT '用户投票表'
+DISTRIBUTED BY HASH(`id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_strategybot_user_info_df` (
+`part_date` date NULL COMMENT '业务日期，分区日期',
+`id` bigint NULL,
+`user_id` int NOT NULL DEFAULT “0“,
+`nickname` varchar(255) NOT NULL DEFAULT “,
+`tier` tinyint NOT NULL,
+`avatar` varchar(255) NOT NULL DEFAULT “,
+`anonymous` varchar(255) NOT NULL,
+`create_time` int NOT NULL,
+`update_time` int NOT NULL,
+`nick` varchar(256) NOT NULL DEFAULT “,
+`nick_en` varchar(256) NOT NULL DEFAULT “,
+`hide_name` varchar(256) NOT NULL DEFAULT “,
+`verified` tinyint NOT NULL DEFAULT “0“,
+`country_id` int NOT NULL DEFAULT “0“,
+`risk_noticed` tinyint NOT NULL DEFAULT “0“
+) ENGINE=OLAP
+UNIQUE KEY(`part_date`, `id`, `user_id`)
+COMMENT '量化用户信息全量表'
+PARTITION BY RANGE(`part_date`)
+(PARTITION p202301 VALUES [('2023-01-01'), ('2023-02-01')),
+PARTITION p202302 VALUES [('2023-02-01'), ('2023-03-01')),
+PARTITION p202303 VALUES [('2023-03-01'), ('2023-04-01')),
+PARTITION p202304 VALUES [('2023-04-01'), ('2023-05-01')),
+PARTITION p202305 VALUES [('2023-05-01'), ('2023-06-01')),
+PARTITION p202306 VALUES [('2023-06-01'), ('2023-07-01')),
+PARTITION p202307 VALUES [('2023-07-01'), ('2023-08-01')),
+PARTITION p202308 VALUES [('2023-08-01'), ('2023-09-01')),
+PARTITION p202309 VALUES [('2023-09-01'), ('2023-10-01')),
+PARTITION p202310 VALUES [('2023-10-01'), ('2023-11-01')),
+PARTITION p202311 VALUES [('2023-11-01'), ('2023-12-01')),
+PARTITION p202312 VALUES [('2023-12-01'), ('2024-01-01')),
+PARTITION p202401 VALUES [('2024-01-01'), ('2024-02-01')),
+PARTITION p202402 VALUES [('2024-02-01'), ('2024-03-01')),
+PARTITION p202403 VALUES [('2024-03-01'), ('2024-04-01')),
+PARTITION p202404 VALUES [('2024-04-01'), ('2024-05-01')),
+PARTITION p202405 VALUES [('2024-05-01'), ('2024-06-01')),
+PARTITION p202406 VALUES [('2024-06-01'), ('2024-07-01')),
+PARTITION p202407 VALUES [('2024-07-01'), ('2024-08-01')),
+PARTITION p202408 VALUES [('2024-08-01'), ('2024-09-01')),
+PARTITION p202409 VALUES [('2024-09-01'), ('2024-10-01')),
+PARTITION p202410 VALUES [('2024-10-01'), ('2024-11-01')),
+PARTITION p202411 VALUES [('2024-11-01'), ('2024-12-01')),
+PARTITION p202412 VALUES [('2024-12-01'), ('2025-01-01')),
+PARTITION p202501 VALUES [('2025-01-01'), ('2025-02-01')),
+PARTITION p202502 VALUES [('2025-02-01'), ('2025-03-01')),
+PARTITION p202503 VALUES [('2025-03-01'), ('2025-04-01')),
+PARTITION p202504 VALUES [('2025-04-01'), ('2025-05-01')),
+PARTITION p202505 VALUES [('2025-05-01'), ('2025-06-01')),
+PARTITION p202506 VALUES [('2025-06-01'), ('2025-07-01')),
+PARTITION p202507 VALUES [('2025-07-01'), ('2025-08-01')),
+PARTITION p202508 VALUES [('2025-08-01'), ('2025-09-01')),
+PARTITION p202509 VALUES [('2025-09-01'), ('2025-10-01')),
+PARTITION p202510 VALUES [('2025-10-01'), ('2025-11-01')))
+DISTRIBUTED BY HASH(`part_date`) BUCKETS 8
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“dynamic_partition.enable“ = “true“,
+“dynamic_partition.time_unit“ = “MONTH“,
+“dynamic_partition.time_zone“ = “UTC“,
+“dynamic_partition.start“ = “-36“,
+“dynamic_partition.end“ = “3“,
+“dynamic_partition.prefix“ = “p“,
+“dynamic_partition.replication_allocation“ = “tag.location.default: 3“,
+“dynamic_partition.buckets“ = “8“,
+“dynamic_partition.create_history_partition“ = “false“,
+“dynamic_partition.history_partition_num“ = “-1“,
+“dynamic_partition.hot_partition_num“ = “0“,
+“dynamic_partition.reserved_history_periods“ = “NULL“,
+“dynamic_partition.storage_policy“ = “,
+“dynamic_partition.start_day_of_month“ = “1“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “false“,
+“light_schema_change“ = “true“,
+“function_column.sequence_col“ = “part_date“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“
+);
+CREATE TABLE `ods_rebate_social_transaction_record_hi` (
+`id` bigint NOT NULL COMMENT '主键id',
+`type` varchar(255) NULL COMMENT '类型',
+`time` datetime NULL COMMENT '时间',
+`order_id` bigint NULL COMMENT '订单id',
+`trade_id` bigint NULL COMMENT '交易id',
+`user_id` bigint NULL COMMENT '用户id',
+`market` varchar(65533) NULL COMMENT 'market',
+`role` smallint NULL COMMENT '角色',
+`deal_price` decimal(38,10) NULL COMMENT 'deal_price',
+`fee` decimal(38,10) NULL COMMENT 'fee',
+`deal_fee` decimal(38,10) NULL COMMENT 'deal_fee',
+`status` smallint NULL COMMENT '状态',
+`reconciliation_status` smallint NULL COMMENT '对账状态',
+`remark` varchar(255) NULL COMMENT '评述',
+`rebate_total` decimal(38,10) NULL COMMENT '返利',
+`amount` decimal(38,10) NULL COMMENT 'amount',
+`asset` varchar(255) NULL COMMENT '资产',
+`ref_uid` bigint NULL COMMENT '返佣_uid',
+`rebate_link_info` json NULL COMMENT '返利信息',
+`point_fee` decimal(38,10) NULL COMMENT '点卡fee',
+`deal_point_fee` decimal(38,10) NULL COMMENT '交易点卡fee',
+`gt_fee` decimal(38,10) NULL COMMENT 'gt_fee',
+`deal_gt_fee` decimal(38,10) NULL COMMENT '交易gt_fee',
+`price` decimal(38,10) NULL COMMENT '价格',
+`rebate_total_u` decimal(38,10) NULL COMMENT '返利',
+`transfer_info` json NULL COMMENT '转移信息',
+`channel_id` varchar(255) NULL COMMENT '渠道id',
+`fee_u` decimal(38,10) NULL COMMENT 'fee_u',
+`deal_fee_u` decimal(38,10) NULL COMMENT 'deal_fee_u',
+`action_id` bigint NULL COMMENT '行为id',
+`deal_price_u` decimal(38,10) NULL COMMENT '交易价格',
+`total_fee_u` decimal(38,10) NULL COMMENT 'total_fee_u',
+`created_at` datetime NULL COMMENT '创建时间',
+`updated_at` datetime NULL COMMENT '更新时间',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`id`)
+COMMENT '社交返利交易记录'
+DISTRIBUTED BY HASH(`id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_memebox_asset_info_10mf` (
+`part_time` datetime NULL COMMENT '分区',
+`web3_chain_name` varchar(255) NULL COMMENT 'web3链名，v2/chain/list的chain',
+`contract_addr` varchar(255) NULL COMMENT '合约地址',
+`blue_chip_index` text NULL COMMENT '蓝筹指数',
+`brief_c` text NULL COMMENT '中文简介',
+`brief_en` text NULL COMMENT '英文简介',
+`brief_tw` text NULL COMMENT '繁体简介',
+`chain_icon` text NULL COMMENT '链图标',
+`cir_rate` text NULL COMMENT '流通率，市值/全流通市值',
+`cir_supply` text NULL COMMENT '流通供应量',
+`coin_num_accu` int NULL COMMENT '币种数量精度',
+`coin_price_accu` int NULL COMMENT '币种价格精度',
+`coin_short_name` text NULL COMMENT '币种简称',
+`data_status` int NULL COMMENT '数据状态，1：正常交易，2：暂停交易，3：下架',
+`full_cir_market_value` text NULL COMMENT '全流通市值',
+`holding_addr_num` text NULL COMMENT '持有地址数量',
+`inno_chain_name` text NULL COMMENT '创新交易链名,get-coinbd-all-chain的gate_chain',
+`insider_trading` text NULL COMMENT '内幕交易',
+`logo_url` text NULL COMMENT '币种logo',
+`logo_url_hd` text NULL COMMENT '高清币种logo',
+`market_rank` text NULL COMMENT '市值',
+`market_value` text NULL COMMENT '市值',
+`meme_chain_name` text NULL COMMENT 'memebox的链名',
+`memebox_id` text NULL COMMENT 'Memebox的ID',
+`official_addr` text NULL COMMENT '官网地址',
+`pair` text NULL COMMENT '池子地址',
+`publish_date` text NULL COMMENT '发布时间',
+`smart_money_num` text NULL COMMENT '聪明钱数量',
+`telegram` text NULL COMMENT '电报',
+`telegram_group_members` text NULL COMMENT 'Telegram 群组成员数量',
+`top_10` text NULL COMMENT '前 10',
+`total_supply` text NULL COMMENT '总供应量',
+`trading_symbols` text NULL COMMENT '交易符号',
+`web3_key` text NULL COMMENT 'web3 key， v2/chain/list的web3_key',
+`x_addr` text NULL COMMENT 'Twitter(X)地址',
+`x_followers` text NULL COMMENT 'X 关注者数量'
+) ENGINE=OLAP
+UNIQUE KEY(`part_time`, `web3_chain_name`, `contract_addr`)
+COMMENT 'ods-memebox币种信息配置表'
+PARTITION BY RANGE(`part_time`)
+(PARTITION p202503 VALUES [('2025-03-01 00:00:00'), ('2025-04-01 00:00:00')),
+PARTITION p202504 VALUES [('2025-04-01 00:00:00'), ('2025-05-01 00:00:00')),
+PARTITION p202505 VALUES [('2025-05-01 00:00:00'), ('2025-06-01 00:00:00')),
+PARTITION p202506 VALUES [('2025-06-01 00:00:00'), ('2025-07-01 00:00:00')),
+PARTITION p202507 VALUES [('2025-07-01 00:00:00'), ('2025-08-01 00:00:00')),
+PARTITION p202508 VALUES [('2025-08-01 00:00:00'), ('2025-09-01 00:00:00')),
+PARTITION p202509 VALUES [('2025-09-01 00:00:00'), ('2025-10-01 00:00:00')),
+PARTITION p202510 VALUES [('2025-10-01 00:00:00'), ('2025-11-01 00:00:00')))
+DISTRIBUTED BY HASH(`web3_chain_name`, `contract_addr`) BUCKETS 3
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“dynamic_partition.enable“ = “true“,
+“dynamic_partition.time_unit“ = “MONTH“,
+“dynamic_partition.time_zone“ = “Etc/UTC“,
+“dynamic_partition.start“ = “-2147483648“,
+“dynamic_partition.end“ = “3“,
+“dynamic_partition.prefix“ = “p“,
+“dynamic_partition.replication_allocation“ = “tag.location.default: 3“,
+“dynamic_partition.buckets“ = “3“,
+“dynamic_partition.create_history_partition“ = “false“,
+“dynamic_partition.history_partition_num“ = “-1“,
+“dynamic_partition.hot_partition_num“ = “0“,
+“dynamic_partition.reserved_history_periods“ = “NULL“,
+“dynamic_partition.storage_policy“ = “,
+“dynamic_partition.start_day_of_month“ = “1“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_launchpool_launchpool_reward_logs_backup_hi` (
+`id` int NULL COMMENT '自增ID',
+`uid` int NULL COMMENT '用户ID',
+`part_hour` datetime NULL COMMENT '分区',
+`pid` int NULL COMMENT '产品ID',
+`reward_pool_id` int NULL COMMENT '奖池ID',
+`coin` varchar(255) NULL COMMENT '币种',
+`amount` decimal(30,10) NULL COMMENT '奖励金额',
+`valid_mortgage_amount` decimal(30,10) NULL COMMENT '有效质押数',
+`mortgage_coin` varchar(50) NULL COMMENT '抵押币种名称',
+`create_timest` datetime NULL COMMENT '创建时间',
+`update_timest` datetime NULL COMMENT '更新时间',
+`reward_timest` datetime NULL COMMENT '奖励日期',
+`status` tinyint NULL COMMENT '状态 0待发 1成功 2失败',
+`ext` varchar(255) NULL COMMENT '扩展字段',
+`related_coin` varchar(255) NULL COMMENT '关联币种',
+`related_coin_valid_amount` decimal(30,10) NULL COMMENT '关联币种有效质押数'
+) ENGINE=OLAP
+UNIQUE KEY(`id`, `uid`, `part_hour`)
+COMMENT '新币挖矿奖励流水记录'
+PARTITION BY RANGE(`part_hour`)
+(PARTITION p202405 VALUES [('2024-05-01 00:00:00'), ('2024-06-01 00:00:00')),
+PARTITION p202406 VALUES [('2024-06-01 00:00:00'), ('2024-07-01 00:00:00')),
+PARTITION p202407 VALUES [('2024-07-01 00:00:00'), ('2024-08-01 00:00:00')),
+PARTITION p202408 VALUES [('2024-08-01 00:00:00'), ('2024-09-01 00:00:00')),
+PARTITION p202409 VALUES [('2024-09-01 00:00:00'), ('2024-10-01 00:00:00')),
+PARTITION p202410 VALUES [('2024-10-01 00:00:00'), ('2024-11-01 00:00:00')),
+PARTITION p202411 VALUES [('2024-11-01 00:00:00'), ('2024-12-01 00:00:00')),
+PARTITION p202412 VALUES [('2024-12-01 00:00:00'), ('2025-01-01 00:00:00')),
+PARTITION p202501 VALUES [('2025-01-01 00:00:00'), ('2025-02-01 00:00:00')),
+PARTITION p202502 VALUES [('2025-02-01 00:00:00'), ('2025-03-01 00:00:00')),
+PARTITION p202503 VALUES [('2025-03-01 00:00:00'), ('2025-04-01 00:00:00')),
+PARTITION p202504 VALUES [('2025-04-01 00:00:00'), ('2025-05-01 00:00:00')),
+PARTITION p202505 VALUES [('2025-05-01 00:00:00'), ('2025-06-01 00:00:00')),
+PARTITION p202506 VALUES [('2025-06-01 00:00:00'), ('2025-07-01 00:00:00')),
+PARTITION p202507 VALUES [('2025-07-01 00:00:00'), ('2025-08-01 00:00:00')),
+PARTITION p202508 VALUES [('2025-08-01 00:00:00'), ('2025-09-01 00:00:00')),
+PARTITION p202509 VALUES [('2025-09-01 00:00:00'), ('2025-10-01 00:00:00')),
+PARTITION p202510 VALUES [('2025-10-01 00:00:00'), ('2025-11-01 00:00:00')),
+PARTITION p202511 VALUES [('2025-11-01 00:00:00'), ('2025-12-01 00:00:00')),
+PARTITION p202512 VALUES [('2025-12-01 00:00:00'), ('2026-01-01 00:00:00')))
+DISTRIBUTED BY HASH(`part_hour`) BUCKETS 3
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“dynamic_partition.enable“ = “true“,
+“dynamic_partition.time_unit“ = “MONTH“,
+“dynamic_partition.time_zone“ = “Etc/UTC“,
+“dynamic_partition.start“ = “-2147483648“,
+“dynamic_partition.end“ = “1“,
+“dynamic_partition.prefix“ = “p“,
+“dynamic_partition.replication_allocation“ = “tag.location.default: 3“,
+“dynamic_partition.buckets“ = “3“,
+“dynamic_partition.create_history_partition“ = “false“,
+“dynamic_partition.history_partition_num“ = “-1“,
+“dynamic_partition.hot_partition_num“ = “0“,
+“dynamic_partition.reserved_history_periods“ = “NULL“,
+“dynamic_partition.storage_policy“ = “,
+“dynamic_partition.start_day_of_month“ = “1“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “false“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“
+);
+CREATE TABLE `tmp_thomas_0701` (
+`source_db_name` varchar(255) NULL,
+`source_table_name` varchar(255) NULL,
+`source_column_name` varchar(255) NULL,
+`result_db_name` varchar(255) NULL,
+`result_table_name` varchar(255) NULL,
+`result_column_name` varchar(255) NULL,
+`create_time` varchar(255) NULL,
+`modified_time` varchar(255) NULL,
+`is_delete` tinyint NULL
+) ENGINE=OLAP
+DUPLICATE KEY(`source_db_name`)
+DISTRIBUTED BY HASH(`source_db_name`) BUCKETS 10
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“
+);
+CREATE TABLE `hanlin_kafka_int_test` (
+`c1` int NULL
+) ENGINE=OLAP
+DUPLICATE KEY(`c1`)
+DISTRIBUTED BY RANDOM BUCKETS AUTO
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“
+);
+CREATE TABLE `dwd_meta_lineage_column_full` (
+`source_db_name` varchar(255) NULL,
+`source_table_name` varchar(255) NULL,
+`source_column_name` varchar(255) NULL,
+`result_db_name` varchar(255) NULL,
+`result_table_name` varchar(255) NULL,
+`result_column_name` varchar(255) NULL,
+`create_time` varchar(255) NULL,
+`modified_time` varchar(255) NULL,
+`is_delete` tinyint NULL
+) ENGINE=OLAP
+DUPLICATE KEY(`source_db_name`)
+DISTRIBUTED BY HASH(`source_db_name`) BUCKETS 10
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“
+);
+CREATE TABLE `ods_gatelive_video_stats_hi` (
+`pk_id` int NOT NULL COMMENT '主键ID',
+`stream_id` varchar(255) NULL COMMENT '直播ID',
+`timestamp` int NULL COMMENT '生成时间戳',
+`online_users` int NULL COMMENT '在线用户数',
+`likes` int NULL COMMENT '点赞数量',
+`max_online_users` int NULL COMMENT '最大在线人数',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`pk_id`)
+COMMENT 'video_stats表'
+DISTRIBUTED BY HASH(`pk_id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gatelive_video_hf` (
+`pk_id` int NULL COMMENT '主键ID',
+`id` varchar(255) NULL COMMENT '视频ID',
+`stream_id` varchar(255) NULL COMMENT '直播ID，该视频关联的直播活动 ID，只有直播回放视频该字段有值',
+`started_at` datetime NULL COMMENT '录播开始时间，只有直播回放视频该字段有值',
+`ended_at` datetime NULL COMMENT '录播结束时间，只有直播回放视频该字段有值',
+`created_at` datetime NULL COMMENT '视频创建时间',
+`status` varchar(255) NULL COMMENT '视频状态',
+`duration` int NULL COMMENT '视频时长，单位为 s',
+`title` varchar(765) NULL COMMENT '视频标题',
+`cover` varchar(765) NULL COMMENT '封面图片地址',
+`watched` int NULL COMMENT '视频观看次数',
+`creator` varchar(255) NULL COMMENT '主播ID',
+`pull_domain` varchar(255) NULL COMMENT '拉流域名地址',
+`require_sub` tinyint NULL COMMENT 'require_sub',
+`region_id` varchar(255) NULL COMMENT '区域名称',
+`weight` int NULL COMMENT '权重',
+`session_id` varchar(765) NULL COMMENT '同stream表session_id',
+`notes` text NULL COMMENT '录播简介',
+`file_id` varchar(765) NULL COMMENT '文件ID',
+`im_sync_status` tinyint NULL COMMENT '1-标记该视频已经更新',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`pk_id`)
+COMMENT '录播（回放）表'
+DISTRIBUTED BY HASH(`pk_id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gatelive_stream_hi` (
+`pk_id` int NOT NULL COMMENT '主键ID',
+`id` varchar(255) NULL COMMENT 'id',
+`name` varchar(255) NULL COMMENT '名称',
+`app` varchar(255) NULL COMMENT 'app',
+`stream` varchar(255) NULL COMMENT '直播',
+`deleted` tinyint NULL COMMENT '是否删除',
+`status` tinyint NULL COMMENT '0: idle, 1: streaming, 2: closed',
+`domain_id` varchar(255) NULL COMMENT 'domain_id',
+`host_id` varchar(255) NULL COMMENT '主播id',
+`chatroom_id` varchar(255) NULL COMMENT 'chatroom_id',
+`chat_group_id` varchar(255) NULL COMMENT 'chat_group_id',
+`cover` varchar(765) NULL COMMENT 'cover',
+`placeholder` varchar(765) NULL COMMENT 'placeholder',
+`created_at` datetime NULL COMMENT '创建时间',
+`updated_at` datetime NULL COMMENT '更新时间',
+`started_at` bigint NULL COMMENT '开始时间',
+`last` int NULL COMMENT 'last',
+`notes` text NULL COMMENT 'notes',
+`stat` text NULL COMMENT 'stat',
+`notified` tinyint NULL COMMENT 'notified',
+`broadcast` tinyint NULL COMMENT 'broadcast',
+`push_domain` varchar(765) NULL COMMENT 'push_domain',
+`has_vod` tinyint NULL COMMENT 'has_vod',
+`region_id` varchar(255) NULL COMMENT 'region_id',
+`horizontal` tinyint NULL COMMENT 'horizontal',
+`can_invite` tinyint NULL COMMENT 'can_invite',
+`tags` varchar(765) NULL COMMENT '标签',
+`require_sub` tinyint NULL COMMENT 'require_sub',
+`weight` int NULL COMMENT '权重',
+`session_id` varchar(765) NULL COMMENT 'session_id',
+`origin` tinyint NULL COMMENT '1 阿里 2 腾讯',
+`yt_channel_id` varchar(255) NULL COMMENT 'yt_channel_id',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`pk_id`)
+COMMENT '主播表'
+DISTRIBUTED BY HASH(`pk_id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gatelive_space_record_hi` (
+`pk_id` int NOT NULL COMMENT '主键ID',
+`stream_id` varchar(255) NULL COMMENT '直播ID',
+`session_id` varchar(255) NULL COMMENT '场次ID',
+`name` varchar(255) NULL COMMENT '主题',
+`record_status` tinyint NULL COMMENT '状态 0 - 未录制完成 1 - 录制完成',
+`host_id` varchar(255) NULL COMMENT '主播ID',
+`language` varchar(32) NULL COMMENT '语言',
+`post_id` int NULL COMMENT '动态发帖ID',
+`url` varchar(255) NULL COMMENT '语音播放地址',
+`status` int NULL COMMENT '状态',
+`duration` int NULL COMMENT '语音时长 单位S',
+`operator_uid` varchar(255) NULL COMMENT '操作者uid',
+`operator_at` int NULL COMMENT '操作',
+`start_at` int NULL COMMENT '语音直播开始时间',
+`end_at` int NULL COMMENT '语音直播结束时间',
+`created_at` datetime NULL COMMENT '记录创建时间',
+`updated_at` datetime NULL COMMENT '记录跟新时间',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`pk_id`)
+COMMENT 'space开播表'
+DISTRIBUTED BY HASH(`pk_id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gatelive_space_host_hi` (
+`pk_id` int NULL COMMENT '主建id',
+`user_id` bigint NULL COMMENT '用户id',
+`first_at` bigint NULL COMMENT '首次开播时间（单位毫秒)',
+`last_at` bigint NULL COMMENT '最近一次开播时间（单位毫秒)',
+`cnt` int NULL COMMENT '开播次数',
+`created_at` datetime NULL COMMENT '创建时间',
+`updated_at` datetime NULL COMMENT '更新时间',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`pk_id`)
+COMMENT 'space主播表'
+DISTRIBUTED BY HASH(`pk_id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gatelive_host_hi` (
+`pk_id` int NOT NULL COMMENT '主键ID',
+`id` varchar(255) NULL COMMENT '主播ID',
+`name` varchar(255) NULL COMMENT '主播名称',
+`avatar` varchar(765) NULL COMMENT '头像地址',
+`description` text NULL COMMENT '主播描述',
+`deleted` tinyint NULL COMMENT '是否删除 0-未删除 1-已删除',
+`created_at` datetime NULL COMMENT '创建时间',
+`updated_at` datetime NULL COMMENT '更新时间',
+`tips` text NULL COMMENT '主播相关提示信息，按默认语种为中文来处理',
+`tags` varchar(765) NULL COMMENT '主播标签',
+`language` varchar(255) NULL COMMENT '主播语言',
+`contact` varchar(255) NULL COMMENT '主播联系方式',
+`reason` text NULL COMMENT '申请理由',
+`weight` int NULL COMMENT '权重',
+`fans` int NULL COMMENT '粉丝总量',
+`contact_type` varchar(255) NULL COMMENT '主播联系方式类型',
+`name_en` varchar(255) NULL COMMENT '主播英文名',
+`tier_timest` int NULL COMMENT 'vip等级到期时间',
+`tier` int NULL COMMENT 'vip等级',
+`login_name` varchar(255) NULL COMMENT '登录时间',
+`first_time` datetime NULL COMMENT '首次开播时间',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`pk_id`)
+COMMENT '主播表'
+DISTRIBUTED BY HASH(`pk_id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gateio_social_mt_reward_records_hi` (
+`id` bigint NOT NULL COMMENT '自增id',
+`mid` bigint NULL COMMENT '动态ID',
+`uid` bigint NULL COMMENT '用户id',
+`name` varchar(765) NULL COMMENT '用户名',
+`reward_uid` bigint NULL COMMENT '被打赏人ID',
+`asset` varchar(255) NULL COMMENT '币种',
+`amount` decimal(18,6) NULL COMMENT '打赏数量',
+`order_id` varchar(255) NULL COMMENT '订单ID',
+`tx_id` varchar(255) NULL COMMENT '交易流水号',
+`status` tinyint NULL COMMENT '打赏状态（0：用户扣款成功，主播未收到打赏;1：打赏成功；)',
+`create_timest` datetime NULL COMMENT '创建时间',
+`update_timest` datetime NULL COMMENT '更新时间',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`id`)
+COMMENT '社交-动态打赏表'
+DISTRIBUTED BY HASH(`id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gateio_social_mt_news_user_statistics_hi` (
+`id` int NOT NULL COMMENT '自增id',
+`uid` int NULL COMMENT '用户id',
+`following_count` int NULL COMMENT '新增关注数',
+`cancel_following_count` int NULL COMMENT '取消关注数',
+`shielding_count` int NULL COMMENT '新增屏蔽数',
+`cancel_shielding_count` int NULL COMMENT '取消屏蔽数',
+`create_timest` datetime NULL COMMENT '创建时间',
+`update_timest` datetime NULL COMMENT '更新时间',
+`like_count` int NULL COMMENT '点赞数',
+`comment_count` int NULL COMMENT '评论数',
+`share_count` int NULL COMMENT '分享数',
+`reward_count` decimal(18,6) NULL COMMENT 'reward_count',
+`date` datetime NULL COMMENT '时间',
+`post_count` int NULL COMMENT '发帖数',
+`text_count` int NULL COMMENT '短文本数量',
+`long_text_count` int NULL COMMENT '长文本数量',
+`video_count` int NULL COMMENT '视频动态数量',
+`page_view` int NULL COMMENT '浏览量',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`id`)
+COMMENT '动态用户统计表'
+DISTRIBUTED BY HASH(`id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_gateio_social_mt_news_user_message_statistics_hi` (
+`id` int NOT NULL COMMENT '自增主键',
+`mid` int NULL COMMENT '动态id',
+`page_view` int NULL COMMENT 'pv',
+`unique_view` int NULL COMMENT 'uv',
+`like_count` int NULL COMMENT '点赞数',
+`comment_count` int NULL COMMENT '评论数',
+`share_count` int NULL COMMENT '分享数',
+`reward_count` decimal(18,6) NULL COMMENT '赞数数单位 usdt',
+`create_timest` datetime NULL COMMENT '创建时间',
+`update_timest` datetime NULL COMMENT '更新时间',
+`uid` int NULL COMMENT '用户id',
+`date` datetime NULL COMMENT '时间',
+`type` varchar(255) NULL COMMENT '动态类型',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`id`)
+COMMENT '动态帖子统计表'
+DISTRIBUTED BY HASH(`id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_social_live_region_hf` (
+`region_id` char(30) NULL COMMENT 'region_id',
+`region_name` varchar(255) NULL COMMENT '地区',
+`this_create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '此条数据创建时间'
+) ENGINE=OLAP
+UNIQUE KEY(`region_id`)
+COMMENT '社交-直播地区表'
+DISTRIBUTED BY HASH(`region_id`) BUCKETS 4
+PROPERTIES (
+“replication_allocation“ = “tag.location.default: 3“,
+“min_load_replica_num“ = “-1“,
+“is_being_synced“ = “false“,
+“storage_medium“ = “hdd“,
+“storage_format“ = “V2“,
+“inverted_index_storage_format“ = “V1“,
+“enable_unique_key_merge_on_write“ = “true“,
+“light_schema_change“ = “true“,
+“disable_auto_compaction“ = “false“,
+“enable_single_replica_compaction“ = “false“,
+“group_commit_interval_ms“ = “10000“,
+“group_commit_data_bytes“ = “134217728“,
+“enable_mow_light_delete“ = “false“
+);
+CREATE TABLE `ods_fx_history_usdt_liquidates_di` (
+`part_date` date NOT NULL COMMENT '按天分区',",1. 进入【数据资产】-【数据模型】页面,1. 成功进入【数据资产】-【数据模型】页面，页面内容正常加载显示，无报错,
+数据资产-数据模型,验证Doris建表语句模式建表-复合分区字段校验,"CREATE TABLE IF NOT EXISTS example_db.composite_partitioned_table
+(
+id BIGINT,
+name VARCHAR(50),
+age INT,
+salary DOUBLE,
+hire_date DATE,
+department_id INT
+)
+PARTITION BY RANGE(hire_date)
+SUBPARTITION BY LIST(department_id)
+(
+PARTITION p2023 VALUES LESS THAN ('2024-01-01')
+(
+SUBPARTITION dept_1_2023 VALUES IN (1, 2),
+SUBPARTITION dept_3_2023 VALUES IN (3, 4)
+),
+PARTITION p2024 VALUES LESS THAN ('2025-01-01')
+(
+SUBPARTITION dept_1_2024 VALUES IN (1, 2),
+SUBPARTITION dept_3_2024 VALUES IN (3, 4)
+)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，选择表类型为明细表，点击下一步
+3. 点击建表语句模式，输入前提条件内的建表SQL，点击解析
+4. 点击生成建表语句
+5. 点击建表
+6. 点击表名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面
+3. 字段解析正确，内容与预期完全一致，无异常或错误
+4. 建表语句生成正确，内容与预期完全一致，无异常或错误
+5. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+6. 跳转到数据地图详情页",3
+数据资产-数据模型,验证Doris建表语句模式建表-list分区字段校验,"CREATE TABLE IF NOT EXISTS example_db.list_partitioned_table
+(
+id BIGINT,
+name VARCHAR(50),
+department_id INT,
+salary DOUBLE
+)
+PARTITION BY LIST(department_id)
+(
+PARTITION dept_1 VALUES IN (1, 2, 3),
+PARTITION dept_2 VALUES IN (4, 5, 6)
+)
+DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，选择表类型为明细表，点击下一步
+3. 点击建表语句模式，输入前提条件内的建表SQL，点击解析
+4. 点击生成建表语句
+5. 点击建表
+6. 点击表名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面
+3. 字段解析正确，内容与预期完全一致，无异常或错误
+4. 建表语句生成正确，内容与预期完全一致，无异常或错误
+5. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+6. 跳转到数据地图详情页",3
+数据资产-数据模型,验证Doris建表语句模式建表-ranger分区字段校验,"CREATE TABLE IF NOT EXISTS example_db.date_range_partitioned_table
+(
+id BIGINT,
+name VARCHAR(50),
+age INT,
+salary DOUBLE,
+hire_date DATE
+)
+PARTITION BY RANGE(hire_date)
+(
+PARTITION p2023 VALUES LESS THAN ('2024-01-01'),
+PARTITION p2024 VALUES LESS THAN ('2025-01-01'),
+PARTITION p2025 VALUES LESS THAN ('2026-01-01')
+)
+DISTRIBUTED BY HASH(id) BUCKETS 10;","1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，选择表类型为明细表，点击下一步
+3. 点击建表语句模式，输入前提条件内的建表SQL，点击解析
+4. 点击生成建表语句
+5. 点击建表
+6. 点击表名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面
+3. 字段解析正确，内容与预期完全一致，无异常或错误
+4. 建表语句生成正确，内容与预期完全一致，无异常或错误
+5. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+6. 跳转到数据地图详情页",3
+数据资产-数据模型,验证Doris建表语句模式建表-动态分区字段校验,"CREATE TABLE test_dynamic_partition(
+order_id    BIGINT,
+create_dt   DATE,
+username    VARCHAR(20)
+)
+DUPLICATE KEY(order_id)
+PARTITION BY RANGE(create_dt) ()
+DISTRIBUTED BY HASH(order_id) BUCKETS 10
+PROPERTIES(
+“dynamic_partition.enable“ = “true“,
+“dynamic_partition.time_unit“ = “DAY“,
+“dynamic_partition.start“ = “-1“,
+“dynamic_partition.end“ = “2“,
+“dynamic_partition.prefix“ = “p“,
+“dynamic_partition.create_history_partition“ = “true“
+);","1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，选择表类型为明细表，点击下一步
+3. 点击建表语句模式，输入前提条件内的建表SQL，点击解析
+4. 点击生成建表语句
+5. 点击建表
+6. 点击表名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面
+3. 字段解析正确，内容与预期完全一致，无异常或错误
+4. 建表语句生成正确，内容与预期完全一致，无异常或错误
+5. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+6. 跳转到数据地图详情页",3
+数据资产-数据模型,验证Doris建表语句模式建表-分桶字段校验,"CREATE TABLE demo.hash_bucket_tbl(
+oid         BIGINT,
+dt          DATE,
+region      VARCHAR(10),
+amount      INT
+)
+DUPLICATE KEY(oid)
+PARTITION BY RANGE(dt) (
+PARTITION p250101 VALUES LESS THAN(“2025-01-01“),
+PARTITION p250102 VALUES LESS THAN(“2025-01-02“)
+)
+DISTRIBUTED BY HASH(region) BUCKETS 8;","1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，选择表类型为明细表，点击下一步
+3. 点击建表语句模式，输入前提条件内的建表SQL，点击解析
+4. 点击生成建表语句
+5. 点击建表
+6. 点击表名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面
+3. 字段解析正确，内容与预期完全一致，无异常或错误
+4. 建表语句生成正确，内容与预期完全一致，无异常或错误
+5. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+6. 跳转到数据地图详情页",3
+数据资产-数据模型,验证Doris建表语句模式建表-支持聚合表,"CREATE TABLE IF NOT EXISTS example_tbl_agg
+(
+user_id             LARGEINT    NOT NULL,
+load_dt             DATE        NOT NULL,
+city                VARCHAR(20),
+last_visit_dt       DATETIME    REPLACE DEFAULT “1970-01-01 00:00:00“,
+cost                BIGINT      SUM DEFAULT “0“,
+max_dwell           INT         MAX DEFAULT “0“,
+)
+AGGREGATE KEY(user_id, load_dt, city)
+DISTRIBUTED BY HASH(user_id) BUCKETS 10;","1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，选择表类型为聚合表，点击下一步
+3. 点击建表语句模式，输入前提条件内的建表SQL，点击解析
+4. 点击生成建表语句
+5. 点击建表
+6. 点击表名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面
+3. 字段解析正确，内容与预期完全一致，无异常或错误
+4. 建表语句生成正确，内容与预期完全一致，无异常或错误
+5. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+6. 跳转到数据地图详情页",2
+数据资产-数据模型,验证Doris建表语句模式建表-支持主键表,"CREATE TABLE IF NOT EXISTS example_tbl_unique
+(
+user_id         LARGEINT        NOT NULL,
+user_name       VARCHAR(50)     NOT NULL,
+city            VARCHAR(20),
+age             SMALLINT,
+sex             TINYINT
+)
+UNIQUE KEY(user_id, user_name)
+DISTRIBUTED BY HASH(user_id) BUCKETS 10
+PROPERTIES (
+“enable_unique_key_merge_on_write“ = “true“
+);","1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，选择表类型为主键表，点击下一步
+3. 点击建表语句模式，输入前提条件内的建表SQL，点击解析
+4. 点击生成建表语句
+5. 点击建表
+6. 点击表名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面
+3. 字段解析正确，内容与预期完全一致，无异常或错误
+4. 建表语句生成正确，内容与预期完全一致，无异常或错误
+5. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+6. 跳转到数据地图详情页",2
+数据资产-数据模型,验证Doris建表语句模式建表-支持明细表,"CREATE TABLE IF NOT EXISTS example_tbl_duplicate
+(
+log_time        DATETIME       NOT NULL,
+log_type        INT            NOT NULL,
+error_code      INT,
+error_msg       VARCHAR(1024),
+op_id           BIGINT,
+op_time         DATETIME
+)
+DUPLICATE KEY(log_time, log_type, error_code)
+DISTRIBUTED BY HASH(log_type) BUCKETS 10;","1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，选择表类型为明细表，点击下一步
+3. 点击建表语句模式，输入前提条件内的建表SQL，点击解析
+4. 点击生成建表语句
+5. 点击建表
+6. 点击表名","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面
+3. 字段解析正确，内容与预期完全一致，无异常或错误
+4. 建表语句生成正确，内容与预期完全一致，无异常或错误
+5. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+6. 跳转到数据地图详情页",1
+数据资产-数据模型,验证Doris新增【建表语句模式】建表,无,"1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】，数据源选择Doris类型，输入必填项，点击下一步","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【字段配置】页面，页面新增【建表语句模式】tab按钮",2
+数据资产-数据模型,验证【建表语句】保存内容正确,sparkThrift/mysql/doris数据源,"1. 进入【数据资产】-【数据模型】页面
+2. 点击【新建表】按钮
+3. 数据源- 【sparkThrift\mysql\doris】写入数据库- databaseName表名- tableName表中文名- tableNameCn表类型-type存储格式-parquet、ORC、CSV等
+4. 点击下一步
+5. 新增字段id int ，主键，非空，分桶字段，分区字段name varchar, 非空age int, 排序列
+6. 点击【生成建表语句】
+7. 建表
+8. 删除表，删除 元数据表
+9. 进入【审批与授权】-【我的模型】页面
+10. 选择表，点击【查看提交详情】按钮，点击【建表语句】按钮
+11. 复制建表语句，新建表，选择【建表语句解析模式】，建表","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 进入【基础信息配置】页面
+3. 配置完成
+4. 跳转【批量解析模式】页面
+5. 配置字段成功，系统给出成功反馈，相关页面/数据状态更新为最新
+6. 建表语句生成正确，内容与预期完全一致，无异常或错误
+7. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致
+8. 系统提示删除成功，该条记录从列表中消失，总记录数减1
+9. 成功进入目标页面，页面内容正常加载显示，无报错
+10. 建表语句保留正确，内容与预期完全一致，无异常或错误
+11. 系统提示建表成功，数据库中成功创建该表，表结构与配置字段一致",1
+数据资产-数据模型,验证【删除元数据表】页面新增【建表语句】按钮,已存在表A被删除,"1. 进入【数据资产】-【数据模型】页面
+2. 点击【审批与授权】-【我的模型】按钮，选择表A，点击【查看提交详情】按钮","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹【删除元数据表】弹窗，新增【建表语句】按钮",1
+数据资产-数据质量-内置规则库,验证表权限申请-ddl行列级权限-逻辑正确,无,"1. 进入【表权限申请】-【ddl行列级权限】页面
+2. 使用testdev用户登录到数据资产-元数据-数据地图页面
+3. 选择表A，点击“申请权限”按钮
+4. 【权限】模块勾选【DDL】
+5. DDL权限配置如下-【列级权限】选择【全部】【行级权限】选择【部分】，id=1【有效期】选择【选择日期】，明天【申请原因】输入【test】
+6. 点击“确定”按钮
+7. 管理员通过申请
+8. 离线平台对表A update A set name='test'","1. 成功进入【表权限申请】-【ddl行列级权限】页面，页面内容正常加载显示，无报错
+2. 成功进入目标页面，页面内容正常加载显示，无报错
+3. 弹【表权限申请】弹窗
+4. 展示【DDL】配置项
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 提交申请成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 审批通过
+8. 数据修改失败，仅仅能操作id=1的行",1
+数据资产-数据质量-内置规则库,验证表权限申请-dml行列级权限-逻辑正确,无,"1. 进入【表权限申请】-【dml行列级权限】页面
+2. 使用testdev用户登录到数据资产-元数据-数据地图页面
+3. 选择表A，点击“申请权限”按钮
+4. 【权限】模块勾选【DML】
+5. DML权限配置如下-【列级权限】选择【全部】【行级权限】选择【部分】，id=1【有效期】选择【选择日期】，明天【申请原因】输入【test】
+6. 点击“确定”按钮
+7. 管理员通过申请
+8. 离线平台对表A update A set name='test'","1. 成功进入【表权限申请】-【dml行列级权限】页面，页面内容正常加载显示，无报错
+2. 成功进入目标页面，页面内容正常加载显示，无报错
+3. 弹【表权限申请】弹窗
+4. 展示【DML】配置项
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 提交申请成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 审批通过
+8. 数据修改失败，仅仅能操作id=1的行",1
+数据资产-数据质量-内置规则库,验证表权限申请-dql行列级权限-逻辑正确,无,"1. 进入【表权限申请】-【dql行列级权限】页面
+2. 使用testdev用户登录到数据资产-元数据-数据地图页面
+3. 选择表A，点击“申请权限”按钮
+4. 【权限】模块勾选【DQL】
+5. DQL权限配置如下-【列级权限】选择【id】【行级权限】选择【全部】【有效期】选择【永久】【申请原因】输入【test】
+6. 点击“确定”按钮
+7. 管理员通过申请
+8. 数据地图表详情页对表A进行数据预览","1. 成功进入【表权限申请】-【dql行列级权限】页面，页面内容正常加载显示，无报错
+2. 成功进入目标页面，页面内容正常加载显示，无报错
+3. 弹【表权限申请】弹窗
+4. 展示【DQL】配置项
+5. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+6. 提交申请成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 审批通过
+8. 数据预览成功，仅展示字段【id】全部行信息",1
+数据资产-数据质量-内置规则库,验证表权限申请页面-dql/dml区分展示,"1. 数据地图已存在表A、B，DDL 如下
+create table if not exists A (
+id int ,
+name varchar(255),
+age int
+);
+
+create table if not exists A (
+id int ,
+name varchar(255),
+age int
+);
+
+# 向表中写入数据
+insert into A values(1,'林大',20),(2,'王二',22);
+insert into B values(1,'老大',40),(2,'老二',44);
+2. 已存在数据开发用户testdev","1. 进入【表权限申请页面】-【dql/dml区分展示】页面
+2. 使用testdev用户登录到数据资产-元数据-数据地图页面
+3. 选择表A，点击“申请权限”按钮
+4. 【权限】模块勾选/取消勾选【DQL】
+5. 【权限】模块勾选/取消勾选【DML】
+6. 【权限】模块勾选/取消勾选【DDL】","1. 成功进入【表权限申请页面】-【dql/dml区分展示】页面，页面内容正常加载显示，无报错
+2. 成功进入目标页面，页面内容正常加载显示，无报错
+3. 弹【表权限申请】弹窗
+4. 展示/隐藏【DQL】配置项
+5. 展示/隐藏【DML】配置项
+6. 展示/隐藏【DDL】配置项",2
+数据资产-元数据,验证sparkThrift数据源-同步任务环境参数配置生效,无,"1. 进入资产-元数据-元数据同步页面
+2. 点击“新增周期同步任务”
+3. 配置任务-【数据源】： sparkThrift数据源类型数据源【数据库】： database【数据表】: table【数据表过滤】： test【元数据同步内容】： 全部内容【环境参数配置】： 将所有默认为1的值修改为2
+4. 点击“临时同步”
+5. yarn查看任务详情
+6. 查看任务运行完成状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹【新增周期同步任务】配置弹窗
+3. 系统提示配置成功，配置项已生效，页面显示最新配置状态
+4. 同步任务运行中
+5. 配置生效
+6. 同步任务实例运行成功，状态更新为【成功】，运行/执行结果符合预期，日志无报错",1
+数据资产-元数据,验证sparkThrift数据源-同步任务新增环境参数配置,无,"1. 进入资产-元数据-元数据同步页面
+2. 点击“新增周期同步任务”，数据源选择sparkThrift类型数据源","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 弹窗底部新增【环境参数配置】项",3
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串-最小长度-月度平均值波动检测校验逻辑正确,"create table if not exists test_table(
+id int ,
+name varchar(255),
+age int ,
+info varchar(255));
+insert into test_table values(1,'name1',11,'desc info1 ');
+insert into test_table values(2,'name2',22,'desc info2 ');
+insert into test_table values(3,'name3',33,'desc info3 ');
+当前数据源已经在【项目管理】-【脏数据管理】页面开启脏数据管理
+数据库造数据-30天内插入的数据波动值小于80%","1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串-最小长度【校验方法】： 月度平均值波动检测【期望值】： <= 80%【过滤条件】： 无点击“保存”按钮，点击“下一步”
+6. 点击“新建”按钮
+7. 点击【规则名】，点击“立即执行”按钮
+8. 点击【任务实例查询】，查看实例任务状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 规则保存成功，跳转【调度属性】页面
+6. 单表校验规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 单表校验规则实例生成成功，任务运行中
+8. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",1
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串-最小长度-月度波动检测校验逻辑正确,"create table if not exists test_table(
+id int ,
+name varchar(255),
+age int ,
+info varchar(255));
+
+insert into test_table values(1,'name1',11,'desc info1 ');
+insert into test_table values(2,'name2',22,'desc info2 ');
+insert into test_table values(3,'name3',33,'desc info3 ');
+
+当前数据源已经在【项目管理】-【脏数据管理】页面开启脏数据管理
+
+数据库造数据-30天内插入的数据波动值小于80%","1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串-最小长度【校验方法】： 月度波动检测【期望值】： <= 80%【过滤条件】： 无点击“保存”按钮，点击“下一步”
+6. 点击“新建”按钮
+7. 点击【规则名】，点击“立即执行”按钮
+8. 点击【任务实例查询】，查看实例任务状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 规则保存成功，跳转【调度属性】页面
+6. 单表校验规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 单表校验规则实例生成成功，任务运行中
+8. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",3
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串-最小长度-固定值校验逻辑正确,"create table if not exists test_table(
+id int ,
+name varchar(255),
+age int ,
+info varchar(255));
+insert into test_table values(1,'name1',11,'desc info1 ');
+insert into test_table values(2,'name2',22,'desc info2 ');
+insert into test_table values(3,'name3',33,'desc info3 ');
+当前数据源已经在【项目管理】-【脏数据管理】页面开启脏数据管理","1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串-最小长度【校验方法】： 固定值【期望值】： >= 5【过滤条件】： 无点击“保存”按钮，点击“下一步”
+6. 点击“新建”按钮
+7. 点击【规则名】，点击“立即执行”按钮
+8. 点击【任务实例查询】，查看实例任务状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 规则保存成功，跳转【调度属性】页面
+6. 单表校验规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 单表校验规则实例生成成功，任务运行中
+8. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",2
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串-最大长度-7天波动检测校验逻辑正确,"create table if not exists test_table(
+id int ,
+name varchar(255),
+age int ,
+info varchar(255));
+insert into test_table values(1,'name1',11,'desc info1 ');
+insert into test_table values(2,'name2',22,'desc info2 ');
+insert into test_table values(3,'name3',33,'desc info3 ');
+当前数据源已经在【项目管理】-【脏数据管理】页面开启脏数据管理
+数据库造数据-7天内插入的数据波动值小于50%","1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串-最大长度【校验方法】： 7天波动检测【期望值】： <= 50%【过滤条件】： 无点击“保存”按钮，点击“下一步”
+6. 点击“新建”按钮
+7. 点击【规则名】，点击“立即执行”按钮
+8. 点击【任务实例查询】，查看实例任务状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 规则保存成功，跳转【调度属性】页面
+6. 单表校验规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 单表校验规则实例生成成功，任务运行中
+8. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",3
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串-最大长度-一天波动检测校验逻辑正确,"create table if not exists test_table(
+id int ,
+name varchar(255),
+age int ,
+info varchar(255));
+insert into test_table values(1,'name1',11,'desc info1 ');
+insert into test_table values(2,'name2',22,'desc info2 ');
+insert into test_table values(3,'name3',33,'desc info3 ');
+当前数据源已经在【项目管理】-【脏数据管理】页面开启脏数据管理
+数据库造数据-1天内插入的数据波动值小于50%","1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串-最大长度【校验方法】： 一天波动检测【期望值】： <= 50%【过滤条件】： 无点击“保存”按钮，点击“下一步”
+6. 点击“新建”按钮
+7. 点击【规则名】，点击“立即执行”按钮
+8. 点击【任务实例查询】，查看实例任务状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 规则保存成功，跳转【调度属性】页面
+6. 单表校验规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 单表校验规则实例生成成功，任务运行中
+8. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",3
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串-最大长度-固定值校验逻辑正确,"create table if not exists test_table(
+id int ,
+name varchar(255),
+age int ,
+info varchar(255));
+insert into test_table values(1,'name1',11,'desc info1 ');
+insert into test_table values(2,'name2',22,'desc info2 ');
+insert into test_table values(3,'name3',33,'desc info3 ');
+当前数据源已经在【项目管理】-【脏数据管理】页面开启脏数据管理","1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串-最大长度【校验方法】： 固定值【期望值】： <= 5【过滤条件】： 无点击“保存”按钮，点击“下一步”
+6. 点击“新建”按钮
+7. 点击【规则名】，点击“立即执行”按钮
+8. 点击【任务实例查询】，查看实例任务状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 规则保存成功，跳转【调度属性】页面
+6. 单表校验规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 单表校验规则实例生成成功，任务运行中
+8. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",1
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串长度校验-逆向逻辑正确,"create table if not exists test_table(
+id int ,
+name varchar(255),
+age int ,
+info varchar(255));
+insert into test_table values(1,'name1',11,'desc info1 ');
+insert into test_table values(2,'name2',22,'desc info2 ');
+insert into test_table values(3,'name3',33,'desc info3 ');
+insert into test_table values(12,'name444',44,'desc info4 ');
+当前数据源已经在【项目管理】-【脏数据管理】页面开启脏数据管理","1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串长度【校验方法】： 固定值【期望值】： <= 5【过滤条件】： 无点击“保存”按钮，点击“下一步”
+6. 点击“新建”按钮
+7. 点击【规则名】，点击“立即执行”按钮
+8. 点击【任务实例查询】，查看实例任务状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 规则保存成功，跳转【调度属性】页面
+6. 单表校验规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 单表校验规则实例生成成功，任务运行中
+8. 运行失败，脏数据表生成成功，脏数据记录正确，内容与预期完全一致，无异常或错误",2
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串长度校验-正向逻辑正确,"create table if not exists test_table(
+id int ,
+name varchar(255),
+age int ,
+info varchar(255));
+insert into test_table values(1,'name1',11,'desc info1 ');
+insert into test_table values(2,'name2',22,'desc info2 ');
+insert into test_table values(3,'name3',33,'desc info3 ');
+insert into test_table values(12,'name444',44,'desc info4 ');
+当前数据源已经在【项目管理】-【脏数据管理】页面开启脏数据管理","1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串长度【校验方法】： 固定值【期望值】： <= 5【过滤条件】： id < 10点击“保存”按钮，点击“下一步”
+6. 点击“新建”按钮
+7. 点击【规则名】，点击“立即执行”按钮
+8. 点击【任务实例查询】，查看实例任务状态","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 规则保存成功，跳转【调度属性】页面
+6. 单表校验规则添加成功，系统给出成功反馈，相关页面/数据状态更新为最新
+7. 单表校验规则实例生成成功，任务运行中
+8. 任务运行成功，状态显示为【运行成功/成功】，无报错信息",1
+数据资产-数据质量-规则任务配置,验证规范性校验-字符串长度校验-仅能选择固定值校验方式,sparkThrift/mysql/sr 三种数据源,"1. 进入资产-数据质量-规则任务配置页面
+2. 点击【新建监控规则】-【单表校验规则】
+3. 配置监控对象-【规则名称】： test【选择数据源】： dataSource【选择数据库】: dataBase【选择数据表】：table点击下一步
+4. 点击【添加规则】-【规范性校验】按钮
+5. 配置监控规则-【字段】： col【统计规则】： 字符串长度查看【校验方法】","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 跳转【质量规则配置】-【监控对象】页面
+3. 跳转【质量规则配置】-【监控规则】页面
+4. 展示规范性校验配置页面
+5. 【校验方式】仅展示“固定值”",3

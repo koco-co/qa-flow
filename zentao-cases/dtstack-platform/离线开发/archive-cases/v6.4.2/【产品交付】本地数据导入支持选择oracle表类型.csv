@@ -1,0 +1,159 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+本地数据导入- oracle,验证.xlsx文件导入数据成功(单个sheet),无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test.xls文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test.xlsx中的数据文件正常导入",3
+本地数据导入- oracle,验证.xlsx文件导入数据成功(多个sheet),无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test.xlsx文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test中第一个sheet中的数据被写入",1
+本地数据导入- oracle,验证.xls文件导入数据成功(单个sheet),无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test.xls文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test.xls中的数据文件正常导入",3
+本地数据导入- oracle,验证.xls文件导入数据成功(多个sheet),无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test.xls文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test中第一个sheet中的数据被写入",3
+本地数据导入- oracle,验证.csv文件导入数据成功,"<p>test.csv文件</p>
+<p><br /></p>
+<p><!--StartFragment-->
+<pre>
+<div style=“color:#cacaca;background-color:#00000000;font-family:""font-size:11px;“>
+    <div>ID,USERNAME,EMAIL,IS_ACTIVE,SALARY,CREATED_DATE,UPDATED_TS,LOCALE,UUID_RAW,PROFILE_TEXT,AVATAR_BLOB,NOTES</div>
+
+    <div>1,alice,alice@example.com,Y,85000.50,2025-10-01,2025-10-01T08:30:00,zh_CN,550e8400e29b41d4a716446655440000,Senior engineer at X,,长期合同</div>
+
+    <div>2,bob,bob@example.com,Y,62000.00,2025-09-15,2025-09-15T14:05:12,en_US,6f9619ff8b86d011b42d00cf4fc964ff,QA lead automation,,兼职</div>
+
+    <div>3,charlie,charlie@example.com,N,0.00,2024-12-31,2024-12-31T23:59:59,ja_JP,7c9e6679e8c24f2ba6a6b2f7d1a3b001,Contractor,,</div>
+
+    <div>4,diana,diana@example.com,Y,102500.75,2025-01-20,2025-01-20T09:10:05,zh_TW,3f2504e04f8911d39a0c0305e82c3301,Product manager,,远程</div>
+
+    <div>5,evan,evan@example.com,Y,48000.00,2025-05-05,2025-05-05T11:11:11,ko_KR,9a1b2c3d4e5f67890123456789abcdef,Support engineer,,</div>
+  </div>
+</pre>
+<!--EndFragment--></p>
+<p>建表语句</p>
+<p>
+  <div style=“background-color:#282c34;color:#bbbbbb;“>
+<pre><span style=“color:#d55fde;font-style:italic;“>CREATE TABLE </span><span style=“color:#e5c07b;“>demo_user </span>( <span style=“color:#ef596f;font-style:italic;“>id </span><span style=“color:#d55fde;font-style:italic;“>NUMBER</span>(<span style=“color:#d19a66;“>12</span>) <span style=“color:#d55fde;font-style:italic;“>PRIMARY KEY</span>, <span style=“color:#ef596f;“>username </span><span style=“color:#d55fde;font-style:italic;“>VARCHAR2</span>(<span style=“color:#d19a66;“>100</span>) <span style=“color:#d55fde;font-style:italic;“>NOT NULL</span>, <span style=“color:#ef596f;“>email </span><span style=“color:#d55fde;font-style:italic;“>VARCHAR2</span>(<span style=“color:#d19a66;“>200</span>) <span style=“color:#d55fde;font-style:italic;“>UNIQUE</span>, <span style=“color:#ef596f;“>is_active </span><span style=“color:#d55fde;font-style:italic;“>CHAR</span>(<span style=“color:#d19a66;“>1</span>) <span style=“color:#d55fde;font-style:italic;“>DEFAULT </span><span style=“color:#89ca78;“>'Y' </span><span style=“color:#d55fde;font-style:italic;“>NOT NULL</span>, <span style=“color:#ef596f;“>salary </span><span style=“color:#d55fde;font-style:italic;“>NUMBER</span>(<span style=“color:#d19a66;“>12</span>,<span style=“color:#d19a66;“>2</span>), <span style=“color:#ef596f;“>created_date </span><span style=“color:#d55fde;font-style:italic;“>DATE                 DEFAULT </span><span style=“color:#61afef;font-style:italic;“>SYSDATE</span>, <span style=“color:#ef596f;“>updated_ts </span><span style=“color:#d55fde;font-style:italic;“>TIMESTAMP</span>, <span style=“color:#ef596f;“>locale </span><span style=“color:#d55fde;font-style:italic;“>NCHAR</span>(<span style=“color:#d19a66;“>5</span>), <span style=“color:#ef596f;“>uuid_raw </span><span style=“color:#d55fde;font-style:italic;“>RAW</span>(<span style=“color:#d19a66;“>16</span>), <span style=“color:#ef596f;“>profile_text </span><span style=“color:#d55fde;font-style:italic;“>CLOB</span>, <span style=“color:#ef596f;“>avatar_blob </span><span style=“color:#d55fde;font-style:italic;“>BLOB</span>, <span style=“color:#ef596f;“>notes </span><span style=“color:#d55fde;font-style:italic;“>NVARCHAR2</span>(<span style=“color:#d19a66;“>2000</span>), <span style=“color:#d55fde;font-style:italic;“>CONSTRAINT </span>chk_is_active <span style=“color:#d55fde;font-style:italic;“>CHECK </span>(<span style=“color:#ef596f;“>is_active </span><span style=“color:#d55fde;font-style:italic;“>IN </span>(<span style=“color:#89ca78;“>'Y'</span>,<span style=“color:#89ca78;“>'N'</span>))
+);
+</pre>
+</div>
+</p>","1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test.csv文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test表中只有此次导入的数据",1
+本地数据导入- oracle,验证.txt文件导入数据成功,无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test.txt文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test表中只有此次导入的数据",3
+本地数据导入- oracle,验证.log文件导入数据成功,无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test.log文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test表中只有此次导入的数据",3
+本地数据导入- oracle,验证导入数据页面功能正确,无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 分割符默认选中逗号，自定义按钮可选
+3. 原始字符集：下拉列表，默认utf-8
+4. 导入起始行：默认1，所支持的数字大于等于1的正整数
+5. 首行为标题勾选项，默认勾选","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 分割符下拉列表可选择，数据列表随选择同步更新
+3. 填写数据大于列表数据条数，列表不展示数据
+4. 显示的数据即为导入的数据
+5. 默认勾选：第一行数据为标题去掉勾选，使用默认标题",3
+本地数据导入- oracle,验证按名称匹配，导入数据正确,无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写，选择按名称匹配
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test文件中的sex，name分别对应test表中的sex，name字段",1
+本地数据导入- oracle,验证按位置匹配，导入数据正确,无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 选择按位置匹配
+6. 其它数据默认填写，导入模式选择覆盖
+7. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. sex的源字段对应name, name的源字段对应sex
+6. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+7. test文件中的sex，name分别对应test表中的name，sex字段",3
+本地数据导入- oracle,验证导入模式为覆盖，导入数据正确,无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写，导入模式选择覆盖
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 选择一张表test（表里已存在数据）
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test表中只有此次导入的数据",1
+本地数据导入- oracle,验证导入模式为追加，导入数据正确,无,"1. 进入离线开发-数据开发页面
+2. 点击导入, 上传test文件
+3. 其它值为默认填写
+4. 选择表类型为Oracle
+5. 其它数据默认填写，导入模式选择覆盖
+6. 查询表test中的数据","1. 成功进入目标页面，页面内容正常加载显示，无报错
+2. 系统提示上传成功，文件已显示在上传列表/附件区域，文件名与大小正确
+3. 点击下一步
+4. 新建一张包含文件中字段的表test
+5. 系统提示导入成功，数据已同步至对应列表，记录数与导入文件中数据量一致
+6. test表中追加写入此次导入的数据",2

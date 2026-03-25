@@ -1,0 +1,121 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+离线开发-数据开发-整库同步,验证整库同步dfm-hive建表时注释正确获取,"存在dfo语句：
+CREATE TABLE `dorissql_15147` (
+`id` INT COMMENT '主键ID',
+`name` STRING COMMENT '用户姓名',
+`age` INT COMMENT '用户年龄'
+)
+COMMENT '用户信息明细表' PARTITIONED BY (
+`pt` STRING
+)
+STORED AS ORC
+LIFECYCLE 3600;","1. 进入数据源，点击DM for mysqlmeta数据源操作列整库同步按钮
+2. 数据同步目标选择sparkthrift，选择可用的schema，点击目标表表名后面的建表语句
+3. 配置完成整库同步，点击发布任务","1. 进入整库同步界面
+2. 弹窗显示对应的建表语句，相关字段及表级注释存在
+3. 任务发布成功，对应目标表创建完成，目标库内可正常查看表及各类注释信息",1
+离线开发-数据开发-整库同步,验证整库同步dfo-hive建表时注释正确获取,"存在dfo语句：
+CREATE TABLE `dorissql_15147` (
+`id` INT COMMENT '主键ID',
+`name` STRING COMMENT '用户姓名',
+`age` INT COMMENT '用户年龄'
+)
+COMMENT '用户信息明细表' PARTITIONED BY (
+`pt` STRING
+)
+STORED AS ORC
+LIFECYCLE 3600;","1. 进入数据源，点击DM for Oraclemeta数据源操作列整库同步按钮
+2. 数据同步目标选择sparkthrift，选择可用的schema，点击目标表表名后面的建表语句
+3. 配置完成整库同步，点击发布任务","1. 进入整库同步界面
+2. 弹窗显示对应的建表语句，相关字段及表级注释存在
+3. 任务发布成功，对应目标表创建完成，目标库内可正常查看表及各类注释信息",1
+离线开发-数据开发-整库同步,验证整库同步dfm-hive建表时注释正确获取,"存在dfo语句：
+CREATE TABLE `dorissql_15147` (
+`id` INT COMMENT '主键ID',
+`name` STRING COMMENT '用户姓名',
+`age` INT COMMENT '用户年龄'
+)
+COMMENT '用户信息明细表' PARTITIONED BY (
+`pt` STRING
+)
+STORED AS ORC
+LIFECYCLE 3600;","1. 进入数据源，点击DM for mysqlmeta数据源操作列整库同步按钮
+2. 数据同步目标选择sparkthrift，选择可用的schema，点击目标表表名后面的建表语句
+3. 配置完成整库同步，点击发布任务","1. 进入整库同步界面
+2. 弹窗显示对应的建表语句，相关字段及表级注释存在
+3. 任务发布成功，对应目标表创建完成，目标库内可正常查看表及各类注释信息",2
+离线开发-数据开发-整库同步,验证整库同步dfo-hive建表时注释正确获取,"存在dfo语句：
+CREATE TABLE `dorissql_15147` (
+`id` INT COMMENT '主键ID',
+`name` STRING COMMENT '用户姓名',
+`age` INT COMMENT '用户年龄'
+)
+COMMENT '用户信息明细表' PARTITIONED BY (
+`pt` STRING
+)
+STORED AS ORC
+LIFECYCLE 3600;","1. 进入数据源，点击DM for Oraclemeta数据源操作列整库同步按钮
+2. 数据同步目标选择sparkthrift，选择可用的schema，点击目标表表名后面的建表语句
+3. 配置完成整库同步，点击发布任务","1. 进入整库同步界面
+2. 弹窗显示对应的建表语句，相关字段及表级注释存在
+3. 任务发布成功，对应目标表创建完成，目标库内可正常查看表及各类注释信息",2
+离线开发-数据开发-整库同步,验证整库同步dfm-hive建表时注释正确获取,"存在dfo语句：
+CREATE TABLE `dorissql_15147` (
+`id` INT COMMENT '主键ID',
+`name` STRING COMMENT '用户姓名',
+`age` INT COMMENT '用户年龄'
+)
+COMMENT '用户信息明细表' PARTITIONED BY (
+`pt` STRING
+)
+STORED AS ORC
+LIFECYCLE 3600;","1. 进入数据源，点击DM for mysqlmeta数据源操作列整库同步按钮
+2. 数据同步目标选择sparkthrift，选择可用的schema，点击目标表表名后面的建表语句
+3. 配置完成整库同步，点击发布任务","1. 进入整库同步界面
+2. 弹窗显示对应的建表语句，相关字段及表级注释存在
+3. 任务发布成功，对应目标表创建完成，目标库内可正常查看表及各类注释信息",2
+离线开发-数据开发-整库同步,验证整库同步dfo-hive建表时注释正确获取,"存在dfo语句：
+CREATE TABLE `dorissql_15147` (
+`id` INT COMMENT '主键ID',
+`name` STRING COMMENT '用户姓名',
+`age` INT COMMENT '用户年龄'
+)
+COMMENT '用户信息明细表' PARTITIONED BY (
+`pt` STRING
+)
+STORED AS ORC
+LIFECYCLE 3600;","1. 进入数据源，点击DM for Oraclemeta数据源操作列整库同步按钮
+2. 数据同步目标选择sparkthrift，选择可用的schema，点击目标表表名后面的建表语句
+3. 配置完成整库同步，点击发布任务","1. 进入整库同步界面
+2. 弹窗显示对应的建表语句，相关字段及表级注释存在
+3. 任务发布成功，对应目标表创建完成，目标库内可正常查看表及各类注释信息",2
+离线开发-数据开发-整库同步,验证整库同步dfm-hive建表时注释正确获取,"存在dfo语句：
+CREATE TABLE `dorissql_15147` (
+`id` INT COMMENT '主键ID',
+`name` STRING COMMENT '用户姓名',
+`age` INT COMMENT '用户年龄'
+)
+COMMENT '用户信息明细表' PARTITIONED BY (
+`pt` STRING
+)
+STORED AS ORC
+LIFECYCLE 3600;","1. 进入数据源，点击DM for mysqlmeta数据源操作列整库同步按钮
+2. 数据同步目标选择sparkthrift，选择可用的schema，点击目标表表名后面的建表语句
+3. 配置完成整库同步，点击发布任务","1. 进入整库同步界面
+2. 弹窗显示对应的建表语句，相关字段及表级注释存在
+3. 任务发布成功，对应目标表创建完成，目标库内可正常查看表及各类注释信息",1
+离线开发-数据开发-整库同步,验证整库同步dfo-hive建表时注释正确获取,"存在dfo语句：
+CREATE TABLE `dorissql_15147` (
+`id` INT COMMENT '主键ID',
+`name` STRING COMMENT '用户姓名',
+`age` INT COMMENT '用户年龄'
+)
+COMMENT '用户信息明细表' PARTITIONED BY (
+`pt` STRING
+)
+STORED AS ORC
+LIFECYCLE 3600;","1. 进入数据源，点击DM for Oraclemeta数据源操作列整库同步按钮
+2. 数据同步目标选择sparkthrift，选择可用的schema，点击目标表表名后面的建表语句
+3. 配置完成整库同步，点击发布任务","1. 进入整库同步界面
+2. 弹窗显示对应的建表语句，相关字段及表级注释存在
+3. 任务发布成功，对应目标表创建完成，目标库内可正常查看表及各类注释信息",1

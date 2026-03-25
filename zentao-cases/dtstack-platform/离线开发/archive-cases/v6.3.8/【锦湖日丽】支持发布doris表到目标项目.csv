@@ -1,0 +1,380 @@
+﻿所属模块,用例标题,前置条件,步骤,预期结果,优先级
+离线开发-项目管理-发布管理,验证doris表与数据同步一起正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选对应表、数据同步任务--点击打包--输入发布描述--点击确定
+3. 点击对应包操作列导出
+4. 进入目标项目--任务发布界面--发布至本项目，点击导入发布包，选择下载包，点击打开
+5. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 提示正在导出，发布包导出至本地
+4. 界面新增发布包数据
+5. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询，数据同步任务正常运行成功",3
+离线开发-项目管理-发布管理,验证doris表一键发布发布至不创建不对接schema数据源的项目发布失败,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选对应表--点击打包--输入发布描述--点击确定
+3. 点击对应包后的发布按钮
+4. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目（不创建及不对接schema项目）界面
+3. 弹出校验框，提示校验成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 发布状态显示发布中-发布失败，报错提示目标项目无schema，无法建表",3
+离线开发-项目管理-发布管理,验证数据同步一键建表生成的表正常发布至目标项目,"在数据同步任务中建doris表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选对应表--点击打包--输入发布描述--点击确定
+3. 点击对应包后的发布按钮
+4. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 弹出校验框，提示校验成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",3
+离线开发-项目管理-发布管理,验证目标项目存在同名不同结构表发布正常发布至目标项目,"目标项目存在表doris_fabu_001，表结构：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选对应表--点击打包--输入发布描述--点击确定
+3. 点击对应包后的发布按钮
+4. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 弹出校验框，提示校验成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询，表结构为目标项目已存在表的表结构",3
+离线开发-项目管理-发布管理,验证对接schema项目--多表--验证doris表导入导出正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选多张表--点击打包--输入发布描述--点击确定
+3. 点击对应包操作列导出
+4. 进入目标项目--任务发布界面--发布至本项目，点击导入发布包，选择下载包，点击打开
+5. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 提示正在导出，发布包导出至本地
+4. 界面新增发布包数据
+5. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",1
+离线开发-项目管理-发布管理,验证对接schema项目--多表--验证doris表一键发布正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选多张表--点击打包--输入发布描述--点击确定
+3. 点击对应包后的发布按钮
+4. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 弹出校验框，提示校验成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",2
+离线开发-项目管理-发布管理,验证对接schema项目--单表--验证doris表导入导出正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选对应表--点击打包--输入发布描述--点击确定
+3. 点击对应包操作列导出
+4. 进入目标项目--任务发布界面--发布至本项目，点击导入发布包，选择下载包，点击打开
+5. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 提示正在导出，发布包导出至本地
+4. 界面新增发布包数据
+5. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",2
+离线开发-项目管理-发布管理,验证对接schema项目--单表--验证doris表一键发布正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选对应表--点击打包--输入发布描述--点击确定
+3. 点击对应包后的发布按钮
+4. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 弹出校验框，提示校验成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",1
+离线开发-项目管理-发布管理,验证创建schema项目--多表--验证doris表导入导出正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选多张表--点击打包--输入发布描述--点击确定
+3. 点击对应包操作列导出
+4. 进入目标项目--任务发布界面--发布至本项目，点击导入发布包，选择下载包，点击打开
+5. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 提示正在导出，发布包导出至本地
+4. 界面新增发布包数据
+5. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",2
+离线开发-项目管理-发布管理,验证创建schema项目--多表--验证doris表一键发布正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选多张表--点击打包--输入发布描述--点击确定
+3. 点击对应包后的发布按钮
+4. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 弹出校验框，提示校验成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",1
+离线开发-项目管理-发布管理,验证创建schema项目--单表--验证doris表导入导出正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选对应表--点击打包--输入发布描述--点击确定
+3. 点击对应包操作列导出
+4. 进入目标项目--任务发布界面--发布至本项目，点击导入发布包，选择下载包，点击打开
+5. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 提示正在导出，发布包导出至本地
+4. 界面新增发布包数据
+5. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",1
+离线开发-项目管理-发布管理,验证创建schema项目--单表--验证doris表一键发布正常发布至目标项目,"在doris sql任务中建表：
+CREATE TABLE IF NOT EXISTS doris_fabu_001 (
+id INT,                          -- 整型
+name VARCHAR(50),               -- 可变字符串
+age SMALLINT,                   -- 小整型
+salary BIGINT,                  -- 大整型
+is_active BOOLEAN,              -- 布尔类型
+join_date DATE,                 -- 日期类型
+update_time DATETIME,           -- 日期时间类型
+score DECIMAL(10, 2),           -- 高精度数字
+comment TEXT                    -- 文本类型（可选，不是所有版本都支持）
+)
+DUPLICATE KEY(id)
+DISTRIBUTED BY HASH(id) BUCKETS 3
+PROPERTIES (
+“replication_num“ = “1“
+);
+插入数据：
+INSERT INTO test_doris_datatypes VALUES
+(1, 'Alice', 25, 50000, true, '2022-01-01', '2023-07-16 12:00:00', 88.50, 'Excellent performance'),
+(2, 'Bob', 30, 70000, false, '2021-05-10', '2023-07-15 09:30:00', 72.25, 'Good improvement'),
+(3, 'Charlie', 28, 60000, true, '2020-03-20', '2023-07-14 18:45:00', 95.00, 'Top scorer'),
+(4, 'Diana', 35, 80000, false, '2019-11-05', '2023-07-13 15:20:00', 65.75, 'Needs training'),
+(5, 'Evan', 27, 55000, true, '2023-01-01', '2023-07-12 08:00:00', 78.00, 'Average');","1. 进入任务发布界面--创建发布包--对象类型选择表
+2. 勾选对应表--点击打包--输入发布描述--点击确定
+3. 点击对应包后的发布按钮
+4. 点击发布","1. 底部结果框正常显示上述所建表表名
+2. 提示打包成功，进入发布至目标项目界面
+3. 弹出校验框，提示校验成功，系统给出成功反馈，相关页面/数据状态更新为最新
+4. 发布状态显示发布中-发布成功，进入目标项目查询表正确查询",2
