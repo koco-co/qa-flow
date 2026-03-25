@@ -68,12 +68,12 @@ WorkSpaces/
 
 ## 代码仓库路径映射
 
-| 项目 | 类型 | 路径 |
-|------|------|------|
-| DTStack 平台 | 前端 | `gitlab-projects/dt-insight-front/dt-insight-studio/` |
-| DTStack 平台 | Web 层 | `gitlab-projects/dt-insight-web/` |
-| DTStack 平台 | 后端 | `gitlab-projects/dt-insight-plat/` |
-| 信永中和 | — | 无源码，仅 PRD |
+| 项目         | 类型   | 路径                                                  |
+| ------------ | ------ | ----------------------------------------------------- |
+| DTStack 平台 | 前端   | `gitlab-projects/dt-insight-front/dt-insight-studio/` |
+| DTStack 平台 | Web 层 | `gitlab-projects/dt-insight-web/`                     |
+| DTStack 平台 | 后端   | `gitlab-projects/dt-insight-plat/`                    |
+| 信永中和     | —      | 无源码，仅 PRD                                        |
 
 ---
 
@@ -159,6 +159,32 @@ zentao-cases/<项目路径>/Requirement/Story-20260322/.qa-state.json
 
 ---
 
+## 图片预处理规则
+
+**在任何需要读取图片的步骤之前，必须先压缩超大图片。**
+
+> 原因：图片超过 2000px 时 AI 多模态能力可能跳过分析，导致关键 UI 信息丢失。
+
+每次执行 prd-enhancer 或直接读取 PRD 图片前，使用以下命令对目标图片所在目录批量压缩：
+
+```bash
+for f in <图片目录>/*.png <图片目录>/*.jpg; do
+  [ -f "$f" ] || continue
+  w=$(sips -g pixelWidth "$f" | awk '/pixelWidth/{print $2}')
+  h=$(sips -g pixelHeight "$f" | awk '/pixelHeight/{print $2}')
+  if [ "$w" -gt 2000 ] || [ "$h" -gt 2000 ]; then
+    echo "压缩: $f (${w}x${h})"
+    sips -Z 2000 "$f"
+  fi
+done
+```
+
+- `sips -Z 2000`：等比缩放，最长边 ≤ 2000px，已达标图片不处理，原位覆盖
+- 适用于 macOS（内置 `sips` 命令，无需安装依赖）
+- 如图片存放在 `images/` 全局目录，也应在流程开始前对该目录执行一次
+
+---
+
 ## 工具依赖
 
 ```bash
@@ -167,5 +193,6 @@ cd .claude/scripts && npm install
 ```
 
 依赖项：
+
 - `xmind-generator@^1.0.1` — XMind 文件生成
 - `jszip@^3.10.1` — ZIP 读写（--append 模式必需）
