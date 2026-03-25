@@ -29,7 +29,7 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
               "title": "string       // 必须以「验证」开头",
               "precondition": "string // 前置条件（可为空字符串）",
               "priority": "string    // P0 / P1 / P2",
-              "case_type": "string   // 正常用例 / 异常用例 / 边界用例",
+              "case_type": "string   // 正常用例 / 异常用例 / 边界用例 / 待核实（仅 Reviewer）",
               "steps": [
                 {
                   "step": "string     // 操作步骤描述",
@@ -84,8 +84,10 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 | `meta.version` | 格式：`YYYYMM版本` 或 `mmdd版本` |
 | `test_cases[].title` | 必须以「验证」二字开头 |
 | `test_cases[].priority` | 枚举：`P0` / `P1` / `P2` |
-| `test_cases[].case_type` | 枚举：`正常用例` / `异常用例` / `边界用例` |
+| `test_cases[].case_type` | 枚举：`正常用例` / `异常用例` / `边界用例` / `待核实`（仅 Reviewer 可设置） |
 | `steps[].step` 数量 | 必须与 `steps[].expected` 数量相等 |
+
+> **注意**：`待核实` 类型仅由 Reviewer Subagent 在 3 轮修正后仍无法确认的用例上标记，Writer Subagent 不应使用此值。标记为待核实的用例会在评审报告中单独列出，提醒用户人工核实。
 
 ---
 

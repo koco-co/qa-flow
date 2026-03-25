@@ -9,7 +9,9 @@
 ### 普通模式（完整流程，含 brainstorming 和 Checklist 确认）
 
 ```
+生成用例 Story-20260322 PRD-26
 根据需求文档: Story-20260322 中的 PRD-26 生成测试用例
+为 Story-20260322 写测试用例
 ```
 
 ### 快速模式（--quick，跳过交互，自动执行全流程）
@@ -18,6 +20,7 @@
 
 ```
 为 Story-20260322 快速生成测试用例
+Story-20260322 --quick
 ```
 
 ### 续传模式（自动检测）
@@ -26,6 +29,15 @@
 
 ```
 继续 Story-20260322 的用例生成
+```
+
+### 模块级重跑
+
+生成完毕后，可以单独重跑某个模块的用例：
+
+```
+重新生成 Story-20260322 的「列表页」模块用例
+为 Story-20260322 追加边界用例
 ```
 
 系统将自动执行：PRD 增强（含增量 diff）→ 健康度预检 → Brainstorming + 解耦 → Checklist 预览 → 并行生成 → 评审 → 输出 XMind。
@@ -39,9 +51,12 @@ WorkSpaces/
 ├── CLAUDE.md                              # 本文件
 ├── zentao-cases/                          # 测试用例输出目录
 │   ├── XMind/                             # XMind 文件存放
+│   │   ├── Assets/img/                    # 辅助图片资源
+│   │   ├── BatchWorks/                    # 离线开发测试用例
 │   │   ├── CustomItem/信永中和/            # 信永中和项目
-│   │   ├── dtstack-platform/              # DTStack 平台
-│   │   └── DataAssets/ BatchWorks/ ...    # 其他模块
+│   │   ├── DataAssets/                    # 数据资产测试用例
+│   │   ├── DataQuery/                     # 统一查询测试用例
+│   │   └── VariableCenter/                # 变量中心测试用例
 │   ├── customItem-platform/信永中和/       # 信永中和需求文档与历史用例
 │   │   ├── Requirement/Story-YYYYMMDD/    # PRD 文档 + 临时文件（按 Story 隔离）
 │   │   │   ├── PRD-XX-xxx.md             # 原始 PRD
@@ -51,9 +66,12 @@ WorkSpaces/
 │   │   └── v0.x.x/                       # 历史 CSV 用例（部分模块，已迁移至 XMind）
 │   └── dtstack-platform/                  # DTStack 历史用例
 ├── gitlab-projects/                       # 源码仓库（用于验证按钮/文案）
+│   ├── CustomItem/                        # 定制项目源码
+│   ├── dt-insight-engine/                 # 引擎层源码
 │   ├── dt-insight-front/                  # 前端源码
-│   ├── dt-insight-web/                    # Web 层源码
-│   └── dt-insight-plat/                   # 后端源码
+│   ├── dt-insight-plat/                   # 后端源码
+│   ├── dt-insight-qa/                     # QA 工具与文档
+│   └── dt-insight-web/                    # Web 层源码
 └── .claude/
     ├── skills/                            # 项目级 skills
     │   ├── prd-enhancer/                  # PRD 文档增强（含增量 diff + 健康度预检）
@@ -68,27 +86,30 @@ WorkSpaces/
 
 ## 代码仓库路径映射
 
-| 项目         | 类型   | 路径                                                  |
-| ------------ | ------ | ----------------------------------------------------- |
-| DTStack 平台 | 前端   | `gitlab-projects/dt-insight-front/dt-insight-studio/` |
-| DTStack 平台 | Web 层 | `gitlab-projects/dt-insight-web/`                     |
-| DTStack 平台 | 后端   | `gitlab-projects/dt-insight-plat/`                    |
-| 信永中和     | —      | 无源码，仅 PRD                                        |
+| 项目         | 类型     | 路径                                                  |
+| ------------ | -------- | ----------------------------------------------------- |
+| DTStack 平台 | 前端     | `gitlab-projects/dt-insight-front/dt-insight-studio/` |
+| DTStack 平台 | Web 层   | `gitlab-projects/dt-insight-web/`                     |
+| DTStack 平台 | 后端     | `gitlab-projects/dt-insight-plat/`                    |
+| DTStack 平台 | 引擎层   | `gitlab-projects/dt-insight-engine/`                  |
+| QA 工具      | 文档/工具 | `gitlab-projects/dt-insight-qa/`                      |
+| 定制项目     | 源码     | `gitlab-projects/CustomItem/`                         |
+| 信永中和     | —        | 无源码，仅 PRD                                        |
 
 ---
 
 ## 完整工作流（8 步）
 
-```
-Step 1: 解析用户指令 + 断点续传检测
-Step 2: prd-enhancer（增量 diff + 图片读取 + 健康度预检）
-Step 3: Brainstorming + 解耦分析（--quick 时跳过）
-Step 4: Checklist 预览（--quick 时跳过）
-Step 5: 用户一次确认（--quick 时跳过）
-Step 6: 并行 Writer Subagents（基于 Checklist）
-Step 7: Reviewer Subagent（15%/40% 质量阈值）
-Step 8: xmind-converter（--append 追加到现有文件）
-```
+| 步骤 | 名称 | 说明 |
+|------|------|------|
+| Step 1 | 解析用户指令 | 提取 Story/PRD 路径、验证源码仓库、检测断点续传 |
+| Step 2 | PRD 增强 | 调用 prd-enhancer：增量 diff + 图片读取 + 健康度预检 |
+| Step 3 | Brainstorming | 与用户讨论测试范围、高风险场景、历史 Bug（`--quick` 跳过） |
+| Step 4 | Checklist 预览 | 展示每个模块的测试点清单，用户可增删调整（`--quick` 跳过） |
+| Step 5 | 用户确认 | 一次性确认 PRD 摘要 + 拆分方案 + 测试点（`--quick` 跳过） |
+| Step 6 | 并行 Writer | 为每个解耦模块启动独立 Writer Subagent，并行生成用例 |
+| Step 7 | Reviewer 评审 | 合并所有 Writer 输出，3 轮修正 + 查漏补缺 + 质量阈值检查 |
+| Step 8 | 输出 XMind | 调用 xmind-converter 生成 .xmind 文件（支持 --append 追加） |
 
 ---
 
@@ -131,7 +152,7 @@ Step 8: xmind-converter（--append 追加到现有文件）
 PRD 修改后，不需要从头开始：
 
 1. 重新运行相同指令（普通模式或快速模式）
-2. prd-enhancer 会自动比对文件修改时间，只重新处理变更章节
+2. prd-enhancer 自动比对 PRD 原文件与 `-enhanced.md` 的修改时间（`enhanced-at` 时间戳），仅在 PRD 有更新时重新处理
 3. test-case-generator 只重新生成受影响模块的 Writer
 4. Reviewer 对所有用例（新旧）重新评审
 
@@ -149,6 +170,16 @@ zentao-cases/<项目路径>/Requirement/Story-20260322/.qa-state.json
 
 如果会话中断（网络问题、context 超限等），重新开始对话并发起相同指令，系统会自动检测并从断点继续。流程全部完成后，状态文件会自动删除。
 
+### 状态文件关键字段
+
+| 字段 | 说明 |
+|------|------|
+| `last_completed_step` | 最后完成的步骤编号（1-8），恢复时从下一步开始 |
+| `mode` | `normal`（完整流程）/ `quick`（跳过交互步骤） |
+| `writers.<name>.status` | 每个 Writer 的状态：`pending` / `in_progress` / `completed` / `failed` |
+| `reviewer_status` | `pending` / `completed` / `escalated`（需人工介入） |
+| `checklist_confirmed` | Checklist 是否已确认 |
+
 ---
 
 ## 临时文件管理
@@ -156,6 +187,31 @@ zentao-cases/<项目路径>/Requirement/Story-20260322/.qa-state.json
 - 临时 JSON 路径：`zentao-cases/<项目路径>/Requirement/Story-YYYYMMDD/temp/`
 - 每个 Story 有独立的 temp 目录，多 Story 并发不冲突
 - 生成 XMind 后自动删除 temp/ 目录和 .qa-state.json
+
+---
+
+## 质量控制
+
+Reviewer 采用 3 级质量阈值自动决策：
+
+| 问题率 | 行为 |
+|--------|------|
+| < 15% | 自动修正，无需通知用户 |
+| 15% - 40% | 自动修正 + 质量警告，建议用户核查 |
+| > 40% | 立即停止，输出阻断报告，等待用户选择：修复 PRD 重跑 / 手动修正 / 强制继续 |
+
+问题率 = 含 F01-F07 任意问题的用例数 / 总用例数（一条用例多个问题只计 1 次）。
+
+---
+
+## 已完成后的操作
+
+测试用例生成完毕后，支持以下后续操作：
+
+- **模块级重跑**：`重新生成 Story-xxx 的「列表页」模块用例` — 仅重跑指定 Writer，其他模块保持不变
+- **追加边界用例**：`为 Story-xxx 追加边界用例` — 在现有用例基础上补充 P2 边界场景
+- **追加到现有 XMind**：使用 `--append` 模式，将新 PRD 的用例追加到同一 .xmind 文件
+- **强制全量重跑**：删除 `-enhanced.md` 和 `.qa-state.json` 后重新运行
 
 ---
 
