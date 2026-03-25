@@ -2,29 +2,41 @@
 
 ## JSON 中间格式 → XMind 节点映射
 
-### 基本结构（无子分组）
+### 基本结构（无功能子组）
 
 ```
 Root (meta.project_name)
   └── L1 (【meta.version】meta.requirement_name)
-       └── L2 (modules[].name)
-            └── 用例标题 (test_cases[].title)
-                 [marker = priority, note = precondition]
-                 └── 步骤描述 (steps[].step)
-                      └── 预期结果 (steps[].expected)
-```
-
-### 含子分组结构
-
-```
-Root (meta.project_name)
-  └── L1 (【meta.version】meta.requirement_name)
-       └── L2 (modules[].name)
-            └── L3 (sub_groups[].name)
+       └── L2 (modules[].name)                    ← 菜单/模块名
+            └── L3 (pages[].name)                  ← 页面名
                  └── 用例标题 (test_cases[].title)
                       [marker = priority, note = precondition]
                       └── 步骤描述 (steps[].step)
                            └── 预期结果 (steps[].expected)
+```
+
+### 含功能子组结构
+
+```
+Root (meta.project_name)
+  └── L1 (【meta.version】meta.requirement_name)
+       └── L2 (modules[].name)                    ← 菜单/模块名
+            └── L3 (pages[].name)                  ← 页面名
+                 └── L4 (sub_groups[].name)         ← 功能子组
+                      └── 用例标题 (test_cases[].title)
+                           [marker = priority, note = precondition]
+                           └── 步骤描述 (steps[].step)
+                                └── 预期结果 (steps[].expected)
+```
+
+### 向后兼容（旧格式，无 pages 层级）
+
+```
+Root (meta.project_name)
+  └── L1 (【meta.version】meta.requirement_name)
+       └── L2 (modules[].name)
+            └── [L3 (sub_groups[].name)]
+                 └── 用例标题
 ```
 
 ## Priority 映射规则
@@ -51,9 +63,10 @@ YYYYMM-<功能名>.xmind
 ## 输出目录规则
 
 ```
-zentao-cases/XMind/<项目名>/<YYYYMM-功能名>/
+zentao-cases/XMind/<项目名>/
 ```
 
 示例：
 - 信永中和：`zentao-cases/XMind/CustomItem/信永中和/`
-- DTStack：`zentao-cases/XMind/dtstack-platform/`
+- DTStack 数据资产：`zentao-cases/XMind/DataAssets/`
+- DTStack 离线开发：`zentao-cases/XMind/BatchWorks/`

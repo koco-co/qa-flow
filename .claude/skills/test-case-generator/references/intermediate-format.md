@@ -4,7 +4,7 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 
 ---
 
-## 完整 Schema
+## 完整 Schema（4 级结构）
 
 ```json
 {
@@ -15,32 +15,37 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
     "requirement_name": "string  // 需求名称，如「数据质量-质量问题台账」",
     "requirement_id": "string    // 需求ID，如「PRD-26」（可选）",
     "prd_path": "string          // PRD 文件相对路径（可选）",
-    "generated_at": "string      // ISO8601 时间戳，如「2026-03-25T10:00:00Z」",
-    "agent_id": "string          // Subagent 标识，如「writer-module-list」（可选）"
+    "generated_at": "string      // ISO8601 时间戳",
+    "agent_id": "string          // Subagent 标识（可选）"
   },
   "modules": [
     {
-      "name": "string  // 模块名称，对应 XMind L2 节点",
-      "sub_groups": [  // 可选：子分组（对应 XMind L3 节点）
+      "name": "string  // L2: 菜单/模块名称，如「质量问题台账」",
+      "pages": [
         {
-          "name": "string  // 子分组名称",
-          "test_cases": [
+          "name": "string  // L3: 页面名称，如「列表页」「新增页」",
+          "sub_groups": [
             {
-              "title": "string       // 必须以「验证」开头",
-              "precondition": "string // 前置条件（可为空字符串）",
-              "priority": "string    // P0 / P1 / P2",
-              "case_type": "string   // 正常用例 / 异常用例 / 边界用例 / 待核实（仅 Reviewer）",
-              "steps": [
+              "name": "string  // L4: 功能子组名称，如「搜索」「字段校验」（可选层级）",
+              "test_cases": [
                 {
-                  "step": "string     // 操作步骤描述",
-                  "expected": "string // 与步骤对应的预期结果"
+                  "title": "string       // 必须以「验证」开头",
+                  "precondition": "string // 前置条件",
+                  "priority": "string    // P0 / P1 / P2",
+                  "case_type": "string   // 正常用例 / 异常用例 / 边界用例 / 待核实（仅 Reviewer）",
+                  "steps": [
+                    {
+                      "step": "string     // 操作步骤（禁止「步骤N:」前缀）",
+                      "expected": "string // 预期结果"
+                    }
+                  ]
                 }
               ]
             }
-          ]
+          ],
+          "test_cases": []  // 可选：无功能子组时直接放用例
         }
-      ],
-      "test_cases": []  // 可选：无子分组时直接放用例（sub_groups 和 test_cases 二选一）
+      ]
     }
   ]
 }
@@ -50,27 +55,50 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 
 ## 使用规则
 
-### sub_groups 与 test_cases 的选择
+### pages 与 test_cases 的选择
 
-- 模块包含多类操作（搜索/新增/编辑/删除）→ 使用 `sub_groups`
-- 模块功能单一或用例数量少（≤5条）→ 直接使用 `test_cases`
+- 页面包含多类操作（搜索/新增/编辑/删除）→ 使用 `sub_groups` 分组
+- 页面功能单一 → 直接在 page 下放 `test_cases`
 
-示例（有子分组）：
+### 向后兼容
+
+如果 JSON 中 `modules` 下直接有 `sub_groups` 或 `test_cases`（无 `pages`），按旧 3 级格式处理。
+
+### 示例（有功能子组）
+
 ```json
 {
-  "name": "质量问题台账列表",
-  "sub_groups": [
-    { "name": "搜索", "test_cases": [...] },
-    { "name": "导出", "test_cases": [...] }
+  "name": "质量问题台账",
+  "pages": [
+    {
+      "name": "列表页",
+      "sub_groups": [
+        { "name": "搜索", "test_cases": [...] },
+        { "name": "导出", "test_cases": [...] }
+      ]
+    },
+    {
+      "name": "新增页",
+      "sub_groups": [
+        { "name": "表单填写", "test_cases": [...] },
+        { "name": "字段校验", "test_cases": [...] }
+      ]
+    }
   ]
 }
 ```
 
-示例（无子分组）：
+### 示例（无功能子组）
+
 ```json
 {
-  "name": "质量问题台账权限验证",
-  "test_cases": [...]
+  "name": "质量问题台账",
+  "pages": [
+    {
+      "name": "权限验证",
+      "test_cases": [...]
+    }
+  ]
 }
 ```
 
@@ -82,9 +110,13 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 |------|------|
 | `meta.project_name` | 必须与 XMind 输出目录对应 |
 | `meta.version` | 格式：`YYYYMM版本` 或 `mmdd版本` |
+| `modules[].name` | L2: 菜单/模块名称（如「质量问题台账」）|
+| `pages[].name` | L3: 页面名称（如「列表页」「新增页」「详情页」）|
+| `sub_groups[].name` | L4: 功能子组（如「搜索」「字段校验」，可选）|
 | `test_cases[].title` | 必须以「验证」二字开头 |
 | `test_cases[].priority` | 枚举：`P0` / `P1` / `P2` |
 | `test_cases[].case_type` | 枚举：`正常用例` / `异常用例` / `边界用例` / `待核实`（仅 Reviewer 可设置） |
+| `steps[].step` | 禁止「步骤N:」前缀；第一步须以「进入【xxx】页面」开头 |
 | `steps[].step` 数量 | 必须与 `steps[].expected` 数量相等 |
 
 > **注意**：`待核实` 类型仅由 Reviewer Subagent 在 3 轮修正后仍无法确认的用例上标记，Writer Subagent 不应使用此值。标记为待核实的用例会在评审报告中单独列出，提醒用户人工核实。

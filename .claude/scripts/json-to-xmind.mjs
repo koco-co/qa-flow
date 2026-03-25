@@ -15,11 +15,12 @@
  * XMind 层级结构:
  * Root (project_name)
  *   └── L1 (【version】requirement_name)
- *        └── L2 (modules[].name)
- *             └── [L3 (sub_groups[].name)] -- 可选
- *                  └── 用例标题 [marker=priority, note=precondition]
- *                       └── 步骤描述
- *                            └── 预期结果
+ *        └── L2 (modules[].name)           -- 菜单/模块名
+ *             └── L3 (pages[].name)         -- 页面名
+ *                  └── [L4 (sub_groups[].name)] -- 功能子组(可选)
+ *                       └── 用例标题 [marker=priority, note=precondition]
+ *                            └── 步骤描述
+ *                                 └── 预期结果
  */
 
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
@@ -51,7 +52,28 @@ function buildCaseTopic(testCase) {
   return caseTopic
 }
 
+function buildPageTopic(page) {
+  if (page.sub_groups && page.sub_groups.length > 0) {
+    const subGroupTopics = page.sub_groups.map((group) => {
+      const caseTopics = (group.test_cases ?? []).map(buildCaseTopic)
+      return Topic(group.name).children(caseTopics)
+    })
+    const directCases = (page.test_cases ?? []).map(buildCaseTopic)
+    return Topic(page.name).children([...subGroupTopics, ...directCases])
+  }
+
+  const caseTopics = (page.test_cases ?? []).map(buildCaseTopic)
+  return Topic(page.name).children(caseTopics)
+}
+
 function buildModuleTopic(mod) {
+  // 新格式：modules → pages → sub_groups → test_cases
+  if (mod.pages && mod.pages.length > 0) {
+    const pageTopics = mod.pages.map(buildPageTopic)
+    return Topic(mod.name).children(pageTopics)
+  }
+
+  // 向后兼容旧格式：modules → sub_groups → test_cases
   if (mod.sub_groups && mod.sub_groups.length > 0) {
     const subGroupTopics = mod.sub_groups.map((group) => {
       const caseTopics = (group.test_cases ?? []).map(buildCaseTopic)
