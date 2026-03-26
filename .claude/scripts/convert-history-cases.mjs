@@ -3,8 +3,12 @@
  * 将历史测试用例（CSV + XMind）转换为 Markdown 文件
  *
  * 用法:
- *   node convert-history-cases.mjs          # 从项目根目录运行
- *   node convert-history-cases.mjs --force  # 覆盖已存在文件
+ *   node convert-history-cases.mjs                           # 全量转化（增量，跳过已存在）
+ *   node convert-history-cases.mjs --force                   # 强制覆盖所有
+ *   node convert-history-cases.mjs --path <file-or-dir>      # 仅转化指定文件/目录
+ *   node convert-history-cases.mjs --module 离线开发         # 仅转化指定模块
+ *   node convert-history-cases.mjs --detect                  # 仅检测未转化文件
+ *   node convert-history-cases.mjs --detect --module 信永中和 # 检测指定模块未转化文件
  *
  * 输入来源:
  *   1. zentao-cases/customItem-platform/信永中和/v0.2.0/ *.csv
@@ -26,7 +30,19 @@ import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '../..')  // WorkSpaces 根目录
-const FORCE = process.argv.includes('--force')
+// ─── CLI 参数解析 ────────────────────────────────────────────────────────────
+const args = process.argv.slice(2)
+const FORCE = args.includes('--force')
+const DETECT = args.includes('--detect')
+const PATH_ARG = args.includes('--path') ? args[args.indexOf('--path') + 1] : null
+const MODULE_ARG = args.includes('--module') ? args[args.indexOf('--module') + 1] : null
+
+const VALID_MODULES = ['离线开发', '数据资产', '统一查询', '变量中心', '信永中和', '公共组件']
+if (MODULE_ARG && !VALID_MODULES.includes(MODULE_ARG)) {
+  console.error(`❌ 无效模块名: ${MODULE_ARG}`)
+  console.error(`   有效模块: ${VALID_MODULES.join(', ')}`)
+  process.exit(1)
+}
 
 // ─── 结果统计 ────────────────────────────────────────────────────────────────
 const stats = { skipped: [], success: [], failed: [] }
@@ -138,6 +154,19 @@ function formatSteps(text) {
   return s
 }
 
+/** 移除 HTML 标签，将 <br> 转为换行 */
+function stripHtml(text) {
+  if (!text) return text
+  let s = text
+  // <br> / <br/> / <br /> → 换行
+  s = s.replace(/<br\s*\/?>/gi, '\n')
+  // 移除所有 HTML 标签（含属性）
+  s = s.replace(/<[^>]+>/g, '')
+  // 清理多余空白行与首尾空白
+  s = s.replace(/\n{3,}/g, '\n\n').trim()
+  return s
+}
+
 // ─── CSV → Markdown ──────────────────────────────────────────────────────────
 
 function convertCSV(csvPath, version) {
@@ -177,8 +206,8 @@ function convertCSV(csvPath, version) {
     for (const row of caseRows) {
       const title    = (row[idxTitle]    || '').trim()
       const pre      = (row[idxPre]      || '').trim()
-      const steps    = (row[idxSteps]    || '').trim()
-      const expected = (row[idxExpected] || '').trim()
+      const steps    = stripHtml((row[idxSteps]    || '').trim())
+      const expected = stripHtml((row[idxExpected] || '').trim())
       const priority = formatPriority(row[idxPriority] || '')
 
       md += `## ${title}\n`
@@ -327,15 +356,42 @@ function xmindOutputDir(xmindPath) {
   return join(ROOT, 'zentao-cases/dtstack-platform', top, 'archive-cases')
 }
 
+// ─── 模块 / 路径辅助 ─────────────────────────────────────────────────────────
+
+const CSV_DIRS = [
+  { dir: join(ROOT, 'zentao-cases/customItem-platform/信永中和/v0.2.0'), version: 'v0.2.0' },
+  { dir: join(ROOT, 'zentao-cases/customItem-platform/信永中和/v0.2.1'), version: 'v0.2.1' },
+]
+
+/** 根据 CSV 文件路径推断输出目录和版本 */
+function csvOutputInfo(csvPath) {
+  const parentDir = dirname(csvPath)
+  const version = basename(parentDir)
+  const projectDir = dirname(parentDir)
+  const outDir = join(projectDir, 'archive-cases', version)
+  return { outDir, version }
+}
+
+/** 根据 --module 返回需要扫描的 XMind 目录列表 */
+function getXMindDirs(module) {
+  const xmindBase = join(ROOT, 'zentao-cases/XMind')
+  if (!module) return [xmindBase]
+  if (module === '信永中和') {
+    return [
+      join(xmindBase, 'CustomItem/信永中和'),
+      join(xmindBase, '定制化/信永中和'),
+    ]
+  }
+  if (module === '公共组件') return []
+  return [join(xmindBase, module)]
+}
+
 // ─── 主流程 ──────────────────────────────────────────────────────────────────
 
-async function processCSVFiles() {
-  const csvDirs = [
-    { dir: join(ROOT, 'zentao-cases/customItem-platform/信永中和/v0.2.0'), version: 'v0.2.0' },
-    { dir: join(ROOT, 'zentao-cases/customItem-platform/信永中和/v0.2.1'), version: 'v0.2.1' },
-  ]
+async function processCSVFiles(module) {
+  if (module && module !== '信永中和') return
 
-  for (const { dir, version } of csvDirs) {
+  for (const { dir, version } of CSV_DIRS) {
     const csvFiles = findFiles(dir, '.csv')
     for (const csvPath of csvFiles) {
       const name = basename(csvPath, '.csv')
@@ -359,9 +415,9 @@ async function processCSVFiles() {
   }
 }
 
-async function processXMindFiles() {
-  const xmindDir = join(ROOT, 'zentao-cases/XMind')
-  const xmindFiles = findFiles(xmindDir, '.xmind')
+async function processXMindFiles(module) {
+  const dirs = getXMindDirs(module)
+  const xmindFiles = dirs.flatMap(dir => findFiles(dir, '.xmind'))
 
   for (const xmindPath of xmindFiles) {
     const name = basename(xmindPath, '.xmind')
@@ -384,14 +440,122 @@ async function processXMindFiles() {
   }
 }
 
-async function main() {
-  console.log('🔄 开始转换历史测试用例...\n')
-  if (FORCE) console.log('⚠️  --force 模式：将覆盖已存在文件\n')
+// ─── --detect 模式 ───────────────────────────────────────────────────────────
 
-  await processCSVFiles()
-  await processXMindFiles()
+async function detectUnconverted(module) {
+  const unconverted = []
+  let alreadyConverted = 0
 
-  // ── 输出摘要 ──
+  // CSV 源（仅 信永中和）
+  if (!module || module === '信永中和') {
+    for (const { dir, version } of CSV_DIRS) {
+      const csvFiles = findFiles(dir, '.csv')
+      for (const csvPath of csvFiles) {
+        const name = basename(csvPath, '.csv')
+        const outDir = join(ROOT, 'zentao-cases/customItem-platform/信永中和/archive-cases', version)
+        const outFile = join(outDir, `${name}.md`)
+        if (existsSync(outFile)) {
+          alreadyConverted++
+        } else {
+          unconverted.push({
+            source: csvPath.replace(ROOT + '/', ''),
+            target: outFile.replace(ROOT + '/', ''),
+            type: 'csv',
+          })
+        }
+      }
+    }
+  }
+
+  // XMind 源
+  const dirs = getXMindDirs(module)
+  const xmindFiles = dirs.flatMap(dir => findFiles(dir, '.xmind'))
+  for (const xmindPath of xmindFiles) {
+    const name = basename(xmindPath, '.xmind')
+    const outDir = xmindOutputDir(xmindPath)
+    const outFile = join(outDir, `${name}.md`)
+    if (existsSync(outFile)) {
+      alreadyConverted++
+    } else {
+      unconverted.push({
+        source: xmindPath.replace(ROOT + '/', ''),
+        target: outFile.replace(ROOT + '/', ''),
+        type: 'xmind',
+      })
+    }
+  }
+
+  return { unconverted, already_converted: alreadyConverted, total_unconverted: unconverted.length }
+}
+
+// ─── --path 模式 ─────────────────────────────────────────────────────────────
+
+async function processSingleCSV(csvPath) {
+  const { outDir, version } = csvOutputInfo(csvPath)
+  const name = basename(csvPath, '.csv')
+  const outFile = join(outDir, `${name}.md`)
+
+  if (existsSync(outFile) && !FORCE) {
+    stats.skipped.push(outFile.replace(ROOT + '/', ''))
+    return
+  }
+
+  try {
+    ensureDir(outDir)
+    const md = convertCSV(csvPath, version)
+    writeFileSync(outFile, md, 'utf-8')
+    stats.success.push(outFile.replace(ROOT + '/', ''))
+  } catch (e) {
+    stats.failed.push({ file: csvPath.replace(ROOT + '/', ''), error: e.message })
+  }
+}
+
+async function processSingleXMind(xmindPath) {
+  const name = basename(xmindPath, '.xmind')
+  const outDir = xmindOutputDir(xmindPath)
+  const outFile = join(outDir, `${name}.md`)
+
+  if (existsSync(outFile) && !FORCE) {
+    stats.skipped.push(outFile.replace(ROOT + '/', ''))
+    return
+  }
+
+  try {
+    ensureDir(outDir)
+    const md = await convertXMind(xmindPath)
+    writeFileSync(outFile, md, 'utf-8')
+    stats.success.push(outFile.replace(ROOT + '/', ''))
+  } catch (e) {
+    stats.failed.push({ file: xmindPath.replace(ROOT + '/', ''), error: e.message })
+  }
+}
+
+async function processPath(pathArg) {
+  const absPath = resolve(pathArg)
+  if (!existsSync(absPath)) {
+    console.error(`❌ 路径不存在: ${pathArg}`)
+    process.exit(1)
+  }
+
+  const st = statSync(absPath)
+  if (st.isDirectory()) {
+    const csvFiles = findFiles(absPath, '.csv')
+    const xmindFiles = findFiles(absPath, '.xmind')
+    for (const f of csvFiles) await processSingleCSV(f)
+    for (const f of xmindFiles) await processSingleXMind(f)
+  } else if (absPath.endsWith('.csv')) {
+    await processSingleCSV(absPath)
+  } else if (absPath.endsWith('.xmind')) {
+    await processSingleXMind(absPath)
+  } else {
+    console.error(`❌ 不支持的文件类型: ${pathArg}（仅支持 .csv / .xmind）`)
+    process.exit(1)
+  }
+}
+
+// ─── 摘要输出 ────────────────────────────────────────────────────────────────
+
+function printSummary() {
   console.log('─'.repeat(60))
   if (stats.success.length) {
     console.log(`✅ 成功生成 (${stats.success.length} 个):`)
@@ -407,6 +571,34 @@ async function main() {
   }
   console.log('─'.repeat(60))
   console.log(`完成：成功 ${stats.success.length}，跳过 ${stats.skipped.length}，失败 ${stats.failed.length}`)
+}
+
+// ─── 入口 ────────────────────────────────────────────────────────────────────
+
+async function main() {
+  // --detect: 仅检测，输出 JSON 后退出
+  if (DETECT) {
+    const report = await detectUnconverted(MODULE_ARG)
+    console.log(JSON.stringify(report, null, 2))
+    return
+  }
+
+  console.log('🔄 开始转换历史测试用例...\n')
+  if (FORCE) console.log('⚠️  --force 模式：将覆盖已存在文件\n')
+  if (MODULE_ARG) console.log(`📦 模块过滤: ${MODULE_ARG}\n`)
+
+  // --path: 仅处理指定路径
+  if (PATH_ARG) {
+    console.log(`📂 指定路径: ${PATH_ARG}\n`)
+    await processPath(PATH_ARG)
+    printSummary()
+    return
+  }
+
+  // 默认：全量批处理（受 --module 过滤）
+  await processCSVFiles(MODULE_ARG)
+  await processXMindFiles(MODULE_ARG)
+  printSummary()
 }
 
 main().catch(e => {

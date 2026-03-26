@@ -130,6 +130,24 @@ zentao-cases/<项目路径>/Requirement/Story-20260322/.qa-state.json
 - 部分不存在 → 提示用户提供路径或继续无源码模式
 - 项目标记为「无源码」（如信永中和）→ 跳过验证，标注「无源码参考」
 
+### 1.5 历史用例完整性检查
+
+调用 `convert-history-cases.mjs --detect` 检查当前模块是否有未转化的 CSV/XMind 文件：
+
+```bash
+cd .claude/scripts && node convert-history-cases.mjs --detect --module <当前模块>
+```
+
+**根据检测结果处理：**
+- 无未转化文件 → 继续下一步
+- 有未转化文件：
+  - `--quick` 模式 → 自动执行转化（`node convert-history-cases.mjs --module <模块>`），转化完成后继续
+  - 普通模式 → 向用户展示未转化文件列表，询问是否先执行归档转化
+    - 选「是」→ 执行转化后继续
+    - 选「否」→ 跳过，继续下一步（Writer 将无法引用这些历史用例）
+
+> 此步骤确保 Writer 引用历史用例时，`archive-cases/` 目录中的 MD 文件是最新且完整的。
+
 ---
 
 ## Step 2: prd-enhancer（增强 + 健康度预检）
@@ -390,9 +408,11 @@ node .claude/scripts/json-to-archive-md.mjs <temp/final-reviewed.json> [output-d
 - `prompts/writer-subagent.md` — Writer Subagent 提示词模板
 - `prompts/reviewer-subagent.md` — Reviewer Subagent 提示词模板（含质量阈值）
 - `.claude/scripts/json-to-archive-md.mjs` — 归档 MD 转换脚本（JSON/XMind → archive MD）
+- `.claude/scripts/convert-history-cases.mjs` — 历史用例转化脚本（CSV/XMind → MD，支持 --detect/--module/--path）
 
 ## 关联 Skills
 
 - `prd-enhancer` — PRD 增强 + 增量 diff + 健康度预检（Step 2）
 - `xmind-converter` — JSON 转 XMind，支持 --append（Step 8）
+- `archive-converter` — 历史用例归档转化，CSV/XMind → MD（Step 1.5 自动检测 + 独立调用）
 - Step 3 中的 brainstorming 为内联分析流程（非独立 Skill），基于增强后 PRD 与用户讨论测试范围

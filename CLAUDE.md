@@ -79,6 +79,7 @@ WorkSpaces/
 │   └── dt-insight-web/                    # Web 层源码
 └── .claude/
     ├── skills/                            # 项目级 skills
+    │   ├── archive-converter/             # 历史用例归档转化（CSV/XMind → MD）
     │   ├── prd-enhancer/                  # PRD 文档增强（含增量 diff + 健康度预检）
     │   ├── test-case-generator/           # 用例生成编排（主入口，10步流程）
     │   └── xmind-converter/               # JSON → XMind 转换（含 --append 模式）
@@ -134,6 +135,15 @@ WorkSpaces/
 
 ```
 将 zentao-cases/customItem-platform/信永中和/Requirement/Story-20260322/temp/cases.json 转换为 XMind 文件
+```
+
+### archive-converter（转化历史用例为 MD 归档格式）
+
+```
+转化所有历史用例
+转化离线开发的历史用例
+将 zentao-cases/XMind/离线开发/xxx.xmind 转为MD
+检查哪些历史用例还没转化
 ```
 
 ### test-case-generator（主入口，完整流程）
@@ -248,6 +258,19 @@ node convert-history-cases.mjs --force
 ```
 
 > **何时需要更新**：新的 XMind 文件生成后（下次生成用例时即可作为历史参考）、CSV 文件有修改时。
+
+### 使用 archive-converter Skill
+
+除了直接运行脚本，也可以通过 archive-converter Skill 触发转化：
+
+```
+转化所有历史用例                    # 全量模式
+转化离线开发的历史用例              # 指定模块
+检查哪些历史用例还没转化            # 检测模式
+强制重新转化所有历史用例            # 强制覆盖
+```
+
+> test-case-generator Step 1.4 会自动检测未转化文件。如果发现新增的 CSV/XMind 文件尚未转化，会提示是否先执行归档转化。
 
 ---
 
