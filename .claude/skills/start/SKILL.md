@@ -5,7 +5,7 @@ disable-model-invocation: true
 argument-hint: "[功能编号或关键词]"
 ---
 
-# DTStack QA 测试用例工作空间
+# qa-flow
 
 欢迎使用！本工作空间支持以下功能：
 
@@ -13,7 +13,7 @@ argument-hint: "[功能编号或关键词]"
 
 | 编号  | 功能             | 说明                                                           |
 | ----- | ---------------- | -------------------------------------------------------------- |
-| **1** | 🧪 生成测试用例  | 根据 PRD 文档自动生成 XMind 测试用例（支持普通/快速/续传模式） |
+| **1** | 🧪 生成测试用例  | 根据 PRD 文档或蓝湖 URL 自动生成 XMind 测试用例（支持普通/快速/续传模式） |
 | **2** | 📝 增强 PRD 文档 | 为 PRD 补充图片描述、格式规范化、健康度预检                    |
 | **3** | 🐛 分析代码报错  | 粘贴报错日志，定位问题根因并生成 HTML 报告                     |
 | **4** | 📦 转换历史用例  | 将 CSV/XMind 历史用例转为 Markdown 归档格式                    |
@@ -32,6 +32,7 @@ argument-hint: "[功能编号或关键词]"
 如果 `$ARGUMENTS` 包含 `1` 或 `用例` 或 `test`：
 
 - 引导用户提供 Story 路径，例如：`为 Story-20260322 快速生成测试用例`
+- 或直接提供蓝湖 URL，例如：`生成测试用例 https://lanhuapp.com/web/#/item/project/product?...`
 - 如果用户还没有 PRD 文件，提示将 PRD 放到 `cases/requirements/` 对应目录下
 
 如果 `$ARGUMENTS` 包含 `2` 或 `PRD` 或 `增强`：
@@ -59,6 +60,7 @@ argument-hint: "[功能编号或关键词]"
 # 生成测试用例（最常用）
 为 Story-20260322 快速生成测试用例
 根据需求文档: Story-20260322 中的 PRD-26 生成测试用例
+生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx
 
 # 增强 PRD
 帮我增强这个 PRD：cases/requirements/xyzh/Story-20260322/PRD-26-xxx.md
@@ -73,3 +75,4 @@ argument-hint: "[功能编号或关键词]"
 ```
 
 > 💡 提示：你也可以直接用自然语言描述需求，系统会自动匹配对应功能。
+> 💡 生成完成后，优先让用户从根目录快捷链接验收：`latest-output.xmind`、`latest-prd-enhanced.md`、`latest-bug-report.html`、`latest-conflict-report.html`。

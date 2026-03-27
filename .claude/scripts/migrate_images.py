@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Image migration script for WorkSpaces repository.
-1. Create images/ directory
-2. Copy local images (resources/, media/) to images/ with conflict-avoiding names
+Image migration script for qa-flow repository.
+1. Create assets/images/ directory
+2. Copy local images (resources/, media/) to assets/images/ with conflict-avoiding names
 3. Download external images (PicGo CDN, lanhuapp)
 4. Update all MD files with standard Markdown references
 5. Report failures
@@ -16,7 +16,8 @@ import json
 import urllib.request
 import urllib.parse
 
-BASE_DIR = "/Users/poco/Documents/DTStack/WorkSpaces"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.realpath(os.path.join(SCRIPT_DIR, "../.."))
 IMAGES_DIR = os.path.join(BASE_DIR, "assets", "images")
 CASES_DIR = os.path.join(BASE_DIR, "cases")
 
@@ -33,7 +34,14 @@ failures = []  # List of (url, reason) for download failures
 
 def ensure_images_dir():
     os.makedirs(IMAGES_DIR, exist_ok=True)
-    print(f"[OK] images/ directory ready: {IMAGES_DIR}")
+    print(f"[OK] assets/images/ directory ready: {IMAGES_DIR}")
+
+
+def build_markdown_image_ref(md_file_full_path, alt_text, target_name):
+    """Build a repo-contract-compliant Markdown image ref relative to the MD file."""
+    image_path = os.path.join(IMAGES_DIR, target_name)
+    relative_path = os.path.relpath(image_path, os.path.dirname(md_file_full_path))
+    return f"![{alt_text}]({relative_path.replace(os.sep, '/')})"
 
 
 def find_obsidian_image(filename, md_file):
@@ -185,9 +193,9 @@ def process_md_file(md_file_full_path):
         src_path = find_obsidian_image(filename, md_file_full_path)
         if src_path:
             target_name = copy_to_images(src_path, filename)
-            new_ref = f"![{filename}](images/{target_name})"
+            new_ref = build_markdown_image_ref(md_file_full_path, filename, target_name)
             replacements.append((original, new_ref))
-            print(f"    OBS: {filename} -> images/{target_name}")
+            print(f"    OBS: {filename} -> assets/images/{target_name}")
         else:
             print(f"    [WARN] Obsidian image not found: {filename}")
 
@@ -205,9 +213,9 @@ def process_md_file(md_file_full_path):
         if src.startswith("http://") or src.startswith("https://"):
             filename, success = download_image(src, IMAGES_DIR)
             if success:
-                new_ref = f"![{alt}](images/{filename})"
+                new_ref = build_markdown_image_ref(md_file_full_path, alt, filename)
                 replacements.append((original, new_ref))
-                print(f"    URL: {src[-40:]} -> images/{filename}")
+                print(f"    URL: {src[-40:]} -> assets/images/{filename}")
             else:
                 # Keep original if download failed
                 print(f"    [KEEP_URL] Download failed, keeping original: {src[-50:]}")
@@ -218,9 +226,9 @@ def process_md_file(md_file_full_path):
             src_path, target_name = find_local_image(src, md_file_full_path)
             if src_path and target_name:
                 copy_to_images(src_path, target_name)
-                new_ref = f"![{alt}](images/{target_name})"
+                new_ref = build_markdown_image_ref(md_file_full_path, alt, target_name)
                 replacements.append((original, new_ref))
-                print(f"    LOCAL: {src} -> images/{target_name}")
+                print(f"    LOCAL: {src} -> assets/images/{target_name}")
             else:
                 print(
                     f"    [WARN] Local image not found: {src} (in {os.path.basename(md_file_full_path)})"
@@ -250,7 +258,7 @@ def apply_replacements(md_file_full_path, replacements):
 
 
 def write_failures():
-    """Write download failures to images/IMPORT-FAILURES.md."""
+    """Write download failures to assets/images/IMPORT-FAILURES.md."""
     if not failures:
         return
 
@@ -265,7 +273,9 @@ def write_failures():
     path = os.path.join(IMAGES_DIR, "IMPORT-FAILURES.md")
     with open(path, "w", encoding="utf-8") as f:
         f.writelines(lines)
-    print(f"\n[FAILURES] Written to images/IMPORT-FAILURES.md ({len(failures)} items)")
+    print(
+        f"\n[FAILURES] Written to assets/images/IMPORT-FAILURES.md ({len(failures)} items)"
+    )
 
 
 def main():
@@ -304,9 +314,9 @@ def main():
     print(f"Total replacements: {all_replacements_count}")
     print(f"Failed downloads: {len(failures)}")
 
-    # List all images in images/
+    # List all images in assets/images/
     img_files = [f for f in os.listdir(IMAGES_DIR) if not f.endswith(".md")]
-    print(f"Images in images/: {len(img_files)}")
+    print(f"Images in assets/images/: {len(img_files)}")
 
 
 if __name__ == "__main__":

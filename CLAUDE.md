@@ -1,6 +1,6 @@
-# QA Test Case Workspace Workflow Handbook
+# qa-flow Workflow Handbook
 
-本文件是 WorkSpaces 的 **canonical human-facing workflow handbook**。面向人工与 Skills：
+本文件是 qa-flow 的 **canonical human-facing workflow handbook**。面向人工与 Skills：
 
 - 工作流说明、目录结构、命名 contract 以本文件为准
 - 细化规则以 `.claude/rules/*.md` 为准
@@ -39,7 +39,7 @@
 > 路径配置统一以 `.claude/config.json` 为准。
 
 ```text
-WorkSpaces/
+qa-flow/
 ├── CLAUDE.md                      # 权威工作流手册（本文件）
 ├── README.md                      # 入口导览
 ├── cases/
@@ -213,6 +213,8 @@ Story 和 PRD 输入遵循以下目录 contract：
 - 树结构遵循：`Root → L1（版本/需求） → L2（模块/菜单） → L3（页面） → [L4（子组）] → 用例标题 → 步骤 → 预期结果`
 - 追加模式下，同一文件中的不同 PRD 用各自的 L1 节点区分。
 - XMind 输出成功后会刷新仓库根目录 `latest-output.xmind` 符号链接，并始终指向最近一次实际生成或更新的 XMind 文件。
+- 增强版 PRD 输出后，应刷新仓库根目录 `latest-prd-enhanced.md` 符号链接，指向最近一次增强成功的 `*-enhanced.md`。
+- Bug / 冲突 HTML 报告输出后，应分别刷新 `latest-bug-report.html` 与 `latest-conflict-report.html`。
 
 ---
 
@@ -231,6 +233,8 @@ Story 和 PRD 输入遵循以下目录 contract：
 - 旧文档、Skill 文案或 Prompt 中的 `archive-cases/` 是历史叫法，统一映射到 `cases/archive/`，不要新建同级目录。
 - 当前脚本实际落盘也以 `cases/archive/` 为准；`archive-cases/` 只作为兼容阅读旧文案时的解释。
 - 从 XMind / final JSON 生成的 Archive Markdown，默认与源文件共享 basename。
+- 当输入来源可识别原始 PRD 文件名时，Archive Markdown 应优先保留 `PRD-XX-<功能名>.md` 命名，降低需求追踪成本。
+- Story 聚合 Markdown 只在明确需要汇总时使用；默认优先维持“一份 PRD → 一份 MD”。
 - 归档文件供 Brainstorming、Writer、Reviewer 去重和引用，**不要手动移动到其他模块目录**。
 
 常用命令：

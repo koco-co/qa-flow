@@ -33,6 +33,8 @@ maxTurns: 100
 
 **输出路径**：`reports/bugs/{yyyy-MM-dd}/<Bug标题>.html`
 
+**额外动作（必须）**：刷新仓库根目录快捷链接 `latest-bug-report.html`
+
 ### 模式 B：合并冲突分析
 
 **输入**：包含 `<<<<<<< HEAD` / `=======` / `>>>>>>>` 标记的冲突代码，或 Jenkins 冲突日志
@@ -45,6 +47,8 @@ maxTurns: 100
 4. 按 `references/conflict-resolution.md` 格式生成 HTML 报告
 
 **输出路径**：`reports/conflicts/{yyyy-MM-dd}/<冲突描述>.html`
+
+**额外动作（必须）**：刷新仓库根目录快捷链接 `latest-conflict-report.html`
 
 ---
 

@@ -169,10 +169,17 @@ mkdir -p "$REPORT_DIR"
 # 文件名：Bug标题（去除特殊字符，空格转下划线）.html
 ```
 
+**写入后必须刷新根目录快捷链接：**
+
+```bash
+cd .claude/scripts && node refresh-latest-link.mjs "<项目根>/reports/bugs/$TODAY/<文件名>.html" latest-bug-report.html
+```
+
 **写入完成后输出：**
 
 ```
 [v] Bug 报告已生成：reports/bugs/{日期}/{文件名}.html
+[v] 根目录快捷链接已刷新：latest-bug-report.html
 
 使用方式：在禅道中打开 Bug 编辑页面，点击富文本编辑器工具栏中的「HTML 代码」按钮，
 将文件内容粘贴进去，点击确认后保存即可看到格式化报告。
@@ -193,6 +200,12 @@ mkdir -p "$REPORT_DIR"
 3. 输出 HTML 冲突报告，逻辑互斥型必须注明「需开发人工确认」
 
 **存储路径：**`reports/conflicts/${yyyy-MM-dd}/<冲突描述>.html`
+
+**写入后必须刷新根目录快捷链接：**
+
+```bash
+cd .claude/scripts && node refresh-latest-link.mjs "<项目根>/reports/conflicts/${yyyy-MM-dd}/<文件名>.html" latest-conflict-report.html
+```
 
 ---
 

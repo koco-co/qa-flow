@@ -8,7 +8,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
+import { resolve, dirname, basename, extname } from "path";
 import { getDtstackModules } from "./load-config.mjs";
 
 // ─── JSON → MD ──────────────────────────────────────────────
@@ -329,6 +329,23 @@ function sanitizeFileName(name) {
     .replace(/\s+/g, "-");
 }
 
+function deriveArchiveBaseName(inputPath, requirementName) {
+  const normalizedRequirementName = sanitizeFileName(requirementName || "");
+  if (/^PRD-\d+[-_]/i.test(normalizedRequirementName)) {
+    return normalizedRequirementName;
+  }
+
+  const inputBaseName = basename(inputPath, extname(inputPath));
+  const prefixedInputMatch = inputBaseName.match(
+    /^(PRD-\d+[-_].+?)(?:-(?:enhanced|final|reviewed|cases|output))?$/i,
+  );
+  if (prefixedInputMatch) {
+    return sanitizeFileName(prefixedInputMatch[1]);
+  }
+
+  return normalizedRequirementName || sanitizeFileName(inputBaseName);
+}
+
 // ─── CLI 入口 ───────────────────────────────────────────────
 
 const args = process.argv.slice(2);
@@ -380,7 +397,7 @@ if (fromXmind) {
     );
   mkdirSync(dir, { recursive: true });
   const fileName =
-    sanitizeFileName(data.meta?.requirement_name || "unnamed") + ".md";
+    deriveArchiveBaseName(inputPath, data.meta?.requirement_name || "unnamed") + ".md";
   const outputPath = resolve(dir, fileName);
   writeFileSync(outputPath, md, "utf-8");
 

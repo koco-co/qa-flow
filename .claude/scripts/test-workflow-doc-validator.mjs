@@ -18,6 +18,9 @@ const prdEnhancerSkillPath = resolve(skillsRoot, "prd-enhancer", "SKILL.md");
 const prdTemplatePath = resolve(skillsRoot, "prd-enhancer", "references", "prd-template.md");
 const xmindRulePath = resolve(claudeRoot, "rules", "xmind-output.md");
 const jsonToXmindPath = resolve(__dirname, "json-to-xmind.mjs");
+const readmePath = resolve(repoRoot, "README.md");
+const directoryNamingPath = resolve(claudeRoot, "rules", "directory-naming.md");
+const lanhuPlanPath = resolve(repoRoot, "docs", "蓝湖PRD自动化导入方案.md");
 
 let passed = 0;
 let failed = 0;
@@ -123,6 +126,13 @@ const promptDocs = walkFiles(
 );
 const agentDocs = walkFiles(agentsRoot, (filePath) => filePath.endsWith(".md"));
 const activeDocs = [...skillDocs, ...promptDocs, ...agentDocs];
+const repoFacingDocs = [
+  claudeMdPath,
+  readmePath,
+  directoryNamingPath,
+  lanhuPlanPath,
+  ...activeDocs,
+];
 
 console.log("\n=== Test: active Skill / prompt 文档不得回退到 archive-cases/ ===");
 const legacyArchiveCasesRefs = findLineMatches(activeDocs, /archive-cases\//g);
@@ -141,6 +151,17 @@ assert(
   repeatedAssetsIssues.length === 0,
   "PRD enhancer 文档示例未出现 assets/assets/assets/assets 之类错误路径",
   repeatedAssetsIssues,
+);
+
+console.log("\n=== Test: repo-facing 文档不得残留 WorkSpaces / 外置 lanhu 路径 / zentao-cases ===");
+const staleIdentityOrLanhuRefs = findLineMatches(
+  repoFacingDocs,
+  /WorkSpaces\/|WorkSpaces 根目录|~\/Tools\/lanhu-mcp|\/Users\/poco\/Documents\/DTStack\/WorkSpaces|zentao-cases\//g,
+);
+assert(
+  staleIdentityOrLanhuRefs.length === 0,
+  "repo-facing 文档已移除 WorkSpaces、~/Tools/lanhu-mcp、绝对 WorkSpaces 路径和 zentao-cases 旧引用",
+  staleIdentityOrLanhuRefs,
 );
 
 console.log("\n=== Test: Skill 中的 CLAUDE.md 章节引用必须存在 ===");

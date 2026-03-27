@@ -112,12 +112,11 @@ Step 10: 用户验证后同步（条件执行）
    ```bash
    curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/
    ```
-   - 返回非 000 → Server 正在运行，继续
-   - 返回 000（连接失败）→ 启动 Server：
-     ```bash
-     cd ~/Tools/lanhu-mcp && nohup uv run python lanhu_mcp_server.py > /tmp/lanhu-mcp.log 2>&1 &
-     sleep 3
-     ```
+    - 返回非 000 → Server 正在运行，继续
+    - 返回 000（连接失败）→ 启动 Server：
+      ```bash
+      cd .claude/scripts && node lanhu-mcp-runtime.mjs start
+      ```
 3. **调用 `lanhu_get_pages` 工具** 获取页面列表
    - 若返回错误码 418 → 提示用户：`蓝湖 Cookie 已过期，请按以下步骤刷新：\n1. Chrome 登录 lanhuapp.com\n2. F12 → Network → 任意 API 请求 → Copy Cookie\n3. 告知我新 Cookie`
    - 若返回成功 → 展示页面列表，询问用户要导入哪些页面（默认全部）
@@ -139,10 +138,10 @@ Step 10: 用户验证后同步（条件执行）
 
 如遇 418 且用户不方便手动获取 Cookie，可尝试自动刷新：
 ```bash
-cd ~/Tools/lanhu-mcp && uv run python -c "
-# ... 调用 Playwright 两步登录（见 docs/蓝湖PRD自动化导入方案.md §5.2）
-# 登录 admin@dtstack.com，提取 Cookie，写入 .env，重启 Server
-"
+cd .claude/scripts && \
+LANHU_LOGIN_EMAIL='<你的蓝湖账号>' \
+LANHU_LOGIN_PASSWORD='<你的蓝湖密码>' \
+python3 refresh-lanhu-cookie.py
 ```
 
 ---

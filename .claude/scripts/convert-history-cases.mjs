@@ -37,7 +37,7 @@ import { fileURLToPath } from "url";
 import { getModuleMap, getDtstackModules } from "./load-config.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, "../.."); // WorkSpaces 根目录
+const ROOT = resolve(__dirname, "../.."); // qa-flow 根目录
 // ─── CLI 参数解析 ────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const FORCE = args.includes("--force");

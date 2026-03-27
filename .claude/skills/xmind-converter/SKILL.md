@@ -106,7 +106,7 @@ node .claude/scripts/json-to-xmind.mjs --replace <input.json> <existing.xmind>
 - 未找到同名 L1 → 追加新 L1（降级为 --append 行为）
 - 用于模块级重跑，避免同名 L1 节点重复
 
-**注意：** 所有路径必须是绝对路径或相对于工作目录（WorkSpaces/）的路径。
+**注意：** 所有路径必须是绝对路径或相对于工作目录（qa-flow/）的路径。
 
 ---
 

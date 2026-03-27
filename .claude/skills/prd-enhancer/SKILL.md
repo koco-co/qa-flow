@@ -67,8 +67,8 @@ Step 9: 向用户展示增强摘要
 
 接受以下输入：
 
-- 文件绝对路径（如 `/Users/poco/Documents/DTStack/WorkSpaces/cases/...`）
-- 相对路径（相对于 WorkSpaces 根目录）
+- 文件绝对路径（如 `/path/to/qa-flow/cases/...`）
+- 相对路径（相对于 qa-flow 根目录）
 - Story 目录 + PRD 编号（如 `Story-20260322/PRD-26`）
 
 如用户未明确指定，询问 PRD 文件路径。
@@ -247,6 +247,14 @@ done
 - 输出：`PRD-26-数据质量-质量问题台账-enhanced.md`
 
 输出位置：与原文件同级目录。
+
+**增强版快捷入口（必须执行）：**
+
+增强成功后，必须刷新仓库根目录快捷链接，便于用户直接验收：
+
+```bash
+cd .claude/scripts && node refresh-latest-link.mjs "<enhanced-path>" latest-prd-enhanced.md
+```
 
 **文件头部必须包含增强元数据（第一行）：**
 

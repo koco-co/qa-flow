@@ -21,7 +21,7 @@
 ## 顶层目录结构
 
 ```text
-WorkSpaces/
+qa-flow/
 ├── CLAUDE.md
 ├── README.md
 ├── cases/
@@ -49,5 +49,7 @@ WorkSpaces/
 - 断点状态：`Story-YYYYMMDD/.qa-state.json`
 - PRD 级输出：`YYYYMM-<功能名>.xmind` 与同 basename 的 `.md`
 - Story 级输出：`YYYYMM-Story-YYYYMMDD.xmind` 与同 basename 的 `.md`
+- 当 Archive 来源能识别原始 PRD 文件名时，Archive Markdown 应优先沿用 `PRD-XX-<功能名>.md`，保证需求与归档一一对应
+- Story 聚合 Markdown 只在明确需要“一个 Story 汇总文件”时使用，避免长期沉积为迭代级超大文件
 - 历史遗留文件名可继续保留，例如 `信永中和测试用例.xmind`、`20260322-信永中和测试用例.xmind`
 - 报告文件：`<标题>.html`，按日期目录归档到 `reports/bugs/` 或 `reports/conflicts/`

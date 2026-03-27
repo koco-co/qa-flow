@@ -65,3 +65,16 @@ export function getDtstackModules() {
 export function getWorkspaceRoot() {
   return resolve(__dirname, "../..");
 }
+
+export function resolveWorkspacePath(relativePath) {
+  return resolve(getWorkspaceRoot(), relativePath);
+}
+
+export function getIntegrationConfig(name) {
+  return loadConfig().integrations?.[name] ?? null;
+}
+
+export function getShortcutPath(name) {
+  const shortcut = loadConfig().shortcuts?.[name];
+  return shortcut ? resolveWorkspacePath(shortcut) : null;
+}

@@ -28,6 +28,12 @@ assert(typeof config === "object", "返回对象");
 assert(config.modules !== undefined, "包含 modules 字段");
 assert(config.repos !== undefined, "包含 repos 字段");
 assert(config.modules.xyzh?.zh === "信永中和", "xyzh 模块中文名正确");
+assert(config.project?.name === "qa-flow", "project.name 标记为 qa-flow");
+assert(config.integrations?.lanhuMcp?.vendorPath === "vendor/lanhu-mcp/", "lanhuMcp vendorPath 配置正确");
+assert(config.integrations?.lanhuMcp?.envFile === "vendor/lanhu-mcp/.env", "lanhuMcp envFile 配置正确");
+assert(config.shortcuts?.latestEnhancedPrd === "latest-prd-enhanced.md", "latestEnhancedPrd 快捷链接名正确");
+assert(config.shortcuts?.latestBugReport === "latest-bug-report.html", "latestBugReport 快捷链接名正确");
+assert(config.shortcuts?.latestConflictReport === "latest-conflict-report.html", "latestConflictReport 快捷链接名正确");
 
 console.log("\n=== Test: getModuleMap ===");
 const map = getModuleMap();

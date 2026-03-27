@@ -249,6 +249,42 @@ async function main() {
     assert(dtMd.includes("### 列表页"), "DTStack 归档 Markdown 保留页面层级");
   }
 
+  console.log("\n=== Test: json-to-archive-md.mjs 输出文件名优先保留 PRD 前缀 ===");
+  const prefixedRequirementName = `__qa-prd-prefix-${runId}`;
+  const prefixedInputBaseName = `PRD-26-${prefixedRequirementName}.json`;
+  const prefixedInputPath = resolve(tempRoot, prefixedInputBaseName);
+  const prefixedOutputPath = resolve(
+    repoRoot,
+    "cases/archive/data-assets",
+    prefixedInputBaseName.replace(/\.json$/, ".md"),
+  );
+  writeFileSync(
+    prefixedInputPath,
+    JSON.stringify(
+      createJsonFixture({
+        projectName: "数据资产",
+        requirementName: prefixedRequirementName,
+        version: "vtest-prefix",
+      }),
+      null,
+      2,
+    ),
+    "utf8",
+  );
+  const prefixedResult = runNodeScript(archiveScriptPath, [prefixedInputPath]);
+  assert(prefixedResult.code === 0, "PRD 前缀输入执行成功", [
+    prefixedResult.stderr.trim(),
+    prefixedResult.stdout.trim(),
+  ].filter(Boolean));
+  assert(existsSync(prefixedOutputPath), "当输入文件名含 PRD 前缀时，输出文件名保留 PRD 前缀", [
+    prefixedOutputPath,
+  ]);
+  if (existsSync(prefixedOutputPath)) {
+    generatedFilePaths.add(prefixedOutputPath);
+    const prefixedMd = readFileSync(prefixedOutputPath, "utf8");
+    assert(prefixedMd.includes(`# 【vtest-prefix】${prefixedRequirementName}`), "PRD 前缀归档 Markdown 标题保持 requirement_name");
+  }
+
   console.log("\n=== Test: json-to-archive-md.mjs --from-xmind ===");
   const xmindTitle = `归档-XMind-${runId}`;
   const xmindPath = resolve(tempRoot, `${xmindTitle}.xmind`);
@@ -304,10 +340,12 @@ async function main() {
   console.log(`\n══════════════════════════════════════`);
   console.log(`总计: ${passed + failed} 测试, ✅ ${passed} 通过, ❌ ${failed} 失败`);
   console.log(`══════════════════════════════════════`);
+  cleanup();
   process.exit(failed > 0 ? 1 : 0);
 }
 
 main().catch((error) => {
   console.error("❌ 测试脚本执行失败:", error);
+  cleanup();
   process.exit(1);
 });
