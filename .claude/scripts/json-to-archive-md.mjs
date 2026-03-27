@@ -1,6 +1,6 @@
 /**
  * json-to-archive-md.mjs
- * 将测试用例 final-reviewed JSON 或 XMind 文件转换为 archive-cases 格式的 Markdown 文件
+ * 将测试用例 final-reviewed JSON 或 XMind 文件转换为供 cases/archive/ 使用的 Markdown 文件
  *
  * 用法:
  *   node json-to-archive-md.mjs <input.json> [output-dir]

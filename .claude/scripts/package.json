@@ -11,7 +11,7 @@
     "convert:detect": "node convert-history-cases.mjs --detect",
     "scan-images": "python3 scan_images.py",
     "trash-cleanup": "bash trash-cleanup.sh",
-    "test": "node test-load-config.mjs && node test-json-to-xmind.mjs",
+    "test": "node test-load-config.mjs && node test-json-to-xmind.mjs && node test-workflow-doc-validator.mjs && node test-archive-history-scripts.mjs",
     "test:config": "node test-load-config.mjs",
     "test:xmind": "node test-json-to-xmind.mjs"
   },

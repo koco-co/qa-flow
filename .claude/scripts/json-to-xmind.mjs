@@ -29,9 +29,15 @@
  *                                 └── 预期结果
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync, writeFileSync, existsSync, unlinkSync, symlinkSync } from 'fs'
+import { resolve, dirname, relative, basename } from 'path'
+import { fileURLToPath } from 'url'
 import { Topic, RootTopic, Marker, Workbook, writeLocalFile } from 'xmind-generator'
+
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
+const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..')
+const RESERVED_OUTPUT_NAME = 'latest-output.xmind'
+const LATEST_OUTPUT_PATH = resolve(REPO_ROOT, 'latest-output.xmind')
 
 const PRIORITY_MAP = {
   P0: Marker.Priority.p1,
@@ -200,6 +206,31 @@ function mergeJsonFiles(inputPaths) {
   }
 }
 
+function validateOutputPath(outputPath) {
+  if (basename(outputPath) === RESERVED_OUTPUT_NAME) {
+    throw new Error(
+      `${RESERVED_OUTPUT_NAME} 是保留输出文件名，仅供仓库根目录的最近输出符号链接使用，请改用其他 .xmind 文件名`
+    )
+  }
+}
+
+function refreshLatestOutput(outputPath) {
+  const resolvedOutputPath = resolve(outputPath)
+  if (resolvedOutputPath === LATEST_OUTPUT_PATH) return
+
+  const linkTarget = relative(REPO_ROOT, resolvedOutputPath)
+
+  try {
+    unlinkSync(LATEST_OUTPUT_PATH)
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      throw err
+    }
+  }
+
+  symlinkSync(linkTarget, LATEST_OUTPUT_PATH)
+}
+
 async function appendToExisting(data, outputPath) {
   const { default: JSZip } = await import('jszip')
 
@@ -320,6 +351,7 @@ const outputPath = filteredArgs[filteredArgs.length - 1]
 const inputPaths = filteredArgs.slice(0, filteredArgs.length - 1)
 
 try {
+  validateOutputPath(outputPath)
   const data = mergeJsonFiles(inputPaths)
 
   const structErrors = validateStructure(data)
@@ -333,14 +365,17 @@ try {
 
   if (replaceMode && existsSync(resolve(outputPath))) {
     await replaceInExisting(data, outputPath)
+    refreshLatestOutput(outputPath)
     console.log(`XMind 文件已更新（替换模式）: ${resolve(outputPath)}`)
   } else if (appendMode && existsSync(resolve(outputPath))) {
     await appendToExisting(data, outputPath)
+    refreshLatestOutput(outputPath)
     console.log(`XMind 文件已更新（追加模式）: ${resolve(outputPath)}`)
   } else {
     const wb = buildXmind(data)
     const buf = await wb.archive()
     writeFileSync(resolve(outputPath), Buffer.from(buf))
+    refreshLatestOutput(outputPath)
     console.log(`XMind 文件已生成: ${resolve(outputPath)}`)
   }
 } catch (err) {

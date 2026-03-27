@@ -6,6 +6,8 @@
  */
 import { loadConfig, getModuleMap, getDtstackModules, getWorkspaceRoot } from "./load-config.mjs";
 import { existsSync } from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 
 let passed = 0;
 let failed = 0;
@@ -46,8 +48,11 @@ assert(zh.length === en.length, "中英文列表长度一致");
 
 console.log("\n=== Test: getWorkspaceRoot ===");
 const root = getWorkspaceRoot();
+const scriptDir = dirname(fileURLToPath(import.meta.url));
 assert(existsSync(root), "工作空间根目录存在");
-assert(root.endsWith("WorkSpaces"), "路径以 WorkSpaces 结尾");
+assert(existsSync(resolve(root, "CLAUDE.md")), "工作空间根目录包含 CLAUDE.md");
+assert(existsSync(resolve(root, ".claude/config.json")), "工作空间根目录包含 .claude/config.json");
+assert(resolve(root, ".claude/scripts") === scriptDir, "工作空间根目录与 .claude/scripts 相对位置正确");
 
 console.log(`\n══════════════════════════════════════`);
 console.log(`总计: ${passed + failed} 测试, ✅ ${passed} 通过, ❌ ${failed} 失败`);

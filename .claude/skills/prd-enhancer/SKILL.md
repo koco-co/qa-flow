@@ -93,7 +93,7 @@ Step 9: 向用户展示增强摘要
 
 **标准 Markdown 格式（目标格式）：**
 ```
-![alt描述](../相对路径/assets/assets/assets/assets/images/图片名.png)
+![alt描述](../../../../assets/images/图片名.png)
 ```
 
 两种格式都要识别和提取。统计图片总数，列出所有图片引用，向用户报告：
@@ -108,7 +108,7 @@ Step 9: 向用户展示增强摘要
 
 图片文件搜索顺序：
 
-1. **标准 Markdown 引用的路径直接解析**（如 `![alt](../../../../../assets/assets/assets/assets/images/xxx.png)` 按相对路径解析）
+1. **标准 Markdown 引用的路径直接解析**（如 `![alt](../../../../assets/images/xxx.png)` 按相对路径解析）
 2. **仓库根目录 `assets/images/`**（所有图片的标准存放位置）
 3. PRD 文件同级的 `resources/` 目录
 4. PRD 文件同级的 `media/` 目录
@@ -214,10 +214,10 @@ done
 **无论原始 PRD 使用何种图片格式，enhanced PRD 中必须统一输出标准 Markdown 格式：**
 
 ```markdown
-![语义化中文描述](相对路径/assets/assets/assets/assets/images/语义化文件名.png)
+![语义化中文描述](../../../../assets/images/语义化文件名.png)
 ```
 
-**相对路径计算方法**：从 enhanced PRD 文件所在目录到仓库根目录 `assets/images/` 的相对路径。
+**相对路径计算方法**：从 enhanced PRD 文件所在目录到仓库根目录 `assets/images/` 的相对路径。对于位于 `cases/requirements/<requirements-root>/Story-YYYYMMDD/` 下的 Story PRD，引用前缀应为 `../../../../assets/images/`。
 
 示例（PRD 在 `cases/requirements/xyzh/Story-20260322/` 下）：
 
@@ -226,7 +226,7 @@ done
 ![[Pasted image 20260322143521.png]]
 
 # 标准 Markdown 格式（输出）
-![质量问题台账列表页](../../../../../assets/assets/assets/assets/images/质量问题台账-列表页面.png)
+![质量问题台账列表页](../../../../assets/images/质量问题台账-列表页面.png)
 ```
 
 ### 7.4 操作步骤

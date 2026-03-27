@@ -5,7 +5,7 @@ description: 历史用例归档转化 Skill。将非 Markdown 格式的历史测
 
 # 历史用例归档转化 Skill
 
-本 Skill 将非 Markdown 格式的历史测试用例（CSV、XMind）转化为标准化 Markdown 格式，存放到 `archive-cases/` 目录，供 AI 工作流（test-case-generator 等）引用和参考。
+本 Skill 将非 Markdown 格式的历史测试用例（CSV、XMind）转化为标准化 Markdown 格式，存放到 `cases/archive/` 目录，供 AI 工作流（test-case-generator 等）引用和参考。
 
 **执行前必须阅读本文件和 CLAUDE.md「历史用例维护」章节。**
 
@@ -22,7 +22,7 @@ description: 历史用例归档转化 Skill。将非 Markdown 格式的历史测
 
 ## 二、输出目标
 
-转化后的 Markdown 文件统一存放在 `archive-cases/` 目录下，根据来源自动判断输出路径：
+转化后的 Markdown 文件统一存放在 `cases/archive/` 目录下，根据来源自动判断输出路径：
 
 | 来源               | 输出目录                               |
 | ------------------ | -------------------------------------- |
@@ -47,7 +47,7 @@ Step 2: 执行转化
 Step 3: 输出结果
   → 展示转化统计（成功/跳过/失败数量）
   → 如有失败，展示失败文件和原因
-  → 提示用户可在 archive-cases/ 目录查看结果
+  → 提示用户可在 cases/archive/ 目录查看结果
 ```
 
 ---
@@ -164,7 +164,7 @@ cd .claude/scripts && node convert-history-cases.mjs --module <当前模块名>
 - 跳过（已存在）：<M> 个文件
 - 失败：<K> 个文件
 
-输出目录：<archive-cases 路径>
+输出目录：<cases/archive/... 路径>
 ```
 
 如有失败文件，额外展示：

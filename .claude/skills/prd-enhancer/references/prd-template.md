@@ -30,7 +30,7 @@ PRD 增强后的输出文件（`*-enhanced.md`）应尽量符合以下结构。
 
 ##### 页面说明
 
-![语义化中文描述](../../../../../assets/assets/assets/assets/images/语义化文件名.png)
+![语义化中文描述](../../../../assets/images/语义化文件名.png)
 
 > **[AI图片描述]**
 > 页面类型：列表页

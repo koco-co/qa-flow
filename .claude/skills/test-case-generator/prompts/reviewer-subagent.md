@@ -151,7 +151,7 @@ C. 忽略质量问题，强制继续（不推荐）
 
 在输出最终 JSON 前，检查以下来源的已有用例，避免重复：
 
-1. 读取各模块 `archive-cases/` 目录下的 .md 文件，提取已有用例标题（已预先转化为可读 Markdown，无需解析二进制文件）：
+1. 读取各模块 `cases/archive/` 目录下的 .md 文件，提取已有用例标题（已预先转化为可读 Markdown，无需解析二进制文件）：
    - DTStack 平台：`cases/archive/<module>/`
    - 信永中和：`cases/archive/custom/xyzh/`
 2. 如本次生成的用例标题与已有用例完全相同，在 precondition 末尾标注 `[可能与历史用例重复，请确认]`
@@ -193,7 +193,7 @@ meta 字段保留原始内容，只更新 generated_at 为当前时间，agent_i
 
 ### 写入位置
 
-将合并修正后的 JSON 写入：[最终 JSON 路径，如 temp/final-reviewed.json]
+将合并修正后的 JSON 写入：[最终 JSON 路径，如 cases/requirements/<requirements-root>/Story-20260322/temp/final-reviewed.json]
 
 ### 评审报告（写入 JSON 后输出）
 
