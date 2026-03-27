@@ -14,28 +14,30 @@
 ## 常用指令
 
 ```bash
-# 生成测试用例（完整流程）
-生成用例 Story-20260322 PRD-26
-为 <Story目录> 写测试用例
+# 生成测试用例（完整流程 / 默认）
+为 Story-20260322 生成测试用例
 生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=...&pid=...&docId=...
 
 # 快速模式 / 续传 / 重跑
-为 <Story目录> 快速生成测试用例
-继续 <Story> 的用例生成
-重新生成 <Story> 的「列表页」模块用例
+为 Story-20260322 --quick 生成测试用例
+继续 Story-20260322 的用例生成
+重新生成 Story-20260322 的「列表页」模块用例
 
 # 单独使用各 Skill
 帮我增强这个 PRD：<PRD文件路径>
 帮我分析这个报错
+（建议附：报错日志 + curl；若知道分支也一并提供）
 转化所有历史用例
 ```
+
+> `--quick` 是推荐的 canonical 快速模式写法；自然语言“快速生成测试用例”也会被识别为同一模式。
 
 ## 关键约定速览
 
 - Archive 根目录固定为 `cases/archive/`。
 - `xyzh` 是模块 key；`custom/xyzh` 只是 `cases/xmind/` 与 `cases/archive/` 下的路径别名。
 - 输出分两类：
-  - PRD 级：`YYYYMM-<功能名>.xmind` / `YYYYMM-<功能名>.md`
+  - PRD 级：`YYYYMM-<功能名>.xmind` / `PRD-XX-<功能名>.md`（当原始 PRD 文件名可识别时优先保留 PRD 前缀）
   - Story 级：`YYYYMM-Story-YYYYMMDD.xmind` / `YYYYMM-Story-YYYYMMDD.md`
 - 仓库中已存在旧文件名（如 `信永中和测试用例.xmind`）时，不要求为对齐新 contract 而批量改名。
 - `repos/` 下源码仓库只读；详细限制见 `CLAUDE.md#源码仓库安全规则` 与 `.claude/rules/repo-safety.md`。
@@ -47,18 +49,19 @@
 
 ## 快捷验收入口
 
-| 输入类型 | 主要输出 | 根目录快捷链接 | 验收方式 |
-| --- | --- | --- | --- |
-| 蓝湖 URL / PRD / Story | 增强 PRD + XMind + Archive Markdown | `latest-prd-enhanced.md`、`latest-output.xmind` | 打开链接检查结构与内容 |
-| curl / 报错日志 | Bug HTML 报告 | `latest-bug-report.html` | 在浏览器中打开，或复制到禅道 |
-| Jenkins 冲突日志 | 冲突 HTML 报告 | `latest-conflict-report.html` | 检查冲突分类与建议 |
+| 输入类型 | 主要输出 | 根目录快捷链接 | 验收方式 | 建议回复 |
+| --- | --- | --- | --- | --- |
+| 蓝湖 URL / PRD / Story | 增强 PRD + XMind + Archive Markdown | `latest-prd-enhanced.md`、`latest-output.xmind` | 先看增强 PRD，再打开 XMind 检查结构与内容 | `确认通过` / `已修改，请同步` / `继续补改` |
+| curl / 报错日志 | Bug HTML 报告 | `latest-bug-report.html` | 在浏览器中打开，或复制到禅道 | `报告通过` / `继续补充分析` |
+| Jenkins 冲突日志 | 冲突 HTML 报告 | `latest-conflict-report.html` | 检查冲突分类与建议 | `报告通过` / `继续补充分析` |
 
 ## Harness Phase 1 控制平面
 
 - `Skill` 仍是**入口层**：负责理解用户输入并决定走哪条 workflow。
 - `.claude/harness/workflows/*.json` 是**控制平面**：定义步骤顺序、依赖、resume 点、输出产物。
 - `.claude/harness/delegates.json` 是**delegate 注册表**：把 workflow step 绑定到实际 script / Skill / agent。
-- `.claude/harness/contracts.json` 是**治理层 contract**：统一 `.qa-state.json`、`latest-*` 快捷链接、质量阈值和恢复策略。
+- `.claude/harness/hooks.json` 是**hook 注册表**：统一 precheck、条件判断、恢复策略与并行收敛钩子。
+- `.claude/harness/contracts.json` 是**治理层 contract**：统一 `.qa-state.json`、`latest-*` 快捷链接、命名规则、质量阈值和恢复策略。
 - `.claude/config.json` 继续只做**全局路径/映射 source of truth**，不再承载整条流程定义。
 
 ## Mermaid 流程图
@@ -198,6 +201,7 @@ qa-flow/
     ├── harness/
     │   ├── workflows/
     │   ├── delegates.json
+    │   ├── hooks.json
     │   └── contracts.json
     └── rules/
 ```

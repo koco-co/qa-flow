@@ -23,7 +23,7 @@
   "steps": [
     {
       "id": "parse-input",
-      "delegate": "workflowStart",
+      "delegate": "testCaseOrchestrator",
       "dependsOn": [],
       "resumePoint": true,
       "failureMode": "block"
@@ -46,14 +46,14 @@
     },
     {
       "id": "brainstorm",
-      "delegate": "workflowStart",
+      "delegate": "testCaseOrchestrator",
       "dependsOn": ["prd-enhancer"],
       "skippableWhen": ["quick-mode"],
       "failureMode": "block"
     },
     {
       "id": "checklist",
-      "delegate": "workflowStart",
+      "delegate": "testCaseOrchestrator",
       "dependsOn": ["brainstorm"],
       "skippableWhen": ["quick-mode"],
       "failureMode": "block"
@@ -61,8 +61,13 @@
     {
       "id": "writer",
       "delegate": "caseWriter",
-      "dependsOn": ["prd-enhancer", "checklist"],
+      "dependsOn": ["prd-enhancer"],
+      "modeDependencies": {
+        "full-mode": ["checklist"],
+        "quick-mode": []
+      },
       "parallel": true,
+      "convergenceHook": "wait-for-parallel-writers",
       "resumePoint": true,
       "failureMode": "block"
     },
@@ -89,7 +94,7 @@
     },
     {
       "id": "notify",
-      "delegate": "workflowStart",
+      "delegate": "testCaseOrchestrator",
       "dependsOn": ["archive"],
       "failureMode": "warn"
     }

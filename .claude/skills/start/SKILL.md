@@ -31,9 +31,13 @@ argument-hint: "[功能编号或关键词]"
 
 如果 `$ARGUMENTS` 包含 `1` 或 `用例` 或 `test`：
 
-- 引导用户提供 Story 路径，例如：`为 Story-20260322 快速生成测试用例`
+- 引导用户提供 Story 路径，例如：`为 Story-20260322 生成测试用例`
+- 如需快速模式，推荐写法：`为 Story-20260322 --quick 生成测试用例`
+- 说明：`--quick` 会跳过 Step 3（Brainstorming）、Step 4（Checklist 预览）、Step 5（用户确认）
 - 或直接提供蓝湖 URL，例如：`生成测试用例 https://lanhuapp.com/web/#/item/project/product?...`
 - 如果用户还没有 PRD 文件，提示将 PRD 放到 `cases/requirements/` 对应目录下
+- 如检测到 `.qa-state.json`，提示可直接说：`继续 Story-20260322 的用例生成`
+- 如需只重跑某个页面/模块，提示可说：`重新生成 Story-20260322 的「列表页」模块用例`
 
 如果 `$ARGUMENTS` 包含 `2` 或 `PRD` 或 `增强`：
 
@@ -43,6 +47,7 @@ argument-hint: "[功能编号或关键词]"
 
 - 引导用户粘贴报错日志和 curl 信息
 - 提示格式：`帮我分析这个报错` + 粘贴日志内容
+- 建议同时补充：`curl` 请求、当前分支（若已知）
 
 如果 `$ARGUMENTS` 包含 `4` 或 `转换` 或 `归档` 或 `archive`：
 
@@ -58,7 +63,8 @@ argument-hint: "[功能编号或关键词]"
 
 ```
 # 生成测试用例（最常用）
-为 Story-20260322 快速生成测试用例
+为 Story-20260322 生成测试用例
+为 Story-20260322 --quick 生成测试用例
 根据需求文档: Story-20260322 中的 PRD-26 生成测试用例
 生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx
 
@@ -67,7 +73,7 @@ argument-hint: "[功能编号或关键词]"
 
 # 分析报错
 帮我分析这个报错
-（然后粘贴报错日志 + curl 信息）
+（然后粘贴报错日志 + curl 信息；若知道分支也一并提供）
 
 # 转化历史用例
 转化所有历史用例
@@ -75,4 +81,4 @@ argument-hint: "[功能编号或关键词]"
 ```
 
 > 💡 提示：你也可以直接用自然语言描述需求，系统会自动匹配对应功能。
-> 💡 生成完成后，优先让用户从根目录快捷链接验收：`latest-output.xmind`、`latest-prd-enhanced.md`、`latest-bug-report.html`、`latest-conflict-report.html`。
+> 💡 验收建议：测试用例流优先打开 `latest-prd-enhanced.md` / `latest-output.xmind`；代码分析流优先打开 `latest-bug-report.html` / `latest-conflict-report.html`。

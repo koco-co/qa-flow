@@ -9,6 +9,14 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 
 **执行前必须阅读本文件和 `references/prd-template.md`。**
 
+## 使用口径速查
+
+- 本 Skill 是**单个 PRD 的增强流程**，不使用测试用例流程里的“快速模式 / 续传 / 模块级重跑”口令。
+- 对同一 PRD 再次执行时，默认先走 Step 0 增量检测：优先复用已有 `-enhanced.md`，只处理变更章节。
+- 如需 **全量重来**，删除同目录下已有的 `*-enhanced.md`，再重新执行同一条增强指令。
+- 单独调用本 Skill 时，主验收入口是仓库根目录 `latest-prd-enhanced.md`。
+- `确认通过` / `已修改，请同步` 是 **test-case-generator Step 9 / Step 10** 的验收回复，不用于单独 PRD 增强；单独增强完成后，用户通常直接继续生成测试用例，或指出 PRD 仍需补充的内容。
+
 ---
 
 ## 一、执行流程
@@ -255,6 +263,8 @@ done
 ```bash
 cd .claude/scripts && node refresh-latest-link.mjs "<enhanced-path>" latest-prd-enhanced.md
 ```
+
+`latest-prd-enhanced.md` 是 **PRD 增强流程的主验收入口**；如果后续继续进入测试用例生成流程，最终验收对象仍以 `latest-output.xmind` 为准。
 
 **文件头部必须包含增强元数据（第一行）：**
 

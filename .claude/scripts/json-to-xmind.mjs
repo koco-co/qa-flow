@@ -33,6 +33,7 @@ import { readFileSync, writeFileSync, existsSync, unlinkSync, symlinkSync } from
 import { resolve, dirname, relative, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { Topic, RootTopic, Marker, Workbook, writeLocalFile } from 'xmind-generator'
+import { assertNewOutputPathMatchesContract } from './output-naming-contracts.mjs'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..')
@@ -207,11 +208,12 @@ function mergeJsonFiles(inputPaths) {
 }
 
 function validateOutputPath(outputPath) {
-  if (basename(outputPath) === RESERVED_OUTPUT_NAME) {
-    throw new Error(
-      `${RESERVED_OUTPUT_NAME} 是保留输出文件名，仅供仓库根目录的最近输出符号链接使用，请改用其他 .xmind 文件名`
-    )
-  }
+  assertNewOutputPathMatchesContract('xmind', outputPath, {
+    allowExistingTarget: true,
+    reservedBasenames: [RESERVED_OUTPUT_NAME],
+    reservedMessage:
+      `${RESERVED_OUTPUT_NAME} 是保留输出文件名，仅供仓库根目录的最近输出符号链接使用，请改用其他 .xmind 文件名`,
+  })
 }
 
 function refreshLatestOutput(outputPath) {

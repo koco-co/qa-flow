@@ -15,22 +15,29 @@
 
 ```bash
 # 生成测试用例（完整流程）
-生成用例 Story-20260322 PRD-26
-为 <Story目录> 写测试用例
+为 Story-20260322 生成测试用例
+生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=...&pid=...&docId=...
 
-# 快速模式（跳过交互）
-为 <Story目录> 快速生成测试用例
-<Story目录> --quick
+# 快速模式（推荐使用 --quick）
+为 Story-20260322 --quick 生成测试用例
 
 # 续传 / 模块重跑
-继续 <Story> 的用例生成
-重新生成 <Story> 的「列表页」模块用例
+继续 Story-20260322 的用例生成
+重新生成 Story-20260322 的「列表页」模块用例
+
+# 强制全量重跑
+rm -f cases/requirements/<requirements-root>/Story-YYYYMMDD/.qa-state.json
+rm -f cases/requirements/<requirements-root>/Story-YYYYMMDD/PRD-XX-<功能名>-enhanced.md
+# 然后重发原生成命令
 
 # 单独使用各 Skill
 帮我增强这个 PRD：<PRD文件路径>
 帮我分析这个报错
+（建议附：报错日志 + curl；若知道分支也一并提供）
 转化所有历史用例
 ```
+
+> `--quick` 是推荐的 canonical 快速模式写法；自然语言“快速生成测试用例”也会被识别为同一模式。
 
 ---
 
@@ -73,6 +80,7 @@ qa-flow/
     ├── harness/                   # Harness Phase 1 控制平面
     │   ├── workflows/             # workflow manifests
     │   ├── delegates.json         # delegate 注册表
+    │   ├── hooks.json             # precheck / condition / recovery / convergence hooks
     │   └── contracts.json         # state / shortcut / quality contracts
     ├── rules/                     # 规则文档
     ├── skills/                    # 项目 Skills
@@ -89,7 +97,8 @@ qa-flow/
 - `Skill` 是入口层：只负责识别用户输入与路由。
 - `.claude/harness/workflows/*.json` 是控制平面：定义 workflow 的入口、步骤顺序、依赖、resume 点、输出产物和失败策略。
 - `.claude/harness/delegates.json` 是 delegate 注册表：将 step 绑定到具体 script / Skill / agent。
-- `.claude/harness/contracts.json` 是治理 contract：统一 `.qa-state.json`、根目录 `latest-*` 快捷链接、质量门禁和恢复策略。
+- `.claude/harness/hooks.json` 是 hook 注册表：统一 precheck、条件判断、恢复动作和并行收敛钩子。
+- `.claude/harness/contracts.json` 是治理 contract：统一 `.qa-state.json`、根目录 `latest-*` 快捷链接、命名 contract、质量门禁和恢复策略。
 - `.claude/config.json` 继续保留全局路径、模块映射、仓库映射与集成入口，不再承载完整流程编排。
 
 当前分层边界是：
@@ -130,7 +139,7 @@ Story 和 PRD 输入遵循以下目录 contract：
 
 | 粒度 | 适用场景 | XMind 文件名 | Archive 文件名 |
 | ---- | -------- | ------------ | -------------- |
-| PRD 级 | 单个 PRD 独立生成、局部重跑、按功能归档 | `YYYYMM-<功能名>.xmind` | `YYYYMM-<功能名>.md` |
+| PRD 级 | 单个 PRD 独立生成、局部重跑、按功能归档 | `YYYYMM-<功能名>.xmind` | `PRD-XX-<功能名>.md`（当原始 PRD 文件名可识别时优先保留 PRD 前缀） |
 | Story 级 | 同一 Story 聚合多个 PRD 的统一输出 | `YYYYMM-Story-YYYYMMDD.xmind` | `YYYYMM-Story-YYYYMMDD.md` |
 
 - `YYYYMM` 使用当前需求批次/版本所属月份；`YYYYMMDD` 使用 Story 标识中的日期。
@@ -157,7 +166,7 @@ Story 和 PRD 输入遵循以下目录 contract：
 ### 增量与断点续传
 
 - PRD 修改后重跑同一 Story，仅受影响模块重新生成。
-- 流程中断后重新发起同一指令，自动从 `.qa-state.json` 记录的步骤恢复。
+- 流程中断后，**重发原命令** 或明确说 **`继续 Story-YYYYMMDD 的用例生成`**，都会先检测 `.qa-state.json` 再决定恢复方式。
 - 如需强制全量重跑，删除对应 PRD 的 `-enhanced.md` 与 Story 目录下的 `.qa-state.json`。
 
 ### 质量阈值

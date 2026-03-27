@@ -10,6 +10,11 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { resolve, dirname, basename, extname } from "path";
 import { getDtstackModules } from "./load-config.mjs";
+import {
+  deriveArchiveBaseName,
+  deriveArchiveBaseNameFromXmind,
+  sanitizeFileName,
+} from "./output-naming-contracts.mjs";
 
 // ─── JSON → MD ──────────────────────────────────────────────
 
@@ -323,29 +328,6 @@ function determineOutputDir(projectName, versionOrTitle, requirementName) {
   return resolve(base, `archive/${version}`);
 }
 
-function sanitizeFileName(name) {
-  return (name || "unnamed")
-    .replace(/[\/\\:*?"<>|]/g, "-")
-    .replace(/\s+/g, "-");
-}
-
-function deriveArchiveBaseName(inputPath, requirementName) {
-  const normalizedRequirementName = sanitizeFileName(requirementName || "");
-  if (/^PRD-\d+[-_]/i.test(normalizedRequirementName)) {
-    return normalizedRequirementName;
-  }
-
-  const inputBaseName = basename(inputPath, extname(inputPath));
-  const prefixedInputMatch = inputBaseName.match(
-    /^(PRD-\d+[-_].+?)(?:-(?:enhanced|final|reviewed|cases|output))?$/i,
-  );
-  if (prefixedInputMatch) {
-    return sanitizeFileName(prefixedInputMatch[1]);
-  }
-
-  return normalizedRequirementName || sanitizeFileName(inputBaseName);
-}
-
 // ─── CLI 入口 ───────────────────────────────────────────────
 
 const args = process.argv.slice(2);
@@ -371,7 +353,8 @@ if (fromXmind) {
         const dir =
           outputDir || determineOutputDir(result.projectName, result.title);
         mkdirSync(dir, { recursive: true });
-        const fileName = sanitizeFileName(result.title) + ".md";
+        const fileName =
+          deriveArchiveBaseNameFromXmind(inputPath, result.title, results.length) + ".md";
         const outputPath = resolve(dir, fileName);
         writeFileSync(outputPath, result.content, "utf-8");
         console.log(
@@ -396,8 +379,7 @@ if (fromXmind) {
       data.meta?.requirement_name,
     );
   mkdirSync(dir, { recursive: true });
-  const fileName =
-    deriveArchiveBaseName(inputPath, data.meta?.requirement_name || "unnamed") + ".md";
+  const fileName = deriveArchiveBaseName(inputPath, data.meta ?? {}) + ".md";
   const outputPath = resolve(dir, fileName);
   writeFileSync(outputPath, md, "utf-8");
 

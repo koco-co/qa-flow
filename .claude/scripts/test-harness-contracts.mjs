@@ -13,7 +13,9 @@ import {
   getHarnessPaths,
   loadHarnessContracts,
   loadHarnessDelegates,
+  loadHarnessHooks,
   loadHarnessWorkflow,
+  resolveHarnessHook,
 } from "./load-config.mjs";
 import { validateHarnessManifests } from "./validate-harness-manifests.mjs";
 
@@ -41,6 +43,7 @@ assert(
   config.harness?.delegates === ".claude/harness/delegates.json",
   "config.harness.delegates 配置正确",
 );
+assert(config.harness?.hooks === ".claude/harness/hooks.json", "config.harness.hooks 配置正确");
 assert(
   config.harness?.contracts === ".claude/harness/contracts.json",
   "config.harness.contracts 配置正确",
@@ -61,6 +64,7 @@ assert(harnessPaths.root === resolve(root, ".claude/harness"), "getHarnessPaths.
 assert(existsSync(harnessPaths.root), ".claude/harness 目录存在");
 assert(existsSync(harnessPaths.workflowDir), ".claude/harness/workflows 目录存在");
 assert(existsSync(harnessPaths.delegates), "delegates.json 存在");
+assert(existsSync(harnessPaths.hooks), "hooks.json 存在");
 assert(existsSync(harnessPaths.contracts), "contracts.json 存在");
 assert(
   existsSync(harnessPaths.workflows.testCaseGeneration),
@@ -98,12 +102,90 @@ assert(
   contracts.qualityGates?.reviewer?.blockAboveIssueRate === 0.4,
   "reviewer block 阈值为 0.4",
 );
+assert(
+  contracts.naming?.xmind?.storyLevelPattern === "^\\d{6}-Story-\\d{8}\\.xmind$",
+  "xmind story 命名 pattern 已声明",
+);
+assert(
+  contracts.naming?.archive?.preservePrdPrefixWhenAvailable === true,
+  "archive 命名要求在可识别时保留 PRD 前缀",
+);
+
+console.log("\n=== Test: harness output naming contracts ===");
+assert(
+  Array.isArray(contracts.outputNaming?.xmind?.reservedBasenames) &&
+    contracts.outputNaming.xmind.reservedBasenames.includes(config.shortcuts?.latestXmind),
+  "xmind output naming contract 保留 latest-output.xmind",
+);
+assert(
+  contracts.outputNaming?.xmind?.acceptedPatterns?.prdLevel?.template === "YYYYMM-<功能名>.xmind",
+  "xmind PRD 级命名模板正确",
+);
+assert(
+  typeof contracts.outputNaming?.xmind?.acceptedPatterns?.prdLevel?.regex === "string",
+  "xmind PRD 级命名正则已声明",
+);
+assert(
+  contracts.outputNaming?.xmind?.acceptedPatterns?.storyLevel?.template === "YYYYMM-Story-YYYYMMDD.xmind",
+  "xmind Story 级命名模板正确",
+);
+assert(
+  contracts.outputNaming?.archive?.acceptedPatterns?.prdLevelFromPrd?.template === "PRD-XX-<功能名>.md",
+  "archive PRD 源命名模板正确",
+);
+assert(
+  contracts.outputNaming?.archive?.acceptedPatterns?.prdLevelFromXmind?.template === "YYYYMM-<功能名>.md",
+  "archive XMind PRD 级命名模板正确",
+);
+assert(
+  contracts.outputNaming?.archive?.acceptedPatterns?.storyLevel?.template === "YYYYMM-Story-YYYYMMDD.md",
+  "archive Story 级命名模板正确",
+);
+
+console.log("\n=== Test: harness hooks ===");
+const hooks = loadHarnessHooks();
+assert(
+  hooks.prechecks?.["lanhu-runtime-ready"]?.entry === ".claude/scripts/lanhu-mcp-runtime.mjs",
+  "lanhu-runtime-ready precheck 已注册",
+);
+assert(
+  hooks.conditions?.["quick-mode"]?.source === "user-input",
+  "quick-mode 条件已注册",
+);
+assert(
+  hooks.recovery?.["refresh-cookie-or-block"]?.entry === ".claude/scripts/refresh-lanhu-cookie.py",
+  "refresh-cookie-or-block recovery 已注册",
+);
+assert(
+  hooks.convergence?.["wait-for-parallel-writers"]?.entry === ".claude/skills/test-case-generator/SKILL.md",
+  "wait-for-parallel-writers convergence hook 已注册",
+);
+assert(
+  resolveHarnessHook("precheck", "lanhu-runtime-ready")?.entry === ".claude/scripts/lanhu-mcp-runtime.mjs",
+  "resolveHarnessHook 可解析 precheck",
+);
+assert(
+  resolveHarnessHook("condition", "quick-mode")?.source === "user-input",
+  "resolveHarnessHook 可解析 condition",
+);
+assert(
+  resolveHarnessHook("recovery", "refresh-cookie-or-block")?.entry === ".claude/scripts/refresh-lanhu-cookie.py",
+  "resolveHarnessHook 可解析 recovery",
+);
+assert(
+  resolveHarnessHook("convergence", "wait-for-parallel-writers")?.entry === ".claude/skills/test-case-generator/SKILL.md",
+  "resolveHarnessHook 可解析 convergence",
+);
 
 console.log("\n=== Test: harness delegates ===");
 const delegates = loadHarnessDelegates();
 assert(
   delegates.lanhuMcpRuntime?.entry === ".claude/scripts/lanhu-mcp-runtime.mjs",
   "lanhuMcpRuntime delegate 入口正确",
+);
+assert(
+  delegates.testCaseOrchestrator?.entry === ".claude/skills/test-case-generator/SKILL.md",
+  "testCaseOrchestrator delegate 入口正确",
 );
 assert(
   delegates.prdEnhancer?.entry === ".claude/skills/prd-enhancer/SKILL.md",
@@ -136,12 +218,22 @@ assert(
   "test-case-generation 支持 lanhu-url / story-path 入口",
 );
 assert(
+  testCaseWorkflow.steps.some((step) => step.id === "parse-input" && step.delegate === "testCaseOrchestrator"),
+  "parse-input 使用 testCaseOrchestrator delegate",
+);
+assert(
   testCaseWorkflow.steps.some((step) => step.id === "prd-enhancer"),
   "test-case-generation 包含 prd-enhancer step",
 );
 assert(
   testCaseWorkflow.steps.some((step) => step.id === "writer" && step.resumePoint === true),
   "writer step 声明为 resumePoint",
+);
+assert(
+  testCaseWorkflow.steps.some(
+    (step) => step.id === "writer" && step.convergenceHook === "wait-for-parallel-writers",
+  ),
+  "writer step 声明 parallel convergence hook",
 );
 assert(
   testCaseWorkflow.steps.some((step) => step.id === "reviewer" && step.failureMode === "block"),
@@ -168,6 +260,12 @@ assert(
 assert(
   codeAnalysisWorkflow.steps.some((step) => step.id === "branch-sync"),
   "code-analysis 包含 branch-sync step",
+);
+assert(
+  codeAnalysisWorkflow.steps
+    .find((step) => step.id === "branch-sync")
+    ?.precheck?.every((hookName) => resolveHarnessHook("precheck", hookName)),
+  "code-analysis branch-sync precheck hooks 均已注册",
 );
 assert(
   codeAnalysisWorkflow.steps.some((step) => step.id === "html-report" && step.failureMode === "block"),

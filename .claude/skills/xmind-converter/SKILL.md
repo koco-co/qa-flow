@@ -79,6 +79,8 @@ YYYYMM-<功能名>.xmind
 ```
 这样一个 Story 的所有 PRD 用例都在同一个文件里，方便整体评审。
 
+> 对应的 Story 聚合 Archive Markdown 仅在明确需要汇总时生成；默认 PRD 级归档仍优先保留 `PRD-XX-<功能名>.md`。
+
 ---
 
 ## 五、转换命令
