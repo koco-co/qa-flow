@@ -93,6 +93,7 @@ export function getHarnessPaths() {
     root: resolveWorkspacePath(harness.root),
     workflowDir: resolveWorkspacePath(harness.workflowDir),
     delegates: resolveWorkspacePath(harness.delegates),
+    hooks: resolveWorkspacePath(harness.hooks),
     contracts: resolveWorkspacePath(harness.contracts),
     workflows,
   };
@@ -118,10 +119,37 @@ export function loadHarnessContracts() {
   return loadJsonFile(harnessPaths.contracts);
 }
 
+export function loadHarnessHooks() {
+  const harnessPaths = getHarnessPaths();
+  if (!harnessPaths) {
+    return null;
+  }
+  return loadJsonFile(harnessPaths.hooks);
+}
+
 export function loadHarnessWorkflow(name) {
   const harnessPaths = getHarnessPaths();
   const workflowPath = harnessPaths?.workflows?.[name];
   return workflowPath ? loadJsonFile(workflowPath) : null;
+}
+
+export function resolveHarnessHook(type, name) {
+  const hooks = loadHarnessHooks();
+  if (!hooks) {
+    return null;
+  }
+
+  const typeMap = {
+    precheck: "prechecks",
+    prechecks: "prechecks",
+    condition: "conditions",
+    conditions: "conditions",
+    recovery: "recovery",
+    convergence: "convergence",
+  };
+
+  const group = typeMap[type] ?? type;
+  return hooks[group]?.[name] ?? null;
 }
 
 export function getShortcutPath(name) {

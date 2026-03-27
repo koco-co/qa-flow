@@ -1,10 +1,15 @@
 {
   "version": 1,
   "delegates": {
-    "workflowStart": {
+    "startMenu": {
       "kind": "skill",
       "entry": ".claude/skills/start/SKILL.md",
       "purpose": "统一入口路由与用户引导"
+    },
+    "testCaseOrchestrator": {
+      "kind": "skill",
+      "entry": ".claude/skills/test-case-generator/SKILL.md",
+      "purpose": "执行测试用例主编排流程中的解析、交互、收敛与通知"
     },
     "lanhuMcpRuntime": {
       "kind": "script",

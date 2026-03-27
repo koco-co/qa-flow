@@ -114,6 +114,7 @@
     "root": ".claude/harness/",
     "workflowDir": ".claude/harness/workflows/",
     "delegates": ".claude/harness/delegates.json",
+    "hooks": ".claude/harness/hooks.json",
     "contracts": ".claude/harness/contracts.json",
     "workflows": {
       "testCaseGeneration": ".claude/harness/workflows/test-case-generation.json",

@@ -70,12 +70,22 @@ function runNodeScript(scriptPath, args = []) {
   };
 }
 
-function createJsonFixture({ projectName, requirementName, version }) {
+function createJsonFixture({
+  projectName,
+  requirementName,
+  version,
+  requirementId,
+  prdPath,
+  story,
+}) {
   return {
     meta: {
       project_name: projectName,
       requirement_name: requirementName,
       version,
+      ...(requirementId ? { requirement_id: requirementId } : {}),
+      ...(prdPath ? { prd_path: prdPath } : {}),
+      ...(story ? { story } : {}),
       generated_at: new Date().toISOString(),
       agent_id: "test-archive-history-scripts",
     },
@@ -285,6 +295,39 @@ async function main() {
     assert(prefixedMd.includes(`# 【vtest-prefix】${prefixedRequirementName}`), "PRD 前缀归档 Markdown 标题保持 requirement_name");
   }
 
+  console.log("\n=== Test: json-to-archive-md.mjs 可从 JSON meta 恢复 PRD 级命名 ===");
+  const metaRequirementName = `质量问题台账-${runId}`;
+  const metaPrdBaseName = `PRD-52-${metaRequirementName}.md`;
+  const metaInputPath = resolve(tempRoot, `final-reviewed-${runId}.json`);
+  const metaOutputPath = resolve(repoRoot, "cases/archive/data-assets", metaPrdBaseName);
+  writeFileSync(
+    metaInputPath,
+    JSON.stringify(
+      createJsonFixture({
+        projectName: "数据资产",
+        requirementName: metaRequirementName,
+        version: "vtest-meta",
+        requirementId: "PRD-52",
+        prdPath: `cases/requirements/data-assets/Story-20260322/${metaPrdBaseName}`,
+        story: "Story-20260322",
+      }),
+      null,
+      2,
+    ),
+    "utf8",
+  );
+  const metaResult = runNodeScript(archiveScriptPath, [metaInputPath]);
+  assert(metaResult.code === 0, "meta 驱动命名输入执行成功", [
+    metaResult.stderr.trim(),
+    metaResult.stdout.trim(),
+  ].filter(Boolean));
+  assert(existsSync(metaOutputPath), "当 JSON meta 能识别 PRD 文件名时，输出遵循 PRD-XX-<功能名>.md", [
+    metaOutputPath,
+  ]);
+  if (existsSync(metaOutputPath)) {
+    generatedFilePaths.add(metaOutputPath);
+  }
+
   console.log("\n=== Test: json-to-archive-md.mjs --from-xmind ===");
   const xmindTitle = `归档-XMind-${runId}`;
   const xmindPath = resolve(tempRoot, `${xmindTitle}.xmind`);
@@ -306,6 +349,57 @@ async function main() {
     assert(xmindMd.includes(`# ${xmindTitle}`), "--from-xmind 输出标题正确");
     assert(xmindMd.includes("#### 搜索功能"), "--from-xmind 保留子组层级");
     assert(xmindMd.includes("##### 验证 XMind 归档转换 「P1」"), "--from-xmind 保留优先级与用例标题");
+  }
+
+  console.log("\n=== Test: json-to-archive-md.mjs --from-xmind 保留 canonical XMind basename ===");
+  const canonicalXmindBaseName = `202603-质量问题台账-${runId}.xmind`;
+  const canonicalXmindTitle = `【vtest-canonical】质量问题台账-${runId}`;
+  const canonicalXmindPath = resolve(tempRoot, canonicalXmindBaseName);
+  const canonicalOutputDir = resolve(tempRoot, "from-xmind-canonical-output");
+  const canonicalOutputPath = resolve(
+    canonicalOutputDir,
+    canonicalXmindBaseName.replace(/\.xmind$/, ".md"),
+  );
+  writeFileSync(canonicalXmindPath, await createXmindFixtureBuffer(canonicalXmindTitle));
+  generatedDirPaths.add(canonicalOutputDir);
+  const canonicalXmindResult = runNodeScript(archiveScriptPath, [
+    "--from-xmind",
+    canonicalXmindPath,
+    canonicalOutputDir,
+  ]);
+  assert(canonicalXmindResult.code === 0, "canonical XMind 输入执行成功", [
+    canonicalXmindResult.stderr.trim(),
+    canonicalXmindResult.stdout.trim(),
+  ].filter(Boolean));
+  assert(existsSync(canonicalOutputPath), "canonical XMind 输入输出沿用同 basename 的 .md", [
+    canonicalOutputPath,
+  ]);
+  if (existsSync(canonicalOutputPath)) {
+    generatedFilePaths.add(canonicalOutputPath);
+  }
+
+  console.log("\n=== Test: json-to-archive-md.mjs --from-xmind 保持 legacy 标题输出兼容 ===");
+  const legacyXmindBaseName = `legacy-xmind-${runId}.xmind`;
+  const legacyXmindTitle = `旧版归档标题-${runId}`;
+  const legacyXmindPath = resolve(tempRoot, legacyXmindBaseName);
+  const legacyOutputDir = resolve(tempRoot, "from-xmind-legacy-output");
+  const legacyOutputPath = resolve(legacyOutputDir, `${legacyXmindTitle}.md`);
+  writeFileSync(legacyXmindPath, await createXmindFixtureBuffer(legacyXmindTitle));
+  generatedDirPaths.add(legacyOutputDir);
+  const legacyXmindResult = runNodeScript(archiveScriptPath, [
+    "--from-xmind",
+    legacyXmindPath,
+    legacyOutputDir,
+  ]);
+  assert(legacyXmindResult.code === 0, "legacy XMind 输入执行成功", [
+    legacyXmindResult.stderr.trim(),
+    legacyXmindResult.stdout.trim(),
+  ].filter(Boolean));
+  assert(existsSync(legacyOutputPath), "legacy XMind 输入仍按标题导出，兼容历史转换", [
+    legacyOutputPath,
+  ]);
+  if (existsSync(legacyOutputPath)) {
+    generatedFilePaths.add(legacyOutputPath);
   }
 
   console.log("\n=== Test: convert-history-cases.mjs --detect 输出可解析 JSON ===");

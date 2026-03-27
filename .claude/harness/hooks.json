@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "prechecks": {
+    "lanhu-runtime-ready": {
+      "kind": "script",
+      "entry": ".claude/scripts/lanhu-mcp-runtime.mjs",
+      "action": "status",
+      "purpose": "确认 lanhu-mcp server 可用，再允许进入蓝湖导入链路"
+    },
+    "branch-confirmed": {
+      "kind": "manual",
+      "entry": ".claude/skills/code-analysis-report/SKILL.md",
+      "purpose": "要求在分析前确认当前分析分支"
+    },
+    "repo-updated": {
+      "kind": "manual",
+      "entry": ".claude/skills/code-analysis-report/SKILL.md",
+      "purpose": "要求在分析前拉取对应仓库最新代码"
+    }
+  },
+  "conditions": {
+    "quick-mode": {
+      "source": "user-input",
+      "purpose": "跳过 Brainstorming / Checklist / 用户确认"
+    },
+    "full-mode": {
+      "source": "user-input",
+      "purpose": "执行完整交互流程"
+    }
+  },
+  "recovery": {
+    "refresh-cookie-or-block": {
+      "kind": "script",
+      "entry": ".claude/scripts/refresh-lanhu-cookie.py",
+      "purpose": "蓝湖 Cookie 过期时刷新 Cookie，否则阻断流程"
+    },
+    "resume-from-writer": {
+      "kind": "skill",
+      "entry": ".claude/skills/test-case-generator/SKILL.md",
+      "purpose": "Writer 失败后从 Writer 阶段继续恢复"
+    },
+    "pause-for-user": {
+      "kind": "skill",
+      "entry": ".claude/skills/test-case-generator/SKILL.md",
+      "purpose": "Reviewer 升级阻断后暂停并等待用户决策"
+    }
+  },
+  "convergence": {
+    "wait-for-parallel-writers": {
+      "kind": "skill",
+      "entry": ".claude/skills/test-case-generator/SKILL.md",
+      "purpose": "等待并行 Writer 全部进入 completed/skipped/failed 终态后再推进后续步骤"
+    }
+  }
+}

@@ -99,8 +99,10 @@ const invalidJsonEmptyModules = { meta: { project_name: "test", requirement_name
 
 const repoRoot = resolve(__dirname, "..", "..");
 const tmpInput = resolve(__dirname, "_test_input.json");
-const tmpOutput = resolve(__dirname, "_test_output.xmind");
-const tmpOutputAlt = resolve(__dirname, "_test_output_alt.xmind");
+const tmpOutput = resolve(__dirname, "202603-测试需求.xmind");
+const tmpOutputAlt = resolve(__dirname, "202603-Story-20260322.xmind");
+const invalidNamedOutput = resolve(__dirname, "test-output.xmind");
+const legacyAppendOutput = resolve(__dirname, "legacy-output.xmind");
 const explicitLatestOutput = resolve(__dirname, "latest-output.xmind");
 const latestOutputLink = resolve(repoRoot, "latest-output.xmind");
 const latestOutputBackup = resolve(__dirname, `_latest-output-backup-${process.pid}.xmind`);
@@ -132,6 +134,8 @@ function cleanup() {
   if (existsSync(tmpInput)) unlinkSync(tmpInput);
   if (existsSync(tmpOutput)) unlinkSync(tmpOutput);
   if (existsSync(tmpOutputAlt)) unlinkSync(tmpOutputAlt);
+  if (existsSync(invalidNamedOutput)) unlinkSync(invalidNamedOutput);
+  if (existsSync(legacyAppendOutput)) unlinkSync(legacyAppendOutput);
   if (existsSync(explicitLatestOutput)) unlinkSync(explicitLatestOutput);
 }
 
@@ -204,6 +208,17 @@ runTest("有效 JSON 生成 XMind", () => {
   assert(r1.stdout.includes("XMind 文件已生成"), "输出包含成功消息");
 });
 
+runTest("新建 XMind 输出文件名必须符合命名 contract", () => {
+  writeFileSync(tmpInput, JSON.stringify(validJson), "utf8");
+  const result = runScript(`${tmpInput} ${invalidNamedOutput}`);
+  assert(result.code !== 0, "退出码非 0");
+  assert(
+    result.stderr.includes("命名 contract") && result.stderr.includes("YYYYMM-<功能名>.xmind"),
+    "错误消息说明 XMind 命名 contract",
+  );
+  assert(!pathExists(invalidNamedOutput), "未生成不合规命名的 XMind 文件");
+});
+
 runTest("latest-output.xmind 随成功输出刷新", () => {
   writeFileSync(tmpInput, JSON.stringify(validJson), "utf8");
 
@@ -222,6 +237,18 @@ runTest("latest-output.xmind 随成功输出刷新", () => {
   const latestReplace = runScript(`--replace ${tmpInput} ${tmpOutputAlt}`);
   assert(latestReplace.code === 0, "replace 模式退出码为 0");
   assertLatestOutputPointsTo(tmpOutputAlt, "replace 模式");
+});
+
+runTest("append 模式允许更新历史遗留文件名", () => {
+  writeFileSync(tmpInput, JSON.stringify(validJson), "utf8");
+  const createResult = runScript(`${tmpInput} ${tmpOutput}`);
+  assert(createResult.code === 0, "先生成规范命名 XMind");
+  renameSync(tmpOutput, legacyAppendOutput);
+
+  const appendResult = runScript(`--append ${tmpInput} ${legacyAppendOutput}`);
+  assert(appendResult.code === 0, "append 模式可更新历史遗留文件名");
+  assert(pathExists(legacyAppendOutput), "历史遗留文件名的 XMind 仍存在");
+  assertLatestOutputPointsTo(legacyAppendOutput, "append 历史遗留文件名");
 });
 
 runTest("缺少 meta 的 JSON 应失败", () => {

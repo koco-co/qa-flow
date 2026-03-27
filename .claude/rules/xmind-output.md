@@ -6,7 +6,7 @@
 
 - **PRD 级输出**：单个 PRD 独立生成，文件名为 `YYYYMM-<功能名>.xmind`
 - **Story 级输出**：同一 Story 聚合输出，文件名为 `YYYYMM-Story-YYYYMMDD.xmind`
-- 对应 Archive Markdown 默认与 XMind 共用 basename，仅扩展名改为 `.md`
+- 对应 Archive Markdown 在可识别原始 PRD 文件名时，优先使用 `PRD-XX-<功能名>.md`；仅 Story 聚合输出默认与 Story 级 XMind 共用 basename
 
 > 仓库中已存在旧文件名（如 `信永中和测试用例.xmind`、`20260322-信永中和测试用例.xmind`），可继续保留读取；新输出统一按上述 contract 生成。
 

@@ -11,11 +11,58 @@
     "latestBugReport": "latest-bug-report.html",
     "latestConflictReport": "latest-conflict-report.html"
   },
+  "outputNaming": {
+    "xmind": {
+      "reservedBasenames": [
+        "latest-output.xmind"
+      ],
+      "legacyPolicy": "allow-existing-target-only",
+      "acceptedPatterns": {
+        "prdLevel": {
+          "template": "YYYYMM-<功能名>.xmind",
+          "regex": "^\\d{6}-.+\\.xmind$"
+        },
+        "storyLevel": {
+          "template": "YYYYMM-Story-YYYYMMDD.xmind",
+          "regex": "^\\d{6}-Story-\\d{8}\\.xmind$"
+        }
+      }
+    },
+    "archive": {
+      "legacyPolicy": "prefer-contract-and-preserve-historical-conversions",
+      "acceptedPatterns": {
+        "prdLevelFromPrd": {
+          "template": "PRD-XX-<功能名>.md",
+          "regex": "^PRD-\\d+(?:-|_).+\\.md$"
+        },
+        "prdLevelFromXmind": {
+          "template": "YYYYMM-<功能名>.md",
+          "regex": "^\\d{6}-.+\\.md$"
+        },
+        "storyLevel": {
+          "template": "YYYYMM-Story-YYYYMMDD.md",
+          "regex": "^\\d{6}-Story-\\d{8}\\.md$"
+        }
+      }
+    }
+  },
   "qualityGates": {
     "reviewer": {
       "autoFixBelowIssueRate": 0.15,
       "warnFromIssueRate": 0.15,
       "blockAboveIssueRate": 0.4
+    }
+  },
+  "naming": {
+    "xmind": {
+      "prdLevelPattern": "^\\d{6}-.+\\.xmind$",
+      "storyLevelPattern": "^\\d{6}-Story-\\d{8}\\.xmind$",
+      "validateCreateModeOnly": true
+    },
+    "archive": {
+      "prdPrefixPattern": "^PRD-\\d+-.+\\.md$",
+      "storyLevelPattern": "^\\d{6}-Story-\\d{8}\\.md$",
+      "preservePrdPrefixWhenAvailable": true
     }
   },
   "recovery": {
