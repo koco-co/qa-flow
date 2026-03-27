@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "id": "code-analysis",
+  "entryInputs": ["curl-log", "error-log", "conflict-log"],
+  "stateContract": "default",
+  "outputs": [
+    {
+      "id": "bug-report",
+      "shortcut": "latest-bug-report.html",
+      "path": "reports/bugs/",
+      "modes": ["bug"]
+    },
+    {
+      "id": "conflict-report",
+      "shortcut": "latest-conflict-report.html",
+      "path": "reports/conflicts/",
+      "modes": ["conflict"]
+    }
+  ],
+  "steps": [
+    {
+      "id": "mode-detect",
+      "delegate": "codeAnalysisSkill",
+      "dependsOn": [],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "branch-sync",
+      "delegate": "codeAnalyzer",
+      "dependsOn": ["mode-detect"],
+      "precheck": ["branch-confirmed", "repo-updated"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "analyze",
+      "delegate": "codeAnalyzer",
+      "dependsOn": ["branch-sync"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "html-report",
+      "delegate": "codeAnalyzer",
+      "dependsOn": ["analyze"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "shortcut-refresh",
+      "delegate": "codeAnalysisSkill",
+      "dependsOn": ["html-report"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "notify",
+      "delegate": "codeAnalysisSkill",
+      "dependsOn": ["shortcut-refresh"],
+      "failureMode": "warn"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "id": "test-case-generation",
+  "entryInputs": ["story-path", "prd-path", "lanhu-url"],
+  "stateContract": "default",
+  "outputs": [
+    {
+      "id": "enhanced-prd",
+      "shortcut": "latest-prd-enhanced.md",
+      "required": false
+    },
+    {
+      "id": "xmind",
+      "shortcut": "latest-output.xmind",
+      "required": true
+    },
+    {
+      "id": "archive",
+      "path": "cases/archive/",
+      "required": true
+    }
+  ],
+  "steps": [
+    {
+      "id": "parse-input",
+      "delegate": "workflowStart",
+      "dependsOn": [],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "lanhu-ingest",
+      "delegate": "lanhuMcpRuntime",
+      "dependsOn": ["parse-input"],
+      "optionalFor": ["story-path", "prd-path"],
+      "precheck": ["lanhu-runtime-ready"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "prd-enhancer",
+      "delegate": "prdEnhancer",
+      "dependsOn": ["parse-input", "lanhu-ingest"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "brainstorm",
+      "delegate": "workflowStart",
+      "dependsOn": ["prd-enhancer"],
+      "skippableWhen": ["quick-mode"],
+      "failureMode": "block"
+    },
+    {
+      "id": "checklist",
+      "delegate": "workflowStart",
+      "dependsOn": ["brainstorm"],
+      "skippableWhen": ["quick-mode"],
+      "failureMode": "block"
+    },
+    {
+      "id": "writer",
+      "delegate": "caseWriter",
+      "dependsOn": ["prd-enhancer", "checklist"],
+      "parallel": true,
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "reviewer",
+      "delegate": "caseReviewer",
+      "dependsOn": ["writer"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "xmind",
+      "delegate": "xmindConverter",
+      "dependsOn": ["reviewer"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "archive",
+      "delegate": "archiveConverter",
+      "dependsOn": ["xmind"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "notify",
+      "delegate": "workflowStart",
+      "dependsOn": ["archive"],
+      "failureMode": "warn"
+    }
+  ]
+}

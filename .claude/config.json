@@ -110,6 +110,16 @@
       "cookieRefreshScript": ".claude/scripts/refresh-lanhu-cookie.py"
     }
   },
+  "harness": {
+    "root": ".claude/harness/",
+    "workflowDir": ".claude/harness/workflows/",
+    "delegates": ".claude/harness/delegates.json",
+    "contracts": ".claude/harness/contracts.json",
+    "workflows": {
+      "testCaseGeneration": ".claude/harness/workflows/test-case-generation.json",
+      "codeAnalysis": ".claude/harness/workflows/code-analysis.json"
+    }
+  },
   "shortcuts": {
     "latestXmind": "latest-output.xmind",
     "latestEnhancedPrd": "latest-prd-enhanced.md",

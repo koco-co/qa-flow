@@ -70,11 +70,31 @@ qa-flow/
 │   └── images/
 └── .claude/
     ├── config.json                # 模块 / 仓库 / 报告路径 source of truth
+    ├── harness/                   # Harness Phase 1 控制平面
+    │   ├── workflows/             # workflow manifests
+    │   ├── delegates.json         # delegate 注册表
+    │   └── contracts.json         # state / shortcut / quality contracts
     ├── rules/                     # 规则文档
     ├── skills/                    # 项目 Skills
     ├── agents/                    # 子代理定义
     └── scripts/                   # Node.js 工具脚本
 ```
+
+---
+
+## Harness Phase 1 控制平面
+
+当前 `qa-flow` 的 Harness 化采用“**入口层保留、控制平面抽离、执行层复用**”策略：
+
+- `Skill` 是入口层：只负责识别用户输入与路由。
+- `.claude/harness/workflows/*.json` 是控制平面：定义 workflow 的入口、步骤顺序、依赖、resume 点、输出产物和失败策略。
+- `.claude/harness/delegates.json` 是 delegate 注册表：将 step 绑定到具体 script / Skill / agent。
+- `.claude/harness/contracts.json` 是治理 contract：统一 `.qa-state.json`、根目录 `latest-*` 快捷链接、质量门禁和恢复策略。
+- `.claude/config.json` 继续保留全局路径、模块映射、仓库映射与集成入口，不再承载完整流程编排。
+
+当前分层边界是：
+
+`用户输入 → Skill 路由 → Harness workflow manifest → delegate 执行 → latest-* 快捷链接验收`
 
 ---
 

@@ -74,6 +74,56 @@ export function getIntegrationConfig(name) {
   return loadConfig().integrations?.[name] ?? null;
 }
 
+export function getHarnessConfig() {
+  return loadConfig().harness ?? null;
+}
+
+export function getHarnessPaths() {
+  const harness = getHarnessConfig();
+  if (!harness) {
+    return null;
+  }
+
+  const workflows = {};
+  for (const [name, relativePath] of Object.entries(harness.workflows ?? {})) {
+    workflows[name] = resolveWorkspacePath(relativePath);
+  }
+
+  return {
+    root: resolveWorkspacePath(harness.root),
+    workflowDir: resolveWorkspacePath(harness.workflowDir),
+    delegates: resolveWorkspacePath(harness.delegates),
+    contracts: resolveWorkspacePath(harness.contracts),
+    workflows,
+  };
+}
+
+function loadJsonFile(filePath) {
+  return JSON.parse(readFileSync(filePath, "utf8"));
+}
+
+export function loadHarnessDelegates() {
+  const harnessPaths = getHarnessPaths();
+  if (!harnessPaths) {
+    return null;
+  }
+  return loadJsonFile(harnessPaths.delegates).delegates ?? null;
+}
+
+export function loadHarnessContracts() {
+  const harnessPaths = getHarnessPaths();
+  if (!harnessPaths) {
+    return null;
+  }
+  return loadJsonFile(harnessPaths.contracts);
+}
+
+export function loadHarnessWorkflow(name) {
+  const harnessPaths = getHarnessPaths();
+  const workflowPath = harnessPaths?.workflows?.[name];
+  return workflowPath ? loadJsonFile(workflowPath) : null;
+}
+
 export function getShortcutPath(name) {
   const shortcut = loadConfig().shortcuts?.[name];
   return shortcut ? resolveWorkspacePath(shortcut) : null;

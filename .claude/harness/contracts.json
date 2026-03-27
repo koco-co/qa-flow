@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "state": {
+    "file": ".qa-state.json",
+    "lastCompletedStepField": "last_completed_step",
+    "awaitingVerificationField": "awaiting_verification"
+  },
+  "shortcuts": {
+    "latestXmind": "latest-output.xmind",
+    "latestEnhancedPrd": "latest-prd-enhanced.md",
+    "latestBugReport": "latest-bug-report.html",
+    "latestConflictReport": "latest-conflict-report.html"
+  },
+  "qualityGates": {
+    "reviewer": {
+      "autoFixBelowIssueRate": 0.15,
+      "warnFromIssueRate": 0.15,
+      "blockAboveIssueRate": 0.4
+    }
+  },
+  "recovery": {
+    "lanhuCookieExpired": "refresh-cookie-or-block",
+    "writerFailure": "resume-from-writer",
+    "reviewerEscalation": "pause-for-user"
+  }
+}

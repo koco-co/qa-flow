@@ -9,6 +9,7 @@
 1. `CLAUDE.md` — 权威工作流手册（推荐先读）
 2. `.claude/rules/*.md` — 主题细则（用例、XMind、Archive、仓库安全等）
 3. `.claude/config.json` — 模块 / 仓库 / 报告路径 source of truth
+4. `.claude/harness/*.json` — Harness Phase 1 控制平面（workflow / delegate / contract）
 
 ## 常用指令
 
@@ -51,6 +52,14 @@
 | 蓝湖 URL / PRD / Story | 增强 PRD + XMind + Archive Markdown | `latest-prd-enhanced.md`、`latest-output.xmind` | 打开链接检查结构与内容 |
 | curl / 报错日志 | Bug HTML 报告 | `latest-bug-report.html` | 在浏览器中打开，或复制到禅道 |
 | Jenkins 冲突日志 | 冲突 HTML 报告 | `latest-conflict-report.html` | 检查冲突分类与建议 |
+
+## Harness Phase 1 控制平面
+
+- `Skill` 仍是**入口层**：负责理解用户输入并决定走哪条 workflow。
+- `.claude/harness/workflows/*.json` 是**控制平面**：定义步骤顺序、依赖、resume 点、输出产物。
+- `.claude/harness/delegates.json` 是**delegate 注册表**：把 workflow step 绑定到实际 script / Skill / agent。
+- `.claude/harness/contracts.json` 是**治理层 contract**：统一 `.qa-state.json`、`latest-*` 快捷链接、质量阈值和恢复策略。
+- `.claude/config.json` 继续只做**全局路径/映射 source of truth**，不再承载整条流程定义。
 
 ## Mermaid 流程图
 
@@ -186,6 +195,10 @@ qa-flow/
 ├── assets/
 └── .claude/
     ├── config.json
+    ├── harness/
+    │   ├── workflows/
+    │   ├── delegates.json
+    │   └── contracts.json
     └── rules/
 ```
 

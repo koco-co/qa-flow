@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "delegates": {
+    "workflowStart": {
+      "kind": "skill",
+      "entry": ".claude/skills/start/SKILL.md",
+      "purpose": "统一入口路由与用户引导"
+    },
+    "lanhuMcpRuntime": {
+      "kind": "script",
+      "entry": ".claude/scripts/lanhu-mcp-runtime.mjs",
+      "purpose": "管理 lanhu-mcp 的路径解析、状态探测与启动"
+    },
+    "prdEnhancer": {
+      "kind": "skill",
+      "entry": ".claude/skills/prd-enhancer/SKILL.md",
+      "purpose": "增强 PRD 并刷新 latest-prd-enhanced.md"
+    },
+    "caseWriter": {
+      "kind": "agent",
+      "entry": ".claude/agents/case-writer.md",
+      "purpose": "并行编写测试用例"
+    },
+    "caseReviewer": {
+      "kind": "agent",
+      "entry": ".claude/agents/case-reviewer.md",
+      "purpose": "Review 用例质量并补齐遗漏场景"
+    },
+    "xmindConverter": {
+      "kind": "skill",
+      "entry": ".claude/skills/xmind-converter/SKILL.md",
+      "purpose": "将用例结构转换为 XMind 文件"
+    },
+    "archiveConverter": {
+      "kind": "skill",
+      "entry": ".claude/skills/archive-converter/SKILL.md",
+      "purpose": "生成或同步 Archive Markdown"
+    },
+    "codeAnalysisSkill": {
+      "kind": "skill",
+      "entry": ".claude/skills/code-analysis-report/SKILL.md",
+      "purpose": "识别日志/冲突入口并约束报告输出"
+    },
+    "codeAnalyzer": {
+      "kind": "agent",
+      "entry": ".claude/agents/code-analyzer.md",
+      "purpose": "分析源码并生成 HTML 报告"
+    }
+  }
+}
