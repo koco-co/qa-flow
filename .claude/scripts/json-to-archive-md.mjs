@@ -283,14 +283,16 @@ function formatCaseFromXmind(tc) {
   lines.push("```");
   lines.push("");
 
+  lines.push("| 编号 | 步骤 | 预期 |");
+  lines.push("| --- | --- | --- |");
   if (tc.steps.length > 0) {
-    lines.push("| 编号 | 步骤 | 预期 |");
-    lines.push("| --- | --- | --- |");
     tc.steps.forEach((s, i) => {
       const step = escPipe(s.step || "(步骤缺失)");
       const expected = escPipe(s.expected || "(预期缺失)");
       lines.push(`| ${i + 1} | ${step} | ${expected} |`);
     });
+  } else {
+    lines.push("| 1 | 待补充 | 待补充 |");
   }
 
   lines.push("");
@@ -309,6 +311,28 @@ function determineOutputDir(projectName, versionOrTitle, requirementName) {
     dirname(new URL(import.meta.url).pathname),
     "../../cases",
   );
+  return determineOutputDirWithMeta(projectName, versionOrTitle, requirementName, {});
+}
+
+function isSemanticVersion(version) {
+  return /^v?\d+\.\d+\.\d+$/i.test((version || "").trim());
+}
+
+function determineDtstackModuleKey(projectName, requirementName, meta = {}) {
+  if (meta.module_key && DTSTACK_MODULE_MAP[meta.module_key]) {
+    return meta.module_key;
+  }
+
+  return DTSTACK_MODULES.find(
+    (m) => projectName?.includes(m) || requirementName?.includes(m),
+  ) || null;
+}
+
+function determineOutputDirWithMeta(projectName, versionOrTitle, requirementName, meta = {}) {
+  const base = resolve(
+    dirname(new URL(import.meta.url).pathname),
+    "../../cases",
+  );
   let version = (versionOrTitle || "").replace(/版本$/, "").trim();
   if (version && !version.startsWith("v")) version = "v" + version;
 
@@ -317,10 +341,11 @@ function determineOutputDir(projectName, versionOrTitle, requirementName) {
   }
 
   // DTStack 平台模块：按模块名路由到 archive/<module>/
-  const dtModule = DTSTACK_MODULES.find(
-    (m) => projectName?.includes(m) || requirementName?.includes(m),
-  );
+  const dtModule = determineDtstackModuleKey(projectName, requirementName, meta);
   if (dtModule) {
+    if (isSemanticVersion(version)) {
+      return resolve(base, `archive/${DTSTACK_MODULE_MAP[dtModule]}/${version}`);
+    }
     return resolve(base, `archive/${DTSTACK_MODULE_MAP[dtModule]}`);
   }
 
@@ -373,10 +398,11 @@ if (fromXmind) {
 
   const dir =
     outputDir ||
-    determineOutputDir(
+    determineOutputDirWithMeta(
       data.meta?.project_name,
       data.meta?.version,
       data.meta?.requirement_name,
+      data.meta ?? {},
     );
   mkdirSync(dir, { recursive: true });
   const fileName = deriveArchiveBaseName(inputPath, data.meta ?? {}) + ".md";
