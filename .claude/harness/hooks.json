@@ -26,6 +26,14 @@
     "full-mode": {
       "source": "user-input",
       "purpose": "执行完整交互流程"
+    },
+    "auto-confirm": {
+      "source": "user-input",
+      "purpose": "跳过 Step 9 的用户验证等待，适用于 CI/批量场景"
+    },
+    "module-specified": {
+      "source": "user-input",
+      "purpose": "模块已在命令中指定，跳过模块选择交互确认"
     }
   },
   "recovery": {

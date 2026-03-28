@@ -1,5 +1,5 @@
-import { existsSync } from "fs";
-import { basename, extname, resolve } from "path";
+import { existsSync, readdirSync, statSync } from "fs";
+import { basename, extname, join, resolve } from "path";
 import { loadConfig, loadHarnessContracts } from "./load-config.mjs";
 
 const REQUIRED_PATTERN_KEYS = {
@@ -78,6 +78,19 @@ export function sanitizeFileName(name) {
 
 export function stripKnownOutputSuffixes(baseName) {
   return (baseName || "").replace(/(?:-(?:enhanced|final|reviewed|cases|output))+$/i, "");
+}
+
+function getDtstackPreferredArchiveBaseName(meta = {}) {
+  if (meta.source_standard !== "dtstack") {
+    return null;
+  }
+
+  const preferredTitle = meta.archive_file_name || meta.requirement_title || meta.page_title || "";
+  if (!preferredTitle.trim()) {
+    return null;
+  }
+
+  return sanitizeFileName(preferredTitle.trim());
 }
 
 export function getReservedBasenames(kind, contracts = loadHarnessContracts()) {
@@ -228,6 +241,11 @@ export function assertNewOutputPathMatchesContract(
 
 export function deriveArchiveBaseName(inputPath, meta = {}) {
   const inputBaseName = basename(inputPath, extname(inputPath));
+  const dtstackPreferredArchiveBaseName = getDtstackPreferredArchiveBaseName(meta);
+  if (dtstackPreferredArchiveBaseName) {
+    return dtstackPreferredArchiveBaseName;
+  }
+
   const inputPrdBaseName = getPrdLikeBaseName(inputBaseName);
   if (inputPrdBaseName) {
     return inputPrdBaseName;
@@ -270,4 +288,65 @@ export function deriveArchiveBaseNameFromXmind(inputPath, resultTitle, totalResu
     return sanitizeFileName(inputBaseName);
   }
   return sanitizeFileName(resultTitle || inputBaseName);
+}
+
+/**
+ * 审计 Archive 目录，返回命名约定警告
+ * @param {string} dirPath - cases/archive/<module>/ 绝对路径
+ * @returns {{ warnings: string[], suggestions: string[] }}
+ */
+export function auditArchiveDirectory(dirPath) {
+  const warnings = [];
+  const suggestions = [];
+
+  let entries;
+  try {
+    entries = readdirSync(dirPath);
+  } catch {
+    return { warnings, suggestions };
+  }
+
+  const VERSION_DIR_RE = /^v\d+\.\d+/;
+  const BARE_VERSION_DIR_RE = /^\d+\.\d+/;
+  const CHINESE_RE = /[\u4e00-\u9fff]/;
+
+  for (const entry of entries) {
+    const entryPath = join(dirPath, entry);
+    let stat;
+    try {
+      stat = statSync(entryPath);
+    } catch {
+      continue;
+    }
+
+    if (stat.isDirectory()) {
+      if (CHINESE_RE.test(entry)) {
+        warnings.push(
+          `子目录 "${entry}" 使用了中文命名；建议改用英文路径别名（如版本号 vX.Y.Z 或模块 key）`,
+        );
+      }
+      if (BARE_VERSION_DIR_RE.test(entry) && !VERSION_DIR_RE.test(entry)) {
+        warnings.push(
+          `版本目录 "${entry}" 缺少 "v" 前缀；建议重命名为 "v${entry}"`,
+        );
+      }
+    }
+
+    if (stat.isFile() && entry.endsWith(".md")) {
+      const sizeKb = stat.size / 1024;
+      if (sizeKb > 200) {
+        const baseName = basename(entry, ".md");
+        const siblingVersionDir = entries.find(
+          (e) => e !== entry && VERSION_DIR_RE.test(e) && statSync(join(dirPath, e)).isDirectory(),
+        );
+        if (!siblingVersionDir) {
+          suggestions.push(
+            `文件 "${entry}" 超过 200 KB（${sizeKb.toFixed(0)} KB），且同级目录中无对应版本子目录；建议拆分为多个 PRD 级文件或使用 split-archive 命令`,
+          );
+        }
+      }
+    }
+  }
+
+  return { warnings, suggestions };
 }

@@ -40,7 +40,21 @@
     {
       "id": "prd-enhancer",
       "delegate": "prdEnhancer",
+      "dependsOn": ["prd-formalize"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "source-sync",
+      "delegate": "sourceRepoSync",
       "dependsOn": ["parse-input", "lanhu-ingest"],
+      "resumePoint": true,
+      "failureMode": "block"
+    },
+    {
+      "id": "prd-formalize",
+      "delegate": "prdFormalizer",
+      "dependsOn": ["source-sync"],
       "resumePoint": true,
       "failureMode": "block"
     },
@@ -96,6 +110,7 @@
       "id": "notify",
       "delegate": "testCaseOrchestrator",
       "dependsOn": ["archive"],
+      "skippableWhen": ["auto-confirm"],
       "failureMode": "warn"
     }
   ]
