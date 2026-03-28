@@ -70,7 +70,7 @@ assert(resolve(root, ".claude/scripts") === scriptDir, "工作空间根目录与
 
 console.log("\n=== Test: getRepoBranchMappingPath ===");
 const mappingPath = getRepoBranchMappingPath();
-assert(mappingPath === resolve(root, "repo-branch-mapping.yaml"), "repo-branch-mapping.yaml 路径固定在仓库根目录");
+assert(mappingPath === resolve(root, "config/repo-branch-mapping.yaml"), "repo-branch-mapping.yaml 路径固定在 config/ 目录");
 assert(existsSync(mappingPath), "repo-branch-mapping.yaml 文件存在");
 
 console.log(`\n══════════════════════════════════════`);

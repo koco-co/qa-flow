@@ -64,7 +64,7 @@ Root (项目名)
 
 ## DTStack 追加规则
 
-- **源码优先**：DTStack 用例在编写前必须先确认 `.repos/` 已切到 `repo-branch-mapping.yaml` 解析出的目标分支。
+- **源码优先**：DTStack 用例在编写前必须先确认 `.repos/` 已切到 `config/repo-branch-mapping.yaml` 解析出的目标分支。
 - **前置条件补全**：若需求涉及数据质量、规则集、对账、调度、告警等能力，前置条件应尽量包含：
   - 数据源类型（如 Doris / Hive）
   - 数据库 / schema / 表名

@@ -6,8 +6,8 @@
 ## 执行流程
 
 1. 从蓝湖原文 / PRD 原文中提取 `开发版本`
-2. 读取仓库根目录 `repo-branch-mapping.yaml`
-3. 调用 `sync-source-repos.mjs`，根据 `repo-branch-mapping.yaml` 解析 repo profile 与 backend/frontend 目标分支：
+2. 读取仓库根目录 `config/repo-branch-mapping.yaml`
+3. 调用 `sync-source-repos.mjs`，根据 `config/repo-branch-mapping.yaml` 解析 repo profile 与 backend/frontend 目标分支：
    ```bash
    cd .claude/scripts && node sync-source-repos.mjs \
      --version "<开发版本>" \
@@ -23,7 +23,7 @@
 
 ## 映射无法解析时
 
-如果 `repo-branch-mapping.yaml` 中无对应版本映射，询问用户：
+如果 `config/repo-branch-mapping.yaml` 中无对应版本映射，询问用户：
 
 ```
 未找到版本 <version> 的分支映射。

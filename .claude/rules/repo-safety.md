@@ -32,7 +32,7 @@
 当执行 DTStack 测试用例生成时，同样必须先完成源码分支同步：
 
 1. 从蓝湖原文 / PRD 原文中提取 `开发版本`
-2. 读取仓库根目录 `repo-branch-mapping.yaml`
+2. 读取 `config/repo-branch-mapping.yaml`
 3. 使用 `sync-source-repos.mjs` 解析 repo profile 与 backend/frontend 目标分支
 4. 执行 `git fetch && git checkout && git pull`
 5. 将分支上下文写入 `.qa-state.json.source_context` 后，再进入 formalizer / Writer / Reviewer

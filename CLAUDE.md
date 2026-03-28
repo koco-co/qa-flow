@@ -47,7 +47,8 @@ rm -f cases/requirements/<requirements-root>/Story-YYYYMMDD/PRD-XX-<功能名>-e
 
 ```text
 qa-flow/
-├── repo-branch-mapping.yaml        # QA 维护的 DTStack repo/branch 映射
+├── config/
+│   └── repo-branch-mapping.yaml   # QA 维护的 DTStack repo/branch 映射
 ├── CLAUDE.md                      # 权威工作流手册（本文件）
 ├── README.md                      # 入口导览
 ├── cases/
@@ -109,7 +110,7 @@ qa-flow/
 
 当前 DTStack 流程在蓝湖导入后新增两个强制执行层：
 
-- `source-sync`：读取 `repo-branch-mapping.yaml`，根据 `开发版本` 将 `.repos/` 中 backend/frontend 仓库切到目标分支。
+- `source-sync`：读取 `config/repo-branch-mapping.yaml`，根据 `开发版本` 将 `.repos/` 中 backend/frontend 仓库切到目标分支。
 - `prd-formalizer`：结合蓝湖原文与源码上下文生成正式需求文档，再交给 `prd-enhancer` 做增强与健康度预检。
 
 ---
@@ -120,7 +121,7 @@ qa-flow/
 
 - **PRD 只是线索，不是权威。** 如产品文档质量不足，必须以 `.repos/` 中目标分支源码为准理解真实逻辑、按钮名、菜单名、字段名与影响面。
 - 在 PRD 形式化、Writer、Reviewer 前，必须先完成 `source-sync`；不得直接拿默认分支或未确认分支写用例。
-- `repo-branch-mapping.yaml` 是 DTStack 的 branch/source contract source of truth。
+- `config/repo-branch-mapping.yaml` 是 DTStack 的 branch/source contract source of truth。
 - Archive 默认按版本目录落盘，例如 `cases/archive/data-assets/v6.4.10/`；单需求文件名优先使用需求/页面标题。
 - XMind 输出遵循 DTStack 样例风格：`<项目><版本>迭代用例` root、L1 携带需求编号/labels，并默认折叠。
 
@@ -146,7 +147,7 @@ qa-flow/
 - `custom/xyzh` 是 **文件系统路径别名**。它只用于 `cases/xmind/` 与 `cases/archive/` 下的目录层级，不是配置 key。
 - `cases/history/xyzh/` 仍使用 `xyzh`，不会写成 `cases/history/custom/xyzh/`。
 - `cases/archive/` 是固定归档根目录。旧文档中的 `archive-cases/` 一律视为 `cases/archive/`，不要新建平行目录；若某些 Skill / Prompt 仍写旧名，也仅是文案遗留，不代表真实目录。
-- DTStack 需求使用根目录 `repo-branch-mapping.yaml` 维护 repo profile 与开发版本 → 分支映射。
+- DTStack 需求使用 `config/repo-branch-mapping.yaml` 维护 repo profile 与开发版本 → 分支映射。
 - 例：命令参数写 `--module xyzh`；产物路径写 `cases/xmind/custom/xyzh/202603-Story-20260322.xmind`。
 
 ---
@@ -208,7 +209,7 @@ Story 和 PRD 输入遵循以下目录 contract：
 当模块类型为 DTStack 时，在进入 `prd-enhancer` 前强制执行：
 
 1. 读取蓝湖原文 / PRD 原文中的 `开发版本`
-2. 调用 `sync-source-repos.mjs`，根据 `repo-branch-mapping.yaml` 切换 `.repos/` 目标分支
+2. 调用 `sync-source-repos.mjs`，根据 `config/repo-branch-mapping.yaml` 切换 `.repos/` 目标分支
 3. 调用 `prd-formalizer` 结合源码生成正式需求文档
 4. 再进入 PRD 增强、Writer、Reviewer
 
@@ -389,7 +390,7 @@ cd .claude/scripts && node convert-history-cases.mjs --force
   2. 确认目标分支
   3. 执行 `git fetch && git checkout && git pull`
   4. 记录最新 commit，再开始分析
-- DTStack 用例生成同样必须先完成分支确认；默认通过 `repo-branch-mapping.yaml` + `sync-source-repos.mjs` 自动解析并切换。
+- DTStack 用例生成同样必须先完成分支确认；默认通过 `config/repo-branch-mapping.yaml` + `sync-source-repos.mjs` 自动解析并切换。
 - `.repos/CustomItem/` 下的定制仓库执行同样的只读规则。
 
 ---

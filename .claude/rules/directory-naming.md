@@ -17,7 +17,7 @@
 - `custom/xyzh` 是文件系统路径别名，只用于 `cases/xmind/` 与 `cases/archive/` 的目录层级。
 - `cases/history/xyzh/` 保持使用 `xyzh`，不会写成 `cases/history/custom/xyzh/`。
 - `cases/archive/` 是固定归档根目录；历史文档或旧 Prompt 中的 `archive-cases/` 统一映射到这里，不代表需要额外创建目录。
-- `repo-branch-mapping.yaml` 固定放在仓库根目录，用于维护 DTStack repo profile 与开发版本 → 分支映射。
+- `config/repo-branch-mapping.yaml` 固定放在 `config/` 目录，用于维护 DTStack repo profile 与开发版本 → 分支映射。
 
 ## 顶层目录结构
 

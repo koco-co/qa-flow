@@ -104,7 +104,7 @@ flowchart TD
     F -->|否| H["初始化状态文件"]
     G & H --> I
 
-    I["Step source-sync\nDTStack: 读取 repo-branch-mapping.yaml\n切换 .repos/ 到目标分支"]
+    I["Step source-sync\nDTStack: 读取 config/repo-branch-mapping.yaml\n切换 .repos/ 到目标分支"]
     I --> J["Step prd-formalize\nDTStack: 结合源码生成正式需求文档"]
     J --> K["Step prd-enhancer\n增强 PRD + 健康度预检\n刷新 latest-prd-enhanced.md"]
 
@@ -256,9 +256,10 @@ flowchart TD
 
 ```text
 qa-flow/
+├── config/
+│   └── repo-branch-mapping.yaml   # DTStack repo/branch 映射
 ├── CLAUDE.md                      # 权威工作流手册
 ├── README.md                      # 本文件（入口导览）
-├── repo-branch-mapping.yaml       # DTStack repo/branch 映射
 ├── latest-output.xmind            # 符号链接：最新 XMind 输出
 ├── latest-prd-enhanced.md         # 符号链接：最新增强 PRD
 ├── latest-bug-report.html         # 符号链接：最新 Bug 报告

@@ -35,7 +35,7 @@ function assert(condition, msg, details = []) {
 
 console.log("\n=== Test: repo-branch-mapping.yaml exists ===");
 const mappingPath = getRepoBranchMappingPath();
-assert(existsSync(mappingPath), "repo-branch-mapping.yaml 存在于仓库根目录", [mappingPath]);
+assert(existsSync(mappingPath), "repo-branch-mapping.yaml 存在于 config/ 目录", [mappingPath]);
 
 console.log("\n=== Test: loadRepoBranchMapping ===");
 const mapping = loadRepoBranchMapping();
