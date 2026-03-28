@@ -20,6 +20,12 @@ node_modules/
 # Git
 *.orig
 
+# Test temp directories (created by test-archive-history-scripts.mjs)
+.claude/scripts/__test_*/
+
+# Obsidian vault config
+.obsidian/
+
 .repos/
 tools/lanhu-mcp/.env
 tools/lanhu-mcp/.venv
