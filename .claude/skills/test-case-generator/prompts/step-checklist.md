@@ -1,0 +1,53 @@
+<!-- step-id: checklist | delegate: testCaseOrchestrator -->
+# Step checklist：Checklist 预览 + 用户一次确认
+
+> **快速模式（quick-mode）时此步骤已被 workflow 跳过，不执行本文件内容。**
+
+## Step 4: Checklist 预览
+
+为每个解耦模块，启动轻量级 Checklist 生成（只需测试点列表，无需完整 steps/expected）。
+
+**Checklist 展示格式（4 级树形，在对话中展示）：**
+
+```
+质量问题台账（菜单名）[共 ~25条]
+├── 列表页 [Writer A]
+│   ├── 搜索
+│   │   ├── ✅ 按行动编号单条件搜索（P1）
+│   │   ├── ✅ 搜索无结果边界（P2，异常）
+│   │   └── ✅ 重置搜索条件（P2）
+│   └── 导出
+│       └── ✅ 导出 Excel（P2）
+├── 新增页 [Writer B]
+│   ├── ✅ 正常新增完整流程（P0）
+│   ├── ✅ 「问题名称」为空时不可提交（P1，异常）
+│   └── ✅ 「问题名称」超出100字符（P1，异常）
+└── 详情/编辑页 [Writer C]
+    └── ...
+```
+
+用户可以：直接回复「确认」、删除/新增测试点、调整优先级。
+
+---
+
+## Step 5: 用户一次确认
+
+在一条消息中展示完整确认内容，包含：
+
+- PRD 增强摘要（图片读取情况、健康度）
+- 拆分方案（各 Writer 及预计用例数）
+- 历史去重（现有用例排除情况）
+
+用户可选：`[确认，开始生成]` / `[修改测试点]` / `[修改拆分方案]`
+
+---
+
+## 步骤完成后
+
+```bash
+node .claude/scripts/harness-state-machine.mjs \
+  --advance checklist \
+  --state-path <story-dir>/.qa-state.json
+```
+
+同时更新状态文件：`checklist_confirmed: true`（在 advance 前写入）。
