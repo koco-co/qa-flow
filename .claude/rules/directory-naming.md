@@ -57,3 +57,14 @@ qa-flow/
 - Story 聚合 Markdown 只在明确需要“一个 Story 汇总文件”时使用，避免长期沉积为迭代级超大文件
 - 历史遗留文件名可继续保留，例如 `信永中和测试用例.xmind`、`20260322-信永中和测试用例.xmind`
 - 报告文件：`<标题>.html`，按日期目录归档到 `reports/bugs/` 或 `reports/conflicts/`
+
+## 已知历史例外（不做强制迁移）
+
+| 路径 | 原因 |
+|------|------|
+| `cases/requirements/data-assets/Story/` | 早于 `Story-YYYYMMDD` 命名规范创建，日期后缀不可补全 |
+| `cases/archive/batch-works/6.3.x/` | 版本范围目录（语义为"6.3.x 全系列"），不同于具体版本 `vX.Y.Z/` |
+| `cases/archive/data-assets/主流程/`、`岚图标品/` | 按功能类型归档的特殊分类，非版本目录 |
+| `cases/archive/batch-works/集成测试/` | 同上 |
+
+以上路径均可继续使用；新建目录遵循现行命名规范。
