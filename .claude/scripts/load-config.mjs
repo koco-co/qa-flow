@@ -193,17 +193,26 @@ export function getWorkflowStepOrder(workflowName) {
 
   const steps = workflow.steps ?? [];
   const stepMap = new Map(steps.map((s) => [s.id, s]));
-  const visited = new Set();
+  const completed = new Set();
+  const inProgress = new Set();
   const ordered = [];
 
   function visit(stepId) {
-    if (visited.has(stepId)) return;
-    visited.add(stepId);
+    if (completed.has(stepId)) return;
+    if (inProgress.has(stepId)) {
+      throw new Error(`Cycle detected in workflow "${workflowName}": step "${stepId}" is part of a circular dependency`);
+    }
+    inProgress.add(stepId);
     const step = stepMap.get(stepId);
-    if (!step) return;
+    if (!step) {
+      inProgress.delete(stepId);
+      return;
+    }
     for (const dep of step.dependsOn ?? []) {
       visit(dep);
     }
+    inProgress.delete(stepId);
+    completed.add(stepId);
     ordered.push(step);
   }
 

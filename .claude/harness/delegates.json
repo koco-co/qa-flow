@@ -1,11 +1,6 @@
 {
   "version": 1,
   "delegates": {
-    "startMenu": {
-      "kind": "skill",
-      "entry": ".claude/skills/start/SKILL.md",
-      "purpose": "统一入口路由与用户引导"
-    },
     "testCaseOrchestrator": {
       "kind": "skill",
       "entry": ".claude/skills/test-case-generator/SKILL.md",

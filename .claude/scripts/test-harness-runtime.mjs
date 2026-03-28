@@ -421,6 +421,31 @@ assert(queryNone.code === 0, "查询不存在文件退出码 0");
 const queryNoneData = JSON.parse(queryNone.output);
 assert(queryNoneData.exists === false, "不存在文件返回 exists=false");
 
+// ─── 环检测测试 ──────────────────────────────────────────────────────────────────
+
+console.log("\n=== Test: getWorkflowStepOrder cycle detection ===");
+
+// 正常工作流不抛出异常，且返回有序步骤列表
+try {
+  const steps = getWorkflowStepOrder("testCaseGeneration");
+  assert(steps.length > 0, "正常工作流拓扑排序返回步骤列表");
+  // 验证 parse-input 排在 brainstorm 之前（基本依赖顺序）
+  const ids = steps.map((s) => s.id);
+  const parseIdx = ids.indexOf("parse-input");
+  const brainstormIdx = ids.indexOf("brainstorm");
+  assert(parseIdx < brainstormIdx, "parse-input 排在 brainstorm 之前");
+} catch (err) {
+  assert(false, `正常工作流拓扑排序不应抛出异常: ${err.message}`);
+}
+
+// code-analysis 工作流也无环
+try {
+  const caSteps = getWorkflowStepOrder("codeAnalysis");
+  assert(caSteps.length > 0, "code-analysis 工作流拓扑排序返回步骤列表");
+} catch (err) {
+  assert(false, `code-analysis 工作流拓扑排序不应抛出异常: ${err.message}`);
+}
+
 // ─── 摘要 ──────────────────────────────────────────────────────────────────────
 
 console.log(`\n${"═".repeat(50)}`);

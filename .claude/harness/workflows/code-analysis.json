@@ -1,6 +1,7 @@
 {
   "version": 1,
   "id": "code-analysis",
+  "_status": "declared-not-consumed: code-analysis-report SKILL.md 目前独立运作，此 manifest 为未来集成预留",
   "entryInputs": ["curl-log", "error-log", "conflict-log"],
   "stateContract": "default",
   "outputs": [
