@@ -48,9 +48,7 @@
 source_context（如有）：
 [repo profile / release version / backend 分支 / frontend 分支]
 
-**源码分析要求**：详见 `writer-subagent-reference.md`「源码分析」章节。无 reference 时按以下简要规则：
-1. Grep 搜索 Controller 中的接口路径，验证按钮/操作对应实际接口
-2. 读取 DTO 校验注解，用于异常/边界用例设计
+**源码分析要求**：详见 `writer-subagent-reference.md`「源码分析」章节。
 
 编排器预提取的关键信息：
 [列出 Grep 搜索结果：按钮名称、字段名称、接口路径等]
@@ -60,50 +58,10 @@ source_context（如有）：
 ## 核心编写规则（必须严格遵守）
 
 ### 输出格式
-输出必须为纯 JSON，结构如下：
-
-{
-  "meta": {
-    "project_name": "...", "product": "...", "version": "...",
-    "requirement_name": "...", "requirement_id": "...", "prd_path": "...",
-    "generated_at": "[ISO8601]", "agent_id": "writer-[模块简称]",
-    "tags": ["数据质量", "规则集"],  // 3-8个领域关键词，详见 reference
-    "module_key": "data-assets"      // 模块 key，如 data-assets / xyzh
-  },
-  "modules": [
-    {
-      "name": "[菜单/模块名，如：质量问题台账]",
-      "pages": [
-        {
-          "name": "[页面名，如：列表页]",
-          "sub_groups": [
-            {
-              "name": "[功能子组名，如：搜索]",
-              "test_cases": [
-                {
-                  "title": "验证xxx",
-                  "precondition": "前置条件",
-                  "priority": "P0|P1|P2",
-                  "case_type": "正常用例|异常用例|边界用例",
-                  "steps": [
-                    { "step": "操作步骤", "expected": "预期结果" }
-                  ]
-                }
-              ]
-            }
-          ],
-          "test_cases": []
-        }
-      ]
-    }
-  ]
-}
-
-**层级说明：**
-- modules[].name（L2）= 菜单/模块名，与其他 Writer 保持一致
-- pages[].name（L3）= 你负责的页面名
-- sub_groups[].name（L4）= 功能子组（可选，当页面功能较多时使用）
-- 页面功能单一或用例数少（≤5条）时，可不用 sub_groups，直接在 pages 下放 test_cases
+输出必须为纯 JSON，完整 Schema 见 `references/intermediate-format.md`。关键要求：
+- `meta.agent_id` = `"writer-[模块简称]"`；`meta.tags` 3-8个领域关键词；`meta.module_key` 填模块 key
+- 层级：modules[].name（L2 菜单/模块名）→ pages[].name（L3 页面名）→ sub_groups[].name（L4 可选）→ test_cases
+- 页面功能单一或用例数 ≤ 5 条时，可跳过 sub_groups，直接在 pages 下放 test_cases
 
 ### 步骤格式
 - 第一步必须是：进入【模块名-页面名】页面
@@ -129,19 +87,12 @@ source_context（如有）：
 
 ## 自评审清单（输出前逐项检查）
 
-1. 标题是否以「验证」开头？
-2. 第一步是否为「进入【模块名-页面名】页面」？
-3. 步骤是否包含「步骤N:」编号前缀？（不应包含）
-4. 步骤数量 == 预期数量？
-5. 所有填写步骤是否有具体测试数据？
-6. 步骤和预期中是否有模糊词（尝试/像/如/比如/等）？（不应有）
-7. 按钮名称是否与 PRD 一致？
-8. 页面名称是否在 PRD 中有定义？
-9. 每条异常用例只有一个逆向条件？
-10. 预期结果是否具体描述了系统行为？（禁止「操作成功」「显示正确」）
-11. 是否含性能/安全/接口内容？（不应有）
-12. 是否超出本次需求范围？（不应有）
-13. modules[].name 是否为菜单/模块名？pages[].name 是否为页面名？
+- 标题以「验证」开头；第一步为「进入【模块名-页面名】页面」
+- 无「步骤N:」编号前缀；步骤数 == 预期数；无模糊词（尝试/如/比如/等）
+- 所有填写步骤有具体测试数据；预期结果具体描述系统行为
+- 按钮/页面名与 PRD 一致；异常用例只有一个逆向条件
+- 无性能/安全/接口内容；未超出本次需求范围
+- modules[].name 为菜单/模块名；pages[].name 为页面名
 
 ## 输出要求
 

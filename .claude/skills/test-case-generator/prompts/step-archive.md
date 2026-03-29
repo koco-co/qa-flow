@@ -35,15 +35,6 @@ DTStack 如识别到语义版本（如 `v6.4.10`），默认会落到 `cases/arc
 - 「继续补改」— 保留断点，等待继续修改 / 重跑
 ```
 
-## 步骤完成后
-
-更新 `.qa-state.json`：
-- 将 `archive_md_path` 设为实际归档 MD 文件路径
-- 将 `awaiting_verification` 设为 `true`
-- 将 `last_completed_step` 设为 `"archive"`
-
-断点续传时，如果读取到 `awaiting_verification: true`，只重新展示 9.2 的验证提示，不重新执行 9.1。
-
 ## 错误处理
 
 - **json-to-archive-md.mjs 失败**：展示错误，但不阻断（XMind 已生成可用）
@@ -56,6 +47,8 @@ DTStack 如识别到语义版本（如 `v6.4.10`），默认会落到 `cases/arc
 - `archive_md_path` → 实际归档 MD 文件路径
 - `awaiting_verification` → `true`
 - `last_completed_step` → `"archive"`
+
+断点续传时，如果读取到 `awaiting_verification: true`，只重新展示 9.2 的验证提示，不重新执行 9.1。
 
 同时向 `execution_log` 数组追加：
 ```json

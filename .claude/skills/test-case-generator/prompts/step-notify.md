@@ -49,6 +49,19 @@
 
 ## 终态说明
 
-Step notify 为终态清理：写入 `last_completed_step: 10` 为可选；如实现需要，可在删除前瞬时写入该值；但流程正常完成后必须删除 `.qa-state.json`，不保留稳定的可恢复状态。
+Step notify 为终态清理：写入 `last_completed_step: "notify"` 为可选；如实现需要，可在删除前瞬时写入该值；但流程正常完成后必须删除 `.qa-state.json`，不保留稳定的可恢复状态。
 
 `「确认通过」` / `「已修改，请同步」` 这两个固定回复仅用于测试用例生成流程，不用于单独 PRD 增强、Bug 分析或冲突分析。
+
+---
+
+## 步骤完成后
+
+Step notify 为终态；状态文件已在「确认通过」或「已修改，请同步」分支中删除，此条目仅作记录说明：
+
+- `last_completed_step` → `"notify"`（瞬时写入，随即删除状态文件）
+
+向 `execution_log` 追加（在删除文件前写入）：
+```json
+{"step": "notify", "status": "completed", "at": "<ISO8601>", "duration_ms": null, "summary": "流程结束，临时文件已清理"}
+```
