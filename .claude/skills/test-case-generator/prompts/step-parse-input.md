@@ -21,9 +21,51 @@
       ```bash
       node .claude/skills/using-qa-flow/scripts/lanhu-mcp-runtime.mjs start
       ```
+2.5. **Cookie 有效性预检**：
+   调用 `lanhu_get_pages` 时若返回 418（Cookie 过期），执行自动刷新（最多 3 次，每次间隔 5 秒）：
+
+   ```bash
+   for i in 1 2 3; do
+     echo "第 ${i} 次尝试刷新 Cookie..."
+     LANHU_LOGIN_EMAIL="$LANHU_LOGIN_EMAIL" \
+     LANHU_LOGIN_PASSWORD="$LANHU_LOGIN_PASSWORD" \
+     python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py 2>&1
+     sleep 5
+     # 刷新后重新调用 lanhu_get_pages 验证
+     # 若成功 → break 并继续
+     # 若仍失败 → 继续下一次
+   done
+   ```
+
+   3 次均失败 → 向用户展示：
+   ```
+   蓝湖 Cookie 刷新失败（已重试 3 次）。
+
+   请手动执行以下命令后重试：
+   ! LANHU_LOGIN_EMAIL='<账号>' LANHU_LOGIN_PASSWORD='<密码>' python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py
+
+   或手动更新 tools/lanhu-mcp/.env 中的 Cookie 值。
+   ```
+   **等待用户确认后重试，不自动继续下一步。**
+
 3. **调用 `lanhu_get_pages` 工具** 获取页面列表
-   - 若返回错误码 418 → 提示用户：`蓝湖 Cookie 已过期。可执行：\nLANHU_LOGIN_EMAIL='<账号>' LANHU_LOGIN_PASSWORD='<密码>' python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py\n或按提示手动刷新 Cookie 后再继续`
-   - 若返回成功 → 展示页面列表，询问用户要导入哪些页面（默认全部）
+   - 若返回 418 → 走 2.5 自动刷新流程
+   - 成功后向用户展示页面列表：
+     ```
+     蓝湖文档「xxx」包含以下页面：
+
+     [1] ✅ 列表页-质量问题台账
+     [2] ✅ 新增质量问题
+     [3] ✅ 问题详情
+     [4] ✅ 规则集管理
+
+     默认导入全部页面。
+     - 输入编号排除（如「排除 4」或「只要 1,2,3」）
+     - 直接回复「确认」继续
+     - 回复「取消」中止
+     ```
+   - **等待用户明确回复**后才进入第 4 步
+   - 不回复不继续
 4. **调用 `lanhu_get_ai_analyze_page_result` 工具**，参数：
    - `page_names`：用户选定的页面（`'all'` 或逗号分隔的页面名列表）
    - `mode`：`'text_only'`
@@ -32,6 +74,28 @@
    - 文件格式：**先写 YAML front-matter，再写正文**（见下方 Schema）
    - 将工具返回的文本内容按页面组织为标准 MD 格式
    - 包含：文档标题（来自 `document_name`）、各页面标题（二级标题）、页面文本内容
+5.1. **模块确认（必须交互）**
+
+   从文档标题和内容中推断最可能的模块 key，然后向用户展示确认菜单：
+
+   ```
+   从蓝湖文档标题推断模块为: data-assets (数据资产)
+
+   请确认或选择正确的模块:
+   [1] data-assets (数据资产) ← 推荐
+   [2] batch-works (离线开发)
+   [3] data-query (统一查询)
+   [4] variable-center (变量中心)
+   [5] public-service (公共组件)
+   [6] xyzh (信永中和/定制)
+   ```
+
+   - 用户回复数字或模块名 → 使用对应模块
+   - **不得跳过此确认步骤**，即使推断置信度很高
+   - 用户确认后，根据模块 key 决定文件保存路径：
+     - DTStack 模块 → `cases/requirements/<module>/v{version}/PRD-<docId>-<docName>.md`
+     - xyzh 定制 → `cases/requirements/custom/xyzh/<功能名>.md`
+
    - 保存至（按模块类型区分）：
      - **DTStack 模块**（如 `data-assets`）：`cases/requirements/<module>/Story-<YYYYMMDD>/PRD-<docName>.md`（暂存目录，版本确认后由 prd-enhancer 迁移到 `v{version}/`）
      - **XYZH 定制模块**：`cases/requirements/custom/xyzh/<功能名>.md`（扁平存放，无 Story 子目录）
@@ -68,15 +132,6 @@
    - `dev_version`：从蓝湖页面内容中的「开发版本」字段提取，无则留空
 
 6. **将生成的 PRD 文件路径注入 Story 目录**，继续正常 1.1 流程（此时 PRD 文件已存在）
-
-**Cookie 自动刷新机制（后台 Playwright）：**
-
-如遇 418 且用户不方便手动获取 Cookie，可尝试自动刷新：
-```bash
-LANHU_LOGIN_EMAIL='<你的蓝湖账号>' \
-LANHU_LOGIN_PASSWORD='<你的蓝湖密码>' \
-python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py
-```
 
 ---
 
