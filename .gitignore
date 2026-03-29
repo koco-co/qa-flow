@@ -27,6 +27,7 @@ node_modules/
 .obsidian/
 
 .repos/
+.worktrees/
 tools/lanhu-mcp/.env
 tools/lanhu-mcp/.venv
 tools/lanhu-mcp/data/
