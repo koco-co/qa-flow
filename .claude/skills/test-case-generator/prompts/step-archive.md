@@ -19,6 +19,14 @@ node .claude/skills/archive-converter/scripts/json-to-archive-md.mjs \
 
 DTStack 如识别到语义版本（如 `v6.4.10`），默认会落到 `cases/archive/<module>/v6.4.10/`；如存在 `archive_file_name` / `requirement_title`，文件名优先使用具体需求标题。
 
+## 9.1.5 重建归档索引
+
+归档 MD 写入后，重建 `cases/archive/INDEX.json` 使后续查询保持最新：
+
+```bash
+node .claude/shared/scripts/build-archive-index.mjs
+```
+
 ## 9.2 向用户发出验证提示
 
 ```

@@ -33,10 +33,10 @@
 
 ## 历史用例参考（如有）
 
-> 历史用例已预先转化为 Markdown 格式，存放在各模块对应的 `cases/archive/` 目录：
-> - DTStack 平台：`cases/archive/<module>/`
-> - 信永中和：`cases/archive/custom/xyzh/`
-> 直接读取对应目录下的 .md 文件即可。
+> 编排器已通过索引脚本预检索相关历史用例文件，下方列出需要参考的文件路径。
+> 直接 Read 这些文件即可，无需自行搜索 `cases/archive/` 目录。
+
+[列出编排器预筛选的相关历史用例文件路径，或写「无历史用例参考」]
 
 以下功能点已在历史用例中覆盖，你的输出中不得重复编写：
 [列出已覆盖的功能点，或写「无历史用例参考」]
@@ -63,11 +63,99 @@ source_context（如有）：
 - 层级：modules[].name（L2 菜单/模块名）→ pages[].name（L3 页面名）→ sub_groups[].name（L4 可选）→ test_cases
 - 页面功能单一或用例数 ≤ 5 条时，可跳过 sub_groups，直接在 pages 下放 test_cases
 
+### 层级命名规则（关键！）
+
+modules[].name、pages[].name、sub_groups[].name 必须反映系统中的**实际菜单/页面/功能**，不得使用需求描述、优先级分组或功能概述。
+
+**正确 vs 错误示例：**
+
+| 层级 | ✅ 正确 | ❌ 错误 |
+|------|---------|---------|
+| modules[].name（L2 菜单名） | `"规则库配置"` | `"数据质量"（太宽泛，是功能域不是菜单）` |
+| modules[].name（L2 菜单名） | `"质量问题台账"` | `"合理性校验-多表字段值对比"（这是需求描述）` |
+| pages[].name（L3 页面名） | `"列表页"` | `"规则配置-多表字段值对比（计算逻辑）"（这是需求描述）` |
+| pages[].name（L3 页面名） | `"新建规则页"` | `"P0 冒烟-主流程"（这是优先级分组）` |
+| sub_groups[].name（L4 功能子组） | `"搜索"` `"字段校验"` `"新建规则"` | `"P0 冒烟-主流程"（禁止按优先级分组）` |
+| sub_groups[].name（L4 功能子组） | `"关联表配置"` `"计算逻辑配置"` | `"模式切换交互"（太模糊）` |
+
+**判断口诀**：如果这个名字不能在系统左侧菜单或页面 Tab 中找到对应位置，就不能用作 modules/pages 的名称。
+
+### 前置条件（precondition）
+
+**普通用例**：如无特殊前提，可填"无"。
+**DTStack 用例（数据质量、规则集、调度、对账等）**：**必须**给出具体的数据准备说明和建表语句。PRD 中提到哪些数据源类型，就要在前置条件中给出哪些数据源的建表语句。
+
+前置条件模板：
+```
+1、环境说明：数据质量模块已部署，数据源连接正常
+
+2、Doris2.x SQL语句准备:
+DROP TABLE IF EXISTS qa_data_quality.fact_order;
+CREATE TABLE qa_data_quality.fact_order (
+  id INT,
+  order_no VARCHAR(50),
+  amount DECIMAL(10,2),
+  score DOUBLE,
+  create_time DATETIME
+);
+INSERT INTO qa_data_quality.fact_order VALUES (1, 'ORD-001', 100.50, 85.5, '2026-03-01 10:00:00');
+
+DROP TABLE IF EXISTS qa_data_quality.dim_product;
+CREATE TABLE qa_data_quality.dim_product (
+  id INT,
+  product_name VARCHAR(100),
+  price DECIMAL(10,2)
+);
+INSERT INTO qa_data_quality.dim_product VALUES (1, '产品A', 99.99);
+
+3、Hive2.x SQL语句准备:
+CREATE TABLE IF NOT EXISTS qa_data_quality.fact_order (
+  id INT,
+  order_no STRING,
+  amount DECIMAL(10,2),
+  score DOUBLE,
+  create_time TIMESTAMP
+);
+INSERT INTO qa_data_quality.fact_order VALUES (1, 'ORD-001', 100.50, 85.5, '2026-03-01 10:00:00');
+
+4、SparkThrift2.x SQL语句准备:
+...（同上格式）
+```
+
+建表语句要求：
+- 表名、字段名、字段类型必须与 PRD 中描述的业务场景一致
+- INSERT 数据必须是符合业务语义的真实测试数据，不能用 `test1`、`abc` 等占位符
+- 多数据源场景，每种数据源单独给出（语法差异：Doris 用 `VARCHAR`，Hive 用 `STRING` 等）
+
 ### 步骤格式
 - 第一步必须是：进入【模块名-页面名】页面
 - 步骤描述禁止包含「步骤1:」「步骤2:」「Step1:」等编号前缀
 - 表单填写必须给出具体测试数据（禁止「填写相关信息」「选择合适选项」等模糊表述）
 - 步骤数量必须与预期结果数量完全相等
+
+### 多字段步骤的结构化块格式（关键！）
+
+当单个步骤涉及多个字段填写或多个操作时，**必须**使用换行列表格式，不得压缩为一句话。
+在 JSON 中，换行使用 `\n` 转义字符。
+
+**✅ 正确（JSON 中的写法）：**
+```json
+{
+  "step": "点击【新建规则】按钮，配置内容如下：\n- 选择数据源「qa_doris」\n- 数据库「qa_data_quality」\n- 数据表「fact_order」\n- 规则类型选择「合理性校验」\n- 合理性类型选择「多表字段值对比」",
+  "expected": "规则配置表单正常展开，各字段选择成功，页面展示对应的配置项"
+}
+```
+
+**❌ 错误（所有内容挤在一行）：**
+```json
+{
+  "step": "点击【新建规则】按钮，选择数据源「qa_doris」、数据库「qa_data_quality」、数据表「fact_order」，规则类型选择「合理性校验」，合理性类型选择「多表字段值对比」",
+  "expected": "表单正常展示"
+}
+```
+
+**何时必须换行**：步骤中包含 2 个以上字段填写/选择操作时。
+**预期结果也适用**：当预期包含多个验证点时，同样用 `\n- ` 分行。
 
 ### 范围限制
 - 仅编写黑盒功能测试用例（测试人员可在页面手动操作完成）
@@ -92,7 +180,10 @@ source_context（如有）：
 - 所有填写步骤有具体测试数据；预期结果具体描述系统行为
 - 按钮/页面名与 PRD 一致；异常用例只有一个逆向条件
 - 无性能/安全/接口内容；未超出本次需求范围
-- modules[].name 为菜单/模块名；pages[].name 为页面名
+- modules[].name 为系统中实际菜单名；pages[].name 为页面类型名（列表页/新增页/编辑页/详情页）
+- sub_groups[].name 为功能子组名（搜索/字段校验/导出），不得使用优先级标签（P0/P1/P2）
+- 多字段步骤已用 `\n- ` 换行，不是一句话压缩
+- DTStack 用例的前置条件包含建表语句（非"无"）
 
 ## 输出要求
 

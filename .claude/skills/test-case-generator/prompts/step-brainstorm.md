@@ -18,17 +18,18 @@
 - 高风险场景（联动逻辑复杂的字段、权限相关功能、审批流程等）
 - 是否有已知的历史 Bug 需要重点覆盖
 
-基于当前需求内容，通过 tag 关键词检索相关历史用例：
+基于当前需求内容，通过**归档索引**检索相关历史用例：
 
 1. 从增强后 PRD 提取 3-5 个核心关键词（如：数据质量、质量规则、质量问题台账）
-2. 使用 Grep 在对应归档目录中按 tags 字段检索匹配文件：
-   - DTStack 平台：`grep -rl "关键词1\|关键词2" cases/archive/<module>/ --include="*.md"`
-   - 信永中和：`grep -rl "关键词1\|关键词2" cases/archive/custom/xyzh/ --include="*.md"`
-3. 对匹配文件，先读取 front-matter（文件头部 `---...---` 块）获取 name/tags/case_count 概览
-4. 仅对 tags 重叠 ≥2 个的文件读取完整内容
-5. 整理已覆盖的功能点，避免重复
+2. 使用索引脚本按模块 + tags 检索：
+   ```bash
+   node .claude/shared/scripts/build-archive-index.mjs --query <module-key> --tags 关键词1,关键词2
+   ```
+   输出为紧凑 JSON，包含匹配文件的路径、名称、tags 和用例数。
+3. 从查询结果中选择 tags 重叠 ≥2 个的文件，直接读取完整内容
+4. 整理已覆盖的功能点，避免重复
 
-> 若归档文件尚未添加 front-matter（旧格式以 `# 标题` 开头），直接读取文件内容。
+> 若索引查询无结果，可回退到 Grep 搜索：`grep -rl "关键词" cases/archive/<module>/ --include="*.md"`
 
 ## 3.2 需求解耦分析
 
