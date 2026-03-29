@@ -1,7 +1,6 @@
-<!-- step-id: checklist | delegate: testCaseOrchestrator -->
 # Step checklist：Checklist 预览 + 用户一次确认
 
-> **快速模式（quick-mode）时此步骤已被 workflow 跳过，不执行本文件内容。**
+> **快速模式时跳过此步骤，不执行本文件内容。**
 
 ## Step 4: Checklist 预览
 
@@ -44,10 +43,4 @@
 
 ## 步骤完成后
 
-```bash
-node .claude/scripts/harness-state-machine.mjs \
-  --advance checklist \
-  --state-path <story-dir>/.qa-state.json
-```
-
-同时更新状态文件：`checklist_confirmed: true`（在 advance 前写入）。
+更新 `.qa-state.json`：将 `checklist_confirmed` 设为 `true`，将 `last_completed_step` 设为 `"checklist"`。

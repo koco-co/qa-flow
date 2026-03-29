@@ -1,4 +1,3 @@
-<!-- step-id: source-sync | delegate: sourceRepoSync -->
 # Step source-sync：DTStack 源码分支同步
 
 > 本步骤仅在模块类型为 DTStack 时执行。如为 xyzh/自定义模块，此步骤应已被 workflow 条件跳过。
@@ -9,7 +8,7 @@
 2. 读取仓库根目录 `config/repo-branch-mapping.yaml`
 3. 调用 `sync-source-repos.mjs`，根据 `config/repo-branch-mapping.yaml` 解析 repo profile 与 backend/frontend 目标分支：
    ```bash
-   cd .claude/scripts && node sync-source-repos.mjs \
+   node .claude/skills/using-qa-flow/scripts/sync-source-repos.mjs \
      --version "<开发版本>" \
      --module <module-key>
    ```
@@ -41,8 +40,4 @@
 
 ## 步骤完成后
 
-```bash
-node .claude/scripts/harness-state-machine.mjs \
-  --advance source-sync \
-  --state-path <story-dir>/.qa-state.json
-```
+更新 `.qa-state.json`：将 `last_completed_step` 设为 `"source-sync"`。

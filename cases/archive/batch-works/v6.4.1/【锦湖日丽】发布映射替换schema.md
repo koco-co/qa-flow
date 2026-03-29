@@ -1,3 +1,18 @@
+---
+name: 【锦湖日丽】发布映射替换schema v6.4.1
+description: 【锦湖日丽】发布映射替换schema v6.4.1
+tags:
+  - 离线开发
+  - 离线开发-项目管理-发布管理
+  - 锦湖日丽
+  - 发布映射替换schema
+module: batch-works
+version: v6.4.1
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.1/【锦湖日丽】发布映射替换schema.csv
+case_count: 23
+created_at: 2026-03-29
+origin: csv
+---
 # 【锦湖日丽】发布映射替换schema v6.4.1
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.1/【锦湖日丽】发布映射替换schema.csv
 > 用例数：23

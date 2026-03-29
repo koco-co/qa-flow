@@ -1,3 +1,19 @@
+---
+name: 【数据质量】质量temp表生成逻辑改造、sr支持脏数据存储 v6.3.1
+description: 【数据质量】质量temp表生成逻辑改造、sr支持脏数据存储 v6.3.1
+tags:
+  - 数据资产
+  - 数据资产-数据质量
+  - 数据质量
+  - 质量temp表生成逻辑改造
+  - sr支持脏数据存储
+module: data-assets
+version: v6.3.1
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.1/【数据质量】质量temp表生成逻辑改造、sr支持脏数据存储.csv
+case_count: 15
+created_at: 2026-03-29
+origin: csv
+---
 # 【数据质量】质量temp表生成逻辑改造、sr支持脏数据存储 v6.3.1
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.1/【数据质量】质量temp表生成逻辑改造、sr支持脏数据存储.csv
 > 用例数：15

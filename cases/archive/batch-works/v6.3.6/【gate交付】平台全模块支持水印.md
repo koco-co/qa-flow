@@ -1,3 +1,18 @@
+---
+name: 【gate交付】平台全模块支持水印 v6.3.6
+description: 【gate交付】平台全模块支持水印 v6.3.6
+tags:
+  - 离线开发
+  - 离线开发-数据开发
+  - gate交付
+  - 平台全模块支持水印
+module: batch-works
+version: v6.3.6
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.6/【gate交付】平台全模块支持水印.csv
+case_count: 4
+created_at: 2026-03-29
+origin: csv
+---
 # 【gate交付】平台全模块支持水印 v6.3.6
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.6/【gate交付】平台全模块支持水印.csv
 > 用例数：4

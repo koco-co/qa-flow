@@ -5,45 +5,106 @@
 ## 模板
 
 ````markdown
-# 需求名称
-
-> 来源：path/to/source
-> 用例数：N
-
+---
+suite_name: "需求名称（与蓝湖/PRD 一致）"
+description: "一句话描述（≤60字）"
+prd_id: 10287
+prd_version: v6.4.10
+prd_path: "cases/requirements/data-assets/v6.4.10/【功能名】需求标题.md"
+prd_url: "https://lanhuapp.com/..."
+product: data-assets
+dev_version: "6.3岚图定制化分支"
+tags:
+  - 关键词1
+  - 关键词2
+create_at: "YYYY-MM-DD"
+update_at: "YYYY-MM-DD"
+status: ""
+health_warnings: []
+repos:
+  - ".repos/DTStack/dt-center-assets"
 ---
 
-## 模块/菜单名称
+## 模块名称
 
-### 页面名称
+### 菜单名称
 
-#### 功能点/子组名称
+#### 功能点名称
 
-##### 用例标题 「P1」
+##### 【P1】验证xxxx
 
 > 前置条件
-> ```
-> 前置内容，没有则填：无
-> ```
+```
+1、xxx
+
+2、Doris2.x SQL语句准备:
+DROP TABLE IF EXISTS test_db.test_table;
+CREATE TABLE test_db.test_table (...);
+INSERT INTO test_db.test_table VALUES (...);
+
+3、Hive2.x SQL语句准备:
+...
+```
+
+> 用例步骤
 
 | 编号 | 步骤         | 预期         |
 | ---- | ------------ | ------------ |
-| 1    | 操作步骤描述 | 预期结果描述 |
+| 1    | 进入【xxx】页面 | 页面正常加载 |
 | 2    | 操作步骤描述 | 预期结果描述 |
 
-##### 下一条用例标题 「P2」
+##### 【P2】验证xxxx
 
 ...
 ````
 
+### Front-Matter 字段说明
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `suite_name` | 是 | 需求名称（与蓝湖/PRD 一致），用于快速识别 |
+| `description` | 是 | 一句话描述（≤60字） |
+| `prd_id` | 是 | 需求 ID（数字，如 `10287`） |
+| `prd_version` | 否 | 迭代版本号（如 `v6.4.10`） |
+| `prd_path` | 是 | 关联 PRD 文档的相对路径 |
+| `prd_url` | 否 | 蓝湖需求 URL |
+| `product` | 是 | 模块 key（如 `data-assets`、`xyzh`） |
+| `dev_version` | 否 | 开发版本 / 分支描述 |
+| `tags` | 是 | 领域关键词（3-10个），核心检索字段；由脚本/Writer 自动推断 |
+| `create_at` | 是 | 创建日期（YYYY-MM-DD） |
+| `update_at` | 否 | 最后更新日期（YYYY-MM-DD） |
+| `status` | 否 | 文档状态（draft / reviewed / archived） |
+| `health_warnings` | 否 | 健康检查警告列表，如 `["W001: 缺少字段定义表"]` |
+| `repos` | 否 | 参考仓库相对路径列表，如 `[".repos/DTStack/dt-center-assets"]` |
+
+### Tags 检索用法
+
+```bash
+# 按关键词快速定位相关历史用例
+grep -rl "数据质量\|质量规则" cases/archive/ --include="*.md"
+
+# 读取匹配文件的 front-matter 概览（前 15 行）
+head -15 cases/archive/data-assets/v6.4.10/PRD-xx-xxx.md
+```
+
+### Backfill 命令（为现有文件添加 front-matter）
+
+```bash
+node .claude/skills/archive-converter/scripts/backfill-archive-frontmatter.mjs --dry-run   # 预览
+node .claude/skills/archive-converter/scripts/backfill-archive-frontmatter.mjs              # 执行
+node .claude/skills/archive-converter/scripts/backfill-archive-frontmatter.mjs --force      # 强制覆盖
+```
+
 ## 层级映射
 
-| MD 层级 | 含义        | CSV 来源     | XMind 来源       | JSON 来源             |
-| ------- | ----------- | ------------ | ---------------- | --------------------- |
-| `#`     | 需求/文件名 | 文件名+版本  | 根节点标题       | meta.requirement_name |
-| `##`    | 模块/菜单   | 所属模块列   | depth 1          | modules[].name        |
-| `###`   | 页面        | （无，跳过） | depth 2          | pages[].name          |
-| `####`  | 功能点/子组 | （无，跳过） | depth 3          | sub_groups[].name     |
-| `#####` | 用例标题    | 用例标题列   | depth 4 / 叶节点 | test_cases[].title    |
+> 需求名称（`suite_name`）已移入 frontmatter，MD body 从 `##` 开始。
+
+| MD 层级 | 含义     | CSV 来源     | XMind 来源       | JSON 来源          |
+| ------- | -------- | ------------ | ---------------- | ------------------ |
+| `##`    | 模块名称 | 所属模块列   | depth 1          | modules[].name     |
+| `###`   | 菜单名称 | （无，跳过） | depth 2          | pages[].name       |
+| `####`  | 功能点   | （无，跳过） | depth 3          | sub_groups[].name  |
+| `#####` | 用例标题 | 用例标题列   | depth 4 / 叶节点 | test_cases[].title |
 
 > CSV 数据仅有模块和用例两层，中间层级自然跳过。XMind 树型结构的深度自动映射到对应层级。
 

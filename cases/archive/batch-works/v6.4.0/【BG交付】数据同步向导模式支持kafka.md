@@ -1,3 +1,17 @@
+---
+name: 【BG交付】数据同步向导模式支持kafka v6.4.0
+description: 【BG交付】数据同步向导模式支持kafka v6.4.0
+tags:
+  - 离线开发
+  - 数据同步向导模式支持kafka
+  - BG交付
+module: batch-works
+version: v6.4.0
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.0/【BG交付】数据同步向导模式支持kafka.csv
+case_count: 83
+created_at: 2026-03-29
+origin: csv
+---
 # 【BG交付】数据同步向导模式支持kafka v6.4.0
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.0/【BG交付】数据同步向导模式支持kafka.csv
 > 用例数：83

@@ -16,7 +16,9 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
     "requirement_id": "string    // 需求ID，如「PRD-26」（可选）",
     "prd_path": "string          // PRD 文件相对路径（可选）",
     "generated_at": "string      // ISO8601 时间戳",
-    "agent_id": "string          // Subagent 标识（可选）"
+    "agent_id": "string          // Subagent 标识（可选）",
+    "tags": "string[]            // 领域关键词列表（可选，供归档 MD front-matter 使用）",
+    "module_key": "string        // 模块 key，如 data-assets / xyzh（可选）"
   },
   "modules": [
     {
@@ -104,12 +106,46 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 
 ---
 
+## meta → Archive/PRD Frontmatter 映射
+
+> meta 字段名保持稳定（不改名），以下是 `json-to-archive-md.mjs` 输出 MD 时的字段映射。
+
+| meta 字段 | 用例归档 frontmatter | PRD frontmatter |
+|-----------|---------------------|-----------------|
+| `requirement_name` | `suite_name` | `prd_name` |
+| `module_key` | `product` | `product` |
+| `version` | `prd_version` | `prd_version` |
+| `prd_path` | `prd_path` | `prd_source` |
+| `requirement_id` | `prd_id` | `prd_id` |
+| `prd_url` | `prd_url` | `prd_url` |
+| `dev_version` | `dev_version` | `dev_version` |
+| `repos` | `repos` | `repos` |
+| `tags` | `tags` | `tags` |
+
+### meta 可选新增字段
+
+Writer Subagent 输出时可包含以下可选字段（提升 frontmatter 填充质量）：
+
+```json
+{
+  "meta": {
+    "prd_url": "https://lanhuapp.com/...",
+    "dev_version": "6.3岚图定制化分支",
+    "repos": [".repos/DTStack/dt-center-assets"]
+  }
+}
+```
+
+---
+
 ## 字段约束
 
 | 字段 | 约束 |
 |------|------|
 | `meta.project_name` | 必须与 XMind 输出目录对应 |
 | `meta.version` | 格式：`YYYYMM版本` 或 `mmdd版本` |
+| `meta.tags` | 可选；3-8 个领域关键词；产品/功能域名词、业务实体名词、客户标识（不含页面级通用词） |
+| `meta.module_key` | 可选；模块 key（如 `data-assets`、`xyzh`），用于 archive 目录路由 |
 | `modules[].name` | L2: 菜单/模块名称（如「质量问题台账」）|
 | `pages[].name` | L3: 页面名称（如「列表页」「新增页」「详情页」）|
 | `sub_groups[].name` | L4: 功能子组（如「搜索」「字段校验」，可选）|
@@ -134,8 +170,8 @@ cases/requirements/<project>/<Story>/temp/<模块简称>.json
 ```
 
 示例：
-- `cases/requirements/xyzh/Story-20260322/temp/list.json`
-- `cases/requirements/xyzh/Story-20260322/temp/create.json`
+- `cases/requirements/custom/xyzh/temp/list.json`
+- `cases/requirements/custom/xyzh/temp/create.json`
 
 ---
 

@@ -4,7 +4,7 @@
 
 完整工作流、命名 contract 和路径规则以 `CLAUDE.md` 为准；`README.md` 仅作入口导览。
 
-> 不知道从哪开始？输入 `/start` 查看功能菜单。
+> 不知道从哪开始？输入 `/using-qa-flow` 查看功能菜单；首次使用输入 `/using-qa-flow init` 初始化环境。
 
 ---
 
@@ -47,43 +47,32 @@ flowchart LR
 
 ---
 
-## Harness 5 层架构
+## 架构概览
 
 ```mermaid
-flowchart TB
-    subgraph L1["Layer 1: Skill 入口层"]
+flowchart LR
+    subgraph L1["Skills 入口层"]
         S1["test-case-generator"]
         S2["code-analysis-report"]
-        S3["prd-enhancer / xmind-converter"]
+        S3["prd-enhancer\nxmind-converter"]
     end
 
-    subgraph L2["Layer 2: Harness Runtime Protocol"]
-        R1["harness-step-resolver.mjs\n（下一步骤解析）"]
-        R2["harness-state-machine.mjs\n（状态 init / advance / fail）"]
+    subgraph L2["Agents 执行层"]
+        A1["case-writer（并行）"]
+        A2["case-reviewer"]
+        A3["prd-formalizer"]
+        A4["code-analyzer"]
     end
 
-    subgraph L3["Layer 3: Workflow Manifests"]
-        W1["test-case-generation.json\n（12 步骤）"]
-        W2["code-analysis.json\n（6 步骤）"]
+    subgraph L3["Scripts 工具层"]
+        T1["json-to-xmind.mjs"]
+        T2["json-to-archive-md.mjs"]
+        T3["sync-source-repos.mjs"]
     end
 
-    subgraph L4["Layer 4: Delegates + Hooks"]
-        D1["delegates.json\n（step → script/skill/agent）"]
-        D2["hooks.json\n（precheck / condition / recovery / convergence）"]
-    end
-
-    subgraph L5["Layer 5: Contracts + Governance"]
-        C1["contracts.json\n（state schema / quality 阈值 / 命名规则）"]
-        C2["output-naming-contracts.mjs\n（命名 contract 校验）"]
-    end
-
-    S1 & S2 --> R1
-    R1 --> W1 & W2
-    R1 -.->|"resolve delegate"| D1
-    R1 -.->|"check preconditions"| D2
-    R2 --> C1
-    L3 --> L4
-    L4 --> L5
+    S1 --> A1 & A2 & A3
+    S2 --> A4
+    S1 --> T1 & T2 & T3
 ```
 
 ---
@@ -202,54 +191,6 @@ flowchart TD
 
 ---
 
-## Harness 工程参考
-
-### 添加新 Workflow
-
-1. 在 `.claude/harness/workflows/` 下新建 JSON，声明 `id`、`entryInputs`、`steps`
-2. 在 `.claude/harness/delegates.json` 注册新 step 用到的 delegate
-3. 在 `.claude/harness/hooks.json` 注册新 prechecks、conditions、recovery hooks
-4. 在 `.claude/config.json` 的 `harness.workflows` 下添加路径引用
-5. 运行 `cd .claude/scripts && npm test` 验证 manifest
-
-### 添加新 Delegate
-
-在 `delegates.json` 中添加：
-```json
-"myDelegate": {
-  "kind": "skill",
-  "entry": ".claude/skills/my-skill/SKILL.md",
-  "purpose": "做什么事"
-}
-```
-`kind` 可选：`skill` / `agent` / `script`
-
-### 添加新 Hook
-
-```json
-// hooks.json 中对应分区
-"prechecks": { "my-precheck": { "check": "检查命令或条件描述" } },
-"conditions": { "my-condition": { "source": "user-input", "purpose": "何时激活" } },
-"recovery": { "my-recovery": { "action": "恢复动作描述" } },
-"convergence": { "my-convergence": { "trigger": "收敛触发条件" } }
-```
-
-### Workflow JSON 步骤字段说明
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `id` | string | 步骤唯一标识（kebab-case） |
-| `delegate` | string | 对应 delegates.json 的 key |
-| `dependsOn` | string[] | 前置步骤 id 列表 |
-| `skippableWhen` | string[] | 满足任一条件时跳过（来自 hooks.json conditions） |
-| `optionalFor` | string[] | 特定输入类型时可选（如 `story-path`） |
-| `modeDependencies` | object | 按模式覆盖依赖（`full-mode` / `quick-mode`） |
-| `parallel` | boolean | 是否并行执行（需配合 convergenceHook） |
-| `convergenceHook` | string | 并行收敛 hook key |
-| `resumePoint` | boolean | 续传时可作为恢复点 |
-| `failureMode` | `block`/`warn` | 失败时阻断还是仅警告 |
-| `precheck` | string[] | 执行前检查的 hook key 列表 |
-
 ---
 
 ## 目录结构
@@ -277,17 +218,10 @@ qa-flow/
 ├── tools/lanhu-mcp/               # 内置蓝湖 MCP 服务
 └── .claude/
     ├── config.json                # 模块/仓库/路径 source of truth
-    ├── harness/
-    │   ├── workflows/             # Workflow manifests（JSON）
-    │   │   ├── test-case-generation.json
-    │   │   └── code-analysis.json
-    │   ├── delegates.json         # Delegate 注册表
-    │   ├── hooks.json             # Hook 注册表
-    │   └── contracts.json        # State / 命名 / 质量 contract
     ├── rules/                     # 主题细则（用例/XMind/Archive 等）
     ├── skills/                    # Skill 入口层
     │   ├── test-case-generator/
-    │   │   ├── SKILL.md           # 精简编排协议（~130 行）
+    │   │   ├── SKILL.md           # 编排协议
     │   │   └── prompts/           # per-step 行为指导文件
     │   ├── prd-enhancer/
     │   ├── xmind-converter/
@@ -295,8 +229,6 @@ qa-flow/
     │   └── code-analysis-report/
     ├── agents/                    # 子代理定义
     └── scripts/                   # Node.js 工具脚本
-        ├── harness-step-resolver.mjs  # 步骤解析器
-        ├── harness-state-machine.mjs  # 状态机
         ├── load-config.mjs
         ├── json-to-xmind.mjs
         ├── json-to-archive-md.mjs
@@ -311,7 +243,6 @@ qa-flow/
 1. `CLAUDE.md` — 权威工作流手册（推荐先读）
 2. `.claude/rules/*.md` — 主题细则（用例、XMind、Archive、仓库安全等）
 3. `.claude/config.json` — 模块 / 仓库 / 报告路径 source of truth
-4. `.claude/harness/*.json` — Harness 控制平面（workflow / delegate / hook / contract）
 
 ## 详细规范入口
 

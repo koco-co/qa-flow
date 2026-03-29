@@ -1,3 +1,17 @@
+---
+name: Inceptor支持一键建表 v6.3.5
+description: Inceptor支持一键建表 v6.3.5
+tags:
+  - 离线开发
+  - 离线开发-数据开发-Inceptor计算引擎
+  - Inceptor支持一键建表
+module: batch-works
+version: v6.3.5
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.5/Inceptor支持一键建表.csv
+case_count: 6
+created_at: 2026-03-29
+origin: csv
+---
 # Inceptor支持一键建表 v6.3.5
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.5/Inceptor支持一键建表.csv
 > 用例数：6

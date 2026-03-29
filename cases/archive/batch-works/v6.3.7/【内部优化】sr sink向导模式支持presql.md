@@ -1,3 +1,19 @@
+---
+name: 【内部优化】sr sink向导模式支持presql v6.3.7
+description: 【内部优化】sr sink向导模式支持presql v6.3.7
+tags:
+  - 离线开发
+  - 离线开发-数据开发-数据同步
+  - 内部优化
+  - sr
+  - sink向导模式支持presql
+module: batch-works
+version: v6.3.7
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.7/【内部优化】sr sink向导模式支持presql.csv
+case_count: 6
+created_at: 2026-03-29
+origin: csv
+---
 # 【内部优化】sr sink向导模式支持presql v6.3.7
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.7/【内部优化】sr sink向导模式支持presql.csv
 > 用例数：6

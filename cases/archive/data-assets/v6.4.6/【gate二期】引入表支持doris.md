@@ -1,3 +1,18 @@
+---
+name: 【gate二期】引入表支持doris v6.4.6
+description: 【gate二期】引入表支持doris v6.4.6
+tags:
+  - 数据资产
+  - 数据资产-数据质量-多表比对
+  - gate二期
+  - 引入表支持doris
+module: data-assets
+version: v6.4.6
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.6/【gate二期】引入表支持doris.csv
+case_count: 30
+created_at: 2026-03-29
+origin: csv
+---
 # 【gate二期】引入表支持doris v6.4.6
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.6/【gate二期】引入表支持doris.csv
 > 用例数：30

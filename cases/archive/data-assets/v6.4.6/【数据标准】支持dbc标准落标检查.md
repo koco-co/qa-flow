@@ -1,3 +1,18 @@
+---
+name: 【数据标准】支持dbc标准落标检查 v6.4.6
+description: 【数据标准】支持dbc标准落标检查 v6.4.6
+tags:
+  - 数据资产
+  - 数据资产-数据标准
+  - 数据标准
+  - 支持dbc标准落标检查
+module: data-assets
+version: v6.4.6
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.6/【数据标准】支持dbc标准落标检查.csv
+case_count: 76
+created_at: 2026-03-29
+origin: csv
+---
 # 【数据标准】支持dbc标准落标检查 v6.4.6
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.6/【数据标准】支持dbc标准落标检查.csv
 > 用例数：76

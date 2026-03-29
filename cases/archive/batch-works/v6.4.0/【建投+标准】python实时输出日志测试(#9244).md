@@ -1,3 +1,17 @@
+---
+name: "【建投+标准】python实时输出日志测试(#9244)（XMind）"
+description: "【建投+标准】python实时输出日志测试(#9244)（XMind）"
+tags:
+  - 离线开发
+  - 数据开发-
+  - 建投+标准
+  - python实时输出日志测试
+module: batch-works
+version: v6.4.0
+source: zentao-cases/XMind/离线开发/202508-离线开发v6.4.0.xmind
+created_at: 2026-03-29
+origin: xmind
+---
 # 【建投+标准】python实时输出日志测试(#9244)（XMind）
 > 来源：zentao-cases/XMind/离线开发/202508-离线开发v6.4.0.xmind
 

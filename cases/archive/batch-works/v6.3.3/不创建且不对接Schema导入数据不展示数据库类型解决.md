@@ -1,3 +1,17 @@
+---
+name: 不创建且不对接Schema导入数据不展示数据库类型解决 v6.3.3
+description: 不创建且不对接Schema导入数据不展示数据库类型解决 v6.3.3
+tags:
+  - 离线开发
+  - 离线开发-数据开发
+  - 不创建且不对接Schema导入数据不展示数据库类型解决
+module: batch-works
+version: v6.3.3
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.3/不创建且不对接Schema导入数据不展示数据库类型解决.csv
+case_count: 8
+created_at: 2026-03-29
+origin: csv
+---
 # 不创建且不对接Schema导入数据不展示数据库类型解决 v6.3.3
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.3/不创建且不对接Schema导入数据不展示数据库类型解决.csv
 > 用例数：8

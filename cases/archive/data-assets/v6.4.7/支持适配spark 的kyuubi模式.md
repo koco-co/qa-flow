@@ -1,3 +1,18 @@
+---
+name: 支持适配spark 的kyuubi模式 v6.4.7
+description: 支持适配spark 的kyuubi模式 v6.4.7
+tags:
+  - 数据资产
+  - 数据资产-元数据
+  - 支持适配spark
+  - 的kyuubi模式
+module: data-assets
+version: v6.4.7
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.7/支持适配spark 的kyuubi模式.csv
+case_count: 29
+created_at: 2026-03-29
+origin: csv
+---
 # 支持适配spark 的kyuubi模式 v6.4.7
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.7/支持适配spark 的kyuubi模式.csv
 > 用例数：29

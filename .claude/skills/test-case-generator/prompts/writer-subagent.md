@@ -201,7 +201,7 @@ source_context（如有）：
 
 ## 输出要求
 
-将 JSON 写入文件：[临时文件路径，如 cases/requirements/xyzh/Story-20260322/temp/list.json]
+将 JSON 写入文件：[临时文件路径，如 cases/requirements/custom/xyzh/temp/list.json]
 
 然后输出简短摘要：
 - 共编写 X 条用例（P0: N / P1: N / P2: N）

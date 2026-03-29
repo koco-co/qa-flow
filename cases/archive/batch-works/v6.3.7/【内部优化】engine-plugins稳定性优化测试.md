@@ -1,3 +1,19 @@
+---
+name: 【内部优化】engine-plugins稳定性优化测试 v6.3.7
+description: 【内部优化】engine-plugins稳定性优化测试 v6.3.7
+tags:
+  - 离线开发
+  - 离线开发-数据开发-计算引擎
+  - 内部优化
+  - engine
+  - plugins稳定性优化测试
+module: batch-works
+version: v6.3.7
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.7/【内部优化】engine-plugins稳定性优化测试.csv
+case_count: 16
+created_at: 2026-03-29
+origin: csv
+---
 # 【内部优化】engine-plugins稳定性优化测试 v6.3.7
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.7/【内部优化】engine-plugins稳定性优化测试.csv
 > 用例数：16

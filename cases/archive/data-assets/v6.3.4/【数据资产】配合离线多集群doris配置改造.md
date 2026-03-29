@@ -1,3 +1,17 @@
+---
+name: 【数据资产】配合离线多集群doris配置改造 v6.3.4
+description: 【数据资产】配合离线多集群doris配置改造 v6.3.4
+tags:
+  - 数据资产
+  - 数据资产-数据模型
+  - 配合离线多集群doris配置改造
+module: data-assets
+version: v6.3.4
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.4/【数据资产】配合离线多集群doris配置改造.csv
+case_count: 1
+created_at: 2026-03-29
+origin: csv
+---
 # 【数据资产】配合离线多集群doris配置改造 v6.3.4
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.4/【数据资产】配合离线多集群doris配置改造.csv
 > 用例数：1

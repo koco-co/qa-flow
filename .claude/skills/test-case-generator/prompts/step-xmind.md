@@ -1,4 +1,3 @@
-<!-- step-id: xmind | delegate: xmindConverter -->
 # Step xmind：XMind 输出
 
 ## 执行方式
@@ -22,14 +21,8 @@ ln -sf <实际XMind路径> ./latest-output.xmind
 
 ## 步骤完成后
 
-验证 .xmind 文件存在后：
-
-```bash
-node .claude/scripts/harness-state-machine.mjs \
-  --advance xmind \
-  --state-path <story-dir>/.qa-state.json
-```
-
-同时将 `output_xmind: "<路径>"` 写入 `.qa-state.json`（在 advance 前写入）。
+验证 .xmind 文件存在后，更新 `.qa-state.json`：
+- 将 `output_xmind` 设为实际 XMind 文件路径
+- 将 `last_completed_step` 设为 `"xmind"`
 
 > 注意：Step xmind 完成后不删除临时文件，延迟到 Step notify（用户确认后）清理。

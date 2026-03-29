@@ -1,3 +1,21 @@
+---
+name: 【数据模型】【太极】数据模型支持dm for oracle建表 v6.3.2
+description: 【数据模型】【太极】数据模型支持dm for oracle建表 v6.3.2
+tags:
+  - 数据资产
+  - 数据资产-数据模型
+  - 数据模型
+  - 太极
+  - 数据模型支持dm
+  - for
+  - oracle建表
+module: data-assets
+version: v6.3.2
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.2/【数据模型】【太极】数据模型支持dm for oracle建表.csv
+case_count: 1
+created_at: 2026-03-29
+origin: csv
+---
 # 【数据模型】【太极】数据模型支持dm for oracle建表 v6.3.2
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.2/【数据模型】【太极】数据模型支持dm for oracle建表.csv
 > 用例数：1

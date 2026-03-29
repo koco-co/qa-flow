@@ -92,25 +92,30 @@ function jsonToMd(data, sourcePath) {
     extractVersionFromPath(meta?.version || "") ||
     extractVersionFromPath(inferredOutputDir);
 
+  const today = new Date().toISOString().slice(0, 10);
   const fm = buildFrontMatter({
-    name: title,
+    suite_name: meta?.requirement_name || title,
     description: meta?.requirement_name || title,
+    prd_id: meta?.requirement_id ? Number(String(meta.requirement_id).replace(/\D/g, "")) || undefined : undefined,
+    prd_version: version || undefined,
+    prd_path: meta?.prd_path || undefined,
+    prd_url: meta?.prd_url || "",
+    product: moduleKey || undefined,
+    dev_version: meta?.dev_version || "",
     tags,
-    module: moduleKey || undefined,
-    version: version || undefined,
-    source: sourcePath,
+    create_at: today,
+    update_at: today,
+    status: "",
+    health_warnings: [],
+    repos: Array.isArray(meta?.repos) ? meta.repos : [],
+    // 可选保留统计字段（脚本内部）
     case_count: totalCases,
     case_types: caseTypes || undefined,
-    created_at: new Date().toISOString().slice(0, 10),
     origin: "json",
   });
 
   const lines = [];
   lines.push(fm.trimEnd());
-  lines.push("");
-  lines.push(`# ${title}`);
-  lines.push("");
-  lines.push("---");
   lines.push("");
 
   for (const mod of modules ?? []) {
@@ -169,12 +174,14 @@ function escPipe(s) {
 function formatCase(tc) {
   const lines = [];
   const priority = tc.priority || "P2";
-  lines.push(`##### ${tc.title || "(标题缺失)"} 「${priority}」`);
+  lines.push(`##### 【${priority}】${tc.title || "(标题缺失)"}`);
   lines.push("");
   lines.push("> 前置条件");
   lines.push("```");
   lines.push(tc.precondition || "无");
   lines.push("```");
+  lines.push("");
+  lines.push("> 用例步骤");
   lines.push("");
 
   const steps = tc.steps ?? [];
@@ -269,24 +276,27 @@ async function xmindToMd(xmindPath) {
       const xmindModuleKey = extractModuleKey(xmindOutputDirForTags) || extractModuleKey(xmindPath);
       const xmindVersion = extractVersionFromPath(l1Title) || extractVersionFromPath(xmindPath);
 
+      const xmindToday = new Date().toISOString().slice(0, 10);
       const xmindFm = buildFrontMatter({
-        name: l1Title,
+        suite_name: l1Title,
         description: l1Title,
+        prd_version: xmindVersion || undefined,
+        prd_path: xmindPath,
+        prd_url: "",
+        product: xmindModuleKey || undefined,
+        dev_version: "",
         tags: xmindTags,
-        module: xmindModuleKey || undefined,
-        version: xmindVersion || undefined,
-        source: xmindPath,
+        create_at: xmindToday,
+        update_at: xmindToday,
+        status: "",
+        health_warnings: [],
+        repos: [],
         case_count: totalCases,
-        created_at: new Date().toISOString().slice(0, 10),
         origin: "xmind",
       });
 
       const lines = [];
       lines.push(xmindFm.trimEnd());
-      lines.push("");
-      lines.push(`# ${l1Title}`);
-      lines.push("");
-      lines.push("---");
       lines.push("");
 
       // Track current context to output proper headings
@@ -369,12 +379,14 @@ function extractCase(node) {
 function formatCaseFromXmind(tc) {
   const lines = [];
   const priority = tc.priority || "P2";
-  lines.push(`##### ${tc.title || "(标题缺失)"} 「${priority}」`);
+  lines.push(`##### 【${priority}】${tc.title || "(标题缺失)"}`);
   lines.push("");
   lines.push("> 前置条件");
   lines.push("```");
   lines.push(tc.precondition || "无");
   lines.push("```");
+  lines.push("");
+  lines.push("> 用例步骤");
   lines.push("");
 
   lines.push("| 编号 | 步骤 | 预期 |");

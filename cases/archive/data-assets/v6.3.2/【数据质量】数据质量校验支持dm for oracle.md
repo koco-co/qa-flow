@@ -1,3 +1,20 @@
+---
+name: 【数据质量】数据质量校验支持dm for oracle v6.3.2
+description: 【数据质量】数据质量校验支持dm for oracle v6.3.2
+tags:
+  - 数据资产
+  - 数据资产-数据质量
+  - 数据质量
+  - 数据质量校验支持dm
+  - for
+  - oracle
+module: data-assets
+version: v6.3.2
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.2/【数据质量】数据质量校验支持dm for oracle.csv
+case_count: 1
+created_at: 2026-03-29
+origin: csv
+---
 # 【数据质量】数据质量校验支持dm for oracle v6.3.2
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.2/【数据质量】数据质量校验支持dm for oracle.csv
 > 用例数：1

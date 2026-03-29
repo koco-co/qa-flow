@@ -7,6 +7,7 @@
  *   node backfill-archive-frontmatter.mjs --force       # 强制覆盖已有 front-matter
  *   node backfill-archive-frontmatter.mjs --dry-run     # 只输出预览，不写入
  *   node backfill-archive-frontmatter.mjs --path <file> # 仅处理单个文件
+ *   node backfill-archive-frontmatter.mjs --legacy      # 使用旧字段名（name/module/source/created_at）
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
@@ -29,6 +30,7 @@ const ARCHIVE_DIR = join(ROOT, "cases/archive");
 const args = process.argv.slice(2);
 const FORCE = args.includes("--force");
 const DRY_RUN = args.includes("--dry-run");
+const LEGACY = args.includes("--legacy");   // 使用旧字段名（name/module/source/created_at）
 const PATH_ARG = args.includes("--path")
   ? args[args.indexOf("--path") + 1]
   : null;
@@ -148,17 +150,37 @@ function processFile(filePath) {
   else if (source.endsWith(".csv")) origin = "csv";
   else if (content.includes("<!-- split-from:")) origin = "split";
 
-  const fm = buildFrontMatter({
-    name: name || basename(filePath, ".md"),
-    description: name || basename(filePath, ".md"),
-    tags,
-    module: moduleKey || undefined,
-    version: version || undefined,
-    source: source || relPath,
-    case_count: case_count !== null ? case_count : undefined,
-    created_at: new Date().toISOString().slice(0, 10),
-    origin,
-  });
+  const today = new Date().toISOString().slice(0, 10);
+  const displayName = name || basename(filePath, ".md");
+  const fm = LEGACY
+    ? buildFrontMatter({
+        name: displayName,
+        description: displayName,
+        tags,
+        module: moduleKey || undefined,
+        version: version || undefined,
+        source: source || relPath,
+        case_count: case_count !== null ? case_count : undefined,
+        created_at: today,
+        origin,
+      }, "archive")
+    : buildFrontMatter({
+        suite_name: displayName,
+        description: displayName,
+        prd_version: version || undefined,
+        prd_path: source || relPath,
+        prd_url: "",
+        product: moduleKey || undefined,
+        dev_version: "",
+        tags,
+        create_at: today,
+        update_at: today,
+        status: "",
+        health_warnings: [],
+        repos: [],
+        case_count: case_count !== null ? case_count : undefined,
+        origin,
+      });
 
   // 构建新文件内容：front-matter + 原 body（保持 H1 以下不变）
   // 如果原 body 以 blockquote header 开头，保留（front-matter 与它共存是冗余但无害）

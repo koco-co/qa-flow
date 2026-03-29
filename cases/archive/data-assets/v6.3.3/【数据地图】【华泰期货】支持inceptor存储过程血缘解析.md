@@ -1,3 +1,19 @@
+---
+name: 【数据地图】【华泰期货】支持inceptor存储过程血缘解析 v6.3.3
+description: 【数据地图】【华泰期货】支持inceptor存储过程血缘解析 v6.3.3
+tags:
+  - 数据资产
+  - 数据资产-数据地图
+  - 数据地图
+  - 华泰期货
+  - 支持inceptor存储过程血缘解析
+module: data-assets
+version: v6.3.3
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.3/【数据地图】【华泰期货】支持inceptor存储过程血缘解析.csv
+case_count: 1
+created_at: 2026-03-29
+origin: csv
+---
 # 【数据地图】【华泰期货】支持inceptor存储过程血缘解析 v6.3.3
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.3/【数据地图】【华泰期货】支持inceptor存储过程血缘解析.csv
 > 用例数：1

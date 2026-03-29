@@ -1,3 +1,19 @@
+---
+name: 【规则库管理】 支持自定义sql 模版 v6.4.8
+description: 【规则库管理】 支持自定义sql 模版 v6.4.8
+tags:
+  - 数据资产
+  - 数据资产-数据质量-内置规则库
+  - 规则库管理
+  - 支持自定义sql
+  - 模版
+module: data-assets
+version: v6.4.8
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.8/【规则库管理】 支持自定义sql 模版.csv
+case_count: 32
+created_at: 2026-03-29
+origin: csv
+---
 # 【规则库管理】 支持自定义sql 模版 v6.4.8
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.8/【规则库管理】 支持自定义sql 模版.csv
 > 用例数：32
