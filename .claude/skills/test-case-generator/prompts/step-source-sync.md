@@ -43,9 +43,46 @@
 - `.repos/` 下仅允许只读操作（`git fetch`、`git checkout`、`git pull`、`git log/diff/blame`）
 - 严禁 `git push`、`git commit`、修改任何仓库文件
 
+## 部分成功处理
+
+多仓库同步时，单个仓库失败不应阻断整体流程：
+
+1. 逐个仓库执行 `git fetch && git checkout && git pull`，记录每个仓库的结果
+2. 在 `.qa-state.json` 的 `source_context` 中为每个仓库记录状态：
+   ```json
+   {
+     "source_context": {
+       "backend": [
+         {"repoKey": "dt-center-assets", "branch": "release/6.4.10", "status": "synced", "commit": "abc123"},
+         {"repoKey": "DAGScheduleX", "branch": "release/6.4.10", "status": "failed", "error": "branch not found"}
+       ],
+       "frontend": [
+         {"repoKey": "dt-insight-studio-front", "branch": "release/6.4.10", "status": "synced", "commit": "def456"}
+       ]
+     }
+   }
+   ```
+
+3. 向用户展示同步结果摘要：
+   ```
+   源码分支同步结果：
+   [v] dt-center-assets → release/6.4.10 (commit: abc123)
+   [x] DAGScheduleX → release/6.4.10 (失败: branch not found)
+   [v] dt-insight-studio-front → release/6.4.10 (commit: def456)
+
+   1 个仓库同步失败。
+   - 「继续」→ 后续 Writer 不参考失败仓库的源码
+   - 「重试」→ 仅重新 sync 失败仓库
+   - 「取消」→ 中止流程
+   ```
+
+4. 用户选「继续」→ step 标记为完成，Writer 的源码参考中排除 `status: "failed"` 的仓库
+5. 用户选「重试」→ 仅对 failed 仓库重新执行 fetch/checkout/pull，成功后更新状态
+6. 用户选「取消」→ 不更新 `last_completed_step`，流程停在 source-sync
+
 ## 错误处理
 
-- **git fetch/checkout 失败**：提示用户检查网络连接和分支名是否正确，询问是否使用本地已有代码继续
+- **git fetch/checkout 失败**：按部分成功处理逻辑，记录失败仓库并向用户提供 继续/重试/取消 选项
 
 ---
 
