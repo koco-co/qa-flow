@@ -203,6 +203,49 @@ case_count:
   ].filter(Boolean));
   assertIncludes(malformedCaseCountReport.stdout, "invalid case_count", "报告提示 malformed case_count");
 
+  console.log("\n=== Test: explicit empty prd_path is accepted for archive ===");
+  const emptyPrdPathFile = resolve(
+    tempRoot,
+    "cases/archive/custom/xyzh/信永中和-允许空prd_path.md",
+  );
+  writeFile(
+    emptyPrdPathFile,
+    `---
+suite_name: 信永中和-允许空prd_path
+description: 信永中和-允许空prd_path
+prd_path: ""
+product: xyzh
+tags:
+  - 信永中和
+  - 质量问题
+  - 台账
+create_at: 2026-01-10
+status: ""
+health_warnings: []
+case_count: 1
+---
+##### 【P1】验证台账查询
+
+> 用例步骤
+
+| 编号 | 步骤 | 预期 |
+| ---- | ---- | ---- |
+| 1 | 进入【信永中和】-【质量问题台账】页面 | 页面正常加载 |
+`,
+  );
+  const emptyPrdPathReport = runNodeScript(cliPath, [
+    "--root",
+    tempRoot,
+    "--archive",
+    "--path",
+    emptyPrdPathFile,
+  ]);
+  assert(emptyPrdPathReport.code === 0, "显式空 prd_path 不应被判错", [
+    emptyPrdPathReport.stdout.trim(),
+    emptyPrdPathReport.stderr.trim(),
+  ].filter(Boolean));
+  assert(!emptyPrdPathReport.stdout.includes("missing prd_path"), "报告不会把 prd_path: \"\" 视为缺失");
+
   console.log("\n=== Test: unified CLI fix rewrites archive frontmatter and preserves body ===");
   const originalArchiveBody = readBodyWithoutFrontMatter(readFileSync(archiveFile, "utf8"));
   const archiveFix = runNodeScript(cliPath, [
@@ -286,6 +329,53 @@ case_count:
   assertIncludes(fixedRequirementFrontMatter, 'case_path: ""', "requirements 默认 case_path 为空");
   assert(!fixedRequirementFrontMatter.includes("\nname:"), "requirements 已移除 legacy name 字段");
   assert(fixedRequirementBody === originalRequirementBody, "requirements fix 不改动 body 文本");
+
+  console.log("\n=== Test: requirements fix normalizes invalid status and allows long description ===");
+  const longDescriptionPrd = resolve(
+    tempRoot,
+    "cases/requirements/custom/xyzh/数据质量-质量问题台账-formalized.md",
+  );
+  writeFile(
+    longDescriptionPrd,
+    `---
+prd_name: 数据质量-质量问题台账
+description: 这是一个超过六十个字符的需求描述，用于确认 requirements 审计不会因为描述较长而直接给出长度告警，同时还会校正非法状态值。
+product: xyzh
+status: invalid-status
+---
+正文
+`,
+  );
+  const expectedLongDescriptionDate = new Date("2026-02-02T00:00:00Z");
+  utimesSync(longDescriptionPrd, expectedLongDescriptionDate, expectedLongDescriptionDate);
+  const longDescriptionFix = runNodeScript(cliPath, [
+    "--root",
+    tempRoot,
+    "--requirements",
+    "--path",
+    longDescriptionPrd,
+    "--fix",
+  ]);
+  assert(longDescriptionFix.code === 0, "requirements invalid status fix 成功", [
+    longDescriptionFix.stdout.trim(),
+    longDescriptionFix.stderr.trim(),
+  ].filter(Boolean));
+  const fixedLongDescriptionContent = readFileSync(longDescriptionPrd, "utf8");
+  const fixedLongDescriptionFrontMatter = fixedLongDescriptionContent.match(/^---\r?\n[\s\S]*?\r?\n---/m)?.[0] || "";
+  assertIncludes(fixedLongDescriptionFrontMatter, "create_at: 2026-02-02", "已有 frontmatter 但缺 create_at 时也会使用 mtime");
+  assertIncludes(fixedLongDescriptionFrontMatter, "status: formalized", "invalid status 会按文件名归一化");
+  const longDescriptionReport = runNodeScript(cliPath, [
+    "--root",
+    tempRoot,
+    "--requirements",
+    "--path",
+    longDescriptionPrd,
+  ]);
+  assert(longDescriptionReport.code === 0, "requirements 长描述不会单独触发告警", [
+    longDescriptionReport.stdout.trim(),
+    longDescriptionReport.stderr.trim(),
+  ].filter(Boolean));
+  assert(!longDescriptionReport.stdout.includes("description > 60 chars"), "requirements 报告不再检查 description 长度");
 
   console.log("\n=== Test: archive backfill wrapper delegates to canonical audit core ===");
   const wrapperArchiveFile = resolve(

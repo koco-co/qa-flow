@@ -257,7 +257,7 @@ function auditArchiveFile({ filePath, repoRoot, relPath, bucket, frontMatter, bo
   else if (current.case_count !== caseCount) issues.push(issue("error", "mismatched case_count"));
   if (!Object.prototype.hasOwnProperty.call(current, "health_warnings")) issues.push(issue("error", "missing health_warnings"));
   if (!Object.prototype.hasOwnProperty.call(current, "status")) issues.push(issue("error", "missing status"));
-  if (!stringValue(current.prd_path)) issues.push(issue("error", "missing prd_path"));
+  if (!Object.prototype.hasOwnProperty.call(current, "prd_path")) issues.push(issue("error", "missing prd_path"));
   if (tags.length < 3 || tags.length > 10) issues.push(issue("warn", "tags outside 3-10 range"));
   issues.push(...findArchiveBodyIssues(body));
 
@@ -303,7 +303,6 @@ function auditRequirementFile({ filePath, repoRoot, relPath, bucket, frontMatter
   }
   if (!stringValue(current.prd_name) && !stringValue(current.suite_name) && !stringValue(current.name)) issues.push(issue("warn", "missing prd_name"));
   if (!stringValue(current.description)) issues.push(issue("warn", "missing description"));
-  else if (String(current.description).trim().length > 60) issues.push(issue("warn", "description > 60 chars"));
   if (!stringValue(current.product) && !stringValue(current.module)) issues.push(issue("error", "missing product"));
   if (!stringValue(current.create_at) && !stringValue(current.created_at)) issues.push(issue("error", "missing create_at"));
   if (!statusInfo.currentValid) issues.push(issue("warn", statusInfo.currentMissing ? "missing status" : "invalid status"));
@@ -363,7 +362,7 @@ function inferArchiveTags(filePath, frontMatter, body) {
 function inferArchiveCreateAt(filePath, frontMatter, hadFrontMatter) {
   return normalizeDateValue(frontMatter.create_at)
     || normalizeDateValue(frontMatter.created_at)
-    || (hadFrontMatter ? null : dateFromMtime(filePath));
+    || dateFromMtime(filePath);
 }
 
 function inferArchivePrdPath({ repoRoot, filePath, suiteName, product, prdVersion, current }) {
@@ -416,7 +415,7 @@ function inferRequirementCreateAt(filePath, frontMatter, hadFrontMatter) {
   return normalizeDateValue(frontMatter.create_at)
     || normalizeDateValue(frontMatter.created_at)
     || normalizeDateValue(frontMatter.imported_at)
-    || (hadFrontMatter ? null : dateFromMtime(filePath));
+    || dateFromMtime(filePath);
 }
 
 function inferRequirementStatus(filePath, frontMatter) {
@@ -424,7 +423,7 @@ function inferRequirementStatus(filePath, frontMatter) {
   const inferred = inferStatusFromName(filePath);
   if (current && VALID_PRD_STATUS.has(current)) return { currentValid: true, currentMissing: false, nextValue: current };
   if (!current) return { currentValid: false, currentMissing: true, nextValue: inferred };
-  return { currentValid: false, currentMissing: false, nextValue: current };
+  return { currentValid: false, currentMissing: false, nextValue: inferred };
 }
 
 function inferStatusFromName(filePath) {
