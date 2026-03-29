@@ -1,18 +1,9 @@
 /**
  * front-matter-utils.mjs
- * 归档 MD front-matter 生成/解析工具函数
- *
- * 导出:
- *   buildFrontMatter(fields, docType?)                 → YAML front-matter 字符串
- *   inferTags({ title, headings, modulePath, meta })   → string[]
- *   parseFrontMatter(mdContent)                        → { frontMatter, body, docType }
- *   validateFrontMatter(fields, docType)               → { valid: boolean, missing: string[] }
- *   extractModuleKey(filePath)                         → string | null
- *   extractVersionFromPath(filePath)                   → string | null
+ * 归档 MD / PRD front-matter 生成、解析与规范化工具函数
  */
 import { loadConfig } from "./load-config.mjs";
 
-// 页面级/操作级停用词，不作为 tag
 const STOP_WORDS = new Set([
   "列表页", "新增页", "编辑页", "详情页", "设置页", "配置页", "权限验证",
   "新增", "编辑", "删除", "详情", "查询", "搜索", "导入", "导出",
@@ -20,23 +11,61 @@ const STOP_WORDS = new Set([
   "步骤", "预期", "前置条件",
 ]);
 
-// ─── buildFrontMatter ────────────────────────────────────────────────────────
-
-/**
- * 将 fields 对象序列化为 YAML front-matter 字符串（含开闭 --- 分隔符）
- * 支持: string / number / string[] / { key: number|string }（case_types）
- * null/undefined 字段自动跳过
- *
- * @param {Record<string, any>} fields
- * @param {"prd" | "archive" | null} [docType]  若提供，自动注入 doc_type 字段
- * @returns {string}  以 \n 结尾
- */
-// 即使为空也强制输出 `field: []` 的字段（不跳过）
 const FORCE_EMPTY_ARRAY_FIELDS = new Set(["repos", "health_warnings", "tags"]);
+const LEGACY_FRONTMATTER_KEYS = new Set([
+  "name",
+  "module",
+  "source",
+  "created_at",
+  "version",
+  "story",
+  "doc_id",
+  "enhanced_at",
+  "images_processed",
+]);
+
+const ARCHIVE_CANONICAL_FIELD_ORDER = [
+  "suite_name",
+  "description",
+  "prd_id",
+  "prd_version",
+  "prd_path",
+  "prd_url",
+  "product",
+  "dev_version",
+  "tags",
+  "create_at",
+  "update_at",
+  "status",
+  "health_warnings",
+  "repos",
+  "case_count",
+  "case_types",
+  "origin",
+];
+
+const PRD_CANONICAL_FIELD_ORDER = [
+  "prd_name",
+  "description",
+  "prd_id",
+  "prd_version",
+  "prd_source",
+  "prd_url",
+  "product",
+  "dev_version",
+  "tags",
+  "create_at",
+  "update_at",
+  "status",
+  "health_warnings",
+  "repos",
+  "case_path",
+];
 
 export function buildFrontMatter(fields, docType = null) {
   const merged = docType ? { doc_type: docType, ...fields } : { ...fields };
   const lines = ["---"];
+
   for (const [key, val] of Object.entries(merged)) {
     if (val === null || val === undefined) continue;
 
@@ -51,47 +80,64 @@ export function buildFrontMatter(fields, docType = null) {
       for (const item of val) {
         lines.push(`  - ${yamlStr(String(item))}`);
       }
-    } else if (typeof val === "object") {
+      continue;
+    }
+
+    if (typeof val === "object") {
       const entries = Object.entries(val).filter(
-        ([, v]) => v !== null && v !== undefined,
+        ([, nestedValue]) => nestedValue !== null && nestedValue !== undefined,
       );
       if (entries.length === 0) continue;
       lines.push(`${key}:`);
-      for (const [k, v] of entries) {
-        lines.push(`  ${k}: ${v}`);
+      for (const [nestedKey, nestedValue] of entries) {
+        if (typeof nestedValue === "number") {
+          lines.push(`  ${nestedKey}: ${nestedValue}`);
+        } else {
+          lines.push(`  ${nestedKey}: ${yamlStr(String(nestedValue))}`);
+        }
       }
-    } else if (typeof val === "number") {
-      lines.push(`${key}: ${val}`);
-    } else {
-      lines.push(`${key}: ${yamlStr(String(val))}`);
+      continue;
     }
+
+    if (typeof val === "number") {
+      lines.push(`${key}: ${val}`);
+      continue;
+    }
+
+    lines.push(`${key}: ${yamlStr(String(val))}`);
   }
+
   lines.push("---");
   return lines.join("\n") + "\n";
 }
 
-/** 当字符串含特殊字符时加双引号 */
-function yamlStr(s) {
-  if (s === "") return '""';
-  // 含 YAML 特殊字符 或 首尾有空格 时引号包裹
-  if (/[:#{}[\],&*!|>'"%@`]/.test(s) || /^\s|\s$/.test(s)) {
-    return `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+export function buildCanonicalFrontMatter(fields, docType) {
+  const order = docType === "prd" ? PRD_CANONICAL_FIELD_ORDER : ARCHIVE_CANONICAL_FIELD_ORDER;
+  const ordered = {};
+
+  for (const key of order) {
+    if (Object.prototype.hasOwnProperty.call(fields, key)) {
+      ordered[key] = fields[key];
+    }
   }
-  return s;
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (!Object.prototype.hasOwnProperty.call(ordered, key)) {
+      ordered[key] = value;
+    }
+  }
+
+  return buildFrontMatter(ordered);
 }
 
-// ─── inferTags ───────────────────────────────────────────────────────────────
+function yamlStr(value) {
+  if (value === "") return '""';
+  if (/[:#{}[\],&*!|>'"%@`]/.test(value) || /^\s|\s$/.test(value)) {
+    return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+  }
+  return value;
+}
 
-/**
- * 从多个来源推断 tags 列表（领域关键词）
- *
- * @param {object} opts
- * @param {string}   opts.title       H1 标题
- * @param {string[]} opts.headings    H2/H3 标题列表（功能模块/菜单名）
- * @param {string}   opts.modulePath  输出目录路径（推断模块中文名）
- * @param {object}   opts.meta        JSON meta 对象（可选）
- * @returns {string[]}
- */
 export function inferTags({
   title = "",
   headings = [],
@@ -100,257 +146,315 @@ export function inferTags({
 } = {}) {
   const candidates = new Set();
 
-  // 1. 从目录路径推断模块中文名
   const moduleKey = extractModuleKeyFromPath(modulePath);
   if (moduleKey) {
     const zhName = getZhNameForModuleKey(moduleKey);
     if (zhName) candidates.add(zhName);
   }
 
-  // 2. Writer 已推断的 meta.tags 直接纳入
   if (Array.isArray(meta.tags)) {
-    for (const t of meta.tags) {
-      const s = String(t).trim();
-      if (s.length >= 2 && !STOP_WORDS.has(s)) candidates.add(s);
+    for (const tag of meta.tags) {
+      const normalized = String(tag).trim();
+      if (normalized.length >= 2 && !STOP_WORDS.has(normalized)) {
+        candidates.add(normalized);
+      }
     }
   }
 
-  // 3. 从 meta 字段提取关键词
   if (meta.requirement_name) {
-    for (const p of splitKeywords(meta.requirement_name)) {
-      if (!STOP_WORDS.has(p)) candidates.add(p);
+    for (const part of splitKeywords(meta.requirement_name)) {
+      if (!STOP_WORDS.has(part)) candidates.add(part);
     }
   }
+
   if (meta.product) {
-    const p = String(meta.product).trim();
-    if (p.length >= 2 && !STOP_WORDS.has(p)) candidates.add(p);
+    const normalized = String(meta.product).trim();
+    if (normalized.length >= 2 && !STOP_WORDS.has(normalized)) {
+      candidates.add(normalized);
+    }
   }
 
-  // 4. 从 H2/H3 标题（功能模块/菜单名）提取
-  for (const h of headings) {
-    const cleaned = h
+  for (const heading of headings) {
+    const cleaned = heading
       .replace(/^#{1,6}\s*/, "")
       .replace(/【[^】]*】/g, "")
       .replace(/\(#\d+\)/g, "")
       .replace(/（#\d+）/g, "")
-      .replace(/（[^）]*）/g, "")  // 去掉「（XMind）」等全角括号后缀
-      .replace(/[❯►»>]+/g, "")    // 去掉面包屑导航符号
+      .replace(/（[^）]*）/g, "")
+      .replace(/[❯►»>]+/g, "")
       .trim();
+
     if (
       cleaned.length >= 2 &&
       !STOP_WORDS.has(cleaned) &&
-      !cleaned.startsWith("验证") &&   // 跳过测试用例标题
-      !/^\d+$/.test(cleaned)           // 跳过纯数字
+      !cleaned.startsWith("验证") &&
+      !/^\d+$/.test(cleaned)
     ) {
       candidates.add(cleaned);
     }
   }
 
-  // 5. 从 H1 标题分词补充
-  for (const p of splitKeywords(title)) {
-    if (!STOP_WORDS.has(p)) candidates.add(p);
+  for (const part of splitKeywords(title)) {
+    if (!STOP_WORDS.has(part)) candidates.add(part);
   }
 
-  return [...candidates].filter((t) => t.length >= 2).slice(0, 10);
+  return [...candidates].filter((tag) => tag.length >= 2).slice(0, 10);
 }
 
-/** 从文本中分词提取关键词短语 */
 function splitKeywords(text) {
   if (!text) return [];
-  return (
-    text
-      // 提取 【...】 内容，去掉括号
-      .replace(/【([^】]*)】/g, " $1 ")
-      // 去掉 (#123) 和（#123）
-      .replace(/\(#\d+\)/g, " ")
-      .replace(/（#\d+）/g, " ")
-      // 去掉版本号
-      .replace(/v?\d+\.\d+(\.\d+)*/gi, " ")
-      // 去掉全角括号包裹的内容（如「（XMind）」「（来源）」）
-      .replace(/（[^）]*）/g, " ")
-      // 去掉半角括号包裹的内容（如「(XMind)」）
-      .replace(/\([^)]*\)/g, " ")
-      // 按分隔符拆分
-      .split(/[-\s、，,·/·—]+/)
-      .map((s) => s.trim())
-      // 过滤纯数字（YYYYMM、日期戳等）
-      .filter((s) => s.length >= 2 && !/^\d+$/.test(s))
-  );
+  return text
+    .replace(/【([^】]*)】/g, " $1 ")
+    .replace(/\(#\d+\)/g, " ")
+    .replace(/（#\d+）/g, " ")
+    .replace(/v?\d+\.\d+(\.\d+)*/gi, " ")
+    .replace(/（[^）]*）/g, " ")
+    .replace(/\([^)]*\)/g, " ")
+    .split(/[-\s、，,·/—]+/)
+    .map((item) => item.trim())
+    .filter((item) => item.length >= 2 && !/^\d+$/.test(item));
 }
 
-// ─── parseFrontMatter ────────────────────────────────────────────────────────
+export function splitFrontMatter(mdContent) {
+  const match = mdContent.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  if (!match) {
+    return {
+      rawFrontMatter: null,
+      frontMatterText: null,
+      body: mdContent,
+    };
+  }
 
-/**
- * 解析 Markdown 文件的 YAML front-matter
- *
- * @param {string} mdContent
- * @returns {{ frontMatter: Record<string, any> | null, body: string }}
- *   frontMatter 为 null 表示文件没有 front-matter
- */
+  return {
+    rawFrontMatter: match[0],
+    frontMatterText: match[1],
+    body: mdContent.slice(match[0].length),
+  };
+}
+
 export function parseFrontMatter(mdContent) {
-  const normalized = mdContent.replace(/\r\n/g, "\n");
-  if (!normalized.startsWith("---\n")) {
-    return { frontMatter: null, body: mdContent };
-  }
-  const endIdx = normalized.indexOf("\n---\n", 4);
-  if (endIdx === -1) {
-    return { frontMatter: null, body: mdContent };
+  const { frontMatterText, body } = splitFrontMatter(mdContent);
+  if (frontMatterText === null) {
+    return { frontMatter: null, body: mdContent, docType: null };
   }
 
-  const fmText = normalized.slice(4, endIdx);
-  const body = normalized.slice(endIdx + 5); // after "\n---\n"
-
+  const lines = frontMatterText.replace(/\r\n/g, "\n").split("\n");
   const frontMatter = {};
-  let currentKey = null;
-  let currentList = null;
-  let currentObj = null;
 
-  for (const line of fmText.split("\n")) {
-    // 数组元素：`  - value`
-    const listItem = line.match(/^  - (.+)$/);
-    if (listItem && currentKey && Array.isArray(frontMatter[currentKey])) {
-      frontMatter[currentKey].push(unquoteYaml(listItem[1]));
+  for (let index = 0; index < lines.length;) {
+    const line = lines[index];
+    if (!line.trim()) {
+      index += 1;
       continue;
     }
 
-    // 对象属性：`  key: value`
-    const objProp = line.match(/^  ([a-z_]+):\s*(.*)$/);
-    if (objProp && currentObj !== null) {
-      currentObj[objProp[1]] = unquoteYaml(objProp[2].trim());
+    const topLevelMatch = line.match(/^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*)$/);
+    if (!topLevelMatch) {
+      index += 1;
       continue;
     }
 
-    // 顶层键值对：`key: value` 或 `key:` (array/object)
-    const kv = line.match(/^([a-z_]+):\s*(.*)$/);
-    if (kv) {
-      currentKey = kv[1];
-      const raw = kv[2].trim();
-      currentList = null;
-      currentObj = null;
-      if (raw === "") {
-        // 下一行决定是数组还是对象（保守：先设数组，遇到 `  key:` 时切换）
-        frontMatter[currentKey] = [];
-        currentList = frontMatter[currentKey];
-      } else {
-        frontMatter[currentKey] = unquoteYaml(raw);
-      }
+    const [, key, rawValue] = topLevelMatch;
+    const trimmedValue = rawValue.trim();
+
+    if (trimmedValue !== "") {
+      frontMatter[key] = parseYamlScalar(trimmedValue);
+      index += 1;
+      continue;
     }
+
+    const blockLines = [];
+    index += 1;
+    while (index < lines.length && /^  /.test(lines[index])) {
+      blockLines.push(lines[index]);
+      index += 1;
+    }
+
+    if (blockLines.length === 0) {
+      frontMatter[key] = "";
+      continue;
+    }
+
+    if (blockLines.some((blockLine) => /^  - /.test(blockLine))) {
+      frontMatter[key] = blockLines
+        .filter((blockLine) => /^  - /.test(blockLine))
+        .map((blockLine) => parseYamlScalar(blockLine.replace(/^  - /, "").trim()));
+      continue;
+    }
+
+    const objectValue = {};
+    for (const blockLine of blockLines) {
+      const objectMatch = blockLine.match(/^  ([A-Za-z_][A-Za-z0-9_-]*):\s*(.*)$/);
+      if (!objectMatch) continue;
+      const [, nestedKey, nestedRawValue] = objectMatch;
+      objectValue[nestedKey] = parseYamlScalar(nestedRawValue.trim());
+    }
+    frontMatter[key] = objectValue;
   }
 
-  const docType = frontMatter.doc_type || null;
+  const docType = typeof frontMatter.doc_type === "string" ? frontMatter.doc_type : null;
   return { frontMatter, body, docType };
 }
 
-// ─── validateFrontMatter ──────────────────────────────────────────────────────
+function parseYamlScalar(rawValue) {
+  const value = rawValue.trim();
 
-// 新格式（suite_name/prd_name/product）
-const REQUIRED_ARCHIVE_NEW = ["suite_name", "description", "product", "prd_path", "create_at", "tags"];
-const REQUIRED_PRD_NEW = ["prd_name", "description", "product", "prd_source", "create_at"];
+  if (value === "[]") return [];
+  if (value === "{}") return {};
 
-// 旧格式（name/module/source/created_at）— 向后兼容
-const REQUIRED_COMMON_LEGACY = ["name", "description", "module", "source", "created_at"];
-const REQUIRED_ARCHIVE_LEGACY = ["tags"];
-const REQUIRED_PRD_LEGACY = [];
-
-/**
- * 检测 front-matter 使用新格式还是旧格式
- * @param {Record<string, any>} fields
- * @returns {"new" | "legacy"}
- */
-function detectSchemaVersion(fields) {
-  if (fields.suite_name !== undefined || fields.prd_name !== undefined || fields.product !== undefined) {
-    return "new";
+  if (/^\[(.*)\]$/.test(value)) {
+    const inner = value.slice(1, -1).trim();
+    if (!inner) return [];
+    return inner.split(",").map((item) => parseYamlScalar(item.trim()));
   }
-  return "legacy";
+
+  if (value.startsWith('"') && value.endsWith('"')) {
+    return value.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+  }
+
+  if (value.startsWith("'") && value.endsWith("'")) {
+    return value.slice(1, -1).replace(/''/g, "'");
+  }
+
+  if (/^-?\d+(?:\.\d+)?$/.test(value)) {
+    return Number(value);
+  }
+
+  if (/^(true|false)$/i.test(value)) {
+    return value.toLowerCase() === "true";
+  }
+
+  return value;
 }
 
-/**
- * 按 doc_type 校验 front-matter 必填字段
- * 同时支持新格式（suite_name/product）和旧格式（name/module），自动检测。
- *
- * @param {Record<string, any>} fields
- * @param {"prd" | "archive"} docType
- * @returns {{ valid: boolean, missing: string[], schemaVersion: "new" | "legacy" }}
- */
+const REQUIRED_ARCHIVE_CANONICAL = [
+  "suite_name",
+  "description",
+  "product",
+  "prd_path",
+  "create_at",
+  "tags",
+];
+const REQUIRED_PRD_CANONICAL = [
+  "prd_name",
+  "description",
+  "product",
+  "prd_source",
+  "create_at",
+];
+
+export function hasLegacyFrontMatterKeys(fields = {}) {
+  return Object.keys(fields).some((key) => LEGACY_FRONTMATTER_KEYS.has(key));
+}
+
 export function validateFrontMatter(fields, docType) {
-  const version = detectSchemaVersion(fields);
-  let required;
-  if (version === "new") {
-    required = docType === "archive" ? REQUIRED_ARCHIVE_NEW : REQUIRED_PRD_NEW;
-  } else {
-    required = [
-      ...REQUIRED_COMMON_LEGACY,
-      ...(docType === "archive" ? REQUIRED_ARCHIVE_LEGACY : REQUIRED_PRD_LEGACY),
-    ];
-  }
-  const missing = required.filter(
-    (k) => fields[k] === null || fields[k] === undefined || fields[k] === "",
-  );
-  return { valid: missing.length === 0, missing, schemaVersion: version };
+  const required = docType === "archive"
+    ? REQUIRED_ARCHIVE_CANONICAL
+    : REQUIRED_PRD_CANONICAL;
+
+  const missing = required.filter((key) => isBlankValue(fields[key]));
+  return {
+    valid: missing.length === 0,
+    missing,
+    schemaVersion: hasLegacyFrontMatterKeys(fields) ? "legacy" : "new",
+  };
 }
 
-/** 去掉 YAML 字符串值的引号 */
-function unquoteYaml(s) {
-  if (typeof s !== "string") return s;
-  s = s.trim();
-  if (s.startsWith('"') && s.endsWith('"')) {
-    return s.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
-  }
-  const n = Number(s);
-  if (!isNaN(n) && s !== "") return n;
-  return s;
+function isBlankValue(value) {
+  if (value === null || value === undefined) return true;
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === "string") return value.trim() === "";
+  return false;
 }
 
-// ─── 路径工具 ────────────────────────────────────────────────────────────────
+export function normalizeDocumentTitle(value) {
+  if (value === null || value === undefined) return "";
 
-/**
- * 从任意文件路径推断模块 key
- * 处理:
- *   cases/archive/data-assets/...         → data-assets
- *   cases/archive/custom/xyzh/...         → xyzh
- *   cases/xmind/data-assets/...           → data-assets
- *   cases/xmind/custom/xyzh/...           → xyzh
- *   cases/history/xyzh/...                → xyzh
- *   cases/requirements/data-assets/...    → data-assets
- *
- * @param {string} filePath
- * @returns {string | null}
- */
+  return String(value)
+    .trim()
+    .replace(/\.md$/i, "")
+    .replace(/-enhanced$/i, "")
+    .replace(/-formalized$/i, "")
+    .replace(/（XMind）$/i, "")
+    .replace(/\(XMind\)$/i, "")
+    .replace(/^PRD[-\s_]?\d+\s*/i, "")
+    .replace(/^PRD[-_]\d+-/i, "")
+    .replace(/\(#\d+\)/g, "")
+    .replace(/（#\d+）/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function normalizeDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    const date = new Date(trimmed);
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString().slice(0, 10);
+    }
+  }
+
+  return "";
+}
+
+export function coerceStringArray(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+  }
+
+  if (value === null || value === undefined || value === "[]") {
+    return [];
+  }
+
+  const normalized = String(value).trim();
+  return normalized ? [normalized] : [];
+}
+
+export function pickFirstNonEmpty(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined) continue;
+    if (Array.isArray(value) && value.length === 0) continue;
+    if (typeof value === "string" && value.trim() === "") continue;
+    return value;
+  }
+  return "";
+}
+
 export function extractModuleKey(filePath) {
   return extractModuleKeyFromPath(filePath);
 }
 
-function extractModuleKeyFromPath(p) {
-  if (!p) return null;
-  const s = p.replace(/\\/g, "/");
+function extractModuleKeyFromPath(filePath) {
+  if (!filePath) return null;
+  const normalized = filePath.replace(/\\/g, "/");
 
-  // custom/xyzh pattern
-  const customM = s.match(/(?:archive|xmind|requirements)\/custom\/([^/]+)/);
-  if (customM) return customM[1];
+  const customMatch = normalized.match(/(?:archive|xmind|requirements)\/custom\/([^/]+)/);
+  if (customMatch) return customMatch[1];
 
-  // archive/<key>  /  xmind/<key>  /  requirements/<key>  /  history/<key>
-  const stdM = s.match(
-    /(?:archive|xmind|requirements|history)\/([^/]+)/,
-  );
-  if (stdM && stdM[1] !== "custom") return stdM[1];
+  const standardMatch = normalized.match(/(?:archive|xmind|requirements|history)\/([^/]+)/);
+  if (standardMatch && standardMatch[1] !== "custom") {
+    return standardMatch[1];
+  }
 
   return null;
 }
 
-/**
- * 从文件路径中提取语义版本号（如 v6.4.10）
- * @param {string} filePath
- * @returns {string | null}  以 "v" 开头，如 "v6.4.10"
- */
 export function extractVersionFromPath(filePath) {
   if (!filePath) return null;
-  const m = filePath.replace(/\\/g, "/").match(/\bv(\d+\.\d+\.\d+)\b/i);
-  return m ? `v${m[1]}` : null;
+  const match = filePath.replace(/\\/g, "/").match(/\bv(\d+\.\d+\.\d+)\b/i);
+  return match ? `v${match[1]}` : null;
 }
 
-// ─── 内部辅助 ────────────────────────────────────────────────────────────────
-
-/** 从 config.json 中查找模块 key 对应的中文名 */
 function getZhNameForModuleKey(moduleKey) {
   let config;
   try {
@@ -358,16 +462,18 @@ function getZhNameForModuleKey(moduleKey) {
   } catch {
     return null;
   }
-  for (const [key, mod] of Object.entries(config.modules || {})) {
-    // 计算 moduleDir（与 getModuleMap 逻辑一致）
+
+  for (const [key, moduleConfig] of Object.entries(config.modules || {})) {
     let moduleDir = key;
-    if (mod.xmind) {
-      const m = mod.xmind.match(/cases\/xmind\/(.+?)\/?$/);
-      if (m) moduleDir = m[1];
+    if (moduleConfig.xmind) {
+      const match = moduleConfig.xmind.match(/cases\/xmind\/(.+?)\/?$/);
+      if (match) moduleDir = match[1];
     }
+
     if (key === moduleKey || moduleDir === moduleKey) {
-      return mod.zh || null;
+      return moduleConfig.zh || null;
     }
   }
+
   return null;
 }
