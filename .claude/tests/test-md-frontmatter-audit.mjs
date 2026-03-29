@@ -167,6 +167,42 @@ case_path: ""
   assertIncludes(archiveReport.stdout, "missing prd_path", "报告提示缺少 prd_path");
   assertIncludes(archiveReport.stdout, "body contains H1", "报告提示 body H1 警告");
 
+  console.log("\n=== Test: malformed case_count is reported instead of coerced ===");
+  const malformedCaseCountFile = resolve(
+    tempRoot,
+    "cases/archive/custom/xyzh/信永中和-空用例.md",
+  );
+  writeFile(
+    malformedCaseCountFile,
+    `---
+suite_name: 信永中和-空用例
+description: 信永中和-空用例
+product: xyzh
+tags:
+  - 信永中和
+  - 质量问题
+  - 台账
+create_at: 2026-01-10
+status: ""
+health_warnings: []
+case_count:
+---
+## 台账
+`,
+  );
+  const malformedCaseCountReport = runNodeScript(cliPath, [
+    "--root",
+    tempRoot,
+    "--archive",
+    "--path",
+    malformedCaseCountFile,
+  ]);
+  assert(malformedCaseCountReport.code === 1, "malformed case_count 会导致 report 非 0", [
+    malformedCaseCountReport.stdout.trim(),
+    malformedCaseCountReport.stderr.trim(),
+  ].filter(Boolean));
+  assertIncludes(malformedCaseCountReport.stdout, "invalid case_count", "报告提示 malformed case_count");
+
   console.log("\n=== Test: unified CLI fix rewrites archive frontmatter and preserves body ===");
   const originalArchiveBody = readBodyWithoutFrontMatter(readFileSync(archiveFile, "utf8"));
   const archiveFix = runNodeScript(cliPath, [

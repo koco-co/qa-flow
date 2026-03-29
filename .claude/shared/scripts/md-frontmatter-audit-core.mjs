@@ -210,8 +210,13 @@ function verifyRewrite(record) {
   if (frontMatter.name !== undefined || frontMatter.module !== undefined || frontMatter.source !== undefined || frontMatter.created_at !== undefined) {
     throw new Error("legacy 字段未清理干净");
   }
-  if (record.docKind === "archive" && Number(frontMatter.case_count) !== countArchiveCases(body)) {
-    throw new Error("case_count 校验失败");
+  if (record.docKind === "archive") {
+    if (!isValidCaseCount(frontMatter.case_count)) {
+      throw new Error("case_count 必须是非负整数");
+    }
+    if (frontMatter.case_count !== countArchiveCases(body)) {
+      throw new Error("case_count 校验失败");
+    }
   }
 }
 
@@ -248,7 +253,8 @@ function auditArchiveFile({ filePath, repoRoot, relPath, bucket, frontMatter, bo
   else if (product && !VALID_PRODUCTS.has(product)) issues.push(issue("error", "invalid product"));
   if (!stringValue(current.create_at) && !stringValue(current.created_at)) issues.push(issue("error", "missing create_at"));
   if (!Object.prototype.hasOwnProperty.call(current, "case_count")) issues.push(issue("error", "missing case_count"));
-  else if (Number(current.case_count) !== caseCount) issues.push(issue("error", "mismatched case_count"));
+  else if (!isValidCaseCount(current.case_count)) issues.push(issue("error", "invalid case_count"));
+  else if (current.case_count !== caseCount) issues.push(issue("error", "mismatched case_count"));
   if (!Object.prototype.hasOwnProperty.call(current, "health_warnings")) issues.push(issue("error", "missing health_warnings"));
   if (!Object.prototype.hasOwnProperty.call(current, "status")) issues.push(issue("error", "missing status"));
   if (!stringValue(current.prd_path)) issues.push(issue("error", "missing prd_path"));
@@ -611,4 +617,8 @@ function stringValue(value) {
 
 function valueExists(value) {
   return value !== null && value !== undefined && value !== "";
+}
+
+function isValidCaseCount(value) {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
