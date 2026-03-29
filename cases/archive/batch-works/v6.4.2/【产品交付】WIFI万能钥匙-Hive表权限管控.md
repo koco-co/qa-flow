@@ -1,3 +1,19 @@
+---
+name: 【产品交付】WIFI万能钥匙-Hive表权限管控 v6.4.2
+description: 【产品交付】WIFI万能钥匙-Hive表权限管控 v6.4.2
+tags:
+  - 离线开发
+  - hive表权限管控
+  - 产品交付
+  - WIFI万能钥匙
+  - Hive表权限管控
+module: batch-works
+version: v6.4.2
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.2/【产品交付】WIFI万能钥匙-Hive表权限管控.csv
+case_count: 26
+created_at: 2026-03-29
+origin: csv
+---
 # 【产品交付】WIFI万能钥匙-Hive表权限管控 v6.4.2
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.2/【产品交付】WIFI万能钥匙-Hive表权限管控.csv
 > 用例数：26

@@ -1,3 +1,18 @@
+---
+name: "【岚图】发布映射schema功能代码迁移(#9735)（XMind）"
+description: "【岚图】发布映射schema功能代码迁移(#9735)（XMind）"
+tags:
+  - 离线开发
+  - 数据同步Source和Sink端数据源相同
+  - 数据同步Source和Sink端数据源不同
+  - 岚图
+  - 发布映射schema功能代码迁移
+module: batch-works
+version: v6.4.4
+source: zentao-cases/XMind/离线开发/202512-离线开发v6.4.4.xmind
+created_at: 2026-03-29
+origin: xmind
+---
 # 【岚图】发布映射schema功能代码迁移(#9735)（XMind）
 > 来源：zentao-cases/XMind/离线开发/202512-离线开发v6.4.4.xmind
 

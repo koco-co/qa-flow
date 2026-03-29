@@ -1,3 +1,18 @@
+---
+name: 【建投交付】AI功能迁移 v6.4.5
+description: 【建投交付】AI功能迁移 v6.4.5
+tags:
+  - 离线开发
+  - 离线开发-数据开发-AI功能
+  - 建投交付
+  - AI功能迁移
+module: batch-works
+version: v6.4.5
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.5/【建投交付】AI功能迁移.csv
+case_count: 173
+created_at: 2026-03-29
+origin: csv
+---
 # 【建投交付】AI功能迁移 v6.4.5
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.5/【建投交付】AI功能迁移.csv
 > 用例数：173

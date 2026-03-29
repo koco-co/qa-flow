@@ -1,3 +1,20 @@
+---
+name: "【江苏银行】数据同步读写支持gaussDB9.1(#9648)（XMind）"
+description: "【江苏银行】数据同步读写支持gaussDB9.1(#9648)（XMind）"
+tags:
+  - 离线开发
+  - 数据源
+  - 数据开发
+  - 发布
+  - 运维中心
+  - 江苏银行
+  - 数据同步读写支持gaussDB
+module: batch-works
+version: v6.4.3
+source: zentao-cases/XMind/离线开发/202511-离线开发v6.4.3.xmind
+created_at: 2026-03-29
+origin: xmind
+---
 # 【江苏银行】数据同步读写支持gaussDB9.1(#9648)（XMind）
 > 来源：zentao-cases/XMind/离线开发/202511-离线开发v6.4.3.xmind
 

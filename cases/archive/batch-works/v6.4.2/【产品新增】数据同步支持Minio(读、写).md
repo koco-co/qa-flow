@@ -1,3 +1,18 @@
+---
+name: 【产品新增】数据同步支持Minio(读、写) v6.4.2
+description: 【产品新增】数据同步支持Minio(读、写) v6.4.2
+tags:
+  - 离线开发
+  - 离线数据同步支持minio数据源
+  - 产品新增
+  - 数据同步支持Minio
+module: batch-works
+version: v6.4.2
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.2/【产品新增】数据同步支持Minio(读、写).csv
+case_count: 44
+created_at: 2026-03-29
+origin: csv
+---
 # 【产品新增】数据同步支持Minio(读、写) v6.4.2
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.2/【产品新增】数据同步支持Minio(读、写).csv
 > 用例数：44

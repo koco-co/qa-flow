@@ -1,3 +1,19 @@
+---
+name: 【产品交付】数据同步vastbase-sink支持update v6.4.3
+description: 【产品交付】数据同步vastbase-sink支持update v6.4.3
+tags:
+  - 离线开发
+  - 数据同步vastbase支持update
+  - 产品交付
+  - 数据同步vastbase
+  - sink支持update
+module: batch-works
+version: v6.4.3
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.3/【产品交付】数据同步vastbase-sink支持update.csv
+case_count: 16
+created_at: 2026-03-29
+origin: csv
+---
 # 【产品交付】数据同步vastbase-sink支持update v6.4.3
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.3/【产品交付】数据同步vastbase-sink支持update.csv
 > 用例数：16

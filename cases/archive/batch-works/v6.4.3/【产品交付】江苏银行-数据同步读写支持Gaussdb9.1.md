@@ -1,3 +1,19 @@
+---
+name: 【产品交付】江苏银行-数据同步读写支持Gaussdb9.1 v6.4.3
+description: 【产品交付】江苏银行-数据同步读写支持Gaussdb9.1 v6.4.3
+tags:
+  - 离线开发
+  - 数据同步读写支持GaussDB9.1
+  - 产品交付
+  - 江苏银行
+  - 数据同步读写支持Gaussdb
+module: batch-works
+version: v6.4.3
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.3/【产品交付】江苏银行-数据同步读写支持Gaussdb9.1.csv
+case_count: 66
+created_at: 2026-03-29
+origin: csv
+---
 # 【产品交付】江苏银行-数据同步读写支持Gaussdb9.1 v6.4.3
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.3/【产品交付】江苏银行-数据同步读写支持Gaussdb9.1.csv
 > 用例数：66

@@ -1,3 +1,17 @@
+---
+name: "【江苏银行】本地数据导入- oracle(#9405)（XMind）"
+description: "【江苏银行】本地数据导入- oracle(#9405)（XMind）"
+tags:
+  - 离线开发
+  - 江苏银行
+  - 本地数据导入
+  - oracle
+module: batch-works
+version: v6.4.2
+source: zentao-cases/XMind/离线开发/202510-离线开发v6.4.2.xmind
+created_at: 2026-03-29
+origin: xmind
+---
 # 【江苏银行】本地数据导入- oracle(#9405)（XMind）
 > 来源：zentao-cases/XMind/离线开发/202510-离线开发v6.4.2.xmind
 

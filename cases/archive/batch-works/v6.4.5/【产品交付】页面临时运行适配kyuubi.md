@@ -1,3 +1,17 @@
+---
+name: 【产品交付】页面临时运行适配kyuubi v6.4.5
+description: 【产品交付】页面临时运行适配kyuubi v6.4.5
+tags:
+  - 离线开发
+  - 产品交付
+  - 页面临时运行适配kyuubi
+module: batch-works
+version: v6.4.5
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.5/【产品交付】页面临时运行适配kyuubi.csv
+case_count: 21
+created_at: 2026-03-29
+origin: csv
+---
 # 【产品交付】页面临时运行适配kyuubi v6.4.5
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.5/【产品交付】页面临时运行适配kyuubi.csv
 > 用例数：21
