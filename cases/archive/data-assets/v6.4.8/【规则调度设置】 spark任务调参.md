@@ -1,3 +1,18 @@
+---
+name: 【规则调度设置】 spark任务调参 v6.4.8
+description: 【规则调度设置】 spark任务调参 v6.4.8
+tags:
+  - 数据资产
+  - 数据资产-数据质量-规则调度设置
+  - 规则调度设置
+  - spark任务调参
+module: data-assets
+version: v6.4.8
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.8/【规则调度设置】 spark任务调参.csv
+case_count: 14
+created_at: 2026-03-29
+origin: csv
+---
 # 【规则调度设置】 spark任务调参 v6.4.8
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.4.8/【规则调度设置】 spark任务调参.csv
 > 用例数：14

@@ -240,9 +240,15 @@ done
 ![语义化中文描述](../../../../assets/images/语义化文件名.png)
 ```
 
-**相对路径计算方法**：从 enhanced PRD 文件所在目录到仓库根目录 `assets/images/` 的相对路径。对于位于 `cases/requirements/<requirements-root>/Story-YYYYMMDD/` 下的 Story PRD，引用前缀应为 `../../../../assets/images/`。
+**相对路径计算方法**：从 enhanced PRD 文件所在目录到仓库根目录 `assets/images/` 的相对路径。
 
-示例（PRD 在 `cases/requirements/xyzh/Story-20260322/` 下）：
+| 文件位置 | 相对路径前缀 |
+|---------|------------|
+| `cases/requirements/custom/xyzh/*.md` | `../../../../assets/images/` |
+| `cases/requirements/data-assets/v{version}/*.md` | `../../../../assets/images/` |
+| `cases/requirements/<module>/Story-YYYYMMDD/*.md` | `../../../../assets/images/` |
+
+示例（PRD 在 `cases/requirements/custom/xyzh/` 下）：
 
 ```markdown
 # Obsidian 原始格式（输入）
@@ -289,32 +295,36 @@ node .claude/shared/scripts/refresh-latest-link.mjs "<enhanced-path>" latest-prd
 
 | 提取目标 | 来源 |
 |----------|------|
-| `name` | H1 标题 |
-| `source` | `> 来源：` 行（保留完整内容） |
-| `version` | 文件名或 `> 来源：` 中的版本关键词 |
-| `module` | 文件路径（`extractModuleKey` 逻辑） |
-| `doc_id` | `> 文档ID：` 行 |
-| `dev_version` | `> 开发版本：` 行 |
-| `created_at` | `> 导入日期：` 行 或文件创建日期 |
+| `prd_name` | H1 标题（或原 `name` 字段） |
+| `prd_source` | `> 来源：` 行（保留完整内容）或原 `source` 字段 |
+| `prd_version` | 文件名或 `> 来源：` 中的版本关键词，或原 `version` 字段 |
+| `product` | 文件路径（`extractModuleKey` 逻辑），或原 `module` 字段 |
+| `prd_id` | 原 `prd_id` 字段 |
+| `prd_url` | 原 `prd_url` 字段 |
+| `dev_version` | `> 开发版本：` 行或原 `dev_version` 字段 |
+| `create_at` | `> 导入日期：` 行 或文件创建日期，或原 `created_at` 字段 |
 
 **Step 8.2 — 写入 enhanced 文件，格式如下：**
 
 ```markdown
 ---
-name: "<需求标题>"
+prd_name: "<需求标题>"
 description: "<一句话描述，≤60字>"
-source: "<来源 URL 或描述>"
-module: <module-key>
-version: <vX.Y.Z>
-prd_id: "<PRD 编号>"
-doc_id: "<蓝湖 docId，无则省略>"
-dev_version: "<开发版本，无则省略>"
-story: Story-<YYYYMMDD>
-created_at: "<YYYY-MM-DD>"
-enhanced_at: "<ISO8601 时间戳>"
-images_processed: "<成功数/总数>"
-health_warnings: <数字>
+prd_id: <需求ID数字>
+prd_version: <vX.Y.Z>
+prd_source: "<来源路径或描述>"
+prd_url: "<蓝湖 URL，无则留空>"
+product: <module-key>
+dev_version: "<开发版本，无则留空>"
+tags:
+  - 关键词1
+create_at: "<YYYY-MM-DD>"
+update_at: "<ISO8601 时间戳>"
 status: enhanced
+health_warnings:
+  - "W001: ..."
+repos: []
+case_path: ""
 ---
 <!-- enhanced-at: 2026-03-25T10:00:00Z | images: 41/41 | health: 2 warnings -->
 
@@ -322,8 +332,9 @@ status: enhanced
 ```
 
 说明：
-- `enhanced_at` / `images_processed` / `health_warnings` 是 enhanced 阶段新增字段
-- `<!-- enhanced-at: ... -->` HTML comment 作为向后兼容标记保留（旧脚本读取该 comment）
+- `update_at` 在 enhanced 阶段设置为当前增强时间（替代旧的 `enhanced_at`）
+- `health_warnings` 为警告字符串数组，空则为 `[]`
+- `<!-- enhanced-at: ... -->` HTML comment 作为向后兼容标记保留
 - `status: enhanced` 表示该文件已经过完整增强流程
 
 **大纲层级规范（增强版 PRD 必须遵循）：**

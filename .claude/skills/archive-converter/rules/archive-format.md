@@ -6,46 +6,54 @@
 
 ````markdown
 ---
-name: "需求名称"
+suite_name: "需求名称（与蓝湖/PRD 一致）"
 description: "一句话描述（≤60字）"
+prd_id: 10287
+prd_version: v6.4.10
+prd_path: "cases/requirements/data-assets/v6.4.10/【功能名】需求标题.md"
+prd_url: "https://lanhuapp.com/..."
+product: data-assets
+dev_version: "6.3岚图定制化分支"
 tags:
   - 关键词1
   - 关键词2
-module: module-key
-version: vX.Y.Z
-source: path/to/source
-case_count: N
-case_types:
-  normal: N1
-  abnormal: N2
-  boundary: N3
-created_at: "YYYY-MM-DD"
-origin: json
+create_at: "YYYY-MM-DD"
+update_at: "YYYY-MM-DD"
+status: ""
+health_warnings: []
+repos:
+  - ".repos/DTStack/dt-center-assets"
 ---
 
-# 需求名称
+## 模块名称
 
----
+### 菜单名称
 
-## 模块/菜单名称
+#### 功能点名称
 
-### 页面名称
-
-#### 功能点/子组名称
-
-##### 用例标题 「P1」
+##### 【P1】验证xxxx
 
 > 前置条件
-> ```
-> 前置内容，没有则填：无
-> ```
+```
+1、xxx
+
+2、Doris2.x SQL语句准备:
+DROP TABLE IF EXISTS test_db.test_table;
+CREATE TABLE test_db.test_table (...);
+INSERT INTO test_db.test_table VALUES (...);
+
+3、Hive2.x SQL语句准备:
+...
+```
+
+> 用例步骤
 
 | 编号 | 步骤         | 预期         |
 | ---- | ------------ | ------------ |
-| 1    | 操作步骤描述 | 预期结果描述 |
+| 1    | 进入【xxx】页面 | 页面正常加载 |
 | 2    | 操作步骤描述 | 预期结果描述 |
 
-##### 下一条用例标题 「P2」
+##### 【P2】验证xxxx
 
 ...
 ````
@@ -54,16 +62,20 @@ origin: json
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `name` | 是 | 需求/文件标题，用于快速识别 |
+| `suite_name` | 是 | 需求名称（与蓝湖/PRD 一致），用于快速识别 |
 | `description` | 是 | 一句话描述（≤60字） |
+| `prd_id` | 是 | 需求 ID（数字，如 `10287`） |
+| `prd_version` | 否 | 迭代版本号（如 `v6.4.10`） |
+| `prd_path` | 是 | 关联 PRD 文档的相对路径 |
+| `prd_url` | 否 | 蓝湖需求 URL |
+| `product` | 是 | 模块 key（如 `data-assets`、`xyzh`） |
+| `dev_version` | 否 | 开发版本 / 分支描述 |
 | `tags` | 是 | 领域关键词（3-10个），核心检索字段；由脚本/Writer 自动推断 |
-| `module` | 是 | 模块 key（如 `data-assets`、`xyzh`） |
-| `version` | 否 | 语义版本号（如 `v6.4.10`） |
-| `source` | 是 | 来源文件相对路径 |
-| `case_count` | 是 | 用例总数 |
-| `case_types` | 否 | 用例类型分布（仅 JSON 来源有） |
-| `created_at` | 是 | 创建日期（YYYY-MM-DD） |
-| `origin` | 是 | 来源类型：`json` / `xmind` / `csv` / `split` |
+| `create_at` | 是 | 创建日期（YYYY-MM-DD） |
+| `update_at` | 否 | 最后更新日期（YYYY-MM-DD） |
+| `status` | 否 | 文档状态（draft / reviewed / archived） |
+| `health_warnings` | 否 | 健康检查警告列表，如 `["W001: 缺少字段定义表"]` |
+| `repos` | 否 | 参考仓库相对路径列表，如 `[".repos/DTStack/dt-center-assets"]` |
 
 ### Tags 检索用法
 
@@ -85,13 +97,14 @@ node .claude/skills/archive-converter/scripts/backfill-archive-frontmatter.mjs -
 
 ## 层级映射
 
-| MD 层级 | 含义        | CSV 来源     | XMind 来源       | JSON 来源             |
-| ------- | ----------- | ------------ | ---------------- | --------------------- |
-| `#`     | 需求/文件名 | 文件名+版本  | 根节点标题       | meta.requirement_name |
-| `##`    | 模块/菜单   | 所属模块列   | depth 1          | modules[].name        |
-| `###`   | 页面        | （无，跳过） | depth 2          | pages[].name          |
-| `####`  | 功能点/子组 | （无，跳过） | depth 3          | sub_groups[].name     |
-| `#####` | 用例标题    | 用例标题列   | depth 4 / 叶节点 | test_cases[].title    |
+> 需求名称（`suite_name`）已移入 frontmatter，MD body 从 `##` 开始。
+
+| MD 层级 | 含义     | CSV 来源     | XMind 来源       | JSON 来源          |
+| ------- | -------- | ------------ | ---------------- | ------------------ |
+| `##`    | 模块名称 | 所属模块列   | depth 1          | modules[].name     |
+| `###`   | 菜单名称 | （无，跳过） | depth 2          | pages[].name       |
+| `####`  | 功能点   | （无，跳过） | depth 3          | sub_groups[].name  |
+| `#####` | 用例标题 | 用例标题列   | depth 4 / 叶节点 | test_cases[].title |
 
 > CSV 数据仅有模块和用例两层，中间层级自然跳过。XMind 树型结构的深度自动映射到对应层级。
 
@@ -110,7 +123,7 @@ node .claude/skills/archive-converter/scripts/backfill-archive-frontmatter.mjs -
 
 ## 文件粒度与命名
 
-- **默认粒度**：一份 PRD 对应一份 Archive Markdown，不再优先生成“一个迭代一个超大 MD”的聚合文件。
+- **默认粒度**：一份 PRD 对应一份 Archive Markdown，不再优先生成"一个迭代一个超大 MD"的聚合文件。
 - **默认命名**：当输入文件名可识别出 `PRD-XX-<功能名>` 时，Archive 输出文件名应优先保持同 basename，例如：
   - 输入：`PRD-26-质量问题台账.json`
   - 输出：`PRD-26-质量问题台账.md`
@@ -123,4 +136,4 @@ node .claude/skills/archive-converter/scripts/backfill-archive-frontmatter.mjs -
 - 如模块为 DTStack 且可识别语义版本（如 `v6.4.10`），归档目录优先为 `cases/archive/<module>/v6.4.10/`。
 - 如输入来自 DTStack 形式化需求页，文件名优先使用需求标题（`meta.archive_file_name` / `meta.requirement_title`），例如：
   - `【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比.md`
-- DTStack 不再默认把整份蓝湖文档聚合成一份归档；优先“一页需求 / 一份 MD”。
+- DTStack 不再默认把整份蓝湖文档聚合成一份归档；优先"一页需求 / 一份 MD"。

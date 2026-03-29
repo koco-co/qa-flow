@@ -40,7 +40,7 @@
       "type": "custom",
       "xmind": "cases/xmind/custom/xyzh/",
       "archive": "cases/archive/custom/xyzh/",
-      "requirements": "cases/requirements/xyzh/",
+      "requirements": "cases/requirements/custom/xyzh/",
       "history": "cases/history/xyzh/"
     }
   },
@@ -82,16 +82,6 @@
   "assets": {
     "images": "assets/images/"
   },
-  "dataAssetsVersionMap": {
-    "202508-数据资产v6.4.2.xmind": "v6.4.2",
-    "202509-数据资产v6.4.3.xmind": "v6.4.3",
-    "202510-数据资产v6.4.3.xmind": "v6.4.3",
-    "202602-数据资产v6.4.8.xmind": "v6.4.8",
-    "202603-数据资产v6.4.9.xmind": "v6.4.9",
-    "202603-数据资产v6.4.10.xmind": "v6.4.10",
-    "数据资产-主流程用例.xmind": "主流程",
-    "数据资产_岚图标品用例整理.xmind": "岚图标品"
-  },
   "reports": {
     "bugs": "reports/bugs/",
     "conflicts": "reports/conflicts/"
@@ -108,18 +98,7 @@
       "serverUrl": "http://127.0.0.1:8000",
       "mcpPath": "/mcp",
       "logFile": ".claude/tmp/lanhu-mcp.log",
-      "cookieRefreshScript": ".claude/scripts/refresh-lanhu-cookie.py"
-    }
-  },
-  "harness": {
-    "root": ".claude/harness/",
-    "workflowDir": ".claude/harness/workflows/",
-    "delegates": ".claude/harness/delegates.json",
-    "hooks": ".claude/harness/hooks.json",
-    "contracts": ".claude/harness/contracts.json",
-    "workflows": {
-      "testCaseGeneration": ".claude/harness/workflows/test-case-generation.json",
-      "codeAnalysis": ".claude/harness/workflows/code-analysis.json"
+      "cookieRefreshScript": ".claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py"
     }
   },
   "shortcuts": {

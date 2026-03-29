@@ -1,4 +1,3 @@
-<!-- step-id: prd-enhancer | delegate: prdEnhancer -->
 # Step prd-enhancer：PRD 增强 + 健康度预检
 
 ## 执行方式
@@ -29,8 +28,4 @@ ln -sf <实际enhanced.md路径> ./latest-prd-enhanced.md
 
 ## 步骤完成后
 
-```bash
-node .claude/scripts/harness-state-machine.mjs \
-  --advance prd-enhancer \
-  --state-path <story-dir>/.qa-state.json
-```
+更新 `.qa-state.json`：将 `last_completed_step` 设为 `"prd-enhancer"`。

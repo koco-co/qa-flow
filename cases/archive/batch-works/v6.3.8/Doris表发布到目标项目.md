@@ -1,3 +1,17 @@
+---
+name: Doris表发布到目标项目 v6.3.8
+description: Doris表发布到目标项目 v6.3.8
+tags:
+  - 离线开发
+  - 离线开发-项目管理-发布管理
+  - Doris表发布到目标项目
+module: batch-works
+version: v6.3.8
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.8/Doris表发布到目标项目.csv
+case_count: 16
+created_at: 2026-03-29
+origin: csv
+---
 # Doris表发布到目标项目 v6.3.8
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.8/Doris表发布到目标项目.csv
 > 用例数：16

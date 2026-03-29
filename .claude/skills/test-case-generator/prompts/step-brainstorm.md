@@ -1,7 +1,6 @@
-<!-- step-id: brainstorm | delegate: testCaseOrchestrator -->
 # Step brainstorm：Brainstorming + 解耦分析
 
-> **快速模式（quick-mode）时此步骤已被 workflow 跳过，不执行本文件内容。**
+> **快速模式时跳过此步骤，不执行本文件内容。**
 
 ## 3.1 Brainstorming
 
@@ -14,7 +13,17 @@
 - 高风险场景（联动逻辑复杂的字段、权限相关功能、审批流程等）
 - 是否有已知的历史 Bug 需要重点覆盖
 
-同时读取历史用例目录下的 .md 文件（DTStack 平台：`cases/archive/<module>/`，信永中和：`cases/archive/custom/xyzh/`），整理已覆盖的功能点，避免重复。
+基于当前需求内容，通过 tag 关键词检索相关历史用例：
+
+1. 从增强后 PRD 提取 3-5 个核心关键词（如：数据质量、质量规则、质量问题台账）
+2. 使用 Grep 在对应归档目录中按 tags 字段检索匹配文件：
+   - DTStack 平台：`grep -rl "关键词1\|关键词2" cases/archive/<module>/ --include="*.md"`
+   - 信永中和：`grep -rl "关键词1\|关键词2" cases/archive/custom/xyzh/ --include="*.md"`
+3. 对匹配文件，先读取 front-matter（文件头部 `---...---` 块）获取 name/tags/case_count 概览
+4. 仅对 tags 重叠 ≥2 个的文件读取完整内容
+5. 整理已覆盖的功能点，避免重复
+
+> 若归档文件尚未添加 front-matter（旧格式以 `# 标题` 开头），直接读取文件内容。
 
 ## 3.2 需求解耦分析
 
@@ -28,8 +37,4 @@
 
 ## 步骤完成后
 
-```bash
-node .claude/scripts/harness-state-machine.mjs \
-  --advance brainstorm \
-  --state-path <story-dir>/.qa-state.json
-```
+更新 `.qa-state.json`：将 `last_completed_step` 设为 `"brainstorm"`。

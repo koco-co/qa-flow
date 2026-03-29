@@ -7,6 +7,7 @@
  *   node backfill-prd-frontmatter.mjs --force       # 强制覆盖
  *   node backfill-prd-frontmatter.mjs --dry-run     # 只输出预览，不写入
  *   node backfill-prd-frontmatter.mjs --path <file> # 仅处理单个文件
+ *   node backfill-prd-frontmatter.mjs --legacy      # 使用旧字段名（name/module/source/created_at）
  *
  * 跳过文件（始终）：
  *   - HANDOFF.md
@@ -33,6 +34,7 @@ const REQ_DIR = join(ROOT, "cases/requirements");
 const args = process.argv.slice(2);
 const FORCE = args.includes("--force");
 const DRY_RUN = args.includes("--dry-run");
+const LEGACY = args.includes("--legacy");   // 使用旧字段名（name/module/source/created_at）
 const PATH_ARG = args.includes("--path")
   ? args[args.indexOf("--path") + 1]
   : null;
@@ -235,29 +237,50 @@ function processFile(filePath) {
   const createdAt =
     importedAt || new Date().toISOString().slice(0, 10);
 
-  // 构造 front-matter 字段
-  const fields = {
-    name,
-    description,
-    source: source || "内部需求文档",
-    module: moduleKey || undefined,
-    version: version || undefined,
-    prd_id: prdId || undefined,
-    doc_id: docId || undefined,
-    dev_version: devVersion || undefined,
-    story: story || undefined,
-    created_at: createdAt,
-    status,
-  };
+  const today = new Date().toISOString().slice(0, 10);
 
-  // enhanced 阶段追加字段
-  if (status === "enhanced" && enhancedAt) {
-    fields.enhanced_at = enhancedAt;
-    if (imagesProcessed) fields.images_processed = imagesProcessed;
-    if (healthWarnings !== null) fields.health_warnings = healthWarnings;
+  let fm;
+  if (LEGACY) {
+    // 旧字段名格式（向后兼容）
+    const fields = {
+      name,
+      description,
+      source: source || "内部需求文档",
+      module: moduleKey || undefined,
+      version: version || undefined,
+      prd_id: prdId || undefined,
+      doc_id: docId || undefined,
+      dev_version: devVersion || undefined,
+      story: story || undefined,
+      created_at: createdAt,
+      status,
+    };
+    if (status === "enhanced" && enhancedAt) {
+      fields.enhanced_at = enhancedAt;
+      if (imagesProcessed) fields.images_processed = imagesProcessed;
+      if (healthWarnings !== null) fields.health_warnings = healthWarnings;
+    }
+    fm = buildFrontMatter(fields, "prd");
+  } else {
+    // 新字段名格式
+    fm = buildFrontMatter({
+      prd_name: name,
+      description,
+      prd_id: prdId ? Number(prdId) || undefined : undefined,
+      prd_version: version || undefined,
+      prd_source: source || "内部需求文档",
+      prd_url: "",
+      product: moduleKey || undefined,
+      dev_version: devVersion || undefined,
+      tags: [],
+      create_at: createdAt,
+      update_at: status === "enhanced" && enhancedAt ? enhancedAt.slice(0, 10) : today,
+      status,
+      health_warnings: [],
+      repos: [],
+      case_path: "",
+    });
   }
-
-  const fm = buildFrontMatter(fields);
   const newContent = fm + rawBody;
 
   if (DRY_RUN) {

@@ -30,17 +30,21 @@
 
 ```yaml
 ---
-name: "<需求标题>"
+prd_name: "<需求标题>"
 description: "<一句话描述，≤60字>"
-source: "<继承自原始 PRD 的 source 字段，或写「内部需求文档」>"
-module: <module-key>
-version: <vX.Y.Z>
-prd_id: "<PRD 编号>"
-doc_id: "<蓝湖 docId，无则省略>"
-dev_version: "<开发版本，无则省略>"
-story: Story-<YYYYMMDD>
-created_at: "<YYYY-MM-DD>"
+prd_id: <需求ID数字>
+prd_version: <vX.Y.Z>
+prd_source: "<继承自原始 PRD 的 prd_source 字段，或写「内部需求文档」>"
+prd_url: "<蓝湖 URL，无则留空>"
+product: <module-key>
+dev_version: "<开发版本，无则留空>"
+tags: []
+create_at: "<YYYY-MM-DD>"
+update_at: "<YYYY-MM-DD>"
 status: formalized
+health_warnings: []
+repos: []
+case_path: ""
 ---
 ```
 

@@ -1,3 +1,19 @@
+---
+name: 【岚图交付】SparkSQL3.5适配 v6.4.1
+description: 【岚图交付】SparkSQL3.5适配 v6.4.1
+tags:
+  - 离线开发
+  - spark sql3.5适配
+  - 岚图交付
+  - SparkSQL
+  - 适配
+module: batch-works
+version: v6.4.1
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.1/【岚图交付】SparkSQL3.5适配.csv
+case_count: 19
+created_at: 2026-03-29
+origin: csv
+---
 # 【岚图交付】SparkSQL3.5适配 v6.4.1
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.4.1/【岚图交付】SparkSQL3.5适配.csv
 > 用例数：19

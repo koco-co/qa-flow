@@ -1,3 +1,18 @@
+---
+name: 【数据模型】支持doris建表解析 v7.0.2
+description: 【数据模型】支持doris建表解析 v7.0.2
+tags:
+  - 数据资产
+  - 数据资产-数据模型
+  - 数据模型
+  - 支持doris建表解析
+module: data-assets
+version: v7.0.2
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v7.0.2/【数据模型】支持doris建表解析.csv
+case_count: 10
+created_at: 2026-03-29
+origin: csv
+---
 # 【数据模型】支持doris建表解析 v7.0.2
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v7.0.2/【数据模型】支持doris建表解析.csv
 > 用例数：10

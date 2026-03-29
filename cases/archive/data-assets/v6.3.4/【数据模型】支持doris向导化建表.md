@@ -1,3 +1,18 @@
+---
+name: 【数据模型】支持doris向导化建表 v6.3.4
+description: 【数据模型】支持doris向导化建表 v6.3.4
+tags:
+  - 数据资产
+  - 数据资产-数据模型
+  - 数据模型
+  - 支持doris向导化建表
+module: data-assets
+version: v6.3.4
+source: zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.4/【数据模型】支持doris向导化建表.csv
+case_count: 2
+created_at: 2026-03-29
+origin: csv
+---
 # 【数据模型】支持doris向导化建表 v6.3.4
 > 来源：zentao-cases/dtstack-platform/数据资产/archive-cases/v6.3.4/【数据模型】支持doris向导化建表.csv
 > 用例数：2

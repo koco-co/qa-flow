@@ -1,3 +1,20 @@
+---
+name: 数据开发过程中，复杂计算结果可以直接存入外部数据库，如MySQL，不需要先存入Hive在通过同步任务导出 v6.3.1
+description: 数据开发过程中，复杂计算结果可以直接存入外部数据库，如MySQL，不需要先存入Hive在通过同步任务导出 v6.3.1
+tags:
+  - 离线开发
+  - 离线开发-数据开发-数据同步
+  - 数据开发过程中
+  - 复杂计算结果可以直接存入外部数据库
+  - 如MySQL
+  - 不需要先存入Hive在通过同步任务导出
+module: batch-works
+version: v6.3.1
+source: zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.1/数据开发过程中，复杂计算结果可以直接存入外部数据库，如MySQL，不需要先存入Hive在通过同步任务导出.csv
+case_count: 5
+created_at: 2026-03-29
+origin: csv
+---
 # 数据开发过程中，复杂计算结果可以直接存入外部数据库，如MySQL，不需要先存入Hive在通过同步任务导出 v6.3.1
 > 来源：zentao-cases/dtstack-platform/离线开发/archive-cases/v6.3.1/数据开发过程中，复杂计算结果可以直接存入外部数据库，如MySQL，不需要先存入Hive在通过同步任务导出.csv
 > 用例数：5

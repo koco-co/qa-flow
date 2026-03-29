@@ -1,3 +1,19 @@
+---
+name: "【数据资产】元数据、数据质量适配doris3.x(#10306)（XMind）"
+description: "【数据资产】元数据、数据质量适配doris3.x(#10306)（XMind）"
+tags:
+  - 数据资产
+  - 资产盘点
+  - 元数据
+  - 数据质量
+  - 平台管理
+  - 数据质量适配doris3.x
+module: data-assets
+version: v6.4.9
+source: zentao-cases/XMind/数据资产/202603-数据资产v6.4.9.xmind
+created_at: 2026-03-29
+origin: xmind
+---
 # 【数据资产】元数据、数据质量适配doris3.x(#10306)（XMind）
 > 来源：zentao-cases/XMind/数据资产/202603-数据资产v6.4.9.xmind
 

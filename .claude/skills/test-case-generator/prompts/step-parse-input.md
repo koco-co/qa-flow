@@ -14,10 +14,10 @@
     - 返回非 000 → Server 正在运行，继续
     - 返回 000（连接失败）→ 启动 Server：
       ```bash
-      cd .claude/scripts && node lanhu-mcp-runtime.mjs start
+      node .claude/skills/using-qa-flow/scripts/lanhu-mcp-runtime.mjs start
       ```
 3. **调用 `lanhu_get_pages` 工具** 获取页面列表
-   - 若返回错误码 418 → 提示用户：`蓝湖 Cookie 已过期。可执行：\ncd .claude/scripts && LANHU_LOGIN_EMAIL='<账号>' LANHU_LOGIN_PASSWORD='<密码>' python3 refresh-lanhu-cookie.py\n或按提示手动刷新 Cookie 后再继续`
+   - 若返回错误码 418 → 提示用户：`蓝湖 Cookie 已过期。可执行：\nLANHU_LOGIN_EMAIL='<账号>' LANHU_LOGIN_PASSWORD='<密码>' python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py\n或按提示手动刷新 Cookie 后再继续`
    - 若返回成功 → 展示页面列表，询问用户要导入哪些页面（默认全部）
 4. **调用 `lanhu_get_ai_analyze_page_result` 工具**，参数：
    - `page_names`：用户选定的页面（`'all'` 或逗号分隔的页面名列表）
@@ -27,35 +27,40 @@
    - 文件格式：**先写 YAML front-matter，再写正文**（见下方 Schema）
    - 将工具返回的文本内容按页面组织为标准 MD 格式
    - 包含：文档标题（来自 `document_name`）、各页面标题（二级标题）、页面文本内容
-   - 保存至：`cases/requirements/<module>/Story-<YYYYMMDD>/PRD-<docName>.md`
-     - `<module>` 从文档名称或用户确认获得（如 `data-assets`）
-     - `<YYYYMMDD>` 使用今日日期
-     - `<docName>` 使用蓝湖文档名（空格替换为 `-`）
+   - 保存至（按模块类型区分）：
+     - **DTStack 模块**（如 `data-assets`）：`cases/requirements/<module>/Story-<YYYYMMDD>/PRD-<docName>.md`（暂存目录，版本确认后由 prd-enhancer 迁移到 `v{version}/`）
+     - **XYZH 定制模块**：`cases/requirements/custom/xyzh/<功能名>.md`（扁平存放，无 Story 子目录）
+     - `<YYYYMMDD>` 使用今日日期（DTStack 暂存目录用）
+     - `<docName>` 使用蓝湖文档名（空格替换为 `-`，DTStack 用）
    - 向用户展示保存路径
 
    **PRD front-matter Schema（蓝湖导入时填写）：**
 
    ```yaml
    ---
-   name: "<document_name>（需求标题）"
+   prd_name: "<document_name>（需求标题）"
    description: "<一句话描述，≤60字，从页面内容摘要推断>"
-   source: "<用户发送的完整蓝湖 URL>"
-   module: <module-key>          # data-assets / xyzh 等
-   version: <vX.Y.Z>             # 从文档名或内容推断，如 v6.4.10
-   prd_id: "<docId 或页面编号>"  # 如 15530
-   doc_id: "<URL 中的 docId 参数>" # 如 fc0fee93-74f5-4eff-a769-99e68506b296
-   dev_version: "<开发版本字段>" # 如 6.3岚图定制化分支，无则省略
-   story: Story-<YYYYMMDD>
-   created_at: "<YYYY-MM-DD>"
+   prd_id: <docId 数字，如 15530>
+   prd_version: <vX.Y.Z>              # 从文档名或内容推断，如 v6.4.10
+   prd_source: "<保存后的 PRD 文件相对路径>"
+   prd_url: "<用户发送的完整蓝湖 URL>"  # 必填，用于追溯来源
+   product: <module-key>              # data-assets / xyzh 等
+   dev_version: "<开发版本字段>"      # 如 6.3岚图定制化分支，无则留空
+   tags: []
+   create_at: "<YYYY-MM-DD>"
+   update_at: "<YYYY-MM-DD>"
    status: raw
+   health_warnings: []
+   repos: []
+   case_path: ""
    ---
    ```
 
    字段说明：
-   - `source`：**必填**，保存用户发送的原始蓝湖 URL（完整带参数），用于追溯来源
-   - `doc_id`：从 URL 参数 `docId` 提取
-   - `version`：从文档标题（如「数据资产V6.4.10」）推断，格式为 `vX.Y.Z`
-   - `dev_version`：从蓝湖页面内容中的「开发版本」字段提取，无则省略
+   - `prd_url`：**必填**，保存用户发送的原始蓝湖 URL（完整带参数），用于追溯来源
+   - `prd_id`：从 URL 参数 `docId` 提取（取数字部分）
+   - `prd_version`：从文档标题（如「数据资产V6.4.10」）推断，格式为 `vX.Y.Z`
+   - `dev_version`：从蓝湖页面内容中的「开发版本」字段提取，无则留空
 
 6. **将生成的 PRD 文件路径注入 Story 目录**，继续正常 1.1 流程（此时 PRD 文件已存在）
 
@@ -63,10 +68,9 @@
 
 如遇 418 且用户不方便手动获取 Cookie，可尝试自动刷新：
 ```bash
-cd .claude/scripts && \
 LANHU_LOGIN_EMAIL='<你的蓝湖账号>' \
 LANHU_LOGIN_PASSWORD='<你的蓝湖密码>' \
-python3 refresh-lanhu-cookie.py
+python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py
 ```
 
 ---
@@ -77,7 +81,7 @@ python3 refresh-lanhu-cookie.py
 
 | 信息            | 来源                 | 示例                                                                                                                          |
 | --------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Story 目录路径  | 用户指令             | `cases/requirements/xyzh/Story-20260322/`                                                                                     |
+| Story 目录路径  | 用户指令             | `cases/requirements/custom/xyzh/`（XYZH）/ `cases/requirements/data-assets/Story-20260322/`（DTStack）                        |
 | PRD 文件列表    | 扫描 Story 目录      | `PRD-26-xxx.md`, `PRD-27-xxx.md`                                                                                              |
 | 项目名称        | 目录路径推断         | `信永中和` / `DTStack`                                                                                                        |
 | 源码仓库路径    | CLAUDE.md 路径映射表 | 信永中和无源码                                                                                                                |

@@ -5,6 +5,35 @@ PRD 增强后的输出文件（`*-enhanced.md`）应尽量符合以下结构。
 
 ---
 
+## Front-Matter 模板
+
+```yaml
+---
+prd_name: "需求名称（与蓝湖一致）"
+description: "一句话描述（≤60字）"
+prd_id: 10287
+prd_version: v6.4.10
+prd_source: "cases/requirements/data-assets/v6.4.10/【功能名】需求标题.md"
+prd_url: "https://lanhuapp.com/..."
+product: data-assets
+dev_version: "6.3岚图定制化分支"
+tags:
+  - 关键词1
+create_at: "YYYY-MM-DD"
+update_at: "YYYY-MM-DD"
+status: enhanced
+health_warnings:
+  - "W001: 缺少字段定义表"
+repos:
+  - ".repos/DTStack/dt-center-assets"
+case_path: ""
+---
+```
+
+---
+
+## 正文模板
+
 ```markdown
 # [PRD编号] [功能名称]
 
