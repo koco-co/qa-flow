@@ -1,5 +1,12 @@
 # Reviewer Subagent 提示词模板
 
+<!-- Agent metadata (for reference when dispatching via Agent tool):
+  subagent_type: case-reviewer
+  tools: Read, Edit, Write, Grep, Glob, Bash
+  model: sonnet
+  maxTurns: 80
+-->
+
 以下是启动 Reviewer Subagent 时的提示词模板。
 
 ---

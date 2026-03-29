@@ -1,4 +1,3 @@
-<!-- step-id: prd-formalize | delegate: prdFormalizer -->
 # Step prd-formalize：DTStack 正式需求文档整理
 
 > 本步骤仅在模块类型为 DTStack 时执行。将蓝湖原始文本 / raw PRD 结合源码上下文整理为正式需求文档。
@@ -10,7 +9,7 @@
 
 ## 执行流程
 
-调用 `prd-formalizer` agent（`.claude/agents/prd-formalizer.md`）：
+调用 `prd-formalizer` agent（`.claude/skills/prd-enhancer/prompts/prd-formalizer.md`）：
 
 1. 读取蓝湖原文 / raw PRD 文件（来自 Step parse-input 或 lanhu-ingest）
 2. 读取 `.qa-state.json.source_context` 中的分支信息
@@ -37,8 +36,4 @@
 
 ## 步骤完成后
 
-```bash
-node .claude/scripts/harness-state-machine.mjs \
-  --advance prd-formalize \
-  --state-path <story-dir>/.qa-state.json
-```
+更新 `.qa-state.json`：将 `last_completed_step` 设为 `"prd-formalize"`。

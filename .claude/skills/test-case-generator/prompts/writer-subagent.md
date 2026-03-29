@@ -1,5 +1,12 @@
 # Writer Subagent 提示词模板
 
+<!-- Agent metadata (for reference when dispatching via Agent tool):
+  subagent_type: case-writer
+  tools: Read, Grep, Glob, Write, Bash
+  model: sonnet
+  maxTurns: 50
+-->
+
 以下是启动 Writer Subagent 时的提示词模板。调用时将 `[...]` 占位符替换为实际内容。
 
 ---
@@ -74,7 +81,9 @@ source_context（如有）：
     "requirement_id": "[PRD编号]",
     "prd_path": "cases/.../PRD-xx-enhanced.md",
     "generated_at": "[ISO8601时间戳]",
-    "agent_id": "writer-[模块简称]"
+    "agent_id": "writer-[模块简称]",
+    "tags": "[从 PRD 内容推断的领域关键词列表，如：[\"数据质量\", \"质量规则\", \"岚图\"]]",
+    "module_key": "[模块 key，如 data-assets 或 xyzh]"
   },
   "modules": [
     {
@@ -110,6 +119,17 @@ source_context（如有）：
 - pages[].name（L3）= 你负责的页面名
 - sub_groups[].name（L4）= 功能子组（可选，当页面功能较多时使用）
 - 页面功能单一或用例数少（≤5条）时，可不用 sub_groups，直接在 pages 下放 test_cases
+
+### Tags 推断规则
+
+在输出 JSON 的 `meta.tags` 字段中，填入从 PRD 内容推断的 3-8 个领域关键词：
+
+- **纳入**：产品/功能域名词（如 数据质量、规则集、调度任务、告警规则）
+- **纳入**：业务实体名词（如 数据源、数据表、字段、质量规则集）
+- **纳入**：客户/项目标识（如 岚图、信永中和）
+- **排除**：页面级通用词（列表页、新增、编辑、删除、详情、查询、搜索）
+
+`meta.module_key` 填入当前模块的英文 key（如 `data-assets`、`xyzh`）。
 
 ### 步骤格式
 - 第一步必须是：进入【模块名-页面名】页面
