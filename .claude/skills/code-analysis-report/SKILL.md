@@ -265,5 +265,5 @@ node .claude/shared/scripts/refresh-latest-link.mjs "<项目根>/reports/conflic
 | 项目       | 说明                                                           |
 | ---------- | -------------------------------------------------------------- |
 | 工作流关系 | **完全独立**，不属于 test-case-generator 的任何步骤            |
-| 代码仓库   | 使用 `.repos/` 下的源码仓库，详见 CLAUDE.md「源码仓库详细清单」 |
-| 安全规则   | 只读访问，禁止 push/commit，详见 CLAUDE.md「源码仓库安全规则」 |
+| 代码仓库   | 使用 `.repos/` 下的源码仓库，目录约定见 CLAUDE.md「工作区结构」，仓库映射见 `.claude/config.json` |
+| 安全规则   | 只读访问，禁止 push/commit，详见 `.claude/rules/repo-safety.md` |
