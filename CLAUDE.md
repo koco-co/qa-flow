@@ -26,6 +26,11 @@
 转化所有历史用例
 ```
 
+### 快捷链接
+
+- `latest-prd-enhanced.md`：最新增强版 PRD 快捷入口
+- `latest-output.xmind`：最新 XMind 产物快捷入口
+
 ---
 
 ## 工作区结构
