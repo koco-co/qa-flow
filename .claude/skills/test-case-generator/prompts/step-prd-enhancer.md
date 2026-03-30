@@ -13,7 +13,7 @@
 
 ## prd-enhancer 的增量检测特性（自动生效）
 
-- 若 `-enhanced.md` 已存在且 PRD 未修改 → 直接使用现有版本，跳过重新增强
+- 若同目录下已有 `status: enhanced` 的 PRD 文件且原始 PRD 未修改 → 直接使用现有版本，跳过重新增强
 - 若 PRD 有更新 → 只重新处理变更章节
 
 ## 健康度预检
@@ -45,5 +45,5 @@ ln -sf <实际enhanced.md路径> ./latest-prd-enhanced.md
 
 同时向 `execution_log` 数组追加：
 ```json
-{"step": "prd-enhancer", "status": "completed", "at": "<ISO8601>", "duration_ms": null, "summary": "完成 PRD 增强，生成 N 个 -enhanced.md 文件，健康度报告已输出"}
+{"step": "prd-enhancer", "status": "completed", "at": "<ISO8601>", "duration_ms": null, "summary": "完成 PRD 增强，原始文件已移入 .trash/，健康度报告已输出"}
 ```

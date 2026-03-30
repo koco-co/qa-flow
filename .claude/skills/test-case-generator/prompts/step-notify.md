@@ -11,8 +11,8 @@
 
 ## 「确认通过」
 
-1. 删除临时文件：`rm -rf <Story>/temp/`
-2. 删除状态文件：`rm -f <Story>/.qa-state.json`
+1. 删除临时文件：`rm -rf <working_dir>/temp/`
+2. 删除状态文件：`rm -f <working_dir>/.qa-state.json`
 3. 向用户输出最终完成通知（见「完成通知」章节）
 
 ---

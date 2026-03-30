@@ -1,0 +1,9 @@
+{
+  "name": "archive-converter-scripts",
+  "type": "module",
+  "private": true,
+  "description": "Archive conversion scripts for archive-converter skill",
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
+}

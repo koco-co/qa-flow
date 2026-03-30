@@ -30,7 +30,7 @@
    - 主流程和异常流程描述
    - 前置条件（数据源/环境依赖）
 5. 输出正式需求文档：
-   - 路径：`cases/requirements/<module>/Story-<YYYYMMDD>/PRD-XX-<功能名>-formalized.md`
+   - 路径：`cases/requirements/<module>/v{version}/PRD-XX-<功能名>-formalized.md`
    - 此文件作为后续 prd-enhancer 的输入
 
 ## 质量要求

@@ -23,6 +23,8 @@ status: ""
 health_warnings: []
 repos:
   - ".repos/DTStack/dt-center-assets"
+case_count: 0
+origin: xmind
 ---
 
 ## 模块名称
@@ -76,6 +78,8 @@ INSERT INTO test_db.test_table VALUES (...);
 | `status` | 否 | 文档状态（draft / reviewed / archived） |
 | `health_warnings` | 否 | 健康检查警告列表，如 `["W001: 缺少字段定义表"]` |
 | `repos` | 否 | 参考仓库相对路径列表，如 `[".repos/DTStack/dt-center-assets"]` |
+| `case_count` | 否 | 用例总数（自动统计 `#####` 标题数量，backfill 脚本写入） |
+| `origin` | 否 | 来源类型：`xmind` / `csv` / `json` / `split` |
 
 ### Tags 检索用法
 

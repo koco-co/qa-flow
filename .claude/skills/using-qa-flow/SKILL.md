@@ -35,13 +35,13 @@ argument-hint: "[init | 功能编号或关键词]"
 
 如果 `$ARGUMENTS` 包含 `1` 或 `用例` 或 `test`：
 
-- 引导用户提供 Story 路径，例如：`为 Story-20260322 生成测试用例`
-- 如需快速模式，推荐写法：`为 Story-20260322 --quick 生成测试用例`
+- 引导用户提供模块和版本，例如：`为 data-assets v6.4.10 生成测试用例`（DTStack）或 `为 xyzh 生成测试用例`（XYZH）
+- 如需快速模式，推荐写法：`为 data-assets v6.4.10 --quick 生成测试用例`
 - 说明：`--quick` 会跳过 Step 3（Brainstorming）、Step 4（Checklist 预览）、Step 5（用户确认）
-- 或直接提供蓝湖 URL，例如：`生成测试用例 https://lanhuapp.com/web/#/item/project/product?...`
-- 如果用户还没有 PRD 文件，提示将 PRD 放到 `cases/requirements/` 对应目录下
-- 如检测到 `.qa-state.json`，提示可直接说：`继续 Story-20260322 的用例生成`
-- 如需只重跑某个页面/模块，提示可说：`重新生成 Story-20260322 的「列表页」模块用例`
+- 或直接提供蓝湖 URL，例如：`生成测试用例 https://lanhuapp.com/web/#/item/project/product?...`（自动从文档标题提取版本号）
+- 如果用户还没有 PRD 文件，提示将 PRD 放到 `cases/requirements/<module>/v{version}/` 对应目录下
+- 如检测到 `.qa-state.json`，提示可直接说：`继续 data-assets v6.4.10 的用例生成`
+- 如需只重跑某个页面/模块，提示可说：`重新生成 data-assets v6.4.10 的「列表页」模块用例`
 
 如果 `$ARGUMENTS` 包含 `2` 或 `PRD` 或 `增强`：
 
@@ -123,7 +123,7 @@ cat .repos/source-map.yaml 2>/dev/null || echo "（未配置源码仓库）"
 ✅ .repos/source-map.yaml 已生成（N 个仓库）
 
 初始化完成。现在可以使用以下功能：
-- 为 Story-20260322 生成测试用例
+- 为 data-assets v6.4.10 生成测试用例（DTStack）/ 为 xyzh 生成测试用例（XYZH）
 - 帮我增强这个 PRD：<路径>
 ```
 
@@ -133,9 +133,9 @@ cat .repos/source-map.yaml 2>/dev/null || echo "（未配置源码仓库）"
 
 ```
 # 生成测试用例（最常用）
-为 Story-20260322 生成测试用例
-为 Story-20260322 --quick 生成测试用例
-根据需求文档: Story-20260322 中的 PRD-26 生成测试用例
+为 data-assets v6.4.10 生成测试用例
+为 data-assets v6.4.10 --quick 生成测试用例
+为 xyzh 生成测试用例
 生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx
 
 # 增强 PRD

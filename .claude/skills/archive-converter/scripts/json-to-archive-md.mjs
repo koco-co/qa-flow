@@ -178,7 +178,7 @@ function formatCase(tc) {
   lines.push("");
   lines.push("> 前置条件");
   lines.push("```");
-  lines.push(tc.precondition || "无");
+  lines.push(tc.precondition || tc.preconditions || "无");
   lines.push("```");
   lines.push("");
   lines.push("> 用例步骤");
@@ -383,7 +383,7 @@ function formatCaseFromXmind(tc) {
   lines.push("");
   lines.push("> 前置条件");
   lines.push("```");
-  lines.push(tc.precondition || "无");
+  lines.push(tc.precondition || tc.preconditions || "无");
   lines.push("```");
   lines.push("");
   lines.push("> 用例步骤");

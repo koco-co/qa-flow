@@ -163,15 +163,15 @@ Writer Subagent 输出时可包含以下可选字段（提升 frontmatter 填充
 
 ## 临时文件命名规则
 
-Writer Subagent 输出的临时 JSON 文件命名（按 Story 隔离）：
+Writer Subagent 输出的临时 JSON 文件命名（按工作目录隔离）：
 
 ```
-cases/requirements/<project>/<Story>/temp/<模块简称>.json
+cases/requirements/<project>/<working-dir>/temp/<模块简称>.json
 ```
 
 示例：
-- `cases/requirements/custom/xyzh/temp/list.json`
-- `cases/requirements/custom/xyzh/temp/create.json`
+- `cases/requirements/data-assets/v6.4.10/temp/list.json`（DTStack）
+- `cases/requirements/custom/xyzh/temp/list.json`（XYZH）
 
 ---
 
@@ -212,21 +212,25 @@ Checklist 字段说明：
 
 ## .qa-state.json 断点续传状态文件
 
-每步完成后写入 Story 目录，用于中断恢复：
+每步完成后写入工作目录，用于中断恢复：
 
 ```
-cases/requirements/<project>/<Story>/.qa-state.json
+cases/requirements/<project>/<working-dir>/.qa-state.json
 ```
+
+示例：
+- `cases/requirements/data-assets/v6.4.10/.qa-state.json`（DTStack）
+- `cases/requirements/custom/xyzh/.qa-state.json`（XYZH）
 
 ```json
 {
-  "story": "Story-20260322",
+  "working_dir": "cases/requirements/data-assets/v6.4.10",
   "project_name": "信永中和",
   "prd_files": ["PRD-26-xxx.md", "PRD-27-xxx.md"],
   "last_completed_step": "prd-enhancer",
   "prd_enhanced_at": "2026-03-25T10:00:00Z",
   "enhanced_files": [
-    "PRD-26-数据质量-质量问题台账-enhanced.md"
+    "数据质量-质量问题台账.md"
   ],
   "checklist_confirmed": true,
   "formalize_warnings": ["字段信息不足", "源码补充章节为空"],

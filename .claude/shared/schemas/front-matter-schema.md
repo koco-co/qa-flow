@@ -26,7 +26,7 @@ repos:
   - ".repos/DTStack/dt-center-assets"
 ```
 
-可选字段（脚本可写入，不在模板中展示）：`case_count`、`case_types`、`origin`
+可选字段（脚本自动写入）：`case_count`（用例总数，统计 `#####` 标题数）、`origin`（来源：xmind/csv/json/split）
 
 ## PRD 文档 Front-Matter
 
@@ -71,8 +71,8 @@ case_path: ""                          # 关联的用例文件路径
 | `health_warnings` | string[] | 可选 | 可选 | 健康检查警告列表 |
 | `repos` | string[] | 可选 | 可选 | 参考仓库相对路径列表 |
 | `case_path` | string | — | 可选 | 关联用例文件路径 |
-| `case_count` | number | 可选 | — | 用例总数（脚本自动计算） |
-| `origin` | string | 可选 | — | 来源类型：json/xmind/csv/split |
+| `case_count` | number | 可选 | — | 用例总数（自动统计 body 中 `#####` 标题数量） |
+| `origin` | string | 可选 | — | 来源类型：xmind / csv / json / split |
 
 ## Tags 检索用法
 

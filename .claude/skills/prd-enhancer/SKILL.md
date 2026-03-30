@@ -14,8 +14,8 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 ## 使用口径速查
 
 - 本 Skill 是**单个 PRD 的增强流程**，不使用测试用例流程里的“快速模式 / 续传 / 模块级重跑”口令。
-- 对同一 PRD 再次执行时，默认先走 Step 0 增量检测：优先复用已有 `-enhanced.md`，只处理变更章节。
-- 如需 **全量重来**，删除同目录下已有的 `*-enhanced.md`，再重新执行同一条增强指令。
+- 对同一 PRD 再次执行时，默认先走 Step 0 增量检测：优先复用已有增强文件（`status: enhanced`），只处理变更章节。
+- 如需 **全量重来**，删除同目录下已有的增强 PRD 文件，再重新执行同一条增强指令。
 - 单独调用本 Skill 时，主验收入口是仓库根目录 `latest-prd-enhanced.md`。
 - `确认通过` / `已修改，请同步` 是 **test-case-generator Step 9 / Step 10** 的验收回复，不用于单独 PRD 增强；单独增强完成后，用户通常直接继续生成测试用例，或指出 PRD 仍需补充的内容。
 
@@ -41,36 +41,27 @@ Step 9: 向用户展示增强摘要
 
 ## 二、Step 0: 增量检测
 
-在开始增强之前，检查目标增强文件是否已存在：
+在开始增强之前，检查同目录下是否已有 `status: enhanced` 的 PRD 文件：
 
-```
-原文件：PRD-26-数据质量-质量问题台账.md
-增强文件：PRD-26-数据质量-质量问题台账-enhanced.md（检查是否存在）
-```
-
-**如果 enhanced.md 已存在：**
-
-1. 读取 enhanced.md 头部的 `<!-- enhanced-at: ISO8601 -->` 时间戳
-2. 比较原始 PRD 的文件修改时间（`mtime`）与 enhanced-at 时间戳
+1. 扫描同目录下所有 `.md` 文件的 front-matter，查找 `status: enhanced` 的文件
+2. 如果找到已增强的文件，读取其头部 `<!-- enhanced-at: ISO8601 -->` 时间戳
 3. 根据比较结果决定行为：
 
 | 情况                                   | 行为                               |
 | -------------------------------------- | ---------------------------------- |
-| 原始 PRD 修改时间 **早于** enhanced-at | 跳过增强，直接使用现有 enhanced.md |
-| 原始 PRD 修改时间 **晚于** enhanced-at | 触发增量模式                       |
-| enhanced.md 无 enhanced-at 时间戳      | 全量重新增强                       |
+| 已有增强文件且原始 PRD 未修改          | 跳过增强，直接使用现有增强文件     |
+| 已有增强文件但原始 PRD 有更新          | 触发增量模式                       |
+| 无已增强文件                           | 全量增强（Step 1 起）              |
 
 **增量模式：**
 
-1. 对比原始 PRD 与 enhanced.md 的章节结构，识别新增/修改的章节
+1. 对比原始 PRD 与已增强文件的章节结构，识别新增/修改的章节
 2. 只对变更章节重新提取图片描述
-3. 在 enhanced.md 头部的增量变更记录中追加本次变更摘要：
+3. 在增强文件头部追加增量变更记录：
    ```
    <!-- incremental-update: 2026-03-25T15:00:00Z | 变更章节: 4.3新增弹窗, 4.5权限调整 -->
    ```
 4. 通知用户：「检测到 PRD 有更新，仅重新处理变更章节：[章节列表]」
-
-**如果 enhanced.md 不存在：** 执行全量增强（Step 1 起）。
 
 ---
 
@@ -92,15 +83,19 @@ Step 9: 向用户展示增强摘要
 
 - 文件绝对路径（如 `/path/to/qa-flow/cases/...`）
 - 相对路径（相对于 qa-flow 根目录）
-- Story 目录 + PRD 编号（如 `Story-20260322/PRD-26`）
+- 版本目录 + PRD 编号（如 `data-assets/v6.4.10/PRD-26`）
 
 如用户未明确指定，询问 PRD 文件路径。
 
 ### 输出文件约定
 
-- **命名**：原文件名 + `-enhanced` 后缀，例如 `PRD-26-xxx.md` → `PRD-26-xxx-enhanced.md`
+- **命名**：直接使用需求名称作为文件名，不加 `-enhanced` 后缀
+  - DTStack：文件名使用需求标题，如 `【内置规则丰富】合理性校验-多表字段值对比.md`
+  - 定制项目：文件名使用需求标题，如 `数据质量-质量问题台账.md`
 - **位置**：与原 PRD 文件同级目录
-- **后续消费**：test-case-generator 的 Step 2 将自动查找 `-enhanced.md` 文件
+- **原始文件处理**：增强完成后，将原始 PRD（raw / formalized 版本）移入同目录下的 `.trash/` 子目录
+  - 示例：`cases/requirements/data-assets/v6.4.10/.trash/raw-15530.md`
+- **后续消费**：test-case-generator 的 Step 2 将自动查找增强后的 PRD 文件（通过 front-matter 中的 `status: enhanced` 识别）
 
 ---
 
@@ -246,7 +241,7 @@ done
 |---------|------------|
 | `cases/requirements/custom/xyzh/*.md` | `../../../../assets/images/` |
 | `cases/requirements/data-assets/v{version}/*.md` | `../../../../assets/images/` |
-| `cases/requirements/<module>/Story-YYYYMMDD/*.md` | `../../../../assets/images/` |
+| `cases/requirements/<module>/v{version}/*.md` | `../../../../assets/images/` |
 
 示例（PRD 在 `cases/requirements/custom/xyzh/` 下）：
 
@@ -268,14 +263,25 @@ done
 
 ## 十、Step 8: 输出增强版 PRD
 
-输出文件命名规则：在原文件名后加 `-enhanced`，扩展名不变。
+**输出文件命名规则**：直接使用需求名称，不加 `-enhanced` 后缀。
 
-示例：
+命名示例：
 
-- 输入：`PRD-26-数据质量-质量问题台账.md`
-- 输出：`PRD-26-数据质量-质量问题台账-enhanced.md`
+| 来源 | 输出文件名 |
+|------|-----------|
+| DTStack 蓝湖需求 `15530【内置规则丰富】合理性...` | `【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比.md` |
+| 定制项目 `PRD-26-数据质量-质量问题台账.md` | `数据质量-质量问题台账.md` |
 
 输出位置：与原文件同级目录。
+
+**原始文件处理（必须执行）：**
+
+增强完成后，将原始 PRD（raw / formalized 版本）移入同目录下的 `.trash/` 子目录：
+
+```bash
+mkdir -p "<原文件目录>/.trash"
+mv "<原始PRD文件>" "<原文件目录>/.trash/"
+```
 
 **增强版快捷入口（必须执行）：**
 
@@ -295,7 +301,7 @@ node .claude/shared/scripts/refresh-latest-link.mjs "<enhanced-path>" latest-prd
 
 | 提取目标 | 来源 |
 |----------|------|
-| `prd_name` | H1 标题（或原 `name` 字段） |
+| `prd_name` | H1 标题（或原 `name` 字段）。**必须去除 ticket 编号前缀**：如 H1 为 `15530【内置规则丰富】合理性...`，则 `prd_name` 应为 `【内置规则丰富】合理性...`。去除规则：移除标题开头的纯数字前缀及其后的空格 |
 | `prd_source` | `> 来源：` 行（保留完整内容）或原 `source` 字段 |
 | `prd_version` | 文件名或 `> 来源：` 中的版本关键词，或原 `version` 字段 |
 | `product` | 文件路径（`extractModuleKey` 逻辑），或原 `module` 字段 |
