@@ -86,8 +86,8 @@ Plans:
 - [x] 04-01-PLAN.md — xmind-converter generalization (isDtstackMeta removal, config-driven title builders, SKILL.md update)
 - [x] 04-02-PLAN.md — archive-converter generalization (module map config-driven, output path resolution, SKILL.md update)
 - [x] 04-03-PLAN.md — prd-enhancer generalization + code-analysis-report frontend Mode C extension
-- [ ] 04-04-PLAN.md — test-case-generator prompts e-commerce examples + conditional step logic
-- [ ] 04-05-PLAN.md — using-qa-flow menu sync + CLAUDE.md Skill index update
+- [x] 04-04-PLAN.md — test-case-generator prompts e-commerce examples + conditional step logic
+- [x] 04-05-PLAN.md — using-qa-flow menu sync + CLAUDE.md Skill index update
 
 ### Phase 5: IM Notification Integration
 **Goal**: QA workflows can send structured notifications to any combination of DingTalk, Feishu, WeCom, and SMTP email channels via a single unified dispatch call

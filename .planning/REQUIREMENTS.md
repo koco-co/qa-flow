@@ -26,12 +26,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Skills Redesign
 
-- [ ] **SKIL-01**: test-case-generator 重新设计 — 通用化编排流程，去除业务耦合
+- [x] **SKIL-01**: test-case-generator 重新设计 — 通用化编排流程，去除业务耦合
 - [x] **SKIL-02**: prd-enhancer 重新设计 — 通用化图片解析和健康度检查逻辑
 - [x] **SKIL-03**: code-analysis-report 重新设计 — 支持前端代码分析模板（扩展现有后端模板）
 - [x] **SKIL-04**: xmind-converter 重新设计 — 通用化 Root 节点格式和路径逻辑
 - [x] **SKIL-05**: archive-converter 重新设计 — 通用化转换规则和目录映射
-- [ ] **SKIL-06**: using-qa-flow 重新设计 — 整合初始化流程 + 功能菜单
+- [x] **SKIL-06**: using-qa-flow 重新设计 — 整合初始化流程 + 功能菜单
 
 ### Project Structure
 
@@ -106,12 +106,12 @@ Deferred to future release. Tracked but not in current roadmap.
 | INIT-03 | Phase 3 | Complete |
 | INIT-04 | Phase 3 | Complete |
 | INIT-05 | Phase 3 | Complete |
-| SKIL-01 | Phase 4 | Pending |
+| SKIL-01 | Phase 4 | Complete |
 | SKIL-02 | Phase 4 | Complete |
 | SKIL-03 | Phase 4 | Complete |
 | SKIL-04 | Phase 4 | Complete |
 | SKIL-05 | Phase 4 | Complete |
-| SKIL-06 | Phase 4 | Pending |
+| SKIL-06 | Phase 4 | Complete |
 | NOTF-01 | Phase 5 | Pending |
 | NOTF-02 | Phase 5 | Pending |
 | NOTF-03 | Phase 5 | Pending |
