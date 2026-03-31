@@ -219,20 +219,18 @@ qa-flow/
 └── .claude/
     ├── config.json                # 模块/仓库/路径 source of truth
     ├── rules/                     # 主题细则（用例/XMind/Archive 等）
-    ├── skills/                    # Skill 入口层
-    │   ├── test-case-generator/
-    │   │   ├── SKILL.md           # 编排协议
-    │   │   └── prompts/           # per-step 行为指导文件
-    │   ├── prd-enhancer/
-    │   ├── xmind-converter/
-    │   ├── archive-converter/
-    │   └── code-analysis-report/
-    └── scripts/                   # Node.js 工具脚本
-        ├── load-config.mjs
-        ├── json-to-xmind.mjs
-        ├── json-to-archive-md.mjs
-        ├── split-archive.mjs          # Archive 拆分工具
-        └── output-naming-contracts.mjs
+    ├── shared/
+    │   └── scripts/               # 共享 Node.js 工具脚本
+    │       ├── load-config.mjs
+    │       └── output-naming-contracts.mjs
+    └── skills/                    # Skill 入口层
+        ├── test-case-generator/
+        │   ├── SKILL.md           # 编排协议
+        │   └── prompts/           # per-step 行为指导文件
+        ├── prd-enhancer/
+        ├── xmind-converter/
+        ├── archive-converter/
+        └── code-analysis-report/
 ```
 
 ---

@@ -8,8 +8,6 @@
 - **Story 级输出**：同一 Story 聚合输出，文件名为 `Story-YYYYMMDD.xmind`
 - 对应 Archive Markdown 在可识别原始 PRD 文件名时，优先使用 `PRD-XX-<功能名>.md`；仅 Story 聚合输出默认与 Story 级 XMind 共用 basename
 
-> 仓库中已存在旧文件名（如 `信永中和测试用例.xmind`、`20260322-信永中和测试用例.xmind`），可继续保留读取；新输出统一按上述 contract 生成。
-
 ## 输出路径
 
 参考 `.claude/config.json` 中的 `modules[].xmind` 与 `modules[].archive` 字段确定输出目录。
@@ -67,7 +65,7 @@ XMind L1 对应 Archive MD 的 `suite_name` frontmatter 字段：
 
 DTStack（尤其 `data-assets`）输出优先对齐 `cases/xmind/data-assets/数据资产v6.4.9.xmind`：
 
-- Root：`<项目><版本>迭代用例`
+- Root：`<中文产品名><版本>迭代用例(#<禅道产品ID>)`（禅道产品ID 来自 `config.json` 的 `modules[].zentaoId`，无 zentaoId 时省略该后缀）
 - L1 title：`<需求标题>(#<requirement_ticket>)`
 - L1 labels：`(#<requirement_id>)`（对应 Archive frontmatter `prd_id`，来源为 `meta.requirement_id`）
 - L1 默认 `folded`
@@ -75,4 +73,4 @@ DTStack（尤其 `data-assets`）输出优先对齐 `cases/xmind/data-assets/数
 
 ## XMind 快捷访问
 
-生成、追加或替换成功后，脚本会在仓库根目录创建与实际 XMind 文件**同名**的符号链接，便于直接双击打开。同时保留 `latest-output.xmind` 符号链接指向最新生成的文件，便于快速预览。
+生成、追加或替换成功后，脚本只会在仓库根目录创建或刷新固定快捷链接 `latest-output.xmind`，用于指向本次最新生成的真实 XMind 文件。

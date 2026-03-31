@@ -14,7 +14,7 @@
 ls -la .repos/ 2>/dev/null || echo "（.repos/ 目录为空或不存在）"
 ```
 
-若 `config/repo-branch-mapping.yaml` 已存在，展示当前已配置的版本→分支映射，供参考。
+若 `.claude/config.json` 的 `repoBranchMapping` 字段所指向的映射文件已存在，展示当前已配置的版本→分支映射，供参考。
 
 ## 交互流程
 

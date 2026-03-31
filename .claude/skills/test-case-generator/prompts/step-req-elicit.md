@@ -48,7 +48,7 @@
 
 ```bash
 # 1. 推断目标分支
-cat config/repo-branch-mapping.yaml  # 结合 PRD 中的 dev_version 推断
+cat "<repoBranchMapping-from-.claude/config.json>"  # 结合 PRD 中的 dev_version 推断
 
 # 2. 查找 DTO/VO 类（按 PRD 中的功能名/模块名关键词）
 grep -r "class.*{keyword}.*DTO\|class.*{keyword}.*VO\|class.*{keyword}.*Param" \

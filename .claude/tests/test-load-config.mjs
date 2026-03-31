@@ -11,7 +11,7 @@ import {
   getWorkspaceRoot,
   getRepoBranchMappingPath,
 } from "../shared/scripts/load-config.mjs";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -38,7 +38,8 @@ assert(config.project?.name === "qa-flow", "project.name 标记为 qa-flow");
 assert(config.repos?.["dt-center-assets"] === ".repos/dt-insight-web/dt-center-assets/", "repos 路径已切换到 .repos");
 assert(config.integrations?.lanhuMcp?.runtimePath === "tools/lanhu-mcp/", "lanhuMcp runtimePath 配置正确");
 assert(config.integrations?.lanhuMcp?.envFile === "tools/lanhu-mcp/.env", "lanhuMcp envFile 配置正确");
-assert(config.dataAssetsVersionMap?.["202603-数据资产v6.4.10.xmind"] === "v6.4.10", "dataAssetsVersionMap 包含 v6.4.10");
+assert(config.dataAssetsVersionMap?.["数据资产v6.4.10.xmind"] === "v6.4.10", "dataAssetsVersionMap 包含无日期前缀的 v6.4.10 映射");
+assert(config.shortcuts?.latestXmind === "latest-output.xmind", "latestXmind 快捷链接名正确");
 assert(config.shortcuts?.latestEnhancedPrd === "latest-prd-enhanced.md", "latestEnhancedPrd 快捷链接名正确");
 assert(config.shortcuts?.latestBugReport === "latest-bug-report.html", "latestBugReport 快捷链接名正确");
 assert(config.shortcuts?.latestConflictReport === "latest-conflict-report.html", "latestConflictReport 快捷链接名正确");
@@ -73,6 +74,8 @@ console.log("\n=== Test: getRepoBranchMappingPath ===");
 const mappingPath = getRepoBranchMappingPath();
 assert(mappingPath === resolve(root, "config/repo-branch-mapping.yaml"), "repo-branch-mapping.yaml 路径固定在 config/ 目录");
 assert(existsSync(mappingPath), "repo-branch-mapping.yaml 文件存在");
+const loadConfigSource = readFileSync(resolve(root, ".claude/shared/scripts/load-config.mjs"), "utf8");
+assert(/function getRepoBranchMappingPath\(\)\s*\{[\s\S]*repoBranchMapping/.test(loadConfigSource), "getRepoBranchMappingPath 消费 config.repoBranchMapping 字段");
 
 console.log(`\n══════════════════════════════════════`);
 console.log(`总计: ${passed + failed} 测试, ✅ ${passed} 通过, ❌ ${failed} 失败`);

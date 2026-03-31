@@ -71,7 +71,10 @@ export function resolveWorkspacePath(relativePath) {
 }
 
 export function getRepoBranchMappingPath() {
-  return resolveWorkspacePath("config/repo-branch-mapping.yaml");
+  const config = loadConfig();
+  return resolveWorkspacePath(
+    config.repoBranchMapping ?? "config/repo-branch-mapping.yaml",
+  );
 }
 
 export function getIntegrationConfig(name) {

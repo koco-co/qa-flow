@@ -47,7 +47,7 @@
 **权重**: 1x | **必须**: 是
 
 **评分规则**:
-- 100%: `dev_version` 字段已填，且能通过 `config/repo-branch-mapping.yaml` 解析到具体分支
+- 100%: `dev_version` 字段已填，且能通过 `.claude/config.json` 的 `repoBranchMapping` 字段解析到具体分支
 - 70%: `dev_version` 已填但无法匹配映射（需用户确认）
 - 30%: 未填 `dev_version` 但从 PRD 内容（如「岚图定制化」「袋鼠云标品」等关键词）可推断
 - 0%: 无任何客户/版本信息
@@ -57,7 +57,7 @@
 - 包含「袋鼠云」「标品」「release_6.」→ 推断 `dtstack-default` profile
 - xyzh/信永中和 → 无源码，无需分支
 
-**自动推断来源**: PRD frontmatter `dev_version` + `config/repo-branch-mapping.yaml` 关键词匹配
+**自动推断来源**: PRD frontmatter `dev_version` + `.claude/config.json` 的 `repoBranchMapping` 字段关键词匹配
 
 **问题模板**:
 - Q-TU1: 这个需求是针对哪个客户或产品版本？（标品/岚图定制/其他客户）

@@ -1,9 +1,10 @@
 # qa-flow 工作流全面审计与优化方案
 
-> **文档性质**：当前状态审计 + 具体改进提案。非历史规划（历史规划见 `docs/planning.md`）。  
-> **基准快照**：`2875dd3 chore: snapshot current qa-flow state`（main 分支）  
+> **文档性质**：基于快照的审计提案 + 当前主线复核结果。非历史规划（历史规划见 `docs/planning.md`）。  
+> **原始审计快照**：`2875dd3 chore: snapshot current qa-flow state`（main 分支）  
+> **当前复核时间**：2026-03-30（对当前 `main` 再次核验）  
 > **审计范围**：CLAUDE.md、全部 Skills（6 个）、全部 step prompts、全部 scripts、tests、config、rules  
-> **审计日期**：2026-03
+> **阅读方式**：以“当前仍待推进的问题”和“已闭环项复核”两部分理解本文；不要再把已闭环的历史 P0 视为当前缺陷。
 
 ---
 
@@ -28,12 +29,13 @@
 
 ### 1.1 背景
 
-qa-flow 是一个以 CLAUDE.md 为主编排入口、多个独立 Skill 为执行单元的 AI 驱动测试用例生成工作空间。自 `docs/planning.md` 中记录的第一版改进以来，工作流经历了多轮迭代（见 `docs/sessions/` 下的 session-1～7），积累了若干架构漂移点。
+qa-flow 是一个以 CLAUDE.md 为主编排入口、多个独立 Skill 为执行单元的 AI 驱动测试用例生成工作空间。自 `docs/planning.md` 中记录的第一版改进以来，工作流经历了多轮迭代（见 `docs/sessions/` 下的 session-1～7），期间一部分历史漂移已经在后续提交中被修复，另一部分治理问题仍然存在。
 
-本文是独立于历史规划的**当前状态审计**，目标是：
+本文最初基于快照 `2875dd3` 撰写；本次又按当前 `main` 做了二次复核。因此本文的目标不再是简单罗列问题，而是：
 - 客观描述每个问题的当前表现
 - 给出可操作的改进建议
 - 说明改进后预期达到的效果
+- 区分“已经闭环的历史问题”和“当前仍值得投入的治理项”
 
 ### 1.2 审计范围
 
@@ -105,468 +107,244 @@ test-case-generator 编排
 
 ## 3. 权威来源矩阵（Source-of-Truth Matrix）
 
-> 明确"谁说了算"，是消除漂移的第一步。
+> 明确“谁说了算”，是消除漂移的第一步。  
+> **2026-03-30 复核说明**：下表已经按当前 `main` 重新核验，区分“历史已闭环”与“当前仍待治理”的偏差。
 
-| 治理维度 | 权威文件 | 次级参考 | 已知偏差 |
-|---------|---------|---------|----------|
-| 目录路径与模块 key | `.claude/config.json` | `CLAUDE.md` §工作区结构 | `directory-naming.md` 的目录树列出 `.claude/agents/`，但该目录不存在 |
-| 步骤顺序与 step ID | `SKILL.md` §步骤顺序定义 | `intermediate-format.md` | `intermediate-format.md` 内 step ID 与 SKILL.md 已对齐，但 `test-load-config.mjs:69` 仍断言旧路径 `.claude/scripts` |
-| 路径配置权威 | `.claude/config.json` | `CLAUDE.md` §编排说明 | `config.json` 缺失 `dataAssetsVersionMap` 字段，但 `test-load-config.mjs:41` 断言该字段存在 |
-| 用例与格式规则 | `.claude/rules/*.md` | `SKILL.md`、skill 内 `rules/*.md` 副本 | 至少 3 组规则存在全局版 + skill-local 版并行维护，且部分副本已发生实质漂移 |
-| Prompt 行为规范 | 各 `step-*.md` | `SKILL.md` §执行协议 | 部分 step prompt 内嵌了应由 rules 文件管控的路径 |
-| 文档权威入口 | `CLAUDE.md` | `README.md` | `README.md:5` 已明确声明从属于 CLAUDE.md，但自身目录树仍声明 `.claude/agents/`（行 230）|
-| 蓝湖集成运行时 | `.claude/config.json` §integrations.lanhuMcp | `step-parse-input.md` 内硬编码路径 | `test-lanhu-mcp-runtime.mjs:38` 断言旧路径 `.claude/scripts/refresh-lanhu-cookie.py`，但实际脚本已在 `.claude/skills/using-qa-flow/scripts/` 下 |
+| 治理维度 | 当前权威 | 次级参考 | 当前偏差 / 说明 |
+|---------|---------|---------|----------------|
+| 全局入口与高层编排 | `CLAUDE.md` | `README.md` | `CLAUDE.md` 负责仓库级入口、边界和分流；`README.md` 仍应保持“导览”定位，避免承载新的硬 contract |
+| Skill 级步骤 contract | `.claude/skills/*/SKILL.md` | `step-*.md`、`references/*` | `test-case-generator` 的 `.qa-state` 结构仍在 SKILL / reference / step prompt 三处维护 |
+| 可配置路径与集成参数 | `.claude/config.json` | `load-config.mjs`、step prompts | `repoBranchMapping` 已进入 `config.json`，但 `getRepoBranchMappingPath()` 仍硬编码默认路径；`step-parse-input.md` 仍写死 cookie refresh 脚本路径 |
+| 规则 contract | 按主题明确唯一权威文件 | skill-local `rules/*.md` 镜像 | 三套 skill-local 镜像均已声明“以全局为准”，但尚无自动同步；`xmind-output.md` 不能机械按“删除 local”处理 |
+| Prompt 运行行为 | 各 `step-*.md` + `writer/reviewer-subagent.md` | `SKILL.md` §执行协议 | Writer / Reviewer prompt 仍各 291 行，且 step prompt 仍混有可配置路径信息 |
+| 测试入口与守护 | `.claude/tests/*.mjs` + `.claude/tests/package.json` | `docs/` 内说明 | 13 个测试文件逐个运行均通过，但统一入口 `npm test` 仍因缺失 `run-all.mjs` 失败 |
 
 ---
 
 ## 4. 发现问题清单（按严重度分级）
 
-> **P0** = 当前即会导致测试失败或功能异常；**P1** = 架构弱点，可能在特定场景下引发故障；**P2** = 代码腐化、可读性、维护成本问题。
+> **P0** = 当前即会导致核心流程阻塞；**P1** = 已验证存在、值得优先治理的 contract/维护性问题；**P2** = 风险较低但会持续放大维护成本的问题。  
+> 截至 2026-03-30 复核，本文初稿中的历史 P0 已基本闭环，当前更值得投入的是“入口 contract 半成品”“source-of-truth 未完全收口”和“prompt/rule 维护面过宽”。
 
-### P0 问题汇总
+### 4.1 当前未闭环问题汇总
 
-| ID | 问题简述 | 受影响文件 | 当前表现 |
+| ID | 问题简述 | 受影响文件 | 当前影响 |
 |----|---------|-----------|---------|
-| P0-1 | 测试断言旧目录路径 `.claude/scripts` | `test-load-config.mjs:69` | `npm test` 直接失败 |
-| P0-2 | 测试断言缺失的 config 字段 `dataAssetsVersionMap` | `test-load-config.mjs:41` | `npm test` 直接失败 |
-| P0-3 | 测试断言 cookieRefreshScript 旧路径 `.claude/scripts/` | `test-lanhu-mcp-runtime.mjs:38` | `npm test` 直接失败 |
-| P0-4 | `test-workflow-doc-validator.mjs` 因 `.claude/agents/` 目录不存在而崩溃 | `test-workflow-doc-validator.mjs:127` | 运行即抛出 ENOENT，整个测试文件无法执行 |
-| P0-5 | `test-workflow-doc-validator.mjs:23` 引用不存在的 `docs/蓝湖PRD自动化导入方案.md` | `test-workflow-doc-validator.mjs` | 相关断言无法覆盖目标文件 |
-| P0-6 | `test-json-to-xmind.mjs` 和 `test-archive-history-scripts.mjs` 对 `jszip` 裸 import，顶层无该依赖 | 两个测试文件 | 运行即报 `ERR_MODULE_NOT_FOUND` |
+| P1-1 | `.claude/tests/package.json` 已声明统一入口，但 `run-all.mjs` 缺失 | `.claude/tests/package.json` | `cd .claude/tests && npm test` 直接失败，统一测试入口不可信 |
+| P1-2 | `repoBranchMapping` 已进入 config，但消费链路未完全收口 | `.claude/config.json`、`.claude/shared/scripts/load-config.mjs` | 配置字段与脚本实现形成“双权威” |
+| P1-3 | `.qa-state` contract 仍在 SKILL / reference / step prompt 三处维护 | `SKILL.md`、`intermediate-format.md`、`step-parse-input.md` | 状态字段更新时易产生语义漂移 |
+| P1-4 | skill-local 规则镜像虽已加声明，但未建立自动同步 / 差异校验 | `.claude/rules/*.md`、`.claude/skills/*/rules/*.md` | `test-case-writing` 等文件仍会静默分叉 |
+| P1-5 | Writer / Reviewer Subagent Prompt 仍各 291 行 | `writer-subagent.md`、`reviewer-subagent.md` | Agent 注意力稀释，改动面过大 |
+| P1-6 | 多个 step prompt 仍硬编码可配置路径 | `step-parse-input.md`、`step-source-sync.md`、`step-req-elicit.md` | 脚本迁移时仍需多点改 prompt |
+| P2-1 | README / 规则文档仍残留 `.claude/scripts/` 旧树结构 | `README.md`、`directory-naming.md` | 新成员或 Agent 仍可能去错误目录找脚本 |
+| P2-2 | `docs/planning.md` 的“历史存档”属性不够显式 | `docs/planning.md` | 新成员容易把旧规划当现状 |
+| P2-3 | Prompt 占位符 / 配置注入建议尚缺前置机制定义 | `SKILL.md`、step prompts、subagent prompts | 容易形成“文档提倡配置化，实际没人注入”的半成品 |
 
-### P1 问题汇总
+### 4.2 已闭环项（保留为审计轨迹）
 
-| ID | 问题简述 | 受影响文件 |
-|----|---------|-----------|
-| P1-1 | `unify-directory-structure.mjs` 硬编码跨 skill 的 nested node_modules 路径 | `shared/scripts/unify-directory-structure.mjs:30` |
-| P1-2 | `.claude/agents/` 目录声明与缺失的结构性漂移 | `README.md:230`、`directory-naming.md:42` |
-| P1-3 | CLAUDE.md `编排说明` 中状态文件路径描述与 SKILL.md 定义不一致 | `CLAUDE.md` §编排说明、`SKILL.md` §执行协议 |
-| P1-4 | `.qa-state.json` 合同在多处重复定义（SKILL.md / intermediate-format.md / step-parse-input.md） | 3个文件 |
-| P1-5 | 多套 skill-local 规则副本并行存在，且部分已发生实质漂移 | `.claude/rules/*.md`、`.claude/skills/*/rules/*.md` |
-| P1-6 | Writer Subagent Prompt 达 291 行，超出单一 prompt 合理容量 | `writer-subagent.md` |
-| P1-7 | CLAUDE.md `DTStack 与 XYZH 分流规则` 章节的步骤顺序与 SKILL.md 不一致（`prd-formalizer` 拼写） | `CLAUDE.md` §DTStack 与 XYZH 分流规则 |
-
-### P2 问题汇总
-
-| ID | 问题简述 | 受影响文件 |
-|----|---------|-----------|
-| P2-1 | 每个 skill 下 node_modules 各自独立安装，仓库体积膨胀 | `skills/*/scripts/node_modules/` |
-| P2-2 | `docs/planning.md` 是历史规划文件，与当前状态不完全一致，新成员易混淆 | `docs/planning.md` |
-| P2-3 | Step prompt 内硬编码脚本路径（如 `refresh-lanhu-cookie.py` 的绝对路径形式），路径变更时需多处修改 | 多个 step-*.md |
-| P2-4 | `config/repo-branch-mapping.yaml` 存在但 `config.json` 无该字段索引 | `config.json` |
-| P2-5 | 测试文件无统一入口（无 `package.json` 的 `test` 脚本或 test runner 配置） | `.claude/tests/` |
+| 原问题 | 当前状态 | 复核证据 |
+|------|---------|---------|
+| P0-1 / P0-2 / P0-3 | 已修复 | `test-load-config.mjs`、`test-lanhu-mcp-runtime.mjs` 当前已通过 |
+| P0-4 / P0-5 | 已修复或原描述不成立 | `test-workflow-doc-validator.mjs` 已有 `existsSync(agentsRoot)` 防护，且不存在 `lanhuPlanPath` 引用 |
+| P0-6 / 旧 P1-1 | 已修复 | `jszip` 已由 `.claude/tests/` 与 `.claude/shared/scripts/` 正常解析，相关测试逐个通过 |
+| 旧 P1-3 / 旧 P1-7 / 旧 P2-4 | 已修复 | `CLAUDE.md` 与 `config.json` 已对齐当前实现 |
 
 ---
 
-## 5. P0 问题详述
+## 5. 已闭环问题复核（2026-03-30）
 
-### P0-1：`test-load-config.mjs:69` 断言旧目录 `.claude/scripts`
+本轮对当前 `main` 的实测结果如下：
 
-**当前表现**
-```
-❌ 工作空间根目录与 .claude/scripts 相对位置正确
-```
-测试执行 `resolve(root, ".claude/scripts") === scriptDir`，但脚本自身位于 `.claude/tests/`，而断言期望的是 `.claude/scripts`（旧路径），目录已不存在。
+- `node .claude/tests/test-load-config.mjs` → 30/30 通过
+- `node .claude/tests/test-lanhu-mcp-runtime.mjs` → 13/13 通过
+- `node .claude/tests/test-workflow-doc-validator.mjs` → 11/11 通过
+- `node .claude/tests/test-json-to-xmind.mjs` → 48/48 通过
+- `node .claude/tests/test-archive-history-scripts.mjs` → 35/35 通过
+- 13 个 `.claude/tests/*.mjs` 文件逐个执行全部通过
 
-**根本原因**
-Session-1～2 期间将脚本从 `.claude/scripts/` 迁移到 `.claude/shared/scripts/` 和 `.claude/skills/*/scripts/`，但测试断言未同步更新。
+这意味着本文初稿里把多条历史问题仍标记为“当前 P0”的表述已经过时。当前更合理的治理顺序，不应再围绕“修复旧测试断言”展开，而应围绕：
 
-**改进建议**
-将 `test-load-config.mjs:69` 改为验证 `scriptDir` 相对于 `testsDir` 的位置，或改为验证 `.claude/shared/scripts/` 的存在性：
-```js
-// 改前
-assert(resolve(root, ".claude/scripts") === scriptDir, "...");
-// 改后
-assert(existsSync(resolve(root, ".claude/shared/scripts")), ".claude/shared/scripts 目录存在");
-assert(existsSync(resolve(root, ".claude/tests")), ".claude/tests 目录存在");
-```
-
-**改进后效果**
-该测试从失败变为通过；消除一个持续 CI 红灯来源。
+1. 把**已经存在的 contract 补完整**（例如 `run-all.mjs`）
+2. 把**已经进入配置的字段真正消费起来**（例如 `repoBranchMapping`）
+3. 把**仍然多点维护的状态 / 规则 / prompt contract 收口**
 
 ---
 
-### P0-2：`test-load-config.mjs:41` 断言缺失字段 `dataAssetsVersionMap`
+## 6. 当前仍需推进的问题
+
+### P1-1：统一测试入口 contract 仍是半成品（`run-all.mjs` 缺失）
 
 **当前表现**
-```
-❌ dataAssetsVersionMap 包含 v6.4.10
-```
-`config.json` 中不存在 `dataAssetsVersionMap` 字段，访问返回 `undefined`。
-
-**根本原因**
-该字段曾在 session-6 规划中作为版本映射方案提及，但最终未落地到 `config.json`，而测试断言被提前写入。
-
-**改进建议**（二选一）
-
-- **方案 A（推荐）**：在 `config.json` 中正式添加 `dataAssetsVersionMap` 字段，维护 XMind 文件名到版本号的映射：
-  ```json
-  "dataAssetsVersionMap": {
-    "数据资产v6.4.10.xmind": "v6.4.10"
-  }
-  ```
-- **方案 B**：删除该测试断言，若版本映射仍无业务需求则不实现。
-
-**改进后效果**
-消除假断言，测试结果真实反映系统状态。
-
----
-
-### P0-3：`test-lanhu-mcp-runtime.mjs:38` 断言 cookieRefreshScript 旧路径
-
-**当前表现**
-```
-❌ cookieRefreshScript 指向 refresh-lanhu-cookie.py
-```
-测试期望路径以 `.claude/scripts/refresh-lanhu-cookie.py` 结尾，但：
-- `config.json:105` 已配置为 `.claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py`
-- 脚本文件实际存在于该新路径下
-- `lanhu-mcp-runtime.mjs` 已按 config.json 读取正确路径
-
-**根本原因**
-测试断言写于脚本迁移之前，迁移后未同步更新。
-
-**改进建议**
-```js
-// 改前
-assert(config.cookieRefreshScript.endsWith(".claude/scripts/refresh-lanhu-cookie.py"), "...");
-// 改后
-assert(
-  config.cookieRefreshScript.endsWith(".claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py"),
-  "cookieRefreshScript 指向 using-qa-flow/scripts/refresh-lanhu-cookie.py"
-);
-```
-
-**改进后效果**
-测试断言与 config.json 的实际配置对齐，通过率从 12/13 变为 13/13。
-
----
-
-### P0-4：`test-workflow-doc-validator.mjs` 因 `.claude/agents/` 不存在而崩溃
-
-**当前表现**
-```
-Error: ENOENT: no such file or directory, scandir '.../qa-flow/.claude/agents'
-```
-文件第 127 行 `walkFiles(agentsRoot, ...)` 调用 `readdirSync` 时对不存在的目录抛出异常，整个测试文件无法执行（所有断言均未运行）。
-
-**根本原因**
-`test-workflow-doc-validator.mjs` 编写时预期存在 `.claude/agents/` 目录，但该目录从未被实际创建。`README.md:230` 和 `directory-naming.md:42` 的目录树声明了该目录，但声明是规划性的而非实际的。
-
-**改进建议**（两步）
-
-1. 在 `test-workflow-doc-validator.mjs` 中将 `agentsRoot` 扫描改为条件性操作：
-   ```js
-   const agentDocs = existsSync(agentsRoot)
-     ? walkFiles(agentsRoot, (f) => f.endsWith(".md"))
-     : [];
-   ```
-2. 决策 `.claude/agents/` 目录的定位：
-   - **若保留**：创建目录并补充 `.gitkeep`；将 `README.md` 和 `directory-naming.md` 中的描述标记为"规划中"或"可选"。
-   - **若废弃**：从 `README.md:230` 和 `directory-naming.md:42` 的目录树中删除该条目。
-
-**改进后效果**
-测试文件不再崩溃，所有断言正常执行；目录树文档与实际文件系统对齐。
-
----
-
-### P0-5：`test-workflow-doc-validator.mjs` 引用不存在的 `docs/蓝湖PRD自动化导入方案.md`
-
-**当前表现**
-`lanhuPlanPath` 被加入 `repoFacingDocs` 数组用于扫描陈旧引用，但文件不存在。由于 `repoFacingDocs` 在构建时用 `.filter(existsSync)` 过滤，该路径被静默跳过，断言可通过，但形成了**假覆盖**——实际上从未扫描了预期的文档。
-
-**根本原因**
-该文档原计划存在于 `docs/` 下（见 session-2），但最终内容已合并到其他文档或未创建。
-
-**改进建议**
-```js
-// 添加显式断言
-assert(
-  existsSync(lanhuPlanPath) || true, // 改为可选
-  "docs/蓝湖PRD自动化导入方案.md 已存在（可选）"
-);
-```
-或从 `repoFacingDocs` 中移除该路径引用，改为在注释中说明该文档的归宿（已合并到 `step-parse-input.md` 相关说明）。
-
-**改进后效果**
-测试覆盖真实有效；消除静默假通过。
-
----
-
-### P0-6：`test-json-to-xmind.mjs` 和 `test-archive-history-scripts.mjs` 裸 import jszip 失败
-
-**当前表现**
-```
-Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'jszip'
-```
-两个测试文件直接 `import JSZip from "jszip"`，但 `jszip` 只安装在各自 skill 下的 `scripts/node_modules/`（非顶层），Node.js ESM 无法解析。
-
-**根本原因**
-测试文件位于 `.claude/tests/`，该目录没有自己的 `package.json`，其 Node.js 模块解析范围内没有 `jszip`。Skill 脚本可以正常解析是因为它们从自己的 `scripts/` 目录运行，Node 向上查找找到了 `scripts/node_modules/`。
-
-**改进建议**（见 §10 脚本治理专项，P2-1 联动处理）
-
-短期（立即可做）：在 `.claude/tests/` 下添加 `package.json` 并安装 `jszip`：
+`.claude/tests/package.json` 已存在，并声明：
 ```json
-{
-  "type": "module",
-  "dependencies": {
-    "jszip": "^3.10.1"
-  }
+"scripts": {
+  "test": "node run-all.mjs"
 }
 ```
-中期（更优）：将 jszip 提升到项目根级 `package.json` 的 devDependencies，统一管理。
+但当前目录下并不存在 `run-all.mjs`。因此逐个运行测试文件是可行的，`cd .claude/tests && npm test` 仍会直接报 `MODULE_NOT_FOUND`。
+
+**改进建议**
+
+1. 补齐 `run-all.mjs`，顺序执行 13 个测试文件并聚合退出码。
+2. 若短期不补 runner，则把 `package.json` 的 `test` 脚本改为现有可运行命令，避免“文档有入口、实际跑不起来”。
+3. runner 设计上不要遇到首个失败就短路，需汇总全部文件结果，便于回归定位。
 
 **改进后效果**
-两个测试文件可以正常运行，jszip 相关用例测试覆盖恢复。
+本地复核、CI 和文档说明可以共享同一个入口命令，测试 contract 才算真正闭环。
 
 ---
 
-## 6. P1 问题详述
-
-### P1-1：`unify-directory-structure.mjs` 硬编码跨 Skill 的 nested node_modules
+### P1-2：`repoBranchMapping` 已进入 config，但 `load-config.mjs` 仍硬编码默认路径
 
 **当前表现**
-```js
-// .claude/shared/scripts/unify-directory-structure.mjs:30
-import JSZip from "../../skills/xmind-converter/scripts/node_modules/jszip/lib/index.js";
-```
-`shared/scripts/` 下的共享脚本直接引用另一个 skill 的私有 `node_modules`。
-
-**当前影响**
-- 若 `xmind-converter` 的依赖升级或路径变更，`unify-directory-structure.mjs` 会静默失效
-- 违反了"共享脚本不依赖具体 skill 实现"的隔离原则
-
-**改进建议**
-将 `jszip` 提升为共享依赖（在 `.claude/shared/scripts/package.json` 中声明），改为标准 import：
-```js
-import JSZip from "jszip"; // 从共享 package.json 解析
-```
-
-**改进后效果**
-消除跨 skill 的隐式路径耦合，共享脚本的依赖清晰且可独立升级。
-
----
-
-### P1-2：`.claude/agents/` 目录声明与实际缺失造成的结构漂移
-
-**当前表现**
-- `README.md:230` 目录树：`├── agents/  # 子代理定义`
-- `directory-naming.md:42` 目录树：`├── agents/  # 子代理定义`
-- 实际磁盘：`.claude/agents/` **不存在**
-
-**当前影响**
-新成员或 AI Agent 读取目录结构文档后期望该目录存在，实际操作时发现不存在，产生困惑；自动化测试因此崩溃（见 P0-4）。
-
-**改进建议**
-明确架构决策：当前 qa-flow 采用"主编排 Agent 直接调用 Skill prompt"模式，不需要独立 agents 目录。更新两处目录树文档，删除 `agents/` 条目或标注为"暂未启用"。
-
-**改进后效果**
-文档与现实对齐，消除混淆来源。
-
----
-
-### P1-3：CLAUDE.md 状态文件路径描述与 SKILL.md 定义不一致
-
-**当前表现**
-
-| 位置 | 描述 |
-|------|------|
-| `CLAUDE.md` §编排说明 | `断点状态：Story 目录下的 .qa-state.json` |
-| `SKILL.md` §执行协议 1 | 单 PRD 生成：`<working-dir>/.qa-state-{prd-slug}.json`；批量：`<working-dir>/.qa-state.json` |
-| `intermediate-format.md` §断点续传 | 详细定义了两种命名模式 |
-
-CLAUDE.md 只提到 `.qa-state.json`（批量模式路径），忽略了单 PRD 的 slug 化命名模式，导致 AI Agent 读取 CLAUDE.md 时可能采用错误的文件名查找断点。
-
-**改进建议**
-更新 CLAUDE.md §编排说明：
-```
-断点状态：
-- 单 PRD：`<requirements目录>/.qa-state-{prd文件名}.json`
-- 批量：`<requirements目录>/.qa-state.json`
-（详见 SKILL.md 步骤顺序定义）
-```
-
-**改进后效果**
-CLAUDE.md 作为主编排入口，其描述与 SKILL.md 保持一致，减少 Agent 误判续传状态的概率。
-
----
-
-### P1-4：`.qa-state.json` 合同在三处重复定义
-
-**当前表现**
-`.qa-state.json` 的字段结构（`last_completed_step`、`writers`、`reviewer_status`、`awaiting_verification` 等）分散定义于：
-1. `SKILL.md` §执行协议（初始结构）
-2. `intermediate-format.md` §断点续传状态文件（详细字段说明）
-3. `step-parse-input.md` §1.x（初始化逻辑）
-
-三处定义存在细节差异风险——任何一处更新未同步到其他两处，将导致 Agent 行为不一致。
-
-**改进建议**
-以 `intermediate-format.md` 为唯一 source of truth（字段定义最完整），其余两处改为引用：
-```markdown
-<!-- SKILL.md §执行协议 中 -->
-初始状态结构见 `references/intermediate-format.md` §.qa-state.json 断点续传状态文件。
-```
-
-**改进后效果**
-状态合同单一来源，更新时只需修改一处，降低漂移风险。
-
----
-
-### P1-5：多套 skill-local 规则副本并行存在，且部分已发生实质漂移
-
-**当前表现**
-
-| 路径 | 性质 |
-|------|------|
-| `.claude/rules/test-case-writing.md` ↔ `.claude/skills/test-case-generator/rules/test-case-writing.md` | 同一主题的全局版 / skill-local 版 |
-| `.claude/rules/archive-format.md` ↔ `.claude/skills/archive-converter/rules/archive-format.md` | 同一主题的全局版 / skill-local 版 |
-| `.claude/rules/xmind-output.md` ↔ `.claude/skills/xmind-converter/rules/xmind-output.md` | 同一主题的全局版 / skill-local 版 |
-
-这些副本并非都保持一致，已经出现可验证的合同漂移：
-
-- `archive-format`：全局版包含 `case_count`、`origin` 字段说明，但 `archive-converter` 的 skill-local 副本未完整覆盖。
-- `xmind-output`：全局版要求 DTStack 输出进入 `v{version}/` 版本子目录，并维护“主流程 / 岚图标品 / 6.3.x / 集成测试”等特殊分类目录；`xmind-converter` 的 skill-local 副本仍以扁平路径表为主，未完整体现版本目录与特殊分类规则。
-- `test-case-writing`：两份文件都存在，但 skill-local 版缺少全局版中的部分细化规则，长期存在静默分叉风险。
-
-**改进建议**
-原则上不再手工维护 skill-local 规则副本，优先采用以下顺序：
-
-1. **首选**：删除 skill-local 副本，在 `SKILL.md` 中直接引用全局规则文件。
-2. **次选**：若必须保留 skill 内路径，则改为符号链接或自动同步生成，禁止手工双写。
-3. **兜底**：至少在 skill-local 文件开头声明：
-```markdown
-> 本文件是全局规则的 skill 内镜像，以 `.claude/rules/<rule-name>.md` 为准。
-```
-
-其中，`archive-format` 和 `xmind-output` 应优先处理，因为它们直接影响产物路径、front-matter 字段和归档 / 输出 contract。
-
-**改进后效果**
-规则单一来源，避免“全局文档说一套、skill 内副本又是一套”；同时减少 XMind / Archive 输出路径和 front-matter 字段被不同副本误导的风险。
-
----
-
-### P1-6：Writer Subagent Prompt 过长（291 行）
-
-**当前表现**
-`writer-subagent.md` 291 行，包含：源码预提取指南 + 用例编写规则 + 格式规范 + 输出 JSON schema + 历史用例引用逻辑 + Writer 自检清单。
-
-单个 prompt 内容过多导致：
-- AI Agent 在推理时会忽略末尾内容（注意力稀释）
-- 维护困难，更改一项规则需在 291 行中定位
-- 已有 `writer-subagent-reference.md`（参考资料拆分），但主 prompt 仍然过长
-
-**改进建议**
-将 `writer-subagent.md` 拆分为：
-1. **核心 prompt**（约 80 行）：角色定义、输入说明、输出格式、自检清单
-2. **规则引用**（保持在 `writer-subagent-reference.md`）：已存在，继续扩充
-3. **编排器预提取占位符**：保留在核心 prompt，以 `{{placeholder}}` 形式标注
-
-在 SKILL.md §步骤 7 说明中明确：编排器加载 `writer-subagent.md` + `writer-subagent-reference.md` 组合。
-
-**改进后效果**
-核心 prompt 聚焦，参考资料按需加载；维护改动局部化；注意力不因长度稀释。
-
----
-
-### P1-7：CLAUDE.md 中 `prd-formalizer` 拼写与 SKILL.md 不一致
-
-**当前表现**
-- `CLAUDE.md` §DTStack 与 XYZH 分流规则：`req-elicit → source-sync → prd-formalizer → prd-enhancer`
-- `SKILL.md` §步骤顺序定义：step ID 为 `prd-formalize`（无 `r`）
-- `step-prd-formalize.md` 文件名：`step-prd-formalize.md`
-
-CLAUDE.md 中拼写为 `prd-formalizer`，与其他所有定义不一致。
-
-**改进建议**
-将 `CLAUDE.md` §DTStack 与 XYZH 分流规则中的 `prd-formalizer` 改为 `prd-formalize`，与 SKILL.md step ID 及文件名对齐。
-
-**改进后效果**
-消除 AI Agent 读取 CLAUDE.md 时因拼写差异造成的步骤定位偏差。
-
----
-
-## 7. P2 问题详述
-
-### P2-1：各 Skill 下 node_modules 各自独立，仓库体积膨胀
-
-**当前表现**
-`jszip` 同时安装在：
-- `.claude/skills/archive-converter/scripts/node_modules/jszip/`
-- `.claude/skills/xmind-converter/scripts/node_modules/jszip/`
-
-两份相同的库（各约 500KB），且 `.claude/shared/scripts/unify-directory-structure.mjs` 通过硬编码路径引用其中一份（见 P1-1）。
-
-**改进建议**
-将 `jszip` 提升到 `.claude/shared/scripts/package.json` 的 `dependencies`，各 skill 脚本改为标准 import。长期可引入 monorepo 工具（如 npm workspaces）统一管理 `.claude/` 下的所有 JS 依赖。
-
----
-
-### P2-2：`docs/planning.md` 内容陈旧，新成员易混淆
-
-**当前表现**
-`docs/planning.md` 记录了历史改进规划（T01-T11），其中部分已实施（如 T01 step ID 统一、T05 writer prompt 拆分），部分未实施，且文档未标注状态。
-
-**改进建议**
-在文档开头添加免责声明：
-```markdown
-> ⚠️ 历史规划存档，截止 2026-03 的状态记录在 `docs/qa-flow-workflow-audit-and-optimization.md`。
-> 本文件仅供参考，不代表当前系统状态。
-```
-
----
-
-### P2-3：Step Prompt 内硬编码脚本路径
-
-**当前表现**
-`step-parse-input.md` 内出现：
-```bash
-python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py
-```
-路径硬编码在 prompt 正文，当脚本迁移时需逐个 prompt 搜索修改。
-
-**改进建议**
-Step prompt 引用路径时改为引用 `config.json` 中的字段，或在 prompt 说明区统一注释：
-```
-# 路径从 config.json 的 integrations.lanhuMcp.cookieRefreshScript 读取
-```
-并在 SKILL.md 或编排规则中声明：step prompt 不得硬编码可配置路径。
-
----
-
-### P2-4：`repo-branch-mapping.yaml` 在 `config.json` 中无字段索引
-
-**当前表现**
-`config/repo-branch-mapping.yaml` 存在并被 `getRepoBranchMappingPath()` 函数读取，但该路径在 `config.json` 中没有对应字段（路径通过代码中 `resolve(root, "config/repo-branch-mapping.yaml")` 硬编码）。
-
-**改进建议**
-在 `config.json` 中添加：
+`config.json` 已经包含：
 ```json
 "repoBranchMapping": "config/repo-branch-mapping.yaml"
 ```
-并在 `load-config.mjs` 中通过 `config.repoBranchMapping` 读取。
+但 `.claude/shared/scripts/load-config.mjs` 中的 `getRepoBranchMappingPath()` 仍直接返回：
+```js
+return resolveWorkspacePath("config/repo-branch-mapping.yaml");
+```
+
+**问题本质**
+字段已经进入权威配置，但消费链路没有真正使用它，导致“配置里有值”和“代码里另写一个默认值”并行存在。
+
+**改进建议**
+
+- **推荐**：让 `getRepoBranchMappingPath()` 优先消费 `config.repoBranchMapping`，仅在字段缺失时回退到默认值。
+- **备选**：若明确不准备配置化，则删除 `config.json` 中该字段，并在文档中说明“此路径固定，不做配置项”。
+
+**改进后效果**
+避免双权威；后续若路径迁移，只需改一处。
 
 ---
 
-### P2-5：测试文件无统一入口与运行规范
+### P1-3：`.qa-state` contract 仍在三处维护
 
 **当前表现**
-`.claude/tests/` 下有 13 个测试文件，但：
-- 无 `package.json`（无法 `npm test`）
-- 无统一的 test runner（各文件独立运行）
-- 部分文件因依赖问题无法运行（见 P0-4、P0-6）
+`.qa-state` 的结构和生命周期语义仍同时存在于：
+
+1. `SKILL.md` 的执行协议描述
+2. `references/intermediate-format.md` 的详细 schema/说明
+3. `step-parse-input.md` 中的初始化与写回逻辑
+
+其中，`SKILL.md` 已经开始引用 `intermediate-format.md`，说明治理方向是对的；但 `step-parse-input.md` 仍保留了较完整的状态结构说明，重复面仍然很大。
 
 **改进建议**
-在 `.claude/tests/` 或 `.claude/` 目录下添加 `package.json`，配置：
-```json
-{
-  "scripts": {
-    "test": "node --experimental-vm-modules tests/run-all.mjs"
-  }
-}
+
+1. 不建议简单把 `intermediate-format.md` 提升为“唯一权威”后让所有地方静态复制引用。
+2. 更稳妥的做法是抽出一个独立的 `qa-state` schema/reference（可放在 `references/` 或 `shared/schemas/`）。
+3. `SKILL.md` 保留高层语义和步骤边界；`step-parse-input.md` 只保留初始化/更新规则，字段结构改为引用 schema。
+
+**改进后效果**
+状态 contract 的“定义”和“执行”职责分离，未来加字段时不必同步改三份叙述文档。
+
+---
+
+### P1-4：skill-local 规则镜像已加声明，但尚未机械同步
+
+**当前表现**
+三套 skill-local 规则文件现在都已经加上了“以全局版本为准”的镜像说明，这是一个正向改进；但内容差异仍然存在，尤其：
+
+- `test-case-writing.md` 的 skill-local 版本明显短于全局版，存在大段规则缺失
+- `archive-format.md` 和 `xmind-output.md` 虽然也有镜像声明，但两边内容仍未做到自动对齐
+- 对 `xmind-output.md` 不能机械执行“删除所有 local 副本”，因为当前 skill-local 版本更贴近脚本和测试 contract
+
+**改进建议**
+
+1. 按主题而不是一刀切地决定 authoritative source。
+2. 为每组 rule 增加 diff check 或自动同步脚本，而不是只靠文件头声明。
+3. 优先处理 `test-case-writing.md`，因为它对 Writer / Reviewer 的输出行为影响最大。
+
+**改进后效果**
+规则不再依赖“人记得同步”；同时避免把尚未对齐的全局旧规则误推回 skill 运行面。
+
+---
+
+### P1-5：Writer / Reviewer Subagent Prompt 仍各 291 行
+
+**当前表现**
+`writer-subagent.md` 和 `reviewer-subagent.md` 当前都为 291 行。虽然 `writer-subagent-reference.md` 已经存在，且 SKILL 也开始按章节精简加载，但主 prompt 仍过长。
+
+**改进建议**
+
+1. 把“必须每次都读”的核心 contract 压缩到主 prompt。
+2. 把示例、扩展规则、边界样例继续沉到 reference 文件。
+3. 这类改动必须和 `SKILL.md` 的 dispatch 逻辑一起原子更新，避免只改 prompt 不改加载逻辑。
+
+**改进后效果**
+减少注意力稀释；同时让 prompt 演进从“改一个大文件”变成“改核心 + 改参考”的局部修改。
+
+---
+
+### P1-6：Step prompt 仍硬编码可配置路径
+
+**当前表现**
+目前至少有三处 step prompt 仍直接写入可配置路径或固定配置文件位置：
+```bash
+python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py
 ```
-或使用 `node:test` 模块提供统一入口，以便 CI 直接运行。
+
+此外，`step-source-sync.md` 与 `step-req-elicit.md` 仍直接引用 `config/repo-branch-mapping.yaml`。
+
+**问题本质**
+这类路径已经属于 `config.json` 的治理范围；继续把它写死在 prompt 正文中，意味着路径迁移时要在配置、脚本、prompt 三处同时改。
+
+**改进建议**
+
+1. 真正的修复点应在编排/dispatch 层，而不是只在 prompt 里加一句“请从 config.json 读取”。
+2. 若当前尚无占位符注入机制，则先在 SKILL.md 中定义“由调度层注入可配置路径”的规则，再逐步替换正文硬编码。
+3. 在注入机制落地前，至少把硬编码路径集中到单一 step，而不要在多个 step 重复出现。
+
+**改进后效果**
+路径迁移的修改面显著缩小，也避免 Agent 因读取旧 prompt 而继续使用过期脚本路径。
+
+---
+
+## 7. P2 问题详述与落地边界
+
+### P2-1：README / 目录规则文档仍残留 `.claude/scripts/` 旧树结构
+
+**当前表现**
+`README.md` 和 `directory-naming.md` 的部分目录树仍在用 `.claude/scripts/` 的旧表述，但当前真实结构已经拆成：
+
+- `.claude/shared/scripts/`
+- `.claude/skills/*/scripts/`
+
+**改进建议**
+更新目录树说明时，不要只替换路径名；要同时解释“共享脚本”和“skill 专属脚本”的职责边界。
+
+**改进后效果**
+新成员或 Agent 不会继续去不存在的旧目录中查找脚本。
+
+---
+
+### P2-2：`docs/planning.md` 的“历史存档”属性不够显式
+
+**当前表现**
+`docs/planning.md` 开头已经补了“历史规划存档”声明，但正文仍包含“唯一执行清单”等强执行语气。对首次进入仓库的人来说，仍可能把它误解为当前 roadmap。
+
+**改进建议**
+保留当前免责声明，同时把正文中的强执行语气（如“唯一执行清单”）改成历史上下文表述，并继续显式链接到本文作为当前审计视图。
+
+**改进后效果**
+把“历史过程”和“当前状态”分层，降低误读成本。
+
+---
+
+### P2-3：Prompt 配置化建议必须以后置能力为前提
+
+**当前表现**
+本文初稿曾提出统一使用 `{{变量名}}` 占位符、把 Reviewer 阈值移到 `config.json` 等建议；方向本身是合理的，但当前仓库里还没有一个明确的“占位符注入 / prompt 变量展开”机制。
+
+**改进建议**
+
+1. 先定义注入机制由谁执行：`SKILL.md`、共享脚本还是上层 orchestrator。
+2. 在机制落地前，不要把未解析占位符直接写进主 prompt。
+3. Reviewer 的 15% / 40% 阈值若要配置化，必须和实际注入路径一起设计，而不是先把值挪到 config。
+
+**改进后效果**
+避免出现“文档提倡配置化，但实际执行时没人把配置注入 prompt”的半成品状态。
 
 ---
 
@@ -587,62 +365,65 @@ Step prompt 引用路径时改为引用 `config.json` 中的字段，或在 prom
 
 | 弱点 | 具体表现 | 风险等级 |
 |------|---------|---------|
-| **主编排与 Skill 间的语义漂移** | CLAUDE.md 描述的步骤顺序/路径与 SKILL.md 不完全一致（P1-3、P1-7） | ★★★★ |
-| **状态合同多点维护** | `.qa-state.json` 结构在 3 处定义，易漂移（P1-4） | ★★★★ |
-| **Prompt 内容过载** | `writer-subagent.md` 291 行，AI 注意力稀释（P1-6） | ★★★ |
-| **测试体系不完整** | 多个测试失败，测试发现问题的能力弱于预期（P0-1 至 P0-6） | ★★★★★ |
-| **依赖管理碎片化** | jszip 多处重复安装，跨 skill 路径引用（P1-1、P2-1） | ★★★ |
-| **文档与实现的宣告性漂移** | agents/ 目录、prd-formalizer 拼写等小漂移积累（P1-2、P1-7） | ★★ |
+| **状态合同多点维护** | `.qa-state` 结构仍在 SKILL / reference / step prompt 三处维护（P1-3） | ★★★★ |
+| **Prompt 内容过载** | Writer / Reviewer 主 prompt 仍各 291 行（P1-5） | ★★★ |
+| **统一入口存在半成品** | 测试文件可逐个通过，但 `npm test` 入口未真正闭环（P1-1） | ★★★ |
+| **规则镜像未机械同步** | skill-local rules 已加声明，但内容仍可能与全局版分叉（P1-4） | ★★★★ |
+| **文档与路径 contract 漂移** | README / 规则文档仍残留 `.claude/scripts/` 旧树结构（P2-1） | ★★ |
+| **可配置项未完全配置化** | `repoBranchMapping` 与 prompt 内脚本路径仍有“配置已存在、实现未完全消费”现象（P1-2、P1-6） | ★★★ |
 
 ### 8.3 漂移点分析
 
 **漂移类型 1：宣告性漂移（Declarative Drift）**
 文档宣称存在某个能力/目录/字段，但实际未实现：
-- `.claude/agents/` 目录
-- `config.dataAssetsVersionMap` 字段
-- `docs/蓝湖PRD自动化导入方案.md`
+- `.claude/tests/package.json` 已声明统一入口，但 `run-all.mjs` 尚未落地
+- README / `directory-naming.md` 中的 `.claude/scripts/` 旧树结构
+- “配置化建议”已经写进方案，但实际注入机制尚未定义
 
 **漂移类型 2：同步性漂移（Sync Drift）**
 某个概念在多处定义，更新时未全部同步：
-- `.qa-state.json` 合同（3处）
+- `.qa-state` 合同（3处）
 - 多套 skill-local 规则副本（test-case-writing / archive-format / xmind-output）
-- cookieRefreshScript 路径（config.json vs 测试断言）
+- `repoBranchMapping`（config 字段已存在，但 getter 仍硬编码）
 
 **漂移类型 3：拼写/命名漂移（Naming Drift）**
 同一概念在不同文件中命名不一致：
-- `prd-formalize` vs `prd-formalizer`
 - `.claude/scripts` vs `.claude/shared/scripts`
+- “step ID” 与 “agent/prompt 名称”在 README 架构图中容易混读
 
 ### 8.4 推荐治理模型
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                 治理层级（由上到下）                    │
-├─────────────────────────────────────────────────────┤
-│ L1 配置权威：.claude/config.json                     │
-│   → 所有路径、模块 key、集成参数的唯一来源              │
-│   → 脚本和 prompt 通过 load-config.mjs 读取，         │
-│     不得硬编码                                        │
-├─────────────────────────────────────────────────────┤
-│ L2 编排权威：SKILL.md（各 Skill 自己的）               │
-│   → 步骤顺序、step ID、状态合同、运行模式               │
-│   → CLAUDE.md 只做索引/摘要，具体定义以 SKILL.md 为准  │
-├─────────────────────────────────────────────────────┤
-│ L3 行为权威：step-*.md（各步骤的执行细节）              │
-│   → 具体的 bash 命令、分支逻辑、用户交互                │
-│   → 路径引用必须从 config.json 获取                    │
-├─────────────────────────────────────────────────────┤
-│ L4 规则权威：.claude/rules/*.md                       │
-│   → 格式规范、命名约定、编写规则                        │
-│   → skill 内规则文件是 L4 的引用，不独立维护            │
-├─────────────────────────────────────────────────────┤
-│ L5 测试守护：.claude/tests/                           │
-│   → 验证 L1-L4 的声明与实现一致                        │
-│   → 测试必须与被测对象同步更新（PR 检查项）              │
-└─────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                   治理层级（由上到下）                        │
+├────────────────────────────────────────────────────────────┤
+│ L1 全局编排权威：CLAUDE.md                                  │
+│   → 负责仓库级入口、Skill 路由、全局边界与工作手册            │
+│   → 保持“主编排”地位，但不重复展开每个 Skill 的细部 contract   │
+├────────────────────────────────────────────────────────────┤
+│ L2 Skill 编排权威：各 Skill 的 SKILL.md                      │
+│   → 负责单 Skill 的步骤顺序、模式差异、依赖关系与调用约定      │
+│   → 引用 state / rule contract，不在此处全文复制              │
+├────────────────────────────────────────────────────────────┤
+│ L3 执行细节：step-*.md / subagent prompts                    │
+│   → 负责步骤行为、成功条件、异常处理、用户交互                │
+│   → 可配置路径应由 dispatch 层注入，避免在正文中长期写死       │
+├────────────────────────────────────────────────────────────┤
+│ L4 配置权威：.claude/config.json + load-config.mjs           │
+│   → 负责路径、快捷链接、integration 参数                      │
+│   → 字段一旦进入 config，就应被真实消费，而不是保留并行硬编码   │
+├────────────────────────────────────────────────────────────┤
+│ L5 规则权威：按主题明确 authoritative source                 │
+│   → 全局规则优先，但需允许 skill-local 在过渡期承载更新 contract │
+│   → 关键不是“全部删 local”，而是“先对齐，再机械同步”           │
+├────────────────────────────────────────────────────────────┤
+│ L6 测试守护：.claude/tests/                                  │
+│   → 验证 L1-L5 的声明与实现一致                               │
+│   → 测试既要能逐个通过，也要有可信的统一入口                   │
+└────────────────────────────────────────────────────────────┘
 ```
 
-**核心原则**：每个信息只有一个 source of truth；其他文件引用而非复制。
+**核心原则**：每个事实只保留一个真实权威；其余文件可以摘要、引用、镜像，但不能长期各写一套。
 
 ---
 
@@ -654,16 +435,16 @@ Step prompt 引用路径时改为引用 `config.json` 中的字段，或在 prom
 |------|------|---------|
 | `writer-subagent.md` | 291 | 过长，内容边界不清 |
 | `reviewer-subagent.md` | 291 | 与 writer 等长，规则大量重复 |
-| `step-parse-input.md` | ~120 | 硬编码脚本路径 |
+| `step-parse-input.md` | ~280 | 硬编码脚本路径 + 状态初始化逻辑过重 |
 | `step-brainstorm.md` | 68 | 适中 |
-| `step-req-elicit.md` | 未统计 | 需核查与澄清维度文档的重复度 |
+| `step-req-elicit.md` | ~380 | 体量已接近“子流程说明书”，且内含固定配置路径引用 |
 | `SKILL.md` | 179 | 编排逻辑清晰，但执行协议部分过于详细 |
 
 ### 9.2 优化原则
 
 1. **单一职责**：每个 prompt 文件只描述一件事（角色定义、行为规则、输出格式三者独立）
 2. **引用代替复制**：规则、路径、schema 通过引用指向权威文件，不在 prompt 中重复定义
-3. **占位符标准化**：编排器填入的动态内容使用统一的 `{{变量名}}` 占位符格式
+3. **占位符标准化（有前提）**：只有在编排器 / dispatch 层具备实际注入机制后，才统一使用 `{{变量名}}`；在机制落地前，不要把未解析占位符直接写进主 prompt
 4. **长度控制**：
    - 编排 prompt（SKILL.md）：< 200 行
    - 步骤 prompt（step-*.md）：< 100 行
@@ -703,7 +484,7 @@ writer-subagent-reference.md（参考资料，编排器按需注入）
 
 当前 `reviewer-subagent.md` 同样 291 行，建议：
 - 提取质量评分逻辑为独立参考节
-- 将 15%/40% 阈值作为配置项（可在 `config.json` 中定义）而非硬编码在 prompt 中
+- 若后续引入 reviewer 的配置注入机制，再将 15%/40% 阈值配置化；在此之前先保留显式 contract，避免出现“配置里有值但执行时没人注入”的半成品状态
 - 阻断/警告的用户交互模板提取为独立的 `reviewer-escalation.md`
 
 ### 9.5 步骤 Prompt 统一模板
@@ -736,176 +517,152 @@ writer-subagent-reference.md（参考资料，编排器按需注入）
 
 ## 10. 脚本 / 测试 / 路径治理专项
 
-### 10.1 脚本目录结构现状
+### 10.1 当前脚本 / 测试结构复核
 
 ```
 .claude/
-├── shared/scripts/          ← 共享脚本
-│   ├── load-config.mjs      ✅ 正确位置
-│   ├── unify-directory-structure.mjs  ⚠️ 跨 skill 依赖
-│   └── package.json         ✅ 存在
+├── shared/scripts/                 ← 共享脚本
+│   ├── load-config.mjs             ✅ 存在
+│   ├── unify-directory-structure.mjs ✅ 已改为标准 import
+│   └── package.json                ✅ 存在
 ├── skills/
-│   ├── xmind-converter/scripts/
-│   │   ├── node_modules/jszip/   ← 重复依赖
-│   │   └── package.json
-│   ├── archive-converter/scripts/
-│   │   ├── node_modules/jszip/   ← 重复依赖
-│   │   └── package.json
-│   └── using-qa-flow/scripts/
-│       ├── lanhu-mcp-runtime.mjs ✅ 正确位置
-│       └── refresh-lanhu-cookie.py ✅ 正确位置
+│   ├── xmind-converter/scripts/    ← skill 专属脚本
+│   ├── archive-converter/scripts/  ← skill 专属脚本
+│   └── using-qa-flow/scripts/      ← lanhu 运行时脚本
 └── tests/
-    ├── (无 package.json)     ❌ 缺失
-    └── 13 个测试文件
+    ├── package.json                ✅ 已存在
+    ├── node_modules/jszip/         ✅ 已存在
+    └── 13 个测试文件               ✅ 可逐个运行
+       （但 `run-all.mjs` 缺失，统一入口尚未闭环）
 ```
 
 ### 10.2 路径引用一致性审查
 
-| 路径 | config.json | 脚本/测试断言 | 实际文件 | 一致？ |
-|------|-------------|------------|---------|-------|
-| cookieRefreshScript | `.claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py` | 测试断言：`.claude/scripts/refresh-lanhu-cookie.py` | 实际：`using-qa-flow/scripts/` | ❌ P0-3 |
-| lanhu-mcp runtimePath | `tools/lanhu-mcp/` | 测试断言：✅ | 实际：✅ | ✅ |
-| shared scripts 目录 | 无专门字段 | 测试断言：`.claude/scripts` | 实际：`.claude/shared/scripts/` | ❌ P0-1 |
-| repo-branch-mapping | 无专门字段（代码硬编码）| 测试：✅（直接读取） | 实际：`config/` | ⚠️ P2-4 |
-| reports.bugs | `reports/bugs/` | 无直接测试 | 实际：✅ | ✅ |
+| 路径 / contract | config / 代码 | 文档 / prompt / 测试 | 当前结论 |
+|----------------|---------------|----------------------|---------|
+| `cookieRefreshScript` / `repoBranchMapping` | `config.json` 已声明路径；`load-config.mjs` 仅部分消费 | 测试断言已对齐；`step-parse-input.md`、`step-source-sync.md`、`step-req-elicit.md` 仍保留字面量路径或固定配置文件位置 | **部分收口**：运行面正确，prompt 侧仍有维护成本 |
+| shared scripts 目录 | 实际目录为 `.claude/shared/scripts/` | README / `directory-naming.md` 仍有 `.claude/scripts/` 旧树结构 | **未收口**：文档仍会误导读者去旧目录找脚本 |
+| `repoBranchMapping` | 字段已进入 `config.json` | `load-config.mjs` 仍硬编码默认值 | **未收口**：字段存在但未被真实消费 |
+| reports 输出目录 | `config.json` 中 `reports.bugs` / `reports.conflicts` | 当前文档与实现一致 | **已对齐** |
 
 ### 10.3 测试文件健康状况
 
-| 测试文件 | 当前状态 | 失败原因 |
-|---------|---------|---------|
-| `test-load-config.mjs` | ❌ 2 个断言失败 | P0-1、P0-2 |
-| `test-lanhu-mcp-runtime.mjs` | ❌ 1 个断言失败 | P0-3 |
-| `test-workflow-doc-validator.mjs` | ❌ 崩溃（未运行） | P0-4 |
-| `test-json-to-xmind.mjs` | ❌ 模块解析失败 | P0-6 |
-| `test-archive-history-scripts.mjs` | ❌ 模块解析失败 | P0-6 |
-| `test-front-matter-utils.mjs` | ✅（推测） | — |
-| `test-latest-link-utils.mjs` | ✅（推测） | — |
-| `test-md-body-normalization.mjs` | ✅（推测） | — |
-| `test-md-content-source-resolver.mjs` | ✅（推测） | — |
-| `test-md-frontmatter-audit.mjs` | ✅（推测） | — |
-| `test-md-semantic-enrichment.mjs` | ✅（推测） | — |
-| `test-md-xmind-regeneration.mjs` | ✅（推测） | — |
-| `test-repo-branch-mapping.mjs` | ✅（推测） | — |
+| 维度 | 当前状态 | 说明 |
+|------|---------|------|
+| 单文件执行 | ✅ 13/13 全部通过 | 已逐个运行 `.claude/tests/*.mjs` 验证 |
+| 统一入口 `npm test` | ❌ 当前失败 | `.claude/tests/package.json` 指向的 `run-all.mjs` 缺失 |
+| 断言基线可信度 | ✅ 已恢复 | 当前主要问题不是断言失真，而是入口 contract 半成品 |
 
-**当前约 5/13 个测试文件无法正常运行**，测试体系整体可信度较低。
+**结论**：qa-flow 当前的测试问题，已经从“多个测试根本跑不起来”，收敛为“统一入口缺失”。这属于治理问题，而不是功能性 P0。
 
-### 10.4 依赖管理改进路径
+### 10.4 依赖与入口治理路径
 
 ```
-阶段 1（立即）：修复 P0-6
-  → 在 .claude/tests/ 下添加 package.json，安装 jszip
+阶段 1（立即）：
+  → 补齐 `.claude/tests/run-all.mjs`
+  → 让 `npm test` 与逐个执行的结果保持一致
 
-阶段 2（短期）：提升共享依赖
-  → jszip 移入 .claude/shared/scripts/package.json
-  → unify-directory-structure.mjs 改用标准 import
+阶段 2（短期）：
+  → 让 `load-config.mjs` 真正消费 `config.repoBranchMapping`
+  → 清理 README / directory-naming 里的 `.claude/scripts/` 旧树结构
 
-阶段 3（中期）：统一依赖管理
-  → 根目录 package.json 声明 devDependencies
-  → 各 skill scripts/package.json 改为 peerDependencies
-  → npm workspaces 或等效方案统一 install
+阶段 3（中期）：
+  → 收口 prompt 中的可配置路径
+  → 为 rule mirrors 增加差异校验 / 自动同步
+
+阶段 4（长期，可选）：
+  → 评估是否引入 npm workspaces 或其他统一依赖管理方案
+  → 前提是先验证不会破坏现有 skill 独立 package 上下文
 ```
 
 ---
 
 ## 11. 推荐实施顺序
 
-### 阶段 1：P0 修复（立即，不超过 1 天）
-
-优先级最高，修复所有测试崩溃，使测试体系可信。
-
-| 顺序 | 任务 | 涉及文件 | 工作量 |
-|------|------|---------|-------|
-| 1 | 修复 `test-workflow-doc-validator.mjs`：`agentsRoot` 条件性读取 | `test-workflow-doc-validator.mjs` | 2行 |
-| 2 | 修复 `.claude/agents/` 文档声明（删除或创建目录） | `README.md`, `directory-naming.md` | 各2行 |
-| 3 | 修复 `test-load-config.mjs:69`：更新 scripts 路径断言 | `test-load-config.mjs` | 2行 |
-| 4 | 修复 `test-load-config.mjs:41`：添加 `dataAssetsVersionMap` 到 config.json，或删除断言 | `config.json` 或测试文件 | 5行 |
-| 5 | 修复 `test-lanhu-mcp-runtime.mjs:38`：更新 cookieRefreshScript 路径断言 | `test-lanhu-mcp-runtime.mjs` | 2行 |
-| 6 | 修复 jszip 依赖：在 `.claude/tests/` 下添加 package.json | 新文件 | 10行 |
-
-### 阶段 2：P1 架构加固（短期，1-3 天）
-
-消除主要漂移点，提升 AI Agent 行为一致性。
+### 阶段 1：补齐现有 contract（优先）
 
 | 顺序 | 任务 | 涉及文件 | 优先理由 |
 |------|------|---------|---------|
-| 1 | CLAUDE.md 修正 `prd-formalizer` → `prd-formalize` 拼写 | `CLAUDE.md` | 影响 Agent 步骤定位 |
-| 2 | CLAUDE.md 补充单 PRD 状态文件命名规则 | `CLAUDE.md` | 续传功能正确性 |
-| 3 | `.qa-state.json` 合同单一来源：SKILL.md 和 step-parse-input.md 改为引用 | 2个文件 | 减少漂移 |
-| 4 | 清理 / 收口 skill 内规则副本，至少为 `test-case-writing` / `archive-format` / `xmind-output` 增加”以全局版本为准”声明 | skill 内规则文件 | 规则治理 |
-| 5 | 提升 jszip 到 shared/scripts/package.json，修复跨 skill 路径依赖 | 多文件 | 依赖健壮性 |
-| 6 | `lanhuPlanPath` 断言从测试中清理或补充对应文档 | `test-workflow-doc-validator.mjs` | 测试真实性 |
+| 1 | 补齐 `.claude/tests/run-all.mjs` 或修正 `npm test` 入口 | `.claude/tests/package.json`、新 runner 文件 | 统一入口当前直接失败，是最容易误导人的“半成品” |
+| 2 | 让 `getRepoBranchMappingPath()` 消费 `config.repoBranchMapping` | `.claude/shared/scripts/load-config.mjs` | 去掉 config / 代码双权威 |
+| 3 | 更新 README / `directory-naming.md` 的 `.claude/scripts/` 旧树结构 | `README.md`、`.claude/rules/directory-naming.md` | 清理新人 / Agent 最容易踩到的路径误导 |
 
-### 阶段 3：P1 Prompt 优化（中期，3-5 天）
+### 阶段 2：收口多点维护的 contract
 
-提升 AI 执行质量，减少注意力稀释。
+| 顺序 | 任务 | 涉及文件 | 优先理由 |
+|------|------|---------|---------|
+| 1 | 为 `.qa-state` 抽取单独 schema/reference，并让 step prompt 改为引用 | `SKILL.md`、`references/*`、`step-parse-input.md` | 直接影响续传与状态恢复正确性 |
+| 2 | 为 `test-case-writing` / `archive-format` / `xmind-output` 建立差异校验或自动同步 | 全局 rules + skill-local rules | 规则漂移仍是当前最实质的长期风险 |
+| 3 | 重新判定每组规则的 authoritative source，避免一刀切删除 local mirror | rules / SKILL.md | 避免把更贴近实现的一侧误删 |
+
+### 阶段 3：Prompt 体积与可配置路径治理
 
 | 顺序 | 任务 |
 |------|------|
-| 1 | Writer Subagent Prompt 拆分重构（291行 → 核心 80行 + 参考） |
-| 2 | Reviewer Subagent Prompt 重构（291行 → 核心 60行 + 规则引用） |
-| 3 | 统一所有 step-*.md 的标准化模板格式 |
-| 4 | Step prompt 内硬编码路径改为读取 config 的注释说明 |
+| 1 | 继续瘦身 Writer / Reviewer 主 prompt，保持 reference 文件按需加载 |
+| 2 | 为 step prompt 引入真正的配置注入 / 占位符展开机制 |
+| 3 | 在注入机制落地后，再把可配置路径和 reviewer 阈值逐步配置化 |
 
-### 阶段 4：P2 治理改善（长期，持续）
+### 阶段 4：长期优化（有前提）
 
 | 任务 |
 |------|
-| 添加 `.claude/tests/` 统一运行入口（package.json + test runner） |
-| `config.json` 补充 `repoBranchMapping` 字段索引 |
-| `docs/planning.md` 添加历史存档声明 |
-| 评估是否引入 npm workspaces 统一依赖管理 |
+| `docs/planning.md` 保留现有历史存档声明，并弱化正文中的强执行语气 |
+| 评估统一依赖管理（如 npm workspaces）是否值得引入 |
+| 在不破坏 skill 独立运行前提下，逐步减少重复依赖与重复文档 |
 
 ---
 
 ## 12. 验证与回归检查清单
 
-### 12.1 P0 修复验证
+### 12.1 当前基线验证
 
-修复完成后，每个测试必须达到以下状态：
-
-- [ ] `node .claude/tests/test-load-config.mjs` → 29/29 通过（当前 27/29）
-- [ ] `node .claude/tests/test-lanhu-mcp-runtime.mjs` → 13/13 通过（当前 12/13）
-- [ ] `node .claude/tests/test-workflow-doc-validator.mjs` → 正常运行（当前崩溃）
-- [ ] `node .claude/tests/test-json-to-xmind.mjs` → 正常运行（当前 ERR_MODULE_NOT_FOUND）
-- [ ] `node .claude/tests/test-archive-history-scripts.mjs` → 正常运行（当前 ERR_MODULE_NOT_FOUND）
+- [x] `node .claude/tests/test-load-config.mjs` 当前已通过
+- [x] `node .claude/tests/test-lanhu-mcp-runtime.mjs` 当前已通过
+- [x] `node .claude/tests/test-workflow-doc-validator.mjs` 当前已通过
+- [x] `node .claude/tests/test-json-to-xmind.mjs` 当前已通过
+- [x] `node .claude/tests/test-archive-history-scripts.mjs` 当前已通过
+- [x] 13 个 `.claude/tests/*.mjs` 文件逐个运行全部通过
+- [ ] `cd .claude/tests && npm test` 在补齐 `run-all.mjs` 后通过
 
 ### 12.2 架构漂移回归检查
 
-- [ ] `CLAUDE.md` 中所有 step ID 与 `SKILL.md` §步骤顺序定义表一致
-- [ ] `README.md` 目录树与实际磁盘目录一致（重点：`.claude/agents/` 是否声明与存在对齐）
-- [ ] `directory-naming.md` 目录树与实际磁盘目录一致
-- [ ] `config.json` 中所有路径字段对应的文件/目录实际存在
-- [ ] `cookieRefreshScript` 在 config.json、测试断言、step-parse-input.md 三处指向同一文件
+- [ ] `CLAUDE.md` 仍保持全局入口 / 主编排手册定位
+- [ ] `SKILL.md` 的步骤顺序、模式差异和 step ID 与实际 prompt 一致
+- [ ] `README.md` 与 `directory-naming.md` 的目录树不再出现 `.claude/scripts/` 旧路径
+- [ ] `config.json` 中进入权威配置的字段，都至少有一条真实消费链路
+- [ ] `cookieRefreshScript` 不再在多个 step prompt 中重复硬编码
 
 ### 12.3 Prompt 优化验证
 
-- [ ] Writer Subagent 核心 prompt < 100 行
-- [ ] 所有 step-*.md 包含 `<!-- step-id: -->` 注释
-- [ ] step-*.md 中不出现硬编码的 `.claude/skills/` 或 `tools/` 绝对路径
+- [ ] Writer / Reviewer 主 prompt 的职责边界更清晰，reference 文件继续承载扩展规则
+- [ ] 所有 step-*.md 保留稳定的 step ID 与成功 / 异常边界
+- [ ] 若引入 `{{变量名}}`，确认 dispatch 层已具备注入能力
+- [ ] prompt 中不出现“写进去了但没人会注入”的伪配置项
 
 ### 12.4 端到端功能回归
 
-修改任何 SKILL.md 或 step-*.md 后，验证以下场景：
+修改任何 SKILL.md、step-*.md 或 rules mirror 后，验证以下场景：
 
-- [ ] 普通模式：`为 data-assets v6.4.10 生成测试用例`（完整 12 步执行）
+- [ ] 普通模式：完整执行测试用例生成主流程
 - [ ] 快速模式：`--quick` 跳过 brainstorm 和 checklist
-- [ ] 续传模式：中断后重发指令，从 `last_completed_step` 继续
+- [ ] 续传模式：中断后从正确的 `last_completed_step` 继续
 - [ ] 蓝湖 URL 模式：lanhu-mcp 正常启动，Cookie 刷新流程正常
-- [ ] 质量阻断：Reviewer 问题率 > 40% 时正确暂停并提示用户
+- [ ] 规则改动后：Writer 与 Reviewer 对同一用例格式不发生“互相打架”
 
 ### 12.5 文档一致性检查（可自动化）
 
-基于 `test-workflow-doc-validator.mjs` 现有框架，建议扩展以下检查：
+基于 `test-workflow-doc-validator.mjs` 的现有框架，建议新增或扩展以下检查：
 
 ```js
-// 建议新增的测试断言
-assert(!existsSync(agentsRoot) || readdirSync(agentsRoot).length > 0,
-  ".claude/agents/ 若存在则不应为空");
-assert(claudeMdContent.includes("prd-formalize") && !claudeMdContent.includes("prd-formalizer"),
-  "CLAUDE.md 使用正确的 step ID: prd-formalize");
-assert(configJson.integrations?.lanhuMcp?.cookieRefreshScript
-  .includes("using-qa-flow/scripts"),
-  "cookieRefreshScript 指向 using-qa-flow/scripts 目录");
+assert(existsSync(resolve(repoRoot, ".claude/tests/package.json")),
+  ".claude/tests/package.json 存在");
+assert(existsSync(resolve(repoRoot, ".claude/tests/run-all.mjs")),
+  "统一测试入口 run-all.mjs 已补齐");
+assert(!readmeContent.includes(".claude/scripts/"),
+  "README.md 不再引用旧的 .claude/scripts/ 目录");
+assert(getRepoBranchMappingPath() === resolveWorkspacePath(loadConfig().repoBranchMapping),
+  "repoBranchMapping 字段已被真实消费");
 ```
 
 ---
@@ -927,10 +684,9 @@ assert(configJson.integrations?.lanhuMcp?.cookieRefreshScript
 
 | 漂移点 | 声明来源 | 实际状态 | 问题 ID |
 |--------|---------|---------|--------|
-| `.claude/agents/` 目录 | README.md, directory-naming.md | 不存在 | P0-4, P1-2 |
-| `config.dataAssetsVersionMap` | test-load-config.mjs:41 | 不存在 | P0-2 |
-| `cookieRefreshScript` = `.claude/scripts/...` | test-lanhu-mcp-runtime.mjs:38 | 实际在 `using-qa-flow/scripts/` | P0-3 |
-| `docs/蓝湖PRD自动化导入方案.md` | test-workflow-doc-validator.mjs:23 | 不存在 | P0-5 |
-| `.claude/scripts/` 路径 | test-load-config.mjs:69 | 实际在 `.claude/shared/scripts/` | P0-1 |
-| `prd-formalizer` step ID | CLAUDE.md §DTStack分流规则 | 正确应为 `prd-formalize` | P1-7 |
-| `.qa-state.json` 结构定义 | SKILL.md + intermediate-format.md + step-parse-input.md | 3处分散 | P1-4 |
+| `.claude/tests` 统一入口 | `.claude/tests/package.json` | 已声明 `npm test`，但 `run-all.mjs` 缺失 | P1-1 |
+| `repoBranchMapping` 权威链路 | `.claude/config.json` + `load-config.mjs` | 字段已存在，但 getter 仍硬编码默认值 | P1-2 |
+| `.qa-state` 结构定义 | `SKILL.md` + `intermediate-format.md` + `step-parse-input.md` | 3 处分散维护 | P1-3 |
+| rules mirror contract | 全局 rules + skill-local rules | 有镜像声明，但内容仍分叉 | P1-4 |
+| 可配置脚本路径 | `config.json` + `step-parse-input.md` / `step-source-sync.md` / `step-req-elicit.md` | 运行面正确，prompt 侧仍写死路径或固定配置文件位置 | P1-6 |
+| `.claude/scripts/` 旧目录树 | `README.md`、`directory-naming.md` | 实际目录已拆为 `shared/scripts` + `skills/*/scripts` | P2-1 |

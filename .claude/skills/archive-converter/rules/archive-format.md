@@ -147,7 +147,7 @@ node .claude/shared/scripts/audit-md-frontmatter.mjs --fix
 - **默认命名**：当输入文件名可识别出 `PRD-XX-<功能名>` 时，Archive 输出文件名应优先保持同 basename，例如：
   - 输入：`PRD-26-质量问题台账.json`
   - 输出：`PRD-26-质量问题台账.md`
-- **Story 聚合文件** 仅在用户明确要求统一汇总时使用，命名遵循 `YYYYMM-Story-YYYYMMDD.md`。
+- **Story 聚合文件** 仅在用户明确要求统一汇总时使用，命名遵循 `Story-YYYYMMDD.md`。
 - **新增/重跑策略**：模块级重跑或单 PRD 追加时，应优先写回对应的 PRD 级 Markdown，而不是继续扩大既有迭代总文件。
 - **可读性阈值**：如单个归档文件已明显超出人工审阅范围，应进一步拆回 PRD 级文件，避免产生难以定位和 diff 的超长 Markdown。
 

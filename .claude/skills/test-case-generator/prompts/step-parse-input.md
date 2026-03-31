@@ -27,9 +27,9 @@
    ```bash
    for i in 1 2 3; do
      echo "第 ${i} 次尝试刷新 Cookie..."
-     LANHU_LOGIN_EMAIL="$LANHU_LOGIN_EMAIL" \
-     LANHU_LOGIN_PASSWORD="$LANHU_LOGIN_PASSWORD" \
-     python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py 2>&1
+      LANHU_LOGIN_EMAIL="$LANHU_LOGIN_EMAIL" \
+      LANHU_LOGIN_PASSWORD="$LANHU_LOGIN_PASSWORD" \
+      python3 "<cookieRefreshScript-from-.claude/config.json>" 2>&1
      sleep 5
      # 刷新后重新调用 lanhu_get_pages 验证
      # 若成功 → break 并继续
@@ -42,7 +42,7 @@
    蓝湖 Cookie 刷新失败（已重试 3 次）。
 
    请手动执行以下命令后重试：
-   ! LANHU_LOGIN_EMAIL='<账号>' LANHU_LOGIN_PASSWORD='<密码>' python3 .claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py
+    ! LANHU_LOGIN_EMAIL='<账号>' LANHU_LOGIN_PASSWORD='<密码>' python3 "<cookieRefreshScript-from-.claude/config.json>"
 
    或手动更新 tools/lanhu-mcp/.env 中的 Cookie 值。
    ```
@@ -205,7 +205,7 @@
 这一步只用于判断**是否进入续传模式**；如果用户明确要"只重跑某个模块"，应走后文的模块级重跑流程；如果用户要"从头重来"，应先删除对应状态文件和已增强的 PRD 文件（`status: enhanced`）后再重新发起完整流程或快速模式。
 
 - 选「是」→ 按以下逻辑恢复：
-  - `awaiting_verification: true`：说明流程已停在 Step 9 的用户验证阶段。保持 `last_completed_step: 9` 不变，重新展示验证提示（XMind 路径来自 `output_xmind`，归档 MD 来自 `archive_md_path`），等待用户回复后执行 Step 10
+  - `awaiting_verification: true`：说明流程已停在 Step `archive` 的用户验证阶段。保持 `last_completed_step: "archive"` 不变，重新展示验证提示（XMind 路径来自 `output_xmind`，归档 MD 来自 `archive_md_path`），等待用户回复后执行 `notify`
   - 否则 → 从 `last_completed_step + 1` 继续；其中普通续传只自动重启 `pending` 或中断的 `in_progress` Writer。`failed` Writer 保持终态，需先由用户/编排器显式选择「重试」，并将其状态写回 `in_progress` 后再启动
 - 选「否」→ 删除对应状态文件，重新开始
 - 不存在 → 创建初始状态文件，开始新流程。

@@ -19,7 +19,7 @@
  *   如果未找到同名 L1，则追加新 L1（等同于 --append 行为）。
  *
  * XMind 层级结构:
- * Root (project_name)
+ * Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
  *   └── L1 (【version】requirement_name)
  *        └── L2 (modules[].name)           -- 菜单/模块名
  *             └── L3 (pages[].name)         -- 页面名
@@ -30,11 +30,11 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, unlinkSync, symlinkSync } from 'fs'
-import { resolve, dirname, relative, basename } from 'path'
+import { resolve, dirname, relative } from 'path'
 import { fileURLToPath } from 'url'
 import { Topic, RootTopic, Marker, Workbook, writeLocalFile } from 'xmind-generator'
 import { assertNewOutputPathMatchesContract } from '../../../shared/scripts/output-naming-contracts.mjs'
-import { getDtstackModules } from '../../../shared/scripts/load-config.mjs'
+import { getDtstackModules, loadConfig } from '../../../shared/scripts/load-config.mjs'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..', '..', '..')
@@ -58,8 +58,14 @@ function isDtstackMeta(meta = {}) {
 }
 
 function buildRootTitle(meta = {}) {
-  if (isDtstackMeta(meta) && meta.project_name && meta.version) {
-    return `${meta.project_name}${meta.version}迭代用例`
+  if (isDtstackMeta(meta) && meta.version) {
+    const config = loadConfig()
+    const moduleKey = meta.module_key || meta.product
+    const mod = moduleKey ? config.modules?.[moduleKey] : null
+    const zhName = mod?.zh || meta.project_name || ''
+    const zentaoId = mod?.zentaoId
+    const idSuffix = zentaoId ? `(#${zentaoId})` : ''
+    return `${zhName}${meta.version}迭代用例${idSuffix}`
   }
   return meta.project_name
 }
@@ -296,11 +302,6 @@ function refreshLatestOutput(outputPath) {
   const resolvedOutputPath = resolve(outputPath)
   const linkTarget = relative(REPO_ROOT, resolvedOutputPath)
   const linkPaths = [resolve(REPO_ROOT, RESERVED_OUTPUT_NAME)]
-  const legacyLinkPath = resolve(REPO_ROOT, basename(resolvedOutputPath))
-
-  if (legacyLinkPath !== resolvedOutputPath && legacyLinkPath !== linkPaths[0]) {
-    linkPaths.push(legacyLinkPath)
-  }
 
   for (const linkPath of linkPaths) {
     try {

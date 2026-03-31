@@ -475,7 +475,7 @@ const SPECIAL_XMIND_DIRS = {
 
 /**
  * 从 xmind 文件名提取版本号
- * 支持：`YYYYMM-{name}v{version}.xmind`
+ * 兼容新旧命名；核心依据是文件名尾部的 `v{version}.xmind`
  * 也检查 dataAssetsVersionMap
  */
 function extractVersionFromXmindName(fileName, dataAssetsVersionMap) {

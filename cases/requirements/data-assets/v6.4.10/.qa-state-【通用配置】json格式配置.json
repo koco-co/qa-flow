@@ -3,11 +3,19 @@
   "checklist_confirmed": true,
   "reviewer_status": "completed",
   "awaiting_verification": true,
-  "output_xmind": "cases/xmind/data-assets/v6.4.10/202603-【通用配置】json格式配置.xmind",
+  "output_xmind": "cases/xmind/data-assets/v6.4.10/【通用配置】json格式配置.xmind",
   "archive_md_path": "cases/archive/data-assets/v6.4.10/【通用配置】json格式配置.md",
   "writers": {
-    "list": { "status": "completed", "file": "temp/list.json", "case_count": 27 },
-    "form": { "status": "completed", "file": "temp/form.json", "case_count": 18 }
+    "list": {
+      "status": "completed",
+      "file": "temp/list.json",
+      "case_count": 27
+    },
+    "form": {
+      "status": "completed",
+      "file": "temp/form.json",
+      "case_count": 18
+    }
   },
   "module": "data-assets",
   "version": "v6.4.10",
@@ -92,7 +100,7 @@
       "step": "prd-formalize",
       "status": "completed",
       "at": "2026-03-30T07:15:00Z",
-      "summary": "PRD 形式化完成"
+      "summary": "完成 PRD 形式化整理，已生成临时整理结果供 prd-enhancer 使用"
     },
     {
       "step": "prd-enhancer",

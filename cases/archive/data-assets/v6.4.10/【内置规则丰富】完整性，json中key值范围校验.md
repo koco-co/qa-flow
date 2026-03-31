@@ -1,36 +1,25 @@
 ---
 suite_name: 【内置规则丰富】完整性，json中key值范围校验
 description: 【内置规则丰富】完整性，json中key值范围校验
-prd_id: 15693
 prd_version: v6.4.10
 prd_path: cases/requirements/data-assets/v6.4.10/【内置规则丰富】完整性，json中key值范围校验.md
-prd_url: "https://lanhuapp.com/web/#/item/project/product?tid=24a1c6b2-a52e-454c-8d51-8aff866598b1&pid=7de90493-e80f-4592-a263-38fb2d2e98c0&versionId=7991bb05-6f97-4b29-8ad6-de18b5869a4d&docId=fc0fee93-74f5-4eff-a769-99e68506b296&docType=axure&pageId=3035f5b47bed47fcb8a7a4a26fa7a701&image_id=fc0fee93-74f5-4eff-a769-99e68506b296&parentId=493e80b4-33c3-44cb-b880-42bee51dba19"
+prd_url: ""
 product: data-assets
-dev_version: 6.3岚图定制化分支
+dev_version: ""
 tags:
-  - 数据资产
-  - 内置规则
-  - 完整性校验
-  - key范围校验
-  - JSON字段
-  - 字段级规则
-  - 树形key
-  - 规则模板
-  - 岚图定制化
-  - JSON
+  - 规则库配置
+  - 规则任务管理
+  - 数据质量报告
+  - 内置规则丰富
+  - 完整性
+  - json中key值范围校验
 create_at: 2026-03-30
 update_at: 2026-03-30
 status: ""
 health_warnings: []
-repos:
-  - .repos/CustomItem/dt-center-assets
-  - .repos/CustomItem/dt-insight-studio
+repos: []
 case_count: 30
-case_types:
-  normal: 15
-  abnormal: 13
-  boundary: 2
-origin: json
+origin: xmind
 ---
 
 ## 规则库配置

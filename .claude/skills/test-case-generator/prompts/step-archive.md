@@ -48,13 +48,13 @@ node .claude/shared/scripts/build-archive-index.mjs
 
 ## 错误处理
 
-- **json-to-archive-md.mjs 失败**：展示错误，但不阻断（XMind 已生成可用）
+- **json-to-archive-md.mjs 失败**：展示错误并阻断 archive 成功态写入；保持流程停在 `xmind`，不得写入 `archive_md_path`、`awaiting_verification: true` 或 `last_completed_step: "archive"`
 
 ---
 
 ## 步骤完成后
 
-更新 `.qa-state.json`：
+仅当 archive 文件真实落盘后，才允许更新 `.qa-state.json`；也就是 archive 文件真实落盘后，才允许写入 `archive_md_path`：
 - `archive_md_path` → 实际归档 MD 文件路径
 - `awaiting_verification` → `true`
 - `last_completed_step` → `"archive"`

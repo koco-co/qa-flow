@@ -17,7 +17,7 @@
 - `custom/xyzh` 是文件系统路径别名，用于 `cases/xmind/`、`cases/archive/` 和 `cases/requirements/` 的目录层级。
 - `cases/history/xyzh/` 保持使用 `xyzh`，不会写成 `cases/history/custom/xyzh/`。
 - `cases/archive/` 是固定归档根目录；历史文档或旧 Prompt 中的 `archive-cases/` 统一映射到这里，不代表需要额外创建目录。
-- `config/repo-branch-mapping.yaml` 固定放在 `config/` 目录，用于维护 DTStack repo profile 与开发版本 → 分支映射。
+- `.claude/config.json` 的 `repoBranchMapping` 字段用于定位 DTStack repo profile 与开发版本 → 分支映射文件；默认值是 `config/repo-branch-mapping.yaml`。
 
 ## 顶层目录结构
 
@@ -39,7 +39,8 @@ qa-flow/
     ├── config.json     # 集中路径配置
     ├── rules/          # 按需加载规范
     ├── skills/         # 项目 Skills
-    └── scripts/        # Node.js 脚本
+    └── shared/
+        └── scripts/    # 共享 Node.js 脚本
 ```
 
 ## Story / PRD / 产物命名规则
@@ -62,11 +63,11 @@ qa-flow/
 ### 通用
 
 - PRD 级 XMind 输出：`<功能名>.xmind`（新流程直接写入版本目录）
-- Story 聚合 Markdown 只在明确需要”一个 Story 汇总文件”时使用
-- 历史遗留文件名可继续保留，例如 `信永中和测试用例.xmind`
+- Story 聚合 Markdown 只在明确需要"一个 Story 汇总文件"时使用，命名为 `Story-YYYYMMDD.md`
+- 历史遗留文件若进入工作流改写范围，应同步迁移到当前命名 contract
 - 报告文件：`<标题>.html`，按日期目录归档到 `reports/bugs/` 或 `reports/conflicts/`
 
-## 已知历史例外（不做强制迁移）
+## 结构例外（属于规范内目录形态）
 
 | 路径 | 原因 |
 |------|------|
@@ -76,4 +77,4 @@ qa-flow/
 | `cases/xmind/data-assets/主流程/`、`岚图标品/` | 同上，xmind 侧特殊分类 |
 | `cases/xmind/batch-works/6.3.x/`、`集成测试/` | 同上 |
 
-以上路径均可继续使用；新建目录遵循现行命名规范。
+以上路径仍是规范内允许的目录形态；目录结构可例外，但其中新增或回填的产物命名仍需遵循现行规范。

@@ -343,6 +343,64 @@ async function main() {
     );
   }
 
+  console.log("\n=== Test: DTStack 临时 final-reviewed 文件名不会污染归档文件名 ===");
+  const tempReviewedRequirementName = `【内置规则丰富】有效性，json中key对应的value值格式校验-${runId}`;
+  const tempReviewedInputPath = resolve(tempRoot, `final-reviewed-${runId}-clean.json`);
+  const tempReviewedOutputPath = resolve(
+    repoRoot,
+    "cases/archive/data-assets/v6.4.10",
+    `${tempReviewedRequirementName}.md`,
+  );
+  writeFileSync(
+    tempReviewedInputPath,
+    JSON.stringify(
+      {
+        ...createJsonFixture({
+          projectName: "DTStack",
+          requirementName: tempReviewedRequirementName,
+          version: "v6.4.10",
+          prdPath: `cases/requirements/data-assets/v6.4.10/${tempReviewedRequirementName}.md`,
+        }),
+        meta: {
+          ...createJsonFixture({
+            projectName: "DTStack",
+            requirementName: tempReviewedRequirementName,
+            version: "v6.4.10",
+            prdPath: `cases/requirements/data-assets/v6.4.10/${tempReviewedRequirementName}.md`,
+          }).meta,
+          module_key: "data-assets",
+          prd_version: "v6.4.10",
+        },
+      },
+      null,
+      2,
+    ),
+    "utf8",
+  );
+  const tempReviewedResult = runNodeScript(archiveScriptPath, [tempReviewedInputPath]);
+  assert(tempReviewedResult.code === 0, "DTStack 临时 final-reviewed 输入执行成功", [
+    tempReviewedResult.stderr.trim(),
+    tempReviewedResult.stdout.trim(),
+  ].filter(Boolean));
+  assert(
+    existsSync(tempReviewedOutputPath),
+    "DTStack 临时 final-reviewed 输入仍按 requirement_name 生成归档文件名",
+    [tempReviewedOutputPath],
+  );
+  if (existsSync(tempReviewedOutputPath)) {
+    generatedFilePaths.add(tempReviewedOutputPath);
+    const pollutedOutputPath = resolve(
+      repoRoot,
+      "cases/archive/data-assets/v6.4.10",
+      `final-reviewed-${runId}-clean.md`,
+    );
+    assert(
+      !existsSync(pollutedOutputPath),
+      "临时 final-reviewed basename 不会污染归档文件名",
+      [pollutedOutputPath],
+    );
+  }
+
   console.log("\n=== Test: json-to-archive-md.mjs 输出文件名优先保留 PRD 前缀 ===");
   const prefixedRequirementName = `__qa-prd-prefix-${runId}`;
   const prefixedInputBaseName = `PRD-26-${prefixedRequirementName}.json`;
@@ -436,7 +494,7 @@ async function main() {
   }
 
   console.log("\n=== Test: json-to-archive-md.mjs --from-xmind 保留 canonical XMind basename ===");
-  const canonicalXmindBaseName = `202603-质量问题台账-${runId}.xmind`;
+  const canonicalXmindBaseName = `质量问题台账-${runId}.xmind`;
   const canonicalXmindTitle = `【vtest-canonical】质量问题台账-${runId}`;
   const canonicalXmindPath = resolve(tempRoot, canonicalXmindBaseName);
   const canonicalOutputDir = resolve(tempRoot, "from-xmind-canonical-output");

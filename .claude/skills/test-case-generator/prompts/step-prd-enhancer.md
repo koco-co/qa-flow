@@ -9,7 +9,7 @@
 
 调用 `prd-enhancer` Skill（`.claude/skills/prd-enhancer/SKILL.md`），对 Step parse-input 中识别出的所有 PRD 文件逐一增强。
 
-> 对 DTStack 而言，输入应当是 **正式需求文档**（prd-formalize 产出），不是蓝湖原始文本 dump。
+> 对 DTStack 而言，输入应当是 **正式需求文档的临时整理结果或 formalize 摘要**，不是蓝湖原始文本 dump，也不要求在 requirements 目录保留 formalized 文件。
 
 ## prd-enhancer 的增量检测特性（自动生效）
 
@@ -25,10 +25,10 @@
 
 ## 快捷链接刷新
 
-增强成功后，刷新根目录符号链接（链接名与实际文件同名）：
+增强成功后，刷新根目录固定快捷链接 `latest-prd-enhanced.md`：
 
 ```bash
-node .claude/shared/scripts/refresh-latest-link.mjs "<实际enhanced.md路径>"
+node .claude/shared/scripts/refresh-latest-link.mjs "<实际enhanced.md路径>" latest-prd-enhanced.md
 ```
 
 ## 错误处理

@@ -18,7 +18,7 @@
 
 ## 快捷链接刷新
 
-XMind 生成成功后，脚本会自动在根目录创建与实际文件同名的符号链接（已内置于 json-to-xmind.mjs）。
+XMind 生成成功后，脚本会自动在根目录创建或刷新固定快捷链接 `latest-output.xmind`（已内置于 `json-to-xmind.mjs`）。
 
 ## 错误处理
 

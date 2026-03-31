@@ -9,7 +9,7 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 
 **执行前必须阅读本文件、`rules/image-conventions.md` 和 `references/prd-template.md`。**
 
-> DTStack 特殊说明：当输入来自蓝湖原始文本或低质量 PRD 时，**不得**直接把原始文本当增强结果下发给 Writer。应先经过 `prd-formalizer` 生成正式需求文档，再由本 Skill 做图片增强、结构标准化与健康度预检。
+> DTStack 特殊说明：当输入来自蓝湖原始文本或低质量 PRD 时，**不得**直接把原始文本当增强结果下发给 Writer。应先经过 `prd-formalizer` 生成正式需求文档的临时整理结果或 formalize 摘要，再由本 Skill 做图片增强、结构标准化与健康度预检；不要求在 requirements 目录保留 formalized 文件。
 
 ## 使用口径速查
 
@@ -155,11 +155,11 @@ Step 9: 向用户展示增强摘要
 
 如果当前输入属于 DTStack 且内容明显来自蓝湖原始提取：
 
-1. 先检查是否已有正式需求文档（由 `prd-formalizer` 生成）
+1. 先检查是否已有正式需求文档的临时整理结果（由 `prd-formalizer` 生成）
 2. 若没有，则先回退到 formalizer 流程：
    - 结合 `source_context` 中的 repo/branch 阅读源码
    - 以“需求背景 / 变更范围 / 页面详细设计 / 源码补充事实 / 影响分析 / 测试关注点”模板重组内容
-3. 本 Skill 只对**正式需求文档**执行后续增强，不直接向下游输出原始蓝湖文本 dump
+3. 本 Skill 只对**正式需求文档的临时整理结果或 formalize 摘要**执行后续增强，不直接向下游输出原始蓝湖文本 dump，也不要求在 requirements 目录保留 formalized 文件
 
 ---
 
@@ -374,7 +374,7 @@ mv "<原始PRD文件>" "<原文件目录>/.trash/"
 增强成功后，必须刷新仓库根目录快捷链接，便于用户直接验收：
 
 ```bash
-node .claude/shared/scripts/refresh-latest-link.mjs "<enhanced-path>"
+node .claude/shared/scripts/refresh-latest-link.mjs "<enhanced-path>" latest-prd-enhanced.md
 ```
 
 `latest-prd-enhanced.md` 是 **PRD 增强流程的主验收入口**；如果后续继续进入测试用例生成流程，最终验收对象仍以 `latest-output.xmind` 为准。

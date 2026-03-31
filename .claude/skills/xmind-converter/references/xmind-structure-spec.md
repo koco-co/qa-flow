@@ -5,7 +5,7 @@
 ### 基本结构（无功能子组）
 
 ```
-Root (meta.project_name)
+Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
   └── L1 (【meta.version】meta.requirement_name)
        └── L2 (modules[].name)                    ← 菜单/模块名
             └── L3 (pages[].name)                  ← 页面名
@@ -18,7 +18,7 @@ Root (meta.project_name)
 ### 含功能子组结构
 
 ```
-Root (meta.project_name)
+Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
   └── L1 (【meta.version】meta.requirement_name)
        └── L2 (modules[].name)                    ← 菜单/模块名
             └── L3 (pages[].name)                  ← 页面名
@@ -32,7 +32,7 @@ Root (meta.project_name)
 ### 向后兼容（旧格式，无 pages 层级）
 
 ```
-Root (meta.project_name)
+Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
   └── L1 (【meta.version】meta.requirement_name)
        └── L2 (modules[].name)
             └── [L3 (sub_groups[].name)]
@@ -55,10 +55,16 @@ Root (meta.project_name)
 ## 文件命名规则
 
 ```
-YYYYMM-<功能名>.xmind
+<功能名>.xmind
 ```
 
-示例：`202603-数据质量-质量问题台账.xmind`
+示例：`数据质量-质量问题台账.xmind`
+
+Story 聚合输出：
+
+```
+Story-YYYYMMDD.xmind
+```
 
 ## 输出目录规则
 

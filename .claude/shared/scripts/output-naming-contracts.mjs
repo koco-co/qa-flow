@@ -5,16 +5,16 @@ const NAMING_CONFIG = {
   xmind: {
     legacyPolicy: "allow-existing-target-only",
     acceptedPatterns: {
-      prdLevel: { template: "YYYYMM-<功能名>.xmind", regex: "^\\d{6}-.+\\.xmind$" },
-      storyLevel: { template: "YYYYMM-Story-YYYYMMDD.xmind", regex: "^\\d{6}-Story-\\d{8}\\.xmind$" },
+      prdLevel: { template: "<功能名>.xmind", regex: "^(?!\\d{6}-)(?!Story-\\d{8}\\.xmind$).+\\.xmind$" },
+      storyLevel: { template: "Story-YYYYMMDD.xmind", regex: "^Story-\\d{8}\\.xmind$" },
     },
   },
   archive: {
     legacyPolicy: "prefer-contract-and-preserve-historical-conversions",
     acceptedPatterns: {
       prdLevelFromPrd: { template: "PRD-XX-<功能名>.md", regex: "^PRD-\\d+(?:-|_).+\\.md$" },
-      prdLevelFromXmind: { template: "YYYYMM-<功能名>.md", regex: "^\\d{6}-.+\\.md$" },
-      storyLevel: { template: "YYYYMM-Story-YYYYMMDD.md", regex: "^\\d{6}-Story-\\d{8}\\.md$" },
+      prdLevelFromXmind: { template: "<功能名>.md", regex: "^(?!\\d{6}-)(?!PRD-\\d+(?:-|_))(?!Story-\\d{8}\\.md$).+\\.md$" },
+      storyLevel: { template: "Story-YYYYMMDD.md", regex: "^Story-\\d{8}\\.md$" },
     },
   },
 };
@@ -110,6 +110,19 @@ function getDtstackPreferredArchiveBaseName(meta = {}) {
   return sanitizeFileName(preferredTitle.trim());
 }
 
+function looksLikeTransientGeneratedBaseName(baseName) {
+  return /(?:^|[-_])(final|reviewed|writer|latest|output|legacy|clean)(?:[-_]|$)/i.test(baseName || "");
+}
+
+function normalizeArchiveTitleBaseName(title = "") {
+  return sanitizeFileName(
+    String(title || "")
+      .replace(/^【[^】]+】/, "")
+      .replace(/\(#\d+\)$/, "")
+      .trim(),
+  );
+}
+
 export function getReservedBasenames(kind, contracts = NAMING_CONFIG) {
   return [...(getContractSection(kind, contracts).reservedBasenames ?? [])];
 }
@@ -181,12 +194,7 @@ export function deriveArchiveBaseName(inputPath, meta = {}) {
     return inputPrdBaseName;
   }
 
-  const canonicalInputBaseName = getCanonicalArchiveBaseName(inputBaseName);
-  if (canonicalInputBaseName) {
-    return canonicalInputBaseName;
-  }
-
-  const prdPathBaseName = meta.prd_path
+   const prdPathBaseName = meta.prd_path
     ? getPrdLikeBaseName(basename(meta.prd_path, extname(meta.prd_path)))
     : null;
   if (prdPathBaseName) {
@@ -194,6 +202,14 @@ export function deriveArchiveBaseName(inputPath, meta = {}) {
   }
 
   const normalizedRequirementName = sanitizeFileName(meta.requirement_name || "");
+  if (normalizedRequirementName && looksLikeTransientGeneratedBaseName(inputBaseName)) {
+    return normalizedRequirementName;
+  }
+
+  const canonicalInputBaseName = getCanonicalArchiveBaseName(inputBaseName);
+  if (canonicalInputBaseName) {
+    return canonicalInputBaseName;
+  }
   const requirementNamePrdBaseName = getPrdLikeBaseName(normalizedRequirementName);
   if (requirementNamePrdBaseName) {
     return requirementNamePrdBaseName;
@@ -214,8 +230,13 @@ export function deriveArchiveBaseName(inputPath, meta = {}) {
 
 export function deriveArchiveBaseNameFromXmind(inputPath, resultTitle, totalResults) {
   const inputBaseName = basename(inputPath, extname(inputPath));
-  if (totalResults === 1 && matchesBaseName("xmind", inputBaseName, ["prdLevel", "storyLevel"])) {
+  if (matchesBaseName("xmind", inputBaseName, ["storyLevel"])) {
     return sanitizeFileName(inputBaseName);
+  }
+  const normalizedInputBaseName = sanitizeFileName(inputBaseName);
+  const normalizedTitleBaseName = normalizeArchiveTitleBaseName(resultTitle || inputBaseName);
+  if (totalResults === 1 && normalizedInputBaseName === normalizedTitleBaseName) {
+    return normalizedInputBaseName;
   }
   return sanitizeFileName(resultTitle || inputBaseName);
 }

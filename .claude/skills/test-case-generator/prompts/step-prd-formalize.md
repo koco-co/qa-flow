@@ -30,9 +30,11 @@
    - 各字段真实名称（以源码为准，标注"基于源码推断"）
    - 主流程和异常流程描述
    - 前置条件（数据源/环境依赖）
-5. 输出正式需求文档：
-   - 路径：`cases/requirements/<module>/v{version}/PRD-XX-<功能名>-formalized.md`
-   - 此文件作为后续 prd-enhancer 的输入
+5. 输出正式需求整理结果：
+   - 产物形态：临时整理结果 / formalize 摘要
+   - 持久化策略：**不在 `cases/requirements` 下持久化 formalized.md**
+   - 如需短暂落盘，仅允许写入当前会话目录或 requirements 目录下的 `.trash/` 临时区，并在增强完成后清理
+   - 后续 prd-enhancer 直接消费上述临时整理结果或摘要，不再依赖稳定的 `PRD-*-formalized.md` 文件
 
 ## 质量要求
 
@@ -42,7 +44,7 @@
 
 ## 质量闸口（formalize 完成后必须执行）
 
-对 formalized PRD 文件执行以下自动检查：
+对 formalize 产出的临时整理结果执行以下自动检查：
 
 | 检查项 | 通过条件 | 级别 |
 |--------|---------|------|
@@ -85,5 +87,5 @@ B. 跳过质量检查，直接进入 enhance（不推荐）
 
 同时向 `execution_log` 数组追加：
 ```json
-{"step": "prd-formalize", "status": "completed", "at": "<ISO8601>", "duration_ms": null, "summary": "完成 PRD 形式化整理，输出至 <file_path>"}
+{"step": "prd-formalize", "status": "completed", "at": "<ISO8601>", "duration_ms": null, "summary": "完成 PRD 形式化整理，已生成临时整理结果供 prd-enhancer 使用"}
 ```

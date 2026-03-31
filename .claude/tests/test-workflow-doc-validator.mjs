@@ -17,9 +17,26 @@ const claudeMdPath = resolve(repoRoot, "CLAUDE.md");
 const prdEnhancerSkillPath = resolve(skillsRoot, "prd-enhancer", "SKILL.md");
 const prdTemplatePath = resolve(skillsRoot, "prd-enhancer", "references", "prd-template.md");
 const xmindRulePath = resolve(claudeRoot, "rules", "xmind-output.md");
+const xmindSkillPath = resolve(skillsRoot, "xmind-converter", "SKILL.md");
+const xmindStructureSpecPath = resolve(skillsRoot, "xmind-converter", "references", "xmind-structure-spec.md");
 const jsonToXmindPath = resolve(skillsRoot, "xmind-converter", "scripts", "json-to-xmind.mjs");
 const readmePath = resolve(repoRoot, "README.md");
 const directoryNamingPath = resolve(claudeRoot, "rules", "directory-naming.md");
+const repoSafetyPath = resolve(claudeRoot, "rules", "repo-safety.md");
+const globalTestCaseWritingPath = resolve(claudeRoot, "rules", "test-case-writing.md");
+const testsPackagePath = resolve(claudeRoot, "tests", "package.json");
+const testsRunnerPath = resolve(claudeRoot, "tests", "run-all.mjs");
+const testCaseGeneratorSkillPath = resolve(skillsRoot, "test-case-generator", "SKILL.md");
+const skillTestCaseWritingPath = resolve(skillsRoot, "test-case-generator", "rules", "test-case-writing.md");
+const stepParseInputPath = resolve(skillsRoot, "test-case-generator", "prompts", "step-parse-input.md");
+const stepPrdEnhancerPath = resolve(skillsRoot, "test-case-generator", "prompts", "step-prd-enhancer.md");
+const stepArchivePath = resolve(skillsRoot, "test-case-generator", "prompts", "step-archive.md");
+const stepXmindPath = resolve(skillsRoot, "test-case-generator", "prompts", "step-xmind.md");
+const stepSourceSyncPath = resolve(skillsRoot, "test-case-generator", "prompts", "step-source-sync.md");
+const stepReqElicitPath = resolve(skillsRoot, "test-case-generator", "prompts", "step-req-elicit.md");
+const sourceRepoSetupPath = resolve(skillsRoot, "using-qa-flow", "prompts", "source-repo-setup.md");
+const elicitationDimensionsPath = resolve(skillsRoot, "test-case-generator", "references", "elicitation-dimensions.md");
+const intermediateFormatPath = resolve(skillsRoot, "test-case-generator", "references", "intermediate-format.md");
 
 let passed = 0;
 let failed = 0;
@@ -194,7 +211,11 @@ assert(
 console.log("\n=== Test: latest-output.xmind 文档有脚本实现支撑 ===");
 const claudeMdContent = readFileSync(claudeMdPath, "utf8");
 const xmindRuleContent = readFileSync(xmindRulePath, "utf8");
+const xmindSkillContent = readFileSync(xmindSkillPath, "utf8");
+const xmindStructureSpecContent = readFileSync(xmindStructureSpecPath, "utf8");
 const jsonToXmindContent = readFileSync(jsonToXmindPath, "utf8");
+const stepXmindContent = readFileSync(stepXmindPath, "utf8");
+const directoryNamingContent = readFileSync(directoryNamingPath, "utf8");
 assert(
   claudeMdContent.includes("latest-output.xmind"),
   "CLAUDE.md 记录了 latest-output.xmind 工作流",
@@ -204,12 +225,118 @@ assert(
   ".claude/rules/xmind-output.md 记录了 latest-output.xmind 工作流",
 );
 assert(
-  jsonToXmindContent.includes("function refreshLatestOutput(outputPath)"),
-  "json-to-xmind.mjs 提供了根目录同名快捷链接刷新逻辑",
+  xmindRuleContent.includes("<功能名>.xmind") &&
+    !xmindRuleContent.includes("YYYYMM-<功能名>.xmind") &&
+    !xmindRuleContent.includes("可继续保留读取"),
+  ".claude/rules/xmind-output.md 已切换到无日期前缀命名",
 );
 assert(
-  jsonToXmindContent.includes("symlinkSync(linkTarget, linkPath)"),
-  "json-to-xmind.mjs 通过符号链接刷新快捷链接",
+  xmindSkillContent.includes("<功能名>.xmind") &&
+    xmindSkillContent.includes("Story-YYYYMMDD.xmind"),
+  "xmind-converter Skill 已切换到新命名 contract",
+);
+assert(
+  xmindStructureSpecContent.includes("<功能名>.xmind") &&
+    xmindStructureSpecContent.includes("Story-YYYYMMDD.xmind"),
+  "xmind 结构参考文档已切换到新命名 contract",
+);
+assert(
+  jsonToXmindContent.includes("function refreshLatestOutput(outputPath)") &&
+    jsonToXmindContent.includes("RESERVED_OUTPUT_NAME"),
+  "json-to-xmind.mjs 提供 latest-output.xmind 刷新逻辑",
+);
+assert(
+  !jsonToXmindContent.includes("legacyLinkPath"),
+  "json-to-xmind.mjs 不再创建根目录同名快捷链接",
+);
+assert(
+  stepXmindContent.includes("latest-output.xmind") &&
+    !stepXmindContent.includes("与实际文件同名"),
+  "step-xmind prompt 已切换到固定 latest-output.xmind 快捷链接",
+);
+assert(
+  !directoryNamingContent.includes("不做强制迁移"),
+  "directory-naming.md 已移除“历史不迁移”的旧口径",
+);
+
+console.log("\n=== Test: .claude/tests 统一入口必须完整 ===");
+assert(existsSync(testsPackagePath), ".claude/tests/package.json 已存在");
+assert(existsSync(testsRunnerPath), ".claude/tests/run-all.mjs 已存在");
+
+console.log("\n=== Test: repo-facing 文档目录树不得残留旧的 .claude/scripts/ 描述 ===");
+const staleClaudeScriptsTreeRefs = findLineMatches(
+  [readmePath, directoryNamingPath],
+  /scripts\/\s+# Node\.js/g,
+);
+assert(
+  staleClaudeScriptsTreeRefs.length === 0,
+  "README.md 与 directory-naming.md 已移除旧的 .claude/scripts/ 目录树描述",
+  staleClaudeScriptsTreeRefs,
+);
+
+console.log("\n=== Test: test-case-generator prompt 不得硬编码可配置路径 ===");
+const hardcodedPromptPathRefs = findLineMatches(
+  [stepParseInputPath, stepSourceSyncPath, stepReqElicitPath],
+  /\.claude\/skills\/using-qa-flow\/scripts\/refresh-lanhu-cookie\.py|config\/repo-branch-mapping\.yaml/g,
+);
+assert(
+  hardcodedPromptPathRefs.length === 0,
+  "test-case-generator prompt 已移除 refresh-lanhu-cookie.py 与 repo-branch-mapping.yaml 的硬编码路径",
+  hardcodedPromptPathRefs,
+);
+
+console.log("\n=== Test: 权威 Skill / rules / references 不得绕过 repoBranchMapping 配置字段 ===");
+const hardcodedMappingAuthorityRefs = findLineMatches(
+  [
+    directoryNamingPath,
+    repoSafetyPath,
+    globalTestCaseWritingPath,
+    testCaseGeneratorSkillPath,
+    skillTestCaseWritingPath,
+    sourceRepoSetupPath,
+    elicitationDimensionsPath,
+  ],
+  /config\/repo-branch-mapping\.yaml/g,
+).filter((match) => !match.includes("repoBranchMapping"));
+assert(
+  hardcodedMappingAuthorityRefs.length === 0,
+  "权威 Skill / rules / references 已统一改为通过 repoBranchMapping 配置字段定位映射文件",
+  hardcodedMappingAuthorityRefs,
+);
+
+console.log("\n=== Test: PRD 增强快捷链接必须显式指定 latest-prd-enhanced.md ===");
+const prdEnhancerSkillContent = readFileSync(prdEnhancerSkillPath, "utf8");
+const stepPrdEnhancerContent = readFileSync(stepPrdEnhancerPath, "utf8");
+assert(
+  prdEnhancerSkillContent.includes('refresh-latest-link.mjs "<enhanced-path>" latest-prd-enhanced.md'),
+  "prd-enhancer Skill 使用显式 latest-prd-enhanced.md 快捷链接命令",
+);
+assert(
+  stepPrdEnhancerContent.includes('refresh-latest-link.mjs "<实际enhanced.md路径>" latest-prd-enhanced.md'),
+  "step-prd-enhancer 使用显式 latest-prd-enhanced.md 快捷链接命令",
+);
+
+console.log("\n=== Test: waiting verification 状态必须使用 archive step ID ===");
+const staleNumericArchiveRefs = findLineMatches(
+  [stepParseInputPath, intermediateFormatPath],
+  /last_completed_step:\s*9\b/g,
+);
+assert(
+  staleNumericArchiveRefs.length === 0,
+  "awaiting_verification 相关说明不再使用过期的数字 step ID 9",
+  staleNumericArchiveRefs,
+);
+
+console.log("\n=== Test: archive 成功态只能在归档文件真实落盘后写入 ===");
+const stepArchiveContent = readFileSync(stepArchivePath, "utf8");
+assert(
+  !stepArchiveContent.includes("json-to-archive-md.mjs 失败") || !stepArchiveContent.includes("不阻断"),
+  "step-archive 不再把 archive 生成失败定义为非阻断",
+);
+assert(
+  stepArchiveContent.includes("archive 文件真实落盘后") &&
+    stepArchiveContent.includes("才允许写入 `archive_md_path`"),
+  "step-archive 明确要求 archive 落盘成功后再写状态",
 );
 
 console.log(`\n══════════════════════════════════════`);

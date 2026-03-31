@@ -308,7 +308,7 @@ Checklist 字段说明：
 - `pending` / 中断的 `in_progress` 状态 Writer 在普通续传时重新启动
 - `failed` 状态 Writer 视为终态；普通续传不自动重启，需用户/编排器显式选择重试。选择重试时，先将其状态写回 `in_progress` 再启动
 - Reviewer 状态为 `escalated` 时，流程停留在 Step 7，先提示用户处理阻断决策
-- `awaiting_verification: true` 时：向用户重新展示验证提示（XMind 路径 + 归档 MD 路径），保持 `last_completed_step: 9`，等待用户回复「确认通过」或「已修改，请同步」
+- `awaiting_verification: true` 时：向用户重新展示验证提示（XMind 路径 + 归档 MD 路径），保持 `last_completed_step: "archive"`，等待用户回复「确认通过」或「已修改，请同步」
 
 ## 关键状态转移（供实现 / 校验使用）
 

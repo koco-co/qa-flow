@@ -11,8 +11,8 @@
 
 1. **优先读取 `elicitation.target_branch_override`**：若 `.qa-state.json` 中 `elicitation.target_branch_override` 非空，直接使用该值作为目标分支（用户在需求澄清时已确认），跳过第 1 步的 PRD 文本解析
 2. 从蓝湖原文 / PRD 原文（或 `## 需求澄清结果` 章节）中提取 `开发版本`（若 step 1 未命中）
-3. 读取仓库根目录 `config/repo-branch-mapping.yaml`
-4. 调用 `sync-source-repos.mjs`，根据 `config/repo-branch-mapping.yaml` 解析 repo profile 与 backend/frontend 目标分支：
+3. 读取 `.claude/config.json` 的 `repoBranchMapping` 字段所指向的映射文件
+4. 调用 `sync-source-repos.mjs`，根据 `repoBranchMapping` 指向的映射文件解析 repo profile 与 backend/frontend 目标分支：
    ```bash
    node .claude/skills/using-qa-flow/scripts/sync-source-repos.mjs \
      --version "<开发版本>" \
@@ -28,7 +28,7 @@
 
 ## 映射无法解析时
 
-如果 `config/repo-branch-mapping.yaml` 中无对应版本映射，询问用户：
+如果 `repoBranchMapping` 指向的映射文件中无对应版本映射，询问用户：
 
 ```
 未找到版本 <version> 的分支映射。

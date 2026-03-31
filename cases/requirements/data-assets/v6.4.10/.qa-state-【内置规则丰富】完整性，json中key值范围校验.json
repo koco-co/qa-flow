@@ -75,7 +75,7 @@
       "status": "completed",
       "at": "2026-03-30T16:02:42Z",
       "duration_ms": null,
-      "summary": "完成 PRD 形式化整理，输出至 cases/requirements/data-assets/v6.4.10/PRD-15693-【内置规则丰富】完整性，json中key值范围校验-formalized.md"
+      "summary": "完成 PRD 形式化整理，已生成临时整理结果供 prd-enhancer 使用"
     },
     {
       "step": "prd-enhancer",
@@ -103,7 +103,7 @@
       "status": "completed",
       "at": "2026-03-30T16:38:12.746098Z",
       "duration_ms": null,
-      "summary": "生成 XMind 文件，路径: cases/xmind/data-assets/v6.4.10/202603-【内置规则丰富】完整性，json中key值范围校验.xmind，包含 30 条用例"
+      "summary": "生成 XMind 文件，路径: cases/xmind/data-assets/v6.4.10/【内置规则丰富】完整性，json中key值范围校验.xmind，包含 30 条用例"
     },
     {
       "step": "archive",
@@ -116,7 +116,6 @@
   "reference_prds": [
     "【通用配置】json格式配置.md"
   ],
-  "formalized_prd": "PRD-15693-【内置规则丰富】完整性，json中key值范围校验-formalized.md",
   "enhanced_prds": [
     "【内置规则丰富】完整性，json中key值范围校验.md"
   ],
@@ -195,6 +194,6 @@
     }
   },
   "reviewed_output": "temp/final-reviewed-15693-clean.json",
-  "output_xmind": "cases/xmind/data-assets/v6.4.10/202603-【内置规则丰富】完整性，json中key值范围校验.xmind",
+  "output_xmind": "cases/xmind/data-assets/v6.4.10/【内置规则丰富】完整性，json中key值范围校验.xmind",
   "archive_md_path": "cases/archive/data-assets/v6.4.10/【内置规则丰富】完整性，json中key值范围校验.md"
 }
