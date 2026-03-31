@@ -1,5 +1,6 @@
 # qa-flow Workflow Handbook
 
+使用中文回复, 不要使用英文或其它语言回复。
 本文件是 qa-flow 的权威工作流手册。细化规则以 `.claude/rules/*.md` 为准，路径映射以 `.claude/config.json` 为准。
 
 > 不知道从哪开始？输入 `/using-qa-flow` 查看功能菜单；首次使用输入 `/using-qa-flow init` 初始化环境。
@@ -54,14 +55,14 @@ qa-flow/
 
 ## Skill 索引
 
-| Skill | 描述 | 触发词 |
-| ----- | ---- | ------ |
-| `using-qa-flow` | 功能菜单 + 环境初始化 | `/using-qa-flow` |
-| `test-case-generator` | 完整用例生成流程 | `生成测试用例` / `为 Story-xxx` |
-| `prd-enhancer` | PRD 图片描述 + 增强 + 健康度预检 | `帮我增强这个 PRD` |
-| `xmind-converter` | JSON → XMind 转换 | `转换为 XMind` |
-| `archive-converter` | CSV/XMind → 归档 Markdown | `转化历史用例` |
-| `code-analysis-report` | 报错日志 → HTML 分析报告 | `帮我分析这个报错` |
+| Skill                  | 描述                                               | 触发词                          |
+| ---------------------- | -------------------------------------------------- | ------------------------------- |
+| `using-qa-flow`        | 功能菜单 + 环境初始化                              | `/using-qa-flow`                |
+| `test-case-generator`  | 完整用例生成流程                                   | `生成测试用例` / `为 Story-xxx` |
+| `prd-enhancer`         | PRD 图片描述 + 增强 + 健康度预检                   | `帮我增强这个 PRD`              |
+| `xmind-converter`      | JSON → XMind 转换                                  | `转换为 XMind`                  |
+| `archive-converter`    | CSV/XMind → 归档 Markdown                          | `转化历史用例`                  |
+| `code-analysis-report` | 报错日志 → HTML 分析报告（支持前端/后端/冲突分析） | `帮我分析这个报错`              |
 
 ---
 
@@ -89,13 +90,13 @@ qa-flow/
 
 ## 规范索引
 
-| 文件 | 内容 |
-| ---- | ---- |
-| `.claude/rules/directory-naming.md` | 模块 key、路径别名、命名规则 |
-| `.claude/rules/repo-safety.md` | 源码仓库只读规则 |
-| `.claude/rules/archive-format.md` | Archive Markdown 模板与层级映射 |
-| `.claude/rules/xmind-output.md` | XMind 命名、层级、输出路径 |
-| `.claude/rules/test-case-writing.md` | 用例编写硬性规则 |
-| `.claude/rules/image-conventions.md` | 图片引用、路径、压缩规则 |
-| `.claude/shared/schemas/front-matter-schema.md` | PRD/Archive 统一 front-matter Schema |
-| `.claude/config.json` | 模块、仓库、报告目录的 source of truth |
+| 文件                                            | 内容                                   |
+| ----------------------------------------------- | -------------------------------------- |
+| `.claude/rules/directory-naming.md`             | 模块 key、路径别名、命名规则           |
+| `.claude/rules/repo-safety.md`                  | 源码仓库只读规则                       |
+| `.claude/rules/archive-format.md`               | Archive Markdown 模板与层级映射        |
+| `.claude/rules/xmind-output.md`                 | XMind 命名、层级、输出路径             |
+| `.claude/rules/test-case-writing.md`            | 用例编写硬性规则                       |
+| `.claude/rules/image-conventions.md`            | 图片引用、路径、压缩规则               |
+| `.claude/shared/schemas/front-matter-schema.md` | PRD/Archive 统一 front-matter Schema   |
+| `.claude/config.json`                           | 模块、仓库、报告目录的 source of truth |
