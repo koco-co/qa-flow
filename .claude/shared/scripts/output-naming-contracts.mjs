@@ -97,11 +97,7 @@ export function stripKnownOutputSuffixes(baseName) {
   return (baseName || "").replace(/(?:-(?:enhanced|final|reviewed|cases|output))+$/i, "");
 }
 
-function getDtstackPreferredArchiveBaseName(meta = {}) {
-  if (meta.source_standard !== "dtstack") {
-    return null;
-  }
-
+export function getPreferredArchiveBaseName(meta = {}) {
   const preferredTitle = meta.archive_file_name || meta.requirement_title || meta.page_title || "";
   if (!preferredTitle.trim()) {
     return null;
@@ -184,9 +180,9 @@ export function assertNewOutputPathMatchesContract(
 
 export function deriveArchiveBaseName(inputPath, meta = {}) {
   const inputBaseName = basename(inputPath, extname(inputPath));
-  const dtstackPreferredArchiveBaseName = getDtstackPreferredArchiveBaseName(meta);
-  if (dtstackPreferredArchiveBaseName) {
-    return dtstackPreferredArchiveBaseName;
+  const preferredBaseName = getPreferredArchiveBaseName(meta);
+  if (preferredBaseName) {
+    return preferredBaseName;
   }
 
   const inputPrdBaseName = getPrdLikeBaseName(inputBaseName);
