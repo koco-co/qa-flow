@@ -32,14 +32,14 @@
 
 ```text
 qa-flow/
-├── config/repo-branch-mapping.yaml   # DTStack repo/branch 映射
+├── config/                            # 项目级配置文件（如分支映射）
 ├── CLAUDE.md                          # 本文件
 ├── cases/
 │   ├── xmind/                         # XMind 输出
 │   ├── archive/                       # 归档 Markdown
 │   ├── requirements/                  # PRD / Story 文档
 │   └── history/                       # 历史 CSV 原始资料
-├── .repos/                            # 源码仓库（只读）
+├── .repos/                            # 源码仓库（只读，当 config.repos 非空时使用）
 ├── reports/                           # 代码分析报告
 ├── assets/images/                     # 全局图片
 ├── tools/                             # 内置第三方工具
@@ -65,17 +65,13 @@ qa-flow/
 
 ---
 
-## DTStack 与 XYZH 分流规则
+## 源码仓库项目规则（当 config.repos 非空时启用）
 
-### DTStack
+> 以下规则仅在 config.json 中 `repos` 字段为非空对象时适用。若 `repos: {}` 则跳过本节。
 
-- **PRD 只是线索，不是权威**。必须以 `.repos/` 目标分支源码为准。
+- PRD 只是线索，必须以 `.repos/` 目标分支源码为准。
 - 蓝湖导入后强制执行：`req-elicit` → `source-sync` → `prd-formalize` → `prd-enhancer` → Writer → Reviewer。
-- Archive 按版本目录落盘：`cases/archive/<module>/v{version}/`。
-
-### XYZH / 定制
-
-- 沿用现有定制规范，不强制引入 DTStack 的源码分支同步与版本目录归档。
+- Archive 按版本目录落盘：`cases/archive/${module}/v${version}/`。
 
 ---
 
@@ -86,7 +82,7 @@ qa-flow/
   - 批量：`<requirements目录>/.qa-state.json`
 - 质量阈值：`< 15%` 自动修正；`15-40%` 自动修正+警告；`> 40%` 阻断
 - 源码仓库清单：见 `.claude/config.json` 的 `repos` 字段
-- 前端报错优先查 `dt-insight-studio-front`；定制需求优先查 `.repos/CustomItem/`
+- 报错定位：优先参考 config.json 的 `repos` 和 `stackTrace` 字段定位目标仓库
 - 快捷链接：`latest-output.xmind` 指向最新生成的 XMind 文件，`latest-prd-enhanced.md` 指向最新增强 PRD
 
 ---
