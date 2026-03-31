@@ -9,7 +9,7 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 
 **执行前必须阅读本文件、`rules/image-conventions.md` 和 `references/prd-template.md`。**
 
-> DTStack 特殊说明：当输入来自蓝湖原始文本或低质量 PRD 时，**不得**直接把原始文本当增强结果下发给 Writer。应先经过 `prd-formalizer` 生成正式需求文档的临时整理结果或 formalize 摘要，再由本 Skill 做图片增强、结构标准化与健康度预检；不要求在 requirements 目录保留 formalized 文件。
+> 当 config.repos 非空且输入来自外部平台原始文本（如蓝湖 URL 提取内容）时，应先经过 `prd-formalizer` 生成正式需求文档整理结果，再由本 Skill 做图片增强、结构标准化与健康度预检。当 config.repos 为空时，直接对输入文档执行增强。
 
 ## 使用口径速查
 
@@ -26,7 +26,7 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 ```
 Step 0: 增量检测（是否已有 -enhanced.md）
 Step 0.3: 轻量需求澄清（独立调用时执行，test-case-generator 流水线中跳过）
-Step 0.5: DTStack 正式需求文档检查（是否已完成 prd-formalizer）
+Step 0.5: 原始平台文本检查（条件步骤）（是否已完成 prd-formalizer）
 Step 1: 定位 PRD 文件
 Step 2: 扫描所有图片引用
 Step 3: 定位图片文件
@@ -151,15 +151,15 @@ Step 9: 向用户展示增强摘要
 
 ---
 
-## 二点五、Step 0.5: DTStack 正式需求文档检查
+## 二点五、Step 0.5: 原始平台文本检查（条件步骤）
 
-如果当前输入属于 DTStack 且内容明显来自蓝湖原始提取：
+> 仅在 config.repos 非空且输入明显来自外部平台原始文本（如蓝湖 URL 提取内容）时执行。
+> **若 config.repos 为空，跳过本步骤直接进入 Step 1。**
 
-1. 先检查是否已有正式需求文档的临时整理结果（由 `prd-formalizer` 生成）
-2. 若没有，则先回退到 formalizer 流程：
-   - 结合 `source_context` 中的 repo/branch 阅读源码
-   - 以“需求背景 / 变更范围 / 页面详细设计 / 源码补充事实 / 影响分析 / 测试关注点”模板重组内容
-3. 本 Skill 只对**正式需求文档的临时整理结果或 formalize 摘要**执行后续增强，不直接向下游输出原始蓝湖文本 dump，也不要求在 requirements 目录保留 formalized 文件
+若 config.repos 非空且内容为原始平台文本：
+1. 检查是否已有 prd-formalizer 整理结果
+2. 若没有，先回退到 formalizer 流程（结合 source_context 源码）
+3. 本 Skill 只对正式需求文档执行后续增强
 
 ---
 
@@ -176,8 +176,7 @@ Step 9: 向用户展示增强摘要
 ### 输出文件约定
 
 - **命名**：直接使用需求名称作为文件名，不加 `-enhanced` 后缀
-  - DTStack：文件名使用需求标题，如 `【内置规则丰富】合理性校验-多表字段值对比.md`
-  - 定制项目：文件名使用需求标题，如 `数据质量-质量问题台账.md`
+  - 文件名使用需求标题，如 `【内置规则丰富】合理性校验-多表字段值对比.md`、`数据质量-质量问题台账.md`
 - **位置**：与原 PRD 文件同级目录
 - **原始文件处理**：增强完成后，将原始 PRD（raw / formalized 版本）移入同目录下的 `.trash/` 子目录
   - 示例：`cases/requirements/data-assets/v6.4.10/.trash/raw-15530.md`
@@ -355,7 +354,7 @@ done
 
 | 来源 | 输出文件名 |
 |------|-----------|
-| DTStack 蓝湖需求 `15530【内置规则丰富】合理性...` | `【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比.md` |
+| 蓝湖需求 `15530【内置规则丰富】合理性...` | `【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比.md` |
 | 定制项目 `PRD-26-数据质量-质量问题台账.md` | `数据质量-质量问题台账.md` |
 
 输出位置：与原文件同级目录。
@@ -514,4 +513,4 @@ PRD 健康度：
 
 - `rules/image-conventions.md` — 图片引用规范（存放位置、命名、压缩）
 - `references/prd-template.md` — 标准化 PRD 模板规范和图片描述格式
-- `prompts/prd-formalizer.md` — DTStack 正式需求文档生成要求
+- `prompts/prd-formalizer.md` — 正式需求文档生成要求（config.repos 非空时使用）
