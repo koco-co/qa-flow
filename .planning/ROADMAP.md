@@ -31,13 +31,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. All DTStack business data (examples, config, requirements) is accessible from the dtstack-data branch and not present on main
   4. loadConfig() throws a descriptive error naming the missing field when a required config key is absent
   5. All existing tests pass against the generalized codebase
-**Plans:** 4 plans
+**Plans:** 5 plans
 
 Plans:
 - [ ] 01-01-PLAN.md — Config schema redesign + loadConfig() validation + Wave 0 test scaffolds
 - [ ] 01-02-PLAN.md — Shared scripts generalization (output-naming-contracts, skill scripts, call sites)
-- [ ] 01-03-PLAN.md — Rules, prompts, and CLAUDE.md generalization
-- [ ] 01-04-PLAN.md — DTStack business data branch migration
+- [ ] 01-03-PLAN.md — Rules files generalization
+- [ ] 01-04-PLAN.md — Prompts, skill files, and CLAUDE.md generalization
+- [ ] 01-05-PLAN.md — DTStack business data branch migration + blank config e2e smoke test
 
 ### Phase 2: Project Structure + Shared Scripts
 **Goal**: The project directory layout supports arbitrary projects and all shared scripts read from the new config schema without hardcoded paths
@@ -96,11 +97,11 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Generalization Refactor | 0/4 | Planning complete | - |
+| 1. Generalization Refactor | 0/5 | Planning complete | - |
 | 2. Project Structure + Shared Scripts | 0/TBD | Not started | - |
 | 3. Init Wizard | 0/TBD | Not started | - |
 | 4. Core Skills Redesign | 0/TBD | Not started | - |

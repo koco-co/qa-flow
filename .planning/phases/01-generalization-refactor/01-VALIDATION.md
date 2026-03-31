@@ -38,18 +38,19 @@ created: 2026-03-31
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 01-01-01 | 01 | 0 | GEN-01, GEN-02 | unit | `node --test .claude/shared/scripts/load-config.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-01-02 | 01 | 0 | GEN-05 | unit | `node --test .claude/shared/scripts/output-naming-contracts.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-01-03 | 01 | 0 | GEN-03 | smoke | `node --test .planning/tests/rules-generalization.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-01-04 | 01 | 0 | GEN-04 | smoke | `node --test .planning/tests/prompts-generalization.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-01-05 | 01 | 0 | GEN-06 | smoke | `node --test .planning/tests/branch-migration.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-02-01 | 02 | 1 | GEN-01 | unit | `node --test .claude/shared/scripts/load-config.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-02-02 | 02 | 1 | GEN-02 | unit | `node --test .claude/shared/scripts/load-config.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-03-01 | 03 | 1 | GEN-03, GEN-04 | smoke | `node --test .planning/tests/rules-generalization.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-04-01 | 04 | 1 | GEN-05 | unit | `node --test .claude/shared/scripts/output-naming-contracts.test.mjs` | ❌ W0 | ⬜ pending |
-| 01-05-01 | 05 | 2 | GEN-06 | smoke | `node --test .planning/tests/branch-migration.test.mjs` | ❌ W0 | ⬜ pending |
+| 01-01-01 | 01 | 0 | GEN-01, GEN-02 | unit | `node --test .claude/shared/scripts/load-config.test.mjs` | W0 | pending |
+| 01-01-02 | 01 | 0 | GEN-05 | unit | `node --test .claude/shared/scripts/output-naming-contracts.test.mjs` | W0 | pending |
+| 01-01-03 | 01 | 0 | GEN-03 | smoke | `node --test .planning/tests/rules-generalization.test.mjs` | W0 | pending |
+| 01-01-04 | 01 | 0 | GEN-04 | smoke | `node --test .planning/tests/prompts-generalization.test.mjs` | W0 | pending |
+| 01-01-05 | 01 | 0 | GEN-06 | smoke | `node --test .planning/tests/branch-migration.test.mjs` | W0 | pending |
+| 01-02-01 | 02 | 2 | GEN-01 | unit | `node --test .claude/shared/scripts/load-config.test.mjs` | W0 | pending |
+| 01-02-02 | 02 | 2 | GEN-02 | unit | `node --test .claude/shared/scripts/load-config.test.mjs` | W0 | pending |
+| 01-03-01 | 03 | 1 | GEN-03 | smoke | `node --test .planning/tests/rules-generalization.test.mjs` | W0 | pending |
+| 01-04-01 | 04 | 1 | GEN-04 | smoke | `node --test .planning/tests/prompts-generalization.test.mjs` | W0 | pending |
+| 01-05-01 | 05 | 3 | GEN-06 | smoke | `node --test .planning/tests/branch-migration.test.mjs` | W0 | pending |
+| 01-05-02 | 05 | 3 | GEN-01 | e2e | `node --test .planning/tests/blank-config-e2e.test.mjs` | W0 | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending / green / red / flaky*
 
 ---
 
