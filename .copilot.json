@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "description": "GitHub Copilot CLI Configuration for qa-flow project",
+  "language": "zh-CN",
+  "instructions": {
+    "responses": "中文",
+    "comments": "中文",
+    "documentation": "中文",
+    "error_messages": "中文"
+  },
+  "project": {
+    "name": "qa-flow",
+    "type": "qa-testing-framework",
+    "description": "QA测试用例生成和管理框架"
+  },
+  "workspace": {
+    "claude_config": ".claude/config.json",
+    "planning_root": ".planning",
+    "cases_root": "cases",
+    "reports_root": "reports"
+  },
+  "behaviors": {
+    "verbose": false,
+    "preserve_context": true,
+    "auto_commit": true,
+    "commit_messages": "中文"
+  },
+  "skills": {
+    "enabled": true,
+    "skill_directory": ".claude/skills",
+    "auto_discover": true
+  },
+  "gsd": {
+    "enabled": true,
+    "workflow_templates": ".planning",
+    "phase_naming": "numeric-prefix"
+  }
+}
