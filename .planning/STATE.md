@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-project-structure-shared-scripts/02-01-PLAN.md
-last_updated: "2026-03-31T11:58:58.620Z"
+stopped_at: Completed 02-project-structure-shared-scripts/02-02-PLAN.md
+last_updated: "2026-03-31T12:10:02.415Z"
 last_activity: 2026-03-31 — Roadmap created, all 30 v1 requirements mapped to 6 phases
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-generalization-refactor P02 | 4 | 2 tasks | 7 files |
 | Phase 01-generalization-refactor P05 | 334 | 2 tasks | 386 files |
 | Phase 02-project-structure-shared-scripts P01 | 10 | 2 tasks | 8 files |
+| Phase 02-project-structure-shared-scripts P02 | 10 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 01-generalization-refactor]: xyzh data kept on release branch as non-DTStack client example for generalized framework
 - [Phase 02-project-structure-shared-scripts]: resolveModulePath uses convention path {casesRoot}{type}/{moduleKey}/ with explicit override and mod.versioned===true for version subdirectory
 - [Phase 02-project-structure-shared-scripts]: config/ directory retired; .claude/ is now the single home for config files including repo-branch-mapping.yaml
+- [Phase 02-project-structure-shared-scripts]: resolveModulePaths() wraps resolveModulePath() in try/catch with casesRoot fallback for graceful degradation on unknown products
+- [Phase 02-project-structure-shared-scripts]: module.repoHints[] field replaces removed DEFAULT_REPO_HINT_KEYS_BY_PRODUCT constant in md-content-source-resolver.mjs
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T11:58:58.618Z
-Stopped at: Completed 02-project-structure-shared-scripts/02-01-PLAN.md
+Last session: 2026-03-31T12:10:02.413Z
+Stopped at: Completed 02-project-structure-shared-scripts/02-02-PLAN.md
 Resume file: None
