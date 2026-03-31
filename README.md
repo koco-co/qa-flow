@@ -183,11 +183,11 @@ flowchart TD
 
 ## 快捷验收入口
 
-| 输入类型 | 主要输出 | 根目录快捷链接 | 建议回复 |
-|----------|----------|----------------|----------|
+| 输入类型               | 主要输出                            | 根目录快捷链接                                  | 建议回复                                   |
+| ---------------------- | ----------------------------------- | ----------------------------------------------- | ------------------------------------------ |
 | 蓝湖 URL / PRD / Story | 增强 PRD + XMind + Archive Markdown | `latest-prd-enhanced.md`、`latest-output.xmind` | `确认通过` / `已修改，请同步` / `继续补改` |
-| curl / 报错日志 | Bug HTML 报告 | `latest-bug-report.html` | `报告通过` / `继续补充分析` |
-| Jenkins 冲突日志 | 冲突 HTML 报告 | `latest-conflict-report.html` | `报告通过` / `继续补充分析` |
+| curl / 报错日志        | Bug HTML 报告                       | `latest-bug-report.html`                        | `报告通过` / `继续补充分析`                |
+| Jenkins 冲突日志       | 冲突 HTML 报告                      | `latest-conflict-report.html`                   | `报告通过` / `继续补充分析`                |
 
 ---
 
