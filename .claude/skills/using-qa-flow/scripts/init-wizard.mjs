@@ -1,22 +1,32 @@
 /**
  * init-wizard.mjs
- * Core I/O script for the init wizard: project directory scanning and history file parsing.
+ * Core I/O script for the init wizard.
  *
  * Sub-commands:
  *   --command scan [--root-dir <path>]    Scan project directory for module structure signals
  *   --command parse-file --path <file>    Parse a CSV/XMind history file for module candidates
+ *   --command write --config-json <json> [--claude-md <content>] [--root-dir <path>]
+ *                                         Write .claude/config.json and optional CLAUDE.md
+ *   --command load-existing [--root-dir <path>]
+ *                                         Load existing .claude/config.json for re-init
+ *   --command render-template --template-path <path> --replacements <json>
+ *                                         Render CLAUDE.md template placeholders
  *
  * INIT-01: Automatic project structure inference
  * INIT-02: CSV/XMind history file parsing
  * INIT-03: Multi-version detection (versioned: true/false)
+ * INIT-04: CLAUDE.md template generation
+ * INIT-05: config.json generation and re-init support
  *
- * This script is READ-ONLY — scan and parse never write any files (D-03).
+ * scan and parse are READ-ONLY (D-03). write/load/render support the init wizard write layer.
  *
- * Exports: scanProject, parseHistoryFile, inferModuleKeyFromFilename
+ * Exports: scanProject, parseHistoryFile, inferModuleKeyFromFilename,
+ * buildConfigObject, writeOutputs, loadExistingConfig, renderTemplate, mergeConfigGroups
  */
-import { readdirSync, statSync, existsSync, readFileSync } from 'node:fs';
+import { readdirSync, statSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, basename, resolve, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadConfigFromPath } from '../../../shared/scripts/load-config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -92,6 +102,236 @@ function listSubdirectories(dir) {
   } catch {
     return [];
   }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Config build/write helpers
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Build a full config.json object from wizard-collected groups.
+ * @param {object} params
+ * @param {string} params.projectName
+ * @param {string} [params.displayName]
+ * @param {string} [params.casesRoot]
+ * @param {object} [params.modules]
+ * @param {object} [params.repos]
+ * @param {string|null} [params.branchMapping]
+ * @param {object} [params.stackTrace]
+ * @param {boolean} [params.hasLanhuMcp]
+ * @param {object} [params.lanhuMcpConfig]
+ * @returns {object}
+ */
+export function buildConfigObject({
+  projectName,
+  displayName,
+  casesRoot,
+  modules,
+  repos,
+  branchMapping,
+  stackTrace,
+  hasLanhuMcp,
+  lanhuMcpConfig,
+}) {
+  const defaultLanhuMcp = {
+    runtimePath: 'tools/lanhu-mcp/',
+    envFile: 'tools/lanhu-mcp/.env',
+    setupScript: 'tools/lanhu-mcp/setup-env.sh',
+    quickstartScript: 'tools/lanhu-mcp/quickstart.sh',
+    entryScript: 'tools/lanhu-mcp/lanhu_mcp_server.py',
+    serverHost: '127.0.0.1',
+    serverPort: 8000,
+    serverUrl: 'http://127.0.0.1:8000',
+    mcpPath: '/mcp',
+    logFile: '.claude/tmp/lanhu-mcp.log',
+    cookieRefreshScript: '.claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py',
+  };
+
+  return {
+    project: {
+      name: projectName,
+      displayName: displayName || projectName,
+    },
+    casesRoot: casesRoot || 'cases/',
+    modules: modules || {},
+    repos: repos || {},
+    stackTrace: stackTrace || {},
+    branchMapping: branchMapping || null,
+    trash: {
+      dir: '.trash/',
+      retentionDays: 30,
+    },
+    assets: {
+      images: 'assets/images/',
+    },
+    reports: {
+      bugs: 'reports/bugs/',
+      conflicts: 'reports/conflicts/',
+    },
+    integrations: {
+      lanhuMcp: hasLanhuMcp && lanhuMcpConfig
+        ? { ...defaultLanhuMcp, ...lanhuMcpConfig }
+        : defaultLanhuMcp,
+    },
+    shortcuts: {
+      latestXmind: 'latest-output.xmind',
+      latestEnhancedPrd: 'latest-prd-enhanced.md',
+      latestBugReport: 'latest-bug-report.html',
+      latestConflictReport: 'latest-conflict-report.html',
+    },
+  };
+}
+
+/**
+ * Validate the generated config before writing it to disk.
+ * @param {object} config
+ */
+function validateConfig(config) {
+  const checks = [
+    ['project', config.project],
+    ['project.name', config.project?.name],
+    ['modules', config.modules],
+    ['casesRoot', config.casesRoot],
+    ['repos', config.repos],
+    ['stackTrace', config.stackTrace],
+    ['trash', config.trash],
+    ['assets', config.assets],
+    ['reports', config.reports],
+    ['integrations', config.integrations],
+    ['shortcuts', config.shortcuts],
+  ];
+
+  for (const [fieldPath, value] of checks) {
+    if (value === undefined || value === null || value === '') {
+      throw new Error(`Generated config missing required field: "${fieldPath}". Check wizard inputs.`);
+    }
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(config, 'branchMapping')) {
+    throw new Error('Generated config missing required field: "branchMapping". Check wizard inputs.');
+  }
+}
+
+/**
+ * Write config.json and optional CLAUDE.md output files.
+ * @param {object} options
+ * @param {string|object} options.configJson
+ * @param {string|null} [options.claudeMdContent]
+ * @param {string} [options.rootDir]
+ * @returns {{ configPath: string, claudeMdPath: string | null }}
+ */
+export function writeOutputs({ configJson, claudeMdContent = null, rootDir = process.cwd() }) {
+  if (configJson === undefined || configJson === null) {
+    throw new Error('configJson is required for write operation.');
+  }
+
+  let config;
+  if (typeof configJson === 'string') {
+    try {
+      config = JSON.parse(configJson);
+    } catch (err) {
+      throw new Error(`Invalid configJson: ${err.message}`);
+    }
+  } else {
+    config = configJson;
+  }
+
+  validateConfig(config);
+
+  const absRoot = resolve(rootDir);
+  const claudeDir = join(absRoot, '.claude');
+  const configPath = join(claudeDir, 'config.json');
+  const claudeMdPath = join(absRoot, 'CLAUDE.md');
+
+  mkdirSync(claudeDir, { recursive: true });
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+
+  if (claudeMdContent !== null && claudeMdContent !== undefined) {
+    writeFileSync(claudeMdPath, claudeMdContent, 'utf8');
+  }
+
+  return {
+    configPath,
+    claudeMdPath: claudeMdContent !== null && claudeMdContent !== undefined ? claudeMdPath : null,
+  };
+}
+
+/**
+ * Load the existing config.json for re-init flows.
+ * Returns null if the file does not exist or cannot be parsed.
+ * @param {string} [rootDir]
+ * @returns {object | null}
+ */
+export function loadExistingConfig(rootDir = process.cwd()) {
+  const configPath = join(resolve(rootDir), '.claude', 'config.json');
+  if (!existsSync(configPath)) {
+    return null;
+  }
+
+  try {
+    return loadConfigFromPath(configPath);
+  } catch {
+    try {
+      return JSON.parse(readFileSync(configPath, 'utf8'));
+    } catch {
+      return null;
+    }
+  }
+}
+
+/**
+ * Render a CLAUDE.md template by replacing all provided placeholders.
+ * Throws if unreplaced placeholders remain.
+ * @param {string} templatePath
+ * @param {Record<string, string>} replacements
+ * @returns {string}
+ */
+export function renderTemplate(templatePath, replacements) {
+  let content = readFileSync(resolve(templatePath), 'utf8');
+
+  for (const [placeholder, value] of Object.entries(replacements || {})) {
+    content = content.replaceAll(placeholder, String(value));
+  }
+
+  const remaining = content.match(/\{\{[A-Z_]+\}\}/g);
+  if (remaining) {
+    throw new Error(`Unreplaced placeholders: ${remaining.join(', ')}`);
+  }
+
+  return content;
+}
+
+/**
+ * Merge only the selected wizard groups into an existing config.
+ * Selected groups fully replace their mapped top-level fields.
+ * @param {object} existing
+ * @param {object} updated
+ * @param {string[]} selectedGroups
+ * @returns {object}
+ */
+export function mergeConfigGroups(existing, updated, selectedGroups) {
+  const GROUP_FIELDS = {
+    basic: ['project', 'casesRoot'],
+    modules: ['modules'],
+    repos: ['repos', 'branchMapping', 'stackTrace'],
+    integrations: ['integrations'],
+    shortcuts: ['shortcuts', 'trash', 'assets', 'reports'],
+  };
+
+  const merged = { ...(existing || {}) };
+  const nextConfig = updated || {};
+
+  for (const group of selectedGroups || []) {
+    for (const field of GROUP_FIELDS[group] || []) {
+      if (Object.prototype.hasOwnProperty.call(nextConfig, field)) {
+        merged[field] = nextConfig[field];
+      } else {
+        delete merged[field];
+      }
+    }
+  }
+
+  return merged;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -369,6 +609,14 @@ function parseArgs(argv) {
       args.rootDir = argv[++i];
     } else if (argv[i] === '--path' && argv[i + 1]) {
       args.path = argv[++i];
+    } else if (argv[i] === '--config-json' && argv[i + 1]) {
+      args.configJson = argv[++i];
+    } else if (argv[i] === '--claude-md' && argv[i + 1]) {
+      args.claudeMd = argv[++i];
+    } else if (argv[i] === '--template-path' && argv[i + 1]) {
+      args.templatePath = argv[++i];
+    } else if (argv[i] === '--replacements' && argv[i + 1]) {
+      args.replacements = argv[++i];
     }
   }
   return args;
@@ -378,10 +626,16 @@ function printUsage() {
   console.error(`Usage:
   node init-wizard.mjs --command scan [--root-dir <path>]
   node init-wizard.mjs --command parse-file --path <file-path>
+  node init-wizard.mjs --command write --config-json <json> [--claude-md <content>] [--root-dir <path>]
+  node init-wizard.mjs --command load-existing [--root-dir <path>]
+  node init-wizard.mjs --command render-template --template-path <path> --replacements <json>
 
 Sub-commands:
   scan         Scan project directory for module structure and signals
   parse-file   Parse a CSV/XMind history file for module key candidates
+  write        Write .claude/config.json and optional CLAUDE.md
+  load-existing Load the current .claude/config.json for re-init
+  render-template Render CLAUDE.md template placeholders
 `);
 }
 
@@ -420,6 +674,50 @@ if (isMain) {
         console.error(`Error parsing file: ${err.message}`);
         process.exit(1);
       });
+      break;
+    }
+    case 'write': {
+      if (!args.configJson) {
+        console.error('Error: --config-json is required for write command');
+        process.exit(1);
+      }
+
+      try {
+        const result = writeOutputs({
+          configJson: args.configJson,
+          claudeMdContent: args.claudeMd,
+          rootDir: args.rootDir,
+        });
+        console.log(JSON.stringify(result, null, 2));
+      } catch (err) {
+        console.error(`Error writing outputs: ${err.message}`);
+        process.exit(1);
+      }
+      break;
+    }
+    case 'load-existing': {
+      const result = loadExistingConfig(args.rootDir || process.cwd());
+      console.log(JSON.stringify(result, null, 2));
+      break;
+    }
+    case 'render-template': {
+      if (!args.templatePath) {
+        console.error('Error: --template-path is required for render-template command');
+        process.exit(1);
+      }
+      if (!args.replacements) {
+        console.error('Error: --replacements is required for render-template command');
+        process.exit(1);
+      }
+
+      try {
+        const replacements = JSON.parse(args.replacements);
+        const rendered = renderTemplate(args.templatePath, replacements);
+        process.stdout.write(rendered);
+      } catch (err) {
+        console.error(`Error rendering template: ${err.message}`);
+        process.exit(1);
+      }
       break;
     }
     default: {
