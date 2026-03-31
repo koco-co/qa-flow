@@ -3,8 +3,6 @@
 
 > 前置条件: `last_completed_step` == `"xmind"`
 > 快速模式: 执行
-> DTStack 专属: 否
-
 ## 9.1 生成归档 MD
 
 调用 `json-to-archive-md.mjs` 将 Reviewer 输出的 final JSON 转换为 `cases/archive` 下的 Markdown 归档文件：
@@ -18,8 +16,8 @@ node .claude/skills/archive-converter/scripts/json-to-archive-md.mjs \
 输出路径自动推断（根据 meta.project_name 和 meta.version），也可手动指定。
 
 目录路由规则：
-- **DTStack 模块**：`meta.prd_version`（如 `v6.4.10`）存在时落到 `cases/archive/<module>/v6.4.10/`；不存在时落到 `cases/archive/<module>/`
-- **XYZH/定制模块**：始终落到 `cases/archive/custom/xyzh/`（无版本子目录）
+- **版本化模块**：`meta.prd_version`（如 `v1.0.0`）存在时落到 `cases/archive/<module>/v1.0.0/`；不存在时落到 `cases/archive/<module>/`
+- **自定义模块**：路径由 config.modules 中的 archive 字段决定（如 `cases/archive/custom/<module>/`）
 - 文件名：如存在 `archive_file_name` / `requirement_title`，优先使用具体需求标题
 
 ## 9.1.5 重建归档索引

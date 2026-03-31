@@ -3,7 +3,6 @@
 
 > 前置条件: `last_completed_step` == `"reviewer"`
 > 快速模式: 执行
-> DTStack 专属: 否
 
 ## 执行方式
 

@@ -4,7 +4,11 @@
 > 前置条件: `last_completed_step` == `"source-sync"`
 > 快速模式: 执行
 
-> 本步骤仅在 config.json 中 `repos` 字段为非空对象时执行。将原始 PRD 文本结合源码上下文整理为正式需求文档。若 `repos: {}` 则跳过此步骤。
+> 本步骤仅在 config.json 中 `repos` 字段为非空对象时执行。将原始 PRD 文本结合源码上下文整理为正式需求文档。
+> **若 `repos: {}` 则跳过**：
+> 1. 向 execution_log 追加 `{"step": "prd-formalize", "status": "skipped", "reason": "config.repos is empty"}`
+> 2. 更新 `last_completed_step` 为 `"prd-formalize"`
+> 3. 继续下一步（prd-enhancer）
 
 ## 触发时机
 
