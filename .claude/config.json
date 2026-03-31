@@ -3,84 +3,10 @@
     "name": "qa-flow",
     "displayName": "qa-flow"
   },
-  "modules": {
-    "batch-works": {
-      "zh": "离线开发",
-      "type": "dtstack",
-      "zentaoId": 24,
-      "xmind": "cases/xmind/batch-works/",
-      "archive": "cases/archive/batch-works/",
-      "requirements": "cases/requirements/batch-works/"
-    },
-    "data-assets": {
-      "zh": "数据资产",
-      "type": "dtstack",
-      "zentaoId": 23,
-      "xmind": "cases/xmind/data-assets/",
-      "archive": "cases/archive/data-assets/",
-      "requirements": "cases/requirements/data-assets/"
-    },
-    "data-query": {
-      "zh": "统一查询",
-      "type": "dtstack",
-      "xmind": "cases/xmind/data-query/",
-      "archive": "cases/archive/data-query/",
-      "requirements": "cases/requirements/data-query/"
-    },
-    "variable-center": {
-      "zh": "变量中心",
-      "type": "dtstack",
-      "xmind": "cases/xmind/variable-center/",
-      "archive": "cases/archive/variable-center/",
-      "requirements": "cases/requirements/variable-center/"
-    },
-    "public-service": {
-      "zh": "公共组件",
-      "type": "dtstack",
-      "xmind": "cases/xmind/public-service/",
-      "archive": "cases/archive/public-service/",
-      "requirements": "cases/requirements/public-service/"
-    },
-    "xyzh": {
-      "zh": "信永中和",
-      "type": "custom",
-      "xmind": "cases/xmind/custom/xyzh/",
-      "archive": "cases/archive/custom/xyzh/",
-      "requirements": "cases/requirements/custom/xyzh/",
-      "history": "cases/history/xyzh/"
-    }
-  },
-  "repos": {
-    "dt-center-assets": ".repos/dt-insight-web/dt-center-assets/",
-    "dt-center-metadata": ".repos/dt-insight-web/dt-center-metadata/",
-    "DAGScheduleX": ".repos/dt-insight-plat/DAGScheduleX/",
-    "datasourcex": ".repos/dt-insight-plat/datasourcex/",
-    "dt-center-ide": ".repos/dt-insight-plat/dt-center-ide/",
-    "dt-public-service": ".repos/dt-insight-plat/dt-public-service/",
-    "SQLParser": ".repos/dt-insight-plat/SQLParser/",
-    "engine-plugins": ".repos/dt-insight-engine/engine-plugins/",
-    "flink": ".repos/dt-insight-engine/flink/",
-    "dt-insight-studio-front": ".repos/dt-insight-front/dt-insight-studio/",
-    "dt-insight-studio-custom": ".repos/CustomItem/dt-insight-studio/",
-    "dt-center-assets-custom": ".repos/CustomItem/dt-center-assets/",
-    "dt-center-metadata-custom": ".repos/CustomItem/dt-center-metadata/",
-    "dt-public-service-custom": ".repos/CustomItem/dt-public-service/",
-    "DatasourceX-custom": ".repos/CustomItem/DatasourceX/",
-    "dagschedulex-custom": ".repos/CustomItem/dagschedulex/",
-    "SQLParser-custom": ".repos/CustomItem/SQLParser/",
-    "dt-center-ide-custom": ".repos/CustomItem/dt-center-ide/",
-    "dt-insight-qa": ".repos/dt-insight-qa/"
-  },
-  "stackTrace": {
-    "com.dtstack.center.assets": "dt-center-assets",
-    "com.dtstack.center.metadata": "dt-center-metadata",
-    "com.dtstack.dagschedulex": "DAGScheduleX",
-    "com.dtstack.datasource": "datasourcex",
-    "com.dtstack.ide": "dt-center-ide",
-    "com.dtstack.public.service": "dt-public-service",
-    "com.dtstack.sql.parser": "SQLParser",
-    "com.dtstack.engine": "engine-plugins"
-  },
+  "modules": {},
+  "repos": {},
+  "stackTrace": {},
+  "branchMapping": null,
   "trash": {
     "dir": ".trash/",
     "retentionDays": 30
@@ -112,9 +38,5 @@
     "latestEnhancedPrd": "latest-prd-enhanced.md",
     "latestBugReport": "latest-bug-report.html",
     "latestConflictReport": "latest-conflict-report.html"
-  },
-  "dataAssetsVersionMap": {
-    "数据资产v6.4.10.xmind": "v6.4.10"
-  },
-  "repoBranchMapping": "config/repo-branch-mapping.yaml"
+  }
 }
