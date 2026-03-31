@@ -152,7 +152,7 @@ export function jsonToMd(data, sourcePath) {
     meta?.module_key ||
     extractModuleKey(inferredOutputDir) ||
     extractModuleKey(sourcePath);
-  // prd_version 优先（DTStack 语义版本 vX.Y.Z），其次从 version 或输出目录路径提取
+  // prd_version 优先（语义版本 vX.Y.Z），其次从 version 或输出目录路径提取
   const version =
     extractVersionFromPath(meta?.prd_version || "") ||
     extractVersionFromPath(meta?.version || "") ||

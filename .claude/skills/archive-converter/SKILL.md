@@ -13,10 +13,10 @@ description: 历史用例归档转化 Skill。将非 Markdown 格式的历史测
 
 ## 一、支持的输入格式
 
-| 格式  | 来源路径                          | 说明            |
-| ----- | --------------------------------- | --------------- |
-| CSV   | `cases/history/xyzh/v0.x.x/*.csv` | 含完整步骤+预期 |
-| XMind | `cases/xmind/**/*.xmind`          | 标题树结构      |
+| 格式  | 来源路径                                        | 说明            |
+| ----- | ----------------------------------------------- | --------------- |
+| CSV   | `cases/history/${module_key}/${version}/*.csv`  | 含完整步骤+预期 |
+| XMind | `cases/xmind/**/*.xmind`                        | 标题树结构      |
 
 ---
 
@@ -24,11 +24,13 @@ description: 历史用例归档转化 Skill。将非 Markdown 格式的历史测
 
 转化后的 Markdown 文件统一存放在 `cases/archive/` 目录下，根据来源自动判断输出路径：
 
-| 来源               | 输出目录                               |
-| ------------------ | -------------------------------------- |
-| DTStack 模块 XMind | `cases/archive/<module>/`              |
-| 信永中和 CSV       | `cases/archive/custom/xyzh/<version>/` |
-| 信永中和 XMind     | `cases/archive/custom/xyzh/`           |
+| 来源 | 输出目录 |
+| --- | --- |
+| 模块 XMind | `cases/archive/${module_key}/` |
+| 带版本的模块 XMind | `cases/archive/${module_key}/v${version}/` |
+| 模块 CSV | `cases/archive/${module_key}/${version}/` |
+
+路径解析使用 `resolveModulePath(moduleKey, 'archive', config, version)`，模块 key 和版本从输入文件路径或 `config.modules` 推断。
 
 ---
 
@@ -74,8 +76,8 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs
 转化指定文件或模块的历史用例：
 
 ```
-将 cases/xmind/batch-works/xxx.xmind 转为MD
-转化离线开发的历史用例
+将 cases/xmind/${module_key}/xxx.xmind 转为MD
+转化${模块名}的历史用例
 ```
 
 运行命令：
@@ -84,7 +86,7 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs
 # 指定文件
 node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --path <file>
 
-# 指定模块
+# 指定模块（使用模块名称或 key）
 node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --module <name>
 ```
 
@@ -121,22 +123,20 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --force
 也可与指定模式组合使用：
 
 ```bash
-node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --module 离线开发 --force
+node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --module ${module_key} --force
 ```
 
 ---
 
 ## 六、模块名称映射
 
-| 模块名   | XMind 源目录                     | archive 目标                     |
-| -------- | -------------------------------- | -------------------------------- |
-| 离线开发 | `cases/xmind/batch-works/`       | `cases/archive/batch-works/`     |
-| 数据资产 | `cases/xmind/data-assets/`       | `cases/archive/data-assets/`     |
-| 统一查询 | `cases/xmind/data-query/`        | `cases/archive/data-query/`      |
-| 变量中心 | `cases/xmind/variable-center/`   | `cases/archive/variable-center/` |
-| 信永中和 | `cases/xmind/custom/xyzh/` + CSV | `cases/archive/custom/xyzh/`     |
+模块名称映射从 `config.modules` 动态构建：
+- `config.modules[key].zh` → key（中文名到 key 的映射）
+- key → key（直通映射）
 
-> **注意**：模块名匹配时忽略大小写和前后空格，支持部分匹配（如「离线」可匹配「离线开发」）。
+无需手动维护映射表，添加新模块只需在 `config.json` 的 `modules` 中配置。
+
+> **注意**：`--module` 参数接受中文名（如配置了 `zh` 字段）或 key（英文），两者均有效。
 
 ---
 
@@ -147,7 +147,7 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --module
 自动调用时等价于：
 
 ```bash
-node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --module <当前模块名>
+node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --module <当前模块名或key>
 ```
 
 ---
