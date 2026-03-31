@@ -18,9 +18,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Initialization
 
-- [ ] **INIT-01**: using-qa-flow 交互式初始化 — 全自动推断项目结构 + 确认
-- [ ] **INIT-02**: 历史用例文件上传解析 — 支持 CSV/XMind 格式，推断模块和层级
-- [ ] **INIT-03**: 多迭代版本 / 多产品线场景支持
+- [x] **INIT-01**: using-qa-flow 交互式初始化 — 全自动推断项目结构 + 确认
+- [x] **INIT-02**: 历史用例文件上传解析 — 支持 CSV/XMind 格式，推断模块和层级
+- [x] **INIT-03**: 多迭代版本 / 多产品线场景支持
 - [ ] **INIT-04**: CLAUDE.md 标准化模板生成 — 初始化时自动创建，规范化主编排入口
 - [ ] **INIT-05**: config.json 模板生成 — 根据推断结果生成项目配置
 
@@ -101,9 +101,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | STRU-01 | Phase 2 | Complete |
 | STRU-02 | Phase 2 | Complete |
 | STRU-03 | Phase 2 | Complete |
-| INIT-01 | Phase 3 | Pending |
-| INIT-02 | Phase 3 | Pending |
-| INIT-03 | Phase 3 | Pending |
+| INIT-01 | Phase 3 | Complete |
+| INIT-02 | Phase 3 | Complete |
+| INIT-03 | Phase 3 | Complete |
 | INIT-04 | Phase 3 | Pending |
 | INIT-05 | Phase 3 | Pending |
 | SKIL-01 | Phase 4 | Pending |
