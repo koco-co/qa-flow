@@ -7,6 +7,7 @@
 import {
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -51,6 +52,15 @@ function cleanup() {
 }
 
 process.on("exit", cleanup);
+
+function cleanupStale() {
+  for (const entry of readdirSync(__dirname)) {
+    if (entry.startsWith("__test_archive_history_")) {
+      rmSync(resolve(__dirname, entry), { recursive: true, force: true });
+    }
+  }
+}
+cleanupStale();
 
 function ensureTempRoot() {
   mkdirSync(tempRoot, { recursive: true });

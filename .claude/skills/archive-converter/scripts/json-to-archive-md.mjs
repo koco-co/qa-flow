@@ -496,8 +496,11 @@ export function determineOutputDirWithMeta(projectName, versionOrTitle, requirem
     return resolve(base, `archive/${moduleKey}`);
   }
 
-  // 兜底：按版本或空目录
-  return resolve(base, `archive/${version || ''}`);
+  // 无法匹配模块：报错而非静默兜底，避免产生意外目录
+  throw new Error(
+    `无法确定归档目录：找不到与 projectName="${projectName}"、requirementName="${requirementName}" 匹配的模块。` +
+    `请在 .claude/config.json 的 modules 中添加对应模块，或在 meta.module_key 中显式指定。`
+  );
 }
 
 // ─── CLI 入口 ───────────────────────────────────────────────

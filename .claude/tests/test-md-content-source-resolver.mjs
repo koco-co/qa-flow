@@ -6,6 +6,7 @@
  */
 import {
   mkdirSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from "fs";
@@ -41,8 +42,16 @@ function cleanup() {
   rmSync(escapedRoot, { recursive: true, force: true });
 }
 
+function cleanupStale() {
+  for (const entry of readdirSync(__dirname)) {
+    if (entry.startsWith("__test_md_content_source_resolver_")) {
+      rmSync(resolve(__dirname, entry), { recursive: true, force: true });
+    }
+  }
+}
+
 process.on("exit", cleanup);
-cleanup();
+cleanupStale();
 
 function writeFixture(relativePath, content = "") {
   const fullPath = resolve(tempRoot, relativePath);

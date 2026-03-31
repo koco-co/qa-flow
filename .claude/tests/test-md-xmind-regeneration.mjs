@@ -6,6 +6,7 @@
  */
 import {
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -47,8 +48,16 @@ function cleanup() {
   rmSync(tempRoot, { recursive: true, force: true });
 }
 
+function cleanupStale() {
+  for (const entry of readdirSync(__dirname)) {
+    if (entry.startsWith("__test_md_xmind_regeneration_")) {
+      rmSync(resolve(__dirname, entry), { recursive: true, force: true });
+    }
+  }
+}
+
 process.on("exit", cleanup);
-cleanup();
+cleanupStale();
 
 function writeFixture(relativePath, content = "") {
   const fullPath = resolve(tempRoot, relativePath);
