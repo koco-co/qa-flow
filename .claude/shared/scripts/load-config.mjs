@@ -116,6 +116,54 @@ export function getModuleKeys() {
   return Object.keys(loadConfig().modules ?? {});
 }
 
+/**
+ * Resolve module artifact directory path.
+ * Convention: {casesRoot}{type}/{moduleKey}/
+ * Override: module config's explicit type field if present.
+ * When mod.versioned === true and version is provided, appends v{version}/.
+ * @param {string} moduleKey
+ * @param {'xmind'|'archive'|'requirements'|'history'} type
+ * @param {object} [config]
+ * @param {string} [version] - Optional version string (e.g. 'v6.4.10')
+ * @returns {string} workspace-relative path, trailing slash included
+ */
+export function resolveModulePath(moduleKey, type, config = loadConfig(), version = null) {
+  const mod = config.modules?.[moduleKey];
+  if (!mod) {
+    throw new Error(
+      `Unknown module key: "${moduleKey}". Run /using-qa-flow init to configure modules.`
+    );
+  }
+  let basePath;
+  if (mod[type]) {
+    basePath = mod[type].endsWith('/') ? mod[type] : mod[type] + '/';
+  } else {
+    const casesRoot = config.casesRoot ?? 'cases/';
+    basePath = `${casesRoot}${type}/${moduleKey}/`;
+  }
+  if (version && mod.versioned === true) {
+    const versionSegment = version.startsWith('v') ? version : `v${version}`;
+    return `${basePath}${versionSegment}/`;
+  }
+  return basePath;
+}
+
+/**
+ * Guard: require config.modules to be non-empty.
+ * Throws with guidance when empty.
+ * @param {object} [config]
+ * @returns {string[]} Module key array
+ */
+export function requireNonEmptyModules(config = loadConfig()) {
+  const keys = Object.keys(config.modules ?? {});
+  if (keys.length === 0) {
+    throw new Error(
+      'config.modules is empty. Please run /using-qa-flow init to configure your project modules.'
+    );
+  }
+  return keys;
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Path helpers
 // ────────────────────────────────────────────────────────────────────────────

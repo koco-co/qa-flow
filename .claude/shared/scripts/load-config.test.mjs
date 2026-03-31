@@ -224,3 +224,123 @@ describe("GEN-01: getBranchMappingPath() reads config.branchMapping", () => {
     );
   });
 });
+
+describe("STRU-02: resolveModulePath()", () => {
+  let resolveModulePath;
+  let requireNonEmptyModules;
+
+  before(async () => {
+    const mod = await import("./load-config.mjs");
+    resolveModulePath = mod.resolveModulePath;
+    requireNonEmptyModules = mod.requireNonEmptyModules;
+  });
+
+  // Helper to make a minimal config with one module
+  function makeConfig(modulesOverride = {}, extras = {}) {
+    return {
+      project: { name: "test" },
+      modules: modulesOverride,
+      ...extras,
+    };
+  }
+
+  it("resolveModulePath() is exported", () => {
+    assert.ok(
+      typeof resolveModulePath === "function",
+      "resolveModulePath should be exported"
+    );
+  });
+
+  it("requireNonEmptyModules() is exported", () => {
+    assert.ok(
+      typeof requireNonEmptyModules === "function",
+      "requireNonEmptyModules should be exported"
+    );
+  });
+
+  it("resolveModulePath returns convention path for module with no explicit path", () => {
+    const config = makeConfig({ "my-module": { zh: "我的模块" } });
+    const result = resolveModulePath("my-module", "xmind", config);
+    assert.equal(result, "cases/xmind/my-module/");
+  });
+
+  it("resolveModulePath returns explicit path from module config when set", () => {
+    const config = makeConfig({
+      xyzh: { zh: "信阳中行", xmind: "cases/xmind/custom/xyzh/" },
+    });
+    const result = resolveModulePath("xyzh", "xmind", config);
+    assert.equal(result, "cases/xmind/custom/xyzh/");
+  });
+
+  it("resolveModulePath appends trailing slash when explicit path lacks it", () => {
+    const config = makeConfig({
+      xyzh: { zh: "信阳中行", xmind: "cases/xmind/custom/xyzh" }, // no trailing slash
+    });
+    const result = resolveModulePath("xyzh", "xmind", config);
+    assert.equal(result, "cases/xmind/custom/xyzh/");
+  });
+
+  it("resolveModulePath throws containing '/using-qa-flow init' for unknown module", () => {
+    const config = makeConfig({});
+    assert.throws(
+      () => resolveModulePath("unknown", "xmind", config),
+      (err) => {
+        assert.ok(
+          err.message.includes("/using-qa-flow init"),
+          `Error should contain '/using-qa-flow init' but got: ${err.message}`
+        );
+        return true;
+      }
+    );
+  });
+
+  it("resolveModulePath uses config.casesRoot for convention path", () => {
+    const config = makeConfig({ mod: { zh: "模块" } }, { casesRoot: "my-cases/" });
+    const result = resolveModulePath("mod", "archive", config);
+    assert.equal(result, "my-cases/archive/mod/");
+  });
+
+  it("resolveModulePath defaults casesRoot to 'cases/' when not in config", () => {
+    const config = makeConfig({ mod: { zh: "模块" } }); // no casesRoot field
+    const result = resolveModulePath("mod", "xmind", config);
+    assert.equal(result, "cases/xmind/mod/");
+  });
+
+  it("resolveModulePath appends version segment when mod.versioned === true", () => {
+    const config = makeConfig({ mod: { zh: "模块", versioned: true } });
+    const result = resolveModulePath("mod", "xmind", config, "v6.4.10");
+    assert.equal(result, "cases/xmind/mod/v6.4.10/");
+  });
+
+  it("resolveModulePath prepends 'v' when version string lacks it (mod.versioned === true)", () => {
+    const config = makeConfig({ mod: { zh: "模块", versioned: true } });
+    const result = resolveModulePath("mod", "xmind", config, "6.4.10");
+    assert.equal(result, "cases/xmind/mod/v6.4.10/");
+  });
+
+  it("resolveModulePath ignores version when mod.versioned is not true", () => {
+    const config = makeConfig({ mod: { zh: "模块" } }); // no versioned field
+    const result = resolveModulePath("mod", "xmind", config, "v6.4.10");
+    assert.equal(result, "cases/xmind/mod/");
+  });
+
+  it("requireNonEmptyModules throws containing '/using-qa-flow init' when modules is empty", () => {
+    const config = makeConfig({});
+    assert.throws(
+      () => requireNonEmptyModules(config),
+      (err) => {
+        assert.ok(
+          err.message.includes("/using-qa-flow init"),
+          `Error should contain '/using-qa-flow init' but got: ${err.message}`
+        );
+        return true;
+      }
+    );
+  });
+
+  it("requireNonEmptyModules returns module keys array when modules non-empty", () => {
+    const config = makeConfig({ "the-key": { zh: "测试" } });
+    const keys = requireNonEmptyModules(config);
+    assert.deepEqual(keys, ["the-key"]);
+  });
+});

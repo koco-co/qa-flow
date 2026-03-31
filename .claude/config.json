@@ -3,6 +3,7 @@
     "name": "qa-flow",
     "displayName": "qa-flow"
   },
+  "casesRoot": "cases/",
   "modules": {},
   "repos": {},
   "stackTrace": {},
