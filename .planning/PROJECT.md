@@ -19,6 +19,11 @@ qa-flow 是一套基于 Claude Code Skills 的通用 QA 自动化工具套件，
 - ✓ 后端代码分析报告（报错日志 → HTML 报告）— existing
 - ✓ 断点续传 + 模块级重跑 — existing
 - ✓ 质量阈值自动决策（15%/40% 分档）— existing
+- ✓ using-qa-flow 交互式初始化：自动推断项目结构 + 确认 — validated in Phase 3
+- ✓ 支持用户上传历史用例文件（CSV/XMind）解析并推断模块/结构 — validated in Phase 3
+- ✓ 多迭代版本 / 多产品线场景支持 — validated in Phase 3
+- ✓ 重新设计 CLAUDE.md 模板（标准化主编排入口）— validated in Phase 3
+- ✓ config.json 模板生成与 re-init 增量更新 — validated in Phase 3
 
 ### Active
 
@@ -26,10 +31,6 @@ qa-flow 是一套基于 Claude Code Skills 的通用 QA 自动化工具套件，
 - [ ] 解耦所有 DTStack 特定业务数据（config、rules、prompts、示例）
 - [ ] 重新设计项目目录结构（更合理的层级）
 - [ ] 重新设计所有 Skills 内容和规范（使用通用示例数据如电商平台）
-- [ ] 重新设计 CLAUDE.md 模板（标准化主编排入口）
-- [ ] using-qa-flow 交互式初始化：自动推断项目结构 + 确认
-- [ ] 支持用户上传历史用例文件（CSV/XMind）解析并推断层级
-- [ ] 多迭代版本 / 多产品线场景支持
 - [ ] DTStack 业务数据迁移至独立分支
 
 **WebUI 自动化集成：**
@@ -94,9 +95,9 @@ qa-flow 是一套基于 Claude Code Skills 的通用 QA 自动化工具套件，
 |----------|-----------|---------|
 | Playwright 作为 UI 自动化框架 | 2025 最流行的 E2E 框架，原生支持多浏览器，与 MCP 集成良好 | — Pending |
 | 业务数据移入独立分支而非删除 | 保留历史数据的可追溯性，main 分支保持干净 | — Pending |
-| using-qa-flow 采用全自动推断+确认模式 | 降低上手门槛，QA 工程师无需了解内部细节 | — Pending |
+| using-qa-flow 采用全自动推断+确认模式 | 降低上手门槛，QA 工程师无需了解内部细节 | Validated in Phase 3 |
 | 通用示例使用电商平台数据 | 电商场景普遍易懂，覆盖表单/列表/搜索/详情等常见 UI 模式 | — Pending |
 | 开源发布 | 扩大影响力，接受社区反馈 | — Pending |
 
 ---
-*Last updated: 2026-03-31 after initialization*
+*Last updated: 2026-03-31 after Phase 3 completion*

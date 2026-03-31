@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Generalization Refactor** - Remove all DTStack-specific coupling from config, rules, prompts, and scripts (completed 2026-03-31)
 - [x] **Phase 2: Project Structure + Shared Scripts** - Redesign directory layout and adapt shared Node.js scripts to new config schema (completed 2026-03-31)
-- [ ] **Phase 3: Init Wizard** - Build interactive using-qa-flow init with structure inference and config scaffolding
+- [x] **Phase 3: Init Wizard** - Build interactive using-qa-flow init with structure inference and config scaffolding (completed 2026-03-31)
 - [ ] **Phase 4: Core Skills Redesign** - Rewrite all Skills to be config-driven with generic examples, zero business coupling
 - [ ] **Phase 5: IM Notification Integration** - Deliver multi-channel notification adapters (DingTalk, Feishu, WeCom, SMTP)
 - [ ] **Phase 6: Documentation** - Write GitHub-ready README, CHANGELOG, and LICENSE against real tested behavior
@@ -64,7 +64,7 @@ Plans:
   2. A user can upload a CSV or XMind history file during init and the wizard infers module keys and case hierarchy from it
   3. The generated config.json and CLAUDE.md are syntactically valid and immediately usable by the test-case-generator workflow without manual edits
   4. Multi-version (e.g., v1.0 + v2.0) and multi-module scenarios are expressible in the generated config without requiring post-init hand-editing
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md — init-wizard.mjs project scanning + history file parsing + tests
@@ -113,7 +113,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Generalization Refactor | 5/5 | Complete    | 2026-03-31 |
 | 2. Project Structure + Shared Scripts | 3/3 | Complete    | 2026-03-31 |
-| 3. Init Wizard | 0/3 | Planning complete | - |
+| 3. Init Wizard | 3/3 | Complete    | 2026-03-31 |
 | 4. Core Skills Redesign | 0/TBD | Not started | - |
 | 5. IM Notification Integration | 0/TBD | Not started | - |
 | 6. Documentation | 0/TBD | Not started | - |
