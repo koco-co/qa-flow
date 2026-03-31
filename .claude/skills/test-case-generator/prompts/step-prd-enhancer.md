@@ -1,15 +1,14 @@
 <!-- step-id: prd-enhancer | delegate: testCaseOrchestrator -->
 # Step prd-enhancer：PRD 增强 + 健康度预检
 
-> 前置条件: `last_completed_step` == `"prd-formalize"` 或 `"source-sync"`（取决于是否为 DTStack）
+> 前置条件: `last_completed_step` == `"prd-formalize"` 或 `"source-sync"`（config.repos 非空时经过 prd-formalize，否则直接从 source-sync 进入）
 > 快速模式: 执行
-> DTStack 专属: 否
 
 ## 执行方式
 
 调用 `prd-enhancer` Skill（`.claude/skills/prd-enhancer/SKILL.md`），对 Step parse-input 中识别出的所有 PRD 文件逐一增强。
 
-> 对 DTStack 而言，输入应当是 **正式需求文档的临时整理结果或 formalize 摘要**，不是蓝湖原始文本 dump，也不要求在 requirements 目录保留 formalized 文件。
+> 当 config.repos 非空时，输入应当是 **正式需求文档的临时整理结果或 formalize 摘要**，不是蓝湖原始文本 dump，也不要求在 requirements 目录保留 formalized 文件。
 
 ## prd-enhancer 的增量检测特性（自动生效）
 

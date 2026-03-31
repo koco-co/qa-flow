@@ -4,7 +4,11 @@
 > 前置条件: `last_completed_step` == `"req-elicit"`
 > 快速模式: 执行
 
-> 本步骤仅在 config.json 中 `repos` 字段为非空对象时执行。若 `repos: {}` 则跳过此步骤。
+> 本步骤仅在 config.json 中 `repos` 字段为非空对象时执行。
+> **若 `repos: {}` 则跳过**：
+> 1. 向 execution_log 追加 `{"step": "source-sync", "status": "skipped", "reason": "config.repos is empty"}`
+> 2. 更新 `last_completed_step` 为 `"source-sync"`
+> 3. 继续下一步（prd-formalize）
 
 ## 执行流程
 
@@ -32,8 +36,8 @@
 ```
 未找到版本 <version> 的分支映射。
 请提供以下信息：
-- backend 目标分支（例如：release/6.4.10）
-- frontend 目标分支（例如：release/6.4.10）
+- backend 目标分支（例如：release/v2.0）
+- frontend 目标分支（例如：release/v2.0-web）
 ```
 
 用户提供后，临时写入 source_context，继续流程。
@@ -52,13 +56,13 @@
    ```json
    {
      "source_context": {
-       "backend": [
-         {"repoKey": "dt-center-assets", "branch": "release/6.4.10", "status": "synced", "commit": "abc123"},
-         {"repoKey": "DAGScheduleX", "branch": "release/6.4.10", "status": "failed", "error": "branch not found"}
-       ],
-       "frontend": [
-         {"repoKey": "dt-insight-studio-front", "branch": "release/6.4.10", "status": "synced", "commit": "def456"}
-       ]
+        "backend": [
+          {"repoKey": "orders-service", "branch": "release/v2.0", "status": "synced", "commit": "abc123"},
+          {"repoKey": "inventory-worker", "branch": "release/v2.0", "status": "failed", "error": "branch not found"}
+        ],
+        "frontend": [
+          {"repoKey": "commerce-web", "branch": "release/v2.0-web", "status": "synced", "commit": "def456"}
+        ]
      }
    }
    ```
@@ -66,9 +70,9 @@
 3. 向用户展示同步结果摘要：
    ```
    源码分支同步结果：
-   [v] dt-center-assets → release/6.4.10 (commit: abc123)
-   [x] DAGScheduleX → release/6.4.10 (失败: branch not found)
-   [v] dt-insight-studio-front → release/6.4.10 (commit: def456)
+   [v] orders-service → release/v2.0 (commit: abc123)
+   [x] inventory-worker → release/v2.0 (失败: branch not found)
+   [v] commerce-web → release/v2.0-web (commit: def456)
 
    1 个仓库同步失败。
    - 「继续」→ 后续 Writer 不参考失败仓库的源码
