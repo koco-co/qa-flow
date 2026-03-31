@@ -37,7 +37,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **STRU-01**: 重新设计项目目录结构 — 更合理的层级，支持任意项目适配
 - [x] **STRU-02**: 共享脚本重构 — load-config.mjs 等脚本适配新 config schema
-- [ ] **STRU-03**: 测试套件更新 — 适配新结构的单元测试
+- [x] **STRU-03**: 测试套件更新 — 适配新结构的单元测试
 
 ### IM Notification
 
@@ -100,7 +100,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | GEN-06 | Phase 1 | Complete |
 | STRU-01 | Phase 2 | Complete |
 | STRU-02 | Phase 2 | Complete |
-| STRU-03 | Phase 2 | Pending |
+| STRU-03 | Phase 2 | Complete |
 | INIT-01 | Phase 3 | Pending |
 | INIT-02 | Phase 3 | Pending |
 | INIT-03 | Phase 3 | Pending |
