@@ -155,8 +155,59 @@ const archiveHistoryPath = writeFixture(
 writeFixture("cases/requirements/custom/xyzh/数据目录.md", "---\nprd_name: 数据目录\nproduct: xyzh\ncreate_at: 2026-03-20\nstatus: raw\n---\n");
 writeFixture("cases/history/xyzh/v1.0.0/数据目录台账.csv", "标题,步骤,预期\n");
 
+// Config with module-specific repoHints (replacing the former hardcoded DEFAULT_REPO_HINT_KEYS_BY_PRODUCT mapping)
+const testConfig = {
+  project: { name: "test" },
+  casesRoot: "cases/",
+  modules: {
+    "data-assets": {
+      zh: "数据资产",
+      versioned: true,
+      repoHints: ["dt-center-assets", "dt-insight-studio"],
+    },
+    "data-query": {
+      zh: "数据查询",
+      versioned: true,
+    },
+    "xyzh": {
+      zh: "信阳中行",
+      xmind: "cases/xmind/custom/xyzh/",
+      archive: "cases/archive/custom/xyzh/",
+      requirements: "cases/requirements/custom/xyzh/",
+      history: "cases/history/xyzh/",
+      repoHints: ["dt-insight-studio", "dt-center-assets"],
+    },
+  },
+  repos: {
+    "dt-center-assets": ".repos/dt-insight-web/dt-center-assets/",
+    "dt-insight-studio": ".repos/dt-insight-front/dt-insight-studio/",
+    "dt-insight-studio-custom": ".repos/CustomItem/dt-insight-studio/",
+    "dt-center-assets-custom": ".repos/CustomItem/dt-center-assets/",
+  },
+};
+
+// xyzh-specific config with CustomItem repo paths
+const testConfigXyzh = {
+  project: { name: "test" },
+  casesRoot: "cases/",
+  modules: {
+    "xyzh": {
+      zh: "信阳中行",
+      xmind: "cases/xmind/custom/xyzh/",
+      archive: "cases/archive/custom/xyzh/",
+      requirements: "cases/requirements/custom/xyzh/",
+      history: "cases/history/xyzh/",
+      repoHints: ["dt-insight-studio-custom", "dt-center-assets-custom"],
+    },
+  },
+  repos: {
+    "dt-insight-studio-custom": ".repos/CustomItem/dt-insight-studio/",
+    "dt-center-assets-custom": ".repos/CustomItem/dt-center-assets/",
+  },
+};
+
 console.log("\n=== Test: archive resolves explicit XMind + PRD + repo candidates ===");
-const resolvedArchive = resolveMdContentSource(archiveResolvedPath, { rootDir: tempRoot });
+const resolvedArchive = resolveMdContentSource(archiveResolvedPath, { rootDir: tempRoot, config: testConfig });
 assert(resolvedArchive.docType === "archive", "archive 文档类型识别正确", [
   `actual: ${resolvedArchive.docType}`,
 ]);
@@ -216,7 +267,7 @@ assert(
 );
 
 console.log("\n=== Test: requirements can fall back to markdown-only source ===");
-const markdownOnlyRequirement = resolveMdContentSource(requirementMarkdownOnlyPath, { rootDir: tempRoot });
+const markdownOnlyRequirement = resolveMdContentSource(requirementMarkdownOnlyPath, { rootDir: tempRoot, config: testConfigXyzh });
 assert(markdownOnlyRequirement.docType === "requirements", "requirements 文档类型识别正确", [
   `actual: ${markdownOnlyRequirement.docType}`,
 ]);
@@ -271,7 +322,7 @@ assert(
 );
 
 console.log("\n=== Test: archive infers history CSV candidates from module + version + filename ===");
-const historyArchive = resolveMdContentSource(archiveHistoryPath, { rootDir: tempRoot });
+const historyArchive = resolveMdContentSource(archiveHistoryPath, { rootDir: tempRoot, config: testConfigXyzh });
 assert(
   JSON.stringify(historyArchive.candidateHistoryPaths) === JSON.stringify([
     "cases/history/xyzh/v1.0.0/数据目录台账.csv",
