@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. All DTStack business data (examples, config, requirements) is accessible from the dtstack-data branch and not present on main
   4. loadConfig() throws a descriptive error naming the missing field when a required config key is absent
   5. All existing tests pass against the generalized codebase
-**Plans:** 5 plans
+**Plans:** 2/5 plans executed
 
 Plans:
 - [ ] 01-01-PLAN.md — Config schema redesign + loadConfig() validation + Wave 0 test scaffolds
@@ -101,7 +101,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Generalization Refactor | 0/5 | Planning complete | - |
+| 1. Generalization Refactor | 2/5 | In Progress|  |
 | 2. Project Structure + Shared Scripts | 0/TBD | Not started | - |
 | 3. Init Wizard | 0/TBD | Not started | - |
 | 4. Core Skills Redesign | 0/TBD | Not started | - |
