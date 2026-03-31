@@ -230,7 +230,9 @@ async function main() {
   console.log("\n=== Test: json-to-archive-md.mjs 默认路由到 DTStack 模块归档目录 ===");
   const dtRequirementName = `__qa-routing-data-assets-${runId}`;
   const dtInputPath = resolve(tempRoot, `${dtRequirementName}.json`);
-  const dtOutputPath = resolve(repoRoot, "cases/archive/data-assets", `${dtRequirementName}.md`);
+  // With generic config (empty modules), routing falls back to cases/archive/{version}/ rather than cases/archive/{module}/
+  const dtOutputDir = resolve(repoRoot, "cases/archive/vtest-route");
+  const dtOutputPath = resolve(dtOutputDir, `${dtRequirementName}.md`);
   writeFileSync(
     dtInputPath,
     JSON.stringify(
@@ -244,6 +246,7 @@ async function main() {
     ),
     "utf8",
   );
+  generatedDirPaths.add(dtOutputDir);
   const dtResult = runNodeScript(archiveScriptPath, [dtInputPath]);
   assert(dtResult.code === 0, "DTStack 模块默认路由执行成功", [
     dtResult.stderr.trim(),
@@ -262,7 +265,8 @@ async function main() {
   console.log("\n=== Test: json-to-archive-md.mjs 为 DTStack 语义版本自动创建版本目录 ===");
   const dtVersionedRequirementName = `__qa-routing-data-assets-semver-${runId}`;
   const dtVersionedInputPath = resolve(tempRoot, `${dtVersionedRequirementName}.json`);
-  const dtVersionedOutputDir = resolve(repoRoot, "cases/archive/data-assets", "v6.4.10");
+  // With generic config (empty modules), versioned routing falls back to cases/archive/{version}/ (no module subdir)
+  const dtVersionedOutputDir = resolve(repoRoot, "cases/archive/v6.4.10");
   const dtVersionedOutputPath = resolve(dtVersionedOutputDir, `${dtVersionedRequirementName}.md`);
   writeFileSync(
     dtVersionedInputPath,
@@ -291,9 +295,10 @@ async function main() {
   const titledInputPath = resolve(tempRoot, `final-reviewed-titled-${runId}.json`);
   const titledRequirementName = "数据资产V6.4.10";
   const titledArchiveFileName = `【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比-${runId}`;
+  // With generic config (empty modules), module_key "data-assets" not recognized — falls back to cases/archive/v6.4.10/
+  const titledOutputDir = resolve(repoRoot, "cases/archive/v6.4.10");
   const titledOutputPath = resolve(
-    repoRoot,
-    "cases/archive/data-assets/v6.4.10",
+    titledOutputDir,
     `${titledArchiveFileName}.md`,
   );
   const titledFixture = createJsonFixture({
@@ -321,6 +326,7 @@ async function main() {
     ),
     "utf8",
   );
+  generatedDirPaths.add(titledOutputDir);
   const titledResult = runNodeScript(archiveScriptPath, [titledInputPath]);
   assert(titledResult.code === 0, "DTStack 需求标题命名执行成功", [
     titledResult.stderr.trim(),
@@ -332,8 +338,7 @@ async function main() {
   if (existsSync(titledOutputPath)) {
     generatedFilePaths.add(titledOutputPath);
     const legacyPrefixedOutputPath = resolve(
-      repoRoot,
-      "cases/archive/data-assets/v6.4.10",
+      titledOutputDir,
       `PRD-15530-${titledArchiveFileName}.md`,
     );
     assert(
@@ -346,9 +351,10 @@ async function main() {
   console.log("\n=== Test: DTStack 临时 final-reviewed 文件名不会污染归档文件名 ===");
   const tempReviewedRequirementName = `【内置规则丰富】有效性，json中key对应的value值格式校验-${runId}`;
   const tempReviewedInputPath = resolve(tempRoot, `final-reviewed-${runId}-clean.json`);
+  // With generic config, prd_version "v6.4.10" overrides and routes to cases/archive/v6.4.10/
+  const tempReviewedOutputDir = resolve(repoRoot, "cases/archive/v6.4.10");
   const tempReviewedOutputPath = resolve(
-    repoRoot,
-    "cases/archive/data-assets/v6.4.10",
+    tempReviewedOutputDir,
     `${tempReviewedRequirementName}.md`,
   );
   writeFileSync(
@@ -377,6 +383,7 @@ async function main() {
     ),
     "utf8",
   );
+  generatedDirPaths.add(tempReviewedOutputDir);
   const tempReviewedResult = runNodeScript(archiveScriptPath, [tempReviewedInputPath]);
   assert(tempReviewedResult.code === 0, "DTStack 临时 final-reviewed 输入执行成功", [
     tempReviewedResult.stderr.trim(),
@@ -390,8 +397,7 @@ async function main() {
   if (existsSync(tempReviewedOutputPath)) {
     generatedFilePaths.add(tempReviewedOutputPath);
     const pollutedOutputPath = resolve(
-      repoRoot,
-      "cases/archive/data-assets/v6.4.10",
+      tempReviewedOutputDir,
       `final-reviewed-${runId}-clean.md`,
     );
     assert(
@@ -405,9 +411,10 @@ async function main() {
   const prefixedRequirementName = `__qa-prd-prefix-${runId}`;
   const prefixedInputBaseName = `PRD-26-${prefixedRequirementName}.json`;
   const prefixedInputPath = resolve(tempRoot, prefixedInputBaseName);
+  // With generic config, version "vtest-prefix" routes to cases/archive/vtest-prefix/
+  const prefixedOutputDir = resolve(repoRoot, "cases/archive/vtest-prefix");
   const prefixedOutputPath = resolve(
-    repoRoot,
-    "cases/archive/data-assets",
+    prefixedOutputDir,
     prefixedInputBaseName.replace(/\.json$/, ".md"),
   );
   writeFileSync(
@@ -423,6 +430,7 @@ async function main() {
     ),
     "utf8",
   );
+  generatedDirPaths.add(prefixedOutputDir);
   const prefixedResult = runNodeScript(archiveScriptPath, [prefixedInputPath]);
   assert(prefixedResult.code === 0, "PRD 前缀输入执行成功", [
     prefixedResult.stderr.trim(),
@@ -441,7 +449,9 @@ async function main() {
   const metaRequirementName = `质量问题台账-${runId}`;
   const metaPrdBaseName = `PRD-52-${metaRequirementName}.md`;
   const metaInputPath = resolve(tempRoot, `final-reviewed-${runId}.json`);
-  const metaOutputPath = resolve(repoRoot, "cases/archive/data-assets", metaPrdBaseName);
+  // With generic config, version "vtest-meta" routes to cases/archive/vtest-meta/
+  const metaOutputDir = resolve(repoRoot, "cases/archive/vtest-meta");
+  const metaOutputPath = resolve(metaOutputDir, metaPrdBaseName);
   writeFileSync(
     metaInputPath,
     JSON.stringify(
@@ -458,6 +468,7 @@ async function main() {
     ),
     "utf8",
   );
+  generatedDirPaths.add(metaOutputDir);
   const metaResult = runNodeScript(archiveScriptPath, [metaInputPath]);
   assert(metaResult.code === 0, "meta 驱动命名输入执行成功", [
     metaResult.stderr.trim(),

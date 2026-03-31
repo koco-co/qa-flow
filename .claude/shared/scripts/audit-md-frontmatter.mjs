@@ -43,6 +43,8 @@ const ROOT = resolveArgPath("--root") || DEFAULT_ROOT;
 const PATH_ARG = resolveArgPath("--path");
 const CONFIG = loadConfig();
 const VALID_PRODUCTS = new Set(Object.keys(CONFIG.modules || {}));
+// When modules is unconfigured (empty), any non-empty product string is valid
+const STRICT_PRODUCT_VALIDATION = VALID_PRODUCTS.size > 0;
 const DTSTACK_PRODUCTS = new Set(
   Object.entries(CONFIG.modules || {})
     .filter(([, mod]) => mod.type !== "custom")
@@ -592,7 +594,7 @@ function buildArchiveCanonicalFields(meta, filePath, body, semanticEnrichment = 
     prd_version: prdVersion || undefined,
     prd_path: prdPath,
     prd_url: asString(meta.prd_url) || undefined,
-    product: VALID_PRODUCTS.has(product) ? product : undefined,
+    product: (!STRICT_PRODUCT_VALIDATION && product) || VALID_PRODUCTS.has(product) ? product : undefined,
     dev_version: asString(meta.dev_version) || undefined,
     tags,
     create_at: createAt,
@@ -625,7 +627,7 @@ function buildRequirementCanonicalFields(meta, filePath) {
     prd_version: prdVersion || undefined,
     prd_source: pickRequirementSource(meta, legacySource, filePath),
     prd_url: asString(meta.prd_url) || undefined,
-    product: VALID_PRODUCTS.has(product) ? product : undefined,
+    product: (!STRICT_PRODUCT_VALIDATION && product) || VALID_PRODUCTS.has(product) ? product : undefined,
     dev_version: asString(meta.dev_version) || undefined,
     tags: hasOwn(meta, "tags") ? toStringArray(meta.tags) : undefined,
     create_at: createAt,
@@ -685,7 +687,12 @@ function auditArchiveFrontmatter(meta, canonical, filePath, body, hadFrontMatter
     issues.push(issue("product", "error", "`product` 缺失或无效"));
   }
 
-  if (DTSTACK_PRODUCTS.has(derivedProduct) && canonical.prd_id === undefined) {
+  // When modules are configured, only warn about prd_id for non-custom modules (DTSTACK_PRODUCTS).
+  // When modules are unconfigured (strict validation off), warn for any archive in a versioned path.
+  const shouldWarnPrdId = STRICT_PRODUCT_VALIDATION
+    ? DTSTACK_PRODUCTS.has(derivedProduct)
+    : Boolean(derivedVersion);
+  if (shouldWarnPrdId && canonical.prd_id === undefined) {
     issues.push(issue("prd-id", "warning", "`prd_id` 缺失（文件名未包含 #NNNN）"));
   }
 
