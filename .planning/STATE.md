@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-03-31T16:10:06.795Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-31T16:27:50.810Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 16
-  completed_plans: 12
+  completed_plans: 13
   percent: 50
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 ## Current Position
 
 Phase: 04 (core-skills-redesign) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-03-31
 
@@ -63,6 +63,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P02 | 12 min | 2 tasks | 3 files |
 | Phase 03 P03 | 8 min | 2 tasks | 1 files |
 | Phase 04-core-skills-redesign P02 | 16 | 2 tasks | 4 files |
+| Phase 04-core-skills-redesign P01 | 14 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,9 @@ Recent decisions affecting current work:
 - [Phase 02-project-structure-shared-scripts]: hasMappingFile guard in tests: when branchMapping not configured, skip assertions rather than fail
 - [Phase 04-core-skills-redesign]: isDirectExecution() guard added to convert-history-cases.mjs for testability — same pattern as json-to-archive-md.mjs
 - [Phase 04-core-skills-redesign]: buildCsvDirs() dynamically scans cases/history/ — no hardcoded module dirs needed for CSV conversion
+- [Phase 04-core-skills-redesign]: buildRootTitle accepts optional _config parameter for test isolation without config file mutation
+- [Phase 04-core-skills-redesign]: isDtstackMeta fully deleted — replaced by config.modules[key].trackerId presence check for L1 folding behavior
+- [Phase 04-core-skills-redesign]: buildL1Title unified format 【version】name(#ticket) for all projects — no special-casing per source_standard
 
 ### Pending Todos
 
@@ -107,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T16:10:06.793Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-03-31T16:27:50.808Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
