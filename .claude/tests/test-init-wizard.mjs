@@ -15,7 +15,16 @@
  *
  * Run: node .claude/tests/test-init-wizard.mjs
  */
-import { scanProject, parseHistoryFile, inferModuleKeyFromFilename } from '../skills/using-qa-flow/scripts/init-wizard.mjs';
+import {
+  scanProject,
+  parseHistoryFile,
+  inferModuleKeyFromFilename,
+  writeOutputs,
+  loadExistingConfig,
+  renderTemplate,
+  buildConfigObject,
+  mergeConfigGroups,
+} from '../skills/using-qa-flow/scripts/init-wizard.mjs';
 import { mkdirSync, writeFileSync, readdirSync, rmSync, existsSync, statSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -309,6 +318,257 @@ console.log('\n=== Test: scanProject — PRD version patterns ===');
 // ═══════════════════════════════════════════════════════════════════════════
 // Summary
 // ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 10: buildConfigObject
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: buildConfigObject ===');
+{
+  const result = buildConfigObject({
+    projectName: 'test-proj',
+    displayName: 'Test Project',
+    casesRoot: 'cases/',
+    modules: {
+      'mod-a': { versioned: false },
+    },
+  });
+
+  assert(result.project.name === 'test-proj', "project.name === 'test-proj'");
+  assert(result.project.displayName === 'Test Project', "project.displayName === 'Test Project'");
+  assert(result.casesRoot === 'cases/', "casesRoot === 'cases/'");
+  assert(result.modules['mod-a'].versioned === false, "modules['mod-a'].versioned === false");
+  assert(result.trash.dir === '.trash/', "trash.dir === '.trash/'");
+  assert(result.shortcuts.latestXmind === 'latest-output.xmind', "shortcuts.latestXmind is populated");
+  assert(Boolean(result.integrations.lanhuMcp), 'default lanhuMcp config is present');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 11: buildConfigObject — displayName defaults to projectName
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: buildConfigObject — displayName defaults to projectName ===');
+{
+  const result = buildConfigObject({
+    projectName: 'my-proj',
+    modules: {},
+  });
+
+  assert(result.project.displayName === 'my-proj', "displayName defaults to projectName");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 12: writeOutputs — valid config (INIT-05)
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: writeOutputs — valid config (INIT-05) ===');
+{
+  const tempDir = createTempDir();
+  try {
+    const config = buildConfigObject({
+      projectName: 'write-test',
+      modules: {
+        m1: { versioned: true },
+      },
+    });
+
+    writeOutputs({
+      configJson: JSON.stringify(config),
+      claudeMdContent: '# Test\n',
+      rootDir: tempDir,
+    });
+
+    assert(existsSync(join(tempDir, '.claude', 'config.json')), '.claude/config.json is written');
+    assert(existsSync(join(tempDir, 'CLAUDE.md')), 'CLAUDE.md is written');
+
+    const parsed = JSON.parse(readFileSync(join(tempDir, '.claude', 'config.json'), 'utf8'));
+    assert(parsed.project.name === 'write-test', "written config.project.name === 'write-test'");
+    assert(parsed.modules.m1.versioned === true, 'written config preserves module versioned flag');
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 13: writeOutputs — rejects missing projectName
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: writeOutputs — rejects missing projectName ===');
+{
+  const tempDir = createTempDir();
+  try {
+    let threw = false;
+    let message = '';
+
+    try {
+      writeOutputs({
+        configJson: JSON.stringify({ modules: {} }),
+        rootDir: tempDir,
+      });
+    } catch (error) {
+      threw = true;
+      message = String(error.message);
+    }
+
+    assert(threw === true, 'writeOutputs throws for invalid config without projectName');
+    assert(message.includes('project'), 'error message mentions missing project');
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 14: renderTemplate — placeholder replacement (INIT-04)
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: renderTemplate — placeholder replacement (INIT-04) ===');
+{
+  const tempDir = createTempDir();
+  try {
+    const templatePath = join(tempDir, 'CLAUDE.md.template');
+    writeFileSync(
+      templatePath,
+      '# {{PROJECT_NAME}} Handbook\nRoot: {{CASES_ROOT}}\nExample: {{MODULE_KEY_EXAMPLE}}\n',
+      'utf8'
+    );
+
+    const rendered = renderTemplate(templatePath, {
+      '{{PROJECT_NAME}}': 'My Project',
+      '{{CASES_ROOT}}': 'cases/',
+      '{{MODULE_KEY_EXAMPLE}}': 'login-module',
+    });
+
+    assert(rendered.includes('# My Project Handbook'), 'rendered template includes project name');
+    assert(rendered.includes('Root: cases/'), 'rendered template includes cases root');
+    assert(rendered.includes('Example: login-module'), 'rendered template includes module key example');
+    assert(!rendered.includes('{{'), 'rendered template has no residual placeholders');
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 15: renderTemplate — throws on unreplaced placeholders
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: renderTemplate — throws on unreplaced placeholders ===');
+{
+  const tempDir = createTempDir();
+  try {
+    const templatePath = join(tempDir, 'broken.template');
+    writeFileSync(templatePath, '# {{PROJECT_NAME}} {{UNKNOWN_VAR}}', 'utf8');
+
+    let threw = false;
+    let message = '';
+
+    try {
+      renderTemplate(templatePath, {
+        '{{PROJECT_NAME}}': 'X',
+      });
+    } catch (error) {
+      threw = true;
+      message = String(error.message);
+    }
+
+    assert(threw === true, 'renderTemplate throws when placeholders remain');
+    assert(message.includes('UNKNOWN_VAR'), 'error mentions UNKNOWN_VAR');
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 16: loadExistingConfig — empty dir returns null
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: loadExistingConfig — empty dir returns null ===');
+{
+  const tempDir = createTempDir();
+  try {
+    const result = loadExistingConfig(tempDir);
+    assert(result === null, 'loadExistingConfig returns null when config is missing');
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 17: loadExistingConfig — reads existing config
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: loadExistingConfig — reads existing config ===');
+{
+  const tempDir = createTempDir();
+  try {
+    mkdirSync(join(tempDir, '.claude'), { recursive: true });
+    writeFileSync(
+      join(tempDir, '.claude', 'config.json'),
+      JSON.stringify({
+        project: { name: 'existing' },
+        modules: {},
+      }),
+      'utf8'
+    );
+
+    const result = loadExistingConfig(tempDir);
+    assert(result !== null, 'loadExistingConfig returns an object for existing config');
+    assert(result.project.name === 'existing', "loaded config.project.name === 'existing'");
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 18: mergeConfigGroups — preserves unselected (D-15)
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: mergeConfigGroups — preserves unselected (D-15) ===');
+{
+  const existing = {
+    project: { name: 'old' },
+    casesRoot: 'cases/',
+    modules: { a: {} },
+    repos: { r1: { path: '/r1' } },
+    integrations: { lanhuMcp: { runtimePath: 'custom/' } },
+  };
+  const updated = {
+    project: { name: 'new' },
+    casesRoot: 'new-cases/',
+    modules: { b: {} },
+    repos: {},
+    integrations: {},
+  };
+
+  const result = mergeConfigGroups(existing, updated, ['basic', 'modules']);
+
+  assert(result.project.name === 'new', 'basic group updates project');
+  assert(result.modules.b !== undefined, 'modules group is replaced from updated config');
+  assert(result.repos.r1.path === '/r1', 'repos group is preserved when not selected');
+  assert(result.integrations.lanhuMcp.runtimePath === 'custom/', 'integrations group is preserved when not selected');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Test Group 19: mergeConfigGroups — updates selected groups
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('\n=== Test: mergeConfigGroups — updates selected groups ===');
+{
+  const existing = {
+    project: { name: 'old' },
+    repos: { r1: { path: '/r1' } },
+  };
+  const updated = {
+    repos: { r2: { path: '/r2' } },
+    branchMapping: null,
+    stackTrace: {},
+  };
+
+  const result = mergeConfigGroups(existing, updated, ['repos']);
+
+  assert(result.project.name === 'old', 'unselected basic group stays unchanged');
+  assert(result.repos.r2 !== undefined, 'selected repos group is replaced');
+  assert(result.repos.r1 === undefined, 'previous repos entries are removed when repos group is replaced');
+}
 
 console.log(`\n══════════════════════════════════════`);
 console.log(`总计: ${passed + failed} 测试, ✅ ${passed} 通过, ❌ ${failed} 失败`);
