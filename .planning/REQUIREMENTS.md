@@ -13,7 +13,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **GEN-02**: loadConfig() 添加 schema 验证 — 缺失字段给出明确错误而非中途崩溃
 - [x] **GEN-03**: 所有 Rules 文件通用化 — 移除 DTStack 特定示例，替换为电商平台等通用场景
 - [x] **GEN-04**: 所有 Prompts/Steps 通用化 — 移除 Doris/Hive/SparkThrift 等业务数据引用
-- [ ] **GEN-05**: 中间 JSON schema 通用化 — 移除 DTStack 特定字段，保持格式稳定
+- [x] **GEN-05**: 中间 JSON schema 通用化 — 移除 DTStack 特定字段，保持格式稳定
 - [ ] **GEN-06**: DTStack 业务数据迁移至 dtstack-data 分支
 
 ### Initialization
@@ -96,7 +96,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | GEN-02 | Phase 1 | Complete |
 | GEN-03 | Phase 1 | Complete |
 | GEN-04 | Phase 1 | Complete |
-| GEN-05 | Phase 1 | Pending |
+| GEN-05 | Phase 1 | Complete |
 | GEN-06 | Phase 1 | Pending |
 | STRU-01 | Phase 2 | Pending |
 | STRU-02 | Phase 2 | Pending |
