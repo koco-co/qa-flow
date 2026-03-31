@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-generalization-refactor plan 03 (rules generalization)
-last_updated: "2026-03-31T10:49:35.119Z"
+stopped_at: Completed 01-generalization-refactor-01-PLAN.md
+last_updated: "2026-03-31T10:49:50.835Z"
 last_activity: 2026-03-31 — Roadmap created, all 30 v1 requirements mapped to 6 phases
 progress:
   total_phases: 6
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01-generalization-refactor P03 | 525625min | 1 tasks | 5 files |
+| Phase 01-generalization-refactor P01 | 6 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Recent decisions affecting current work:
 - [Phase 01-generalization-refactor]: Doris/Hive/SparkThrift SQL collapsed into single ${datasource_type} template block in rules files
 - [Phase 01-generalization-refactor]: Java package->repo table deleted from repo-safety.md; config.stackTrace pointer added instead
 - [Phase 01-generalization-refactor]: Module key table replaced with generic ${module_key} template; actual list delegates to config.json
+- [Phase 01-generalization-refactor]: Hand-written validation in loadConfig() — no Ajv/Zod dependencies, matches zero-dep project preference
+- [Phase 01-generalization-refactor]: loadConfigFromPath(path) + resetConfigCache() exported for test isolation without module cache interference
+- [Phase 01-generalization-refactor]: getRepoBranchMappingPath() kept as deprecated alias for getBranchMappingPath() during transition
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T10:49:19.173Z
-Stopped at: Completed 01-generalization-refactor plan 03 (rules generalization)
+Last session: 2026-03-31T10:49:50.834Z
+Stopped at: Completed 01-generalization-refactor-01-PLAN.md
 Resume file: None
