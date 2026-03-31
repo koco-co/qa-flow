@@ -2,8 +2,8 @@
 /**
  * build-archive-index.mjs
  *
- * 扫描 cases/archive/ 下所有 .md 文件，提取 YAML front-matter 元数据，
- * 生成轻量索引文件 cases/archive/INDEX.json。
+ * 扫描 {casesRoot}/archive/ 下所有 .md 文件，提取 YAML front-matter 元数据，
+ * 生成轻量索引文件 {casesRoot}/archive/INDEX.json（路径从 config.json 读取）。
  *
  * Agent 读取 INDEX.json 即可知道全部归档用例的元数据，
  * 无需 Grep 扫描 300+ 文件。按 tags 匹配后再精确读取相关文件。
@@ -16,11 +16,12 @@
  */
 import { readdirSync, readFileSync, writeFileSync } from "fs";
 import { join, relative } from "path";
-import { getWorkspaceRoot } from "./load-config.mjs";
+import { getWorkspaceRoot, loadConfig } from "./load-config.mjs";
 import { parseFrontMatter, extractModuleKey, extractVersionFromPath } from "./front-matter-utils.mjs";
 
 const ROOT = getWorkspaceRoot();
-const ARCHIVE_DIR = join(ROOT, "cases/archive");
+const config = loadConfig();
+const ARCHIVE_DIR = join(ROOT, config.casesRoot ?? 'cases/', 'archive');
 const INDEX_PATH = join(ARCHIVE_DIR, "INDEX.json");
 
 // ─── 递归收集 .md 文件 ──────────────────────────────────────────────────────

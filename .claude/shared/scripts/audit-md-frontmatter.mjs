@@ -1,6 +1,6 @@
 /**
  * audit-md-frontmatter.mjs
- * 审计并可选修复 cases/archive / cases/requirements 下的 Markdown frontmatter。
+ * 审计并可选修复 {casesRoot}/archive 和 {casesRoot}/requirements 下的 Markdown frontmatter（路径从 config.json 读取）。
  *
  * 用法:
  *   node .claude/shared/scripts/audit-md-frontmatter.mjs
@@ -143,16 +143,21 @@ function getTargetFiles() {
   if (PATH_ARG) {
     return collectMdFiles(PATH_ARG).sort();
   }
+  const casesRoot = CONFIG.casesRoot ?? 'cases/';
   return [
-    ...collectMdFiles(join(ROOT, "cases/archive")),
-    ...collectMdFiles(join(ROOT, "cases/requirements")),
+    ...collectMdFiles(join(ROOT, casesRoot, "archive")),
+    ...collectMdFiles(join(ROOT, casesRoot, "requirements")),
   ].sort();
 }
 
+const _casesRoot = CONFIG.casesRoot ?? 'cases/';
+const _archivePrefix = `${_casesRoot}archive/`;
+const _requirementsPrefix = `${_casesRoot}requirements/`;
+
 function getDocType(filePath) {
   const rel = relativePath(filePath);
-  if (rel.startsWith("cases/archive/")) return "archive";
-  if (rel.startsWith("cases/requirements/")) return "requirements";
+  if (rel.startsWith(_archivePrefix)) return "archive";
+  if (rel.startsWith(_requirementsPrefix)) return "requirements";
   return null;
 }
 
