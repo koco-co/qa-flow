@@ -67,7 +67,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — init-wizard.mjs project scanning + history file parsing + tests
+- [x] 03-01-PLAN.md — init-wizard.mjs project scanning + history file parsing + tests
 - [ ] 03-02-PLAN.md — Config generation + CLAUDE.md template + re-init support + tests
 - [ ] 03-03-PLAN.md — SKILL.md Step 0 dialog orchestration + end-to-end validation
 
