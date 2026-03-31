@@ -94,11 +94,13 @@ Archive Markdown 从 `##` 开始，需求名称（`suite_name`）在 frontmatter
 | 显示正确 | 列表第一行显示：行动编号"QA-2026-001"，问题分类"质量缺陷"，状态"待处理"          |
 | 提交失败 | 「问题名称」输入框下方显示红色提示"请输入问题名称"，【提交】按钮保持不可点击状态 |
 
-## DTStack 追加规则
+## 源码优先规则（当 config.repos 非空时启用）
 
-- **源码优先**：DTStack 用例在编写前必须先确认 `.repos/` 已切到 `.claude/config.json` 的 `repoBranchMapping` 字段解析出的目标分支。
-- **前置条件补全**：若需求涉及数据质量、规则集、对账、调度、告警等能力，前置条件应尽量包含：
-  - 数据源类型（如 Doris / Hive）
+> 以下规则仅在 config.json 中 `repos` 字段为非空对象时适用。若 `repos: {}` 则跳过本节。
+
+- **源码优先**：用例编写前必须先确认 `.repos/` 中相关仓库已切到 config.json 的 `branchMapping` 字段解析出的目标分支。
+- **前置条件补全**：若需求涉及数据库操作、规则集、调度等能力，前置条件应尽量包含：
+  - 数据源类型（如 `${datasource_type}`）
   - 数据库 / schema / 表名
   - 关键字段
   - 必要时补充建表或准备数据说明，格式示例：
@@ -106,18 +108,12 @@ Archive Markdown 从 `##` 开始，需求名称（`suite_name`）在 frontmatter
 ```
 1、xxx前置环境说明
 
-2、Doris2.x SQL语句准备:
-DROP TABLE IF EXISTS test_db.test_table;
-CREATE TABLE test_db.test_table (id INT, name VARCHAR(100));
-INSERT INTO test_db.test_table VALUES (1, 'test');
-
-3、Hive2.x SQL语句准备:
-...
-
-4、SparkThrift2.x SQL语句准备:
-...
+2、${datasource_type} SQL语句准备:
+DROP TABLE IF EXISTS ${schema}.${table};
+CREATE TABLE ${schema}.${table} (...);
+INSERT INTO ${schema}.${table} VALUES (...);
 ```
-- **步骤格式**：DTStack 表单类步骤优先写成结构化块，如：
+- **步骤格式**：表单类步骤优先写成结构化块，如：
 
 ```text
 点击【新建规则集】按钮，基础信息如下：
