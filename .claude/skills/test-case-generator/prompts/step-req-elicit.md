@@ -38,9 +38,9 @@
 
 ---
 
-## Phase 2: 源码预扫描（DTStack only，轻量）
+## Phase 2: 源码预扫描（当 config.repos 非空时，轻量）
 
-**触发条件**: 模块类型为 DTStack，且 `.repos/` 目录下存在已 checkout 的仓库（即使分支可能不是最新的）。
+**触发条件**: config.json 中 `repos` 字段为非空对象，且 `.repos/` 目录下存在已 checkout 的仓库（即使分支可能不是最新的）。
 
 **目的**: 减少需要用户回答的问题数量（源码能回答的，不问用户）。
 
@@ -48,27 +48,27 @@
 
 ```bash
 # 1. 推断目标分支
-cat "<repoBranchMapping-from-.claude/config.json>"  # 结合 PRD 中的 dev_version 推断
+cat "<branchMapping-from-.claude/config.json>"  # 结合 PRD 中的 dev_version 推断
 
 # 2. 查找 DTO/VO 类（按 PRD 中的功能名/模块名关键词）
 grep -r "class.*{keyword}.*DTO\|class.*{keyword}.*VO\|class.*{keyword}.*Param" \
-  .repos/DTStack/dt-center-assets/src --include="*.java" -l | head -5
+  .repos/{backend_repo}/src --include="*.java" -l | head -5
 
 # 3. 提取字段和注解
 grep -r "@NotNull\|@NotBlank\|@Length\|@Size\|@Min\|@Max\|@Pattern" \
-  .repos/DTStack/dt-center-assets/src/{found_dto_path} | head -30
+  .repos/{backend_repo}/src/{found_dto_path} | head -30
 
 # 4. 查找枚举定义
-grep -r "enum.*{keyword}" .repos/DTStack/dt-center-assets/src --include="*.java" -l | head -5
+grep -r "enum.*{keyword}" .repos/{backend_repo}/src --include="*.java" -l | head -5
 
 # 5. 前端字段标签（如 frontend 仓库存在）
 grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
-  .repos/DTStack/dt-insight-studio-front/src -r --include="*.tsx" -l | head -5
+  .repos/{frontend_repo}/src -r --include="*.tsx" -l | head -5
 ```
 
 将找到的信息整理为「已自动推断」列表，供 Phase 3 使用。
 
-**非 DTStack 模块（如 xyzh）**: 跳过此 Phase，所有字段级问题均需询问用户。
+**config.repos 为空时（无源码仓库配置）**: 跳过此 Phase，所有字段级问题均需询问用户。
 
 ---
 
@@ -292,7 +292,7 @@ grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
 
 ### 使用场景与前置条件
 
-- **数据源类型**: {Doris 3.x / Hive 2.x / SparkThrift 2.x / 无数据库依赖}
+- **数据源类型**: {${datasource_type} / 无数据库依赖}
 - **测试数据准备**: {具体说明，或「无特殊要求」}
 - **其他前置条件**: {如需先创建规则集、数据源连接等}
 
