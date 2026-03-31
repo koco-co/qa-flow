@@ -13,7 +13,7 @@ qa-flow v2 transforms a DTStack-specific internal tool into a universal QA autom
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Generalization Refactor** - Remove all DTStack-specific coupling from config, rules, prompts, and scripts (completed 2026-03-31)
-- [ ] **Phase 2: Project Structure + Shared Scripts** - Redesign directory layout and adapt shared Node.js scripts to new config schema
+- [x] **Phase 2: Project Structure + Shared Scripts** - Redesign directory layout and adapt shared Node.js scripts to new config schema (completed 2026-03-31)
 - [ ] **Phase 3: Init Wizard** - Build interactive using-qa-flow init with structure inference and config scaffolding
 - [ ] **Phase 4: Core Skills Redesign** - Rewrite all Skills to be config-driven with generic examples, zero business coupling
 - [ ] **Phase 5: IM Notification Integration** - Deliver multi-channel notification adapters (DingTalk, Feishu, WeCom, SMTP)
@@ -48,12 +48,12 @@ Plans:
   1. A fresh clone with no pre-existing cases/ directory can be initialized without manual directory creation
   2. All shared scripts (load-config.mjs, output-naming-contracts.mjs, etc.) resolve paths exclusively through config values, with no string-literal path segments
   3. The test suite runs green against the new directory structure with no fixture path updates required beyond the new layout
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 02-01-PLAN.md — resolveModulePath() API + config schema extension + .gitkeep scaffolding + config/ migration
-- [ ] 02-02-PLAN.md — Shared scripts refactor (build-archive-index, audit-md-frontmatter, md-content-source-resolver, unify-directory-structure)
-- [ ] 02-03-PLAN.md — Hardcoded-path regression test + full test suite validation
+- [x] 02-01-PLAN.md — resolveModulePath() API + config schema extension + .gitkeep scaffolding + config/ migration
+- [x] 02-02-PLAN.md — Shared scripts refactor (build-archive-index, audit-md-frontmatter, md-content-source-resolver, unify-directory-structure)
+- [x] 02-03-PLAN.md — Hardcoded-path regression test + full test suite validation
 
 ### Phase 3: Init Wizard
 **Goal**: A new user on a blank project can run using-qa-flow init and emerge with a working config.json, a populated CLAUDE.md, and confirmed IM channel probing — without reading the source code
@@ -107,7 +107,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Generalization Refactor | 5/5 | Complete    | 2026-03-31 |
-| 2. Project Structure + Shared Scripts | 1/3 | In Progress|  |
+| 2. Project Structure + Shared Scripts | 3/3 | Complete    | 2026-03-31 |
 | 3. Init Wizard | 0/TBD | Not started | - |
 | 4. Core Skills Redesign | 0/TBD | Not started | - |
 | 5. IM Notification Integration | 0/TBD | Not started | - |
