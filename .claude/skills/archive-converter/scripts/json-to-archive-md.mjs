@@ -10,7 +10,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve, dirname, basename, extname } from "path";
 import { fileURLToPath } from "url";
-import { getDtstackModules } from "../../../shared/scripts/load-config.mjs";
+import { getModuleKeys, loadConfig } from "../../../shared/scripts/load-config.mjs";
 import {
   deriveArchiveBaseName,
   deriveArchiveBaseNameFromXmind,
@@ -442,11 +442,15 @@ function extractCase(node) {
 
 // ─── 路径与工具函数 ─────────────────────────────────────────
 
-const { zh: _dtstackZh, en: _dtstackEn } = getDtstackModules();
+const _allModuleKeys = getModuleKeys();
+const _moduleConfig = loadConfig().modules || {};
+// Build zh→key map from config for output dir resolution
 const DTSTACK_MODULE_MAP = {};
-_dtstackZh.forEach((zh, i) => { DTSTACK_MODULE_MAP[zh] = _dtstackEn[i]; });
+for (const [key, mod] of Object.entries(_moduleConfig)) {
+  if (mod.zh) DTSTACK_MODULE_MAP[mod.zh] = key;
+}
 const DTSTACK_MODULES = Object.keys(DTSTACK_MODULE_MAP);
-const DTSTACK_MODULE_KEYS = new Set(Object.values(DTSTACK_MODULE_MAP));
+const DTSTACK_MODULE_KEYS = new Set(_allModuleKeys);
 
 export function determineOutputDir(projectName, versionOrTitle, requirementName) {
   return determineOutputDirWithMeta(projectName, versionOrTitle, requirementName, {});

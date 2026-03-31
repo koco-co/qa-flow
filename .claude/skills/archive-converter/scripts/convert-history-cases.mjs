@@ -41,7 +41,7 @@ import {
 } from "fs";
 import { resolve, join, dirname, basename } from "path";
 import { fileURLToPath } from "url";
-import { getModuleMap, getDtstackModules } from "../../../shared/scripts/load-config.mjs";
+import { getModuleMap, getModuleKeys } from "../../../shared/scripts/load-config.mjs";
 import {
   buildFrontMatter,
   inferTags,
@@ -571,15 +571,15 @@ const CUSTOM_CSV_DIRS = [
 
 // 模块中英文映射（从 config.json 集中读取）
 const MODULE_MAP = getModuleMap();
-const { zh: DTSTACK_MODULES_ZH, en: DTSTACK_MODULES_EN } = getDtstackModules();
+const ALL_MODULE_KEYS = getModuleKeys();
 
 /** 扫描各模块 archive 下的 CSV 文件 */
 function getDtstackCSVFiles(module) {
   const results = [];
   const modKey = module ? MODULE_MAP[module] || module : null;
-  const modules = modKey ? [modKey] : DTSTACK_MODULES_EN;
+  const modules = modKey ? [modKey] : ALL_MODULE_KEYS;
   for (const mod of modules) {
-    if (!DTSTACK_MODULES_EN.includes(mod)) continue;
+    if (!ALL_MODULE_KEYS.includes(mod)) continue;
     const archiveDir = join(ROOT, "cases/archive", mod);
     if (!existsSync(archiveDir)) continue;
     // 遍历子目录（版本号目录）

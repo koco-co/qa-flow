@@ -34,11 +34,11 @@ import { resolve, dirname, relative } from 'path'
 import { fileURLToPath } from 'url'
 import { Topic, RootTopic, Marker, Workbook, writeLocalFile } from 'xmind-generator'
 import { assertNewOutputPathMatchesContract } from '../../../shared/scripts/output-naming-contracts.mjs'
-import { getDtstackModules, loadConfig } from '../../../shared/scripts/load-config.mjs'
+import { getModuleKeys, loadConfig } from '../../../shared/scripts/load-config.mjs'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..', '..', '..')
-const { zh: DTSTACK_ZH_MODULES, en: DTSTACK_EN_MODULES } = getDtstackModules()
+const ALL_MODULE_KEYS = getModuleKeys()
 const RESERVED_OUTPUT_NAME = 'latest-output.xmind'
 
 const PRIORITY_MAP = {
@@ -51,10 +51,12 @@ function isDtstackMeta(meta = {}) {
   if (meta.source_standard === 'dtstack') {
     return true
   }
-  if (meta.module_key && DTSTACK_EN_MODULES.includes(meta.module_key)) {
+  if (meta.module_key && ALL_MODULE_KEYS.includes(meta.module_key)) {
     return true
   }
-  return DTSTACK_ZH_MODULES.some((name) => `${meta.project_name || ''}`.includes(name))
+  const config = loadConfig()
+  const zhNames = Object.values(config.modules || {}).map((m) => m.zh).filter(Boolean)
+  return zhNames.some((name) => `${meta.project_name || ''}`.includes(name))
 }
 
 function buildRootTitle(meta = {}) {
@@ -63,8 +65,8 @@ function buildRootTitle(meta = {}) {
     const moduleKey = meta.module_key || meta.product
     const mod = moduleKey ? config.modules?.[moduleKey] : null
     const zhName = mod?.zh || meta.project_name || ''
-    const zentaoId = mod?.zentaoId
-    const idSuffix = zentaoId ? `(#${zentaoId})` : ''
+    const trackerId = mod?.trackerId
+    const idSuffix = trackerId ? `(#${trackerId})` : ''
     return `${zhName}${meta.version}迭代用例${idSuffix}`
   }
   return meta.project_name

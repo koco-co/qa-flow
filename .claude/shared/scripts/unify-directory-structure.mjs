@@ -476,12 +476,12 @@ const SPECIAL_XMIND_DIRS = {
 /**
  * 从 xmind 文件名提取版本号
  * 兼容新旧命名；核心依据是文件名尾部的 `v{version}.xmind`
- * 也检查 dataAssetsVersionMap
+ * 也检查 versionMap（config.versionMap，可选字段，缺失时默认为空对象）
  */
-function extractVersionFromXmindName(fileName, dataAssetsVersionMap) {
-  // dataAssetsVersionMap 优先（data-assets 专用）
-  if (dataAssetsVersionMap && dataAssetsVersionMap[fileName]) {
-    const v = dataAssetsVersionMap[fileName];
+function extractVersionFromXmindName(fileName, versionMap) {
+  // versionMap 优先（由 config.versionMap 提供，缺失时为 {}）
+  if (versionMap && versionMap[fileName]) {
+    const v = versionMap[fileName];
     // 过滤非版本特殊值
     if (v && /^v\d/.test(v)) return v;
     return null; // 主流程、岚图标品等特殊值
@@ -634,7 +634,7 @@ async function splitXmindFile(xmindPath, moduleDir, version) {
 /**
  * 处理 xmind 模块目录
  */
-async function processXmindModule(moduleKey, moduleDir, dataAssetsVersionMap) {
+async function processXmindModule(moduleKey, moduleDir, versionMap) {
   const xmindModDir = join(BASE, `cases/xmind/${moduleDir}`);
   if (!existsSync(xmindModDir)) {
     log(`  SKIP: cases/xmind/${moduleDir}/ not found`);
@@ -660,7 +660,7 @@ async function processXmindModule(moduleKey, moduleDir, dataAssetsVersionMap) {
     }
 
     // 提取版本
-    const version = extractVersionFromXmindName(fileName, dataAssetsVersionMap);
+    const version = extractVersionFromXmindName(fileName, versionMap);
     if (!version) {
       log(`\n  SKIP (no version): ${fileName}`);
       continue;
@@ -675,7 +675,7 @@ async function processXmindModule(moduleKey, moduleDir, dataAssetsVersionMap) {
  */
 async function migrateXmind() {
   const config = loadConfig();
-  const { dataAssetsVersionMap } = config;
+  const configVersionMap = config.versionMap || {};
 
   log("\n── xmind splitting ──");
 
@@ -689,7 +689,7 @@ async function migrateXmind() {
     if (!modDirMatch) continue;
     const moduleDir = modDirMatch[1];
 
-    const versionMap = moduleKey === "data-assets" ? dataAssetsVersionMap : null;
+    const versionMap = Object.keys(configVersionMap).length > 0 ? configVersionMap : null;
 
     log(`\n  Module: ${moduleKey} (${moduleDir})`);
     await processXmindModule(moduleKey, moduleDir, versionMap);
