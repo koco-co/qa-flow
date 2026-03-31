@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-31T11:35:34.790Z"
+stopped_at: Completed 02-project-structure-shared-scripts/02-01-PLAN.md
+last_updated: "2026-03-31T11:58:58.620Z"
 last_activity: 2026-03-31 — Roadmap created, all 30 v1 requirements mapped to 6 phases
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 8
+  completed_plans: 6
   percent: 0
 ---
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-generalization-refactor P04 | 9 | 1 tasks | 12 files |
 | Phase 01-generalization-refactor P02 | 4 | 2 tasks | 7 files |
 | Phase 01-generalization-refactor P05 | 334 | 2 tasks | 386 files |
+| Phase 02-project-structure-shared-scripts P01 | 10 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 01-generalization-refactor]: config.versionMap || {} pattern established for all optional config map fields
 - [Phase 01-generalization-refactor]: DTStack data preserved on dtstack-data branch (git checkout -b from release HEAD), not deleted
 - [Phase 01-generalization-refactor]: xyzh data kept on release branch as non-DTStack client example for generalized framework
+- [Phase 02-project-structure-shared-scripts]: resolveModulePath uses convention path {casesRoot}{type}/{moduleKey}/ with explicit override and mod.versioned===true for version subdirectory
+- [Phase 02-project-structure-shared-scripts]: config/ directory retired; .claude/ is now the single home for config files including repo-branch-mapping.yaml
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T11:35:34.788Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-project-structure-shared-scripts/02-CONTEXT.md
+Last session: 2026-03-31T11:58:58.618Z
+Stopped at: Completed 02-project-structure-shared-scripts/02-01-PLAN.md
+Resume file: None
