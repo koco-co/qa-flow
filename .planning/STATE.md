@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-04-PLAN.md (prompts/skills generalization)
-last_updated: "2026-03-31T10:53:38.662Z"
+stopped_at: Completed 01-02-PLAN.md (script call sites generalization)
+last_updated: "2026-03-31T11:01:23.813Z"
 last_activity: 2026-03-31 — Roadmap created, all 30 v1 requirements mapped to 6 phases
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-generalization-refactor P03 | 525625min | 1 tasks | 5 files |
 | Phase 01-generalization-refactor P01 | 6 | 2 tasks | 9 files |
 | Phase 01-generalization-refactor P04 | 9 | 1 tasks | 12 files |
+| Phase 01-generalization-refactor P02 | 4 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 01-generalization-refactor]: getRepoBranchMappingPath() kept as deprecated alias for getBranchMappingPath() during transition
 - [Phase 01-generalization-refactor]: Replace DTStack/XYZH split-rule section in CLAUDE.md with conditional config.repos guard
 - [Phase 01-generalization-refactor]: All repoBranchMapping references renamed to branchMapping; zentaoId renamed to trackerId; Doris/Hive/SparkThrift replaced with ${datasource_type} templates
+- [Phase 01-generalization-refactor]: getPreferredArchiveBaseName exported as public API from output-naming-contracts.mjs (no source_standard guard)
+- [Phase 01-generalization-refactor]: config.versionMap || {} pattern established for all optional config map fields
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T10:53:38.660Z
-Stopped at: Completed 01-04-PLAN.md (prompts/skills generalization)
+Last session: 2026-03-31T11:01:23.811Z
+Stopped at: Completed 01-02-PLAN.md (script call sites generalization)
 Resume file: None
