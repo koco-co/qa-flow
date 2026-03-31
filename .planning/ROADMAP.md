@@ -101,7 +101,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Generalization Refactor | 5/5 | Complete   | 2026-03-31 |
+| 1. Generalization Refactor | 5/5 | Complete    | 2026-03-31 |
 | 2. Project Structure + Shared Scripts | 0/TBD | Not started | - |
 | 3. Init Wizard | 0/TBD | Not started | - |
 | 4. Core Skills Redesign | 0/TBD | Not started | - |
