@@ -17,7 +17,7 @@ argument-hint: "[init | 功能编号或关键词]"
 | **3** | 分析代码报错     | 粘贴报错日志，定位问题根因并生成 HTML 报告                               |
 | **4** | 转换历史用例     | 将 CSV/XMind 历史用例转为 Markdown 归档格式                              |
 | **5** | XMind 转换       | 将 JSON 数据转换为 XMind 文件                                            |
-| **0** | 环境初始化       | 首次使用时执行：Python 环境、依赖安装、源码仓库配置                      |
+| **0** | 项目配置 + 环境初始化 | 首次使用时执行：项目结构推断、config.json 生成、CLAUDE.md 创建 + 环境初始化 |
 
 ---
 
@@ -31,7 +31,8 @@ argument-hint: "[init | 功能编号或关键词]"
 
 如果 `$ARGUMENTS` 包含 `init` 或 `初始化` 或 `0`：
 
-- 执行下方「环境初始化（5 步流程）」
+- 先执行下方「Step 0: 项目配置向导」
+- Step 0 完成后，询问用户是否继续执行「环境初始化（Step 1-5）」
 
 如果 `$ARGUMENTS` 包含 `1` 或 `用例` 或 `test`：
 
@@ -63,7 +64,217 @@ argument-hint: "[init | 功能编号或关键词]"
 
 ---
 
-## 环境初始化（5 步流程）
+## Step 0: 项目配置向导（首次使用必须完成）
+
+仅在 `$ARGUMENTS` 包含 `init` / `初始化` / `0` 时执行。此步骤生成 `config.json` 和 `CLAUDE.md`，是所有其他 Skill 正常工作的前提。
+
+### 0.1 扫描项目结构
+
+执行目录扫描：
+
+```bash
+node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command scan
+```
+
+解析返回的 JSON 结果。
+
+**Re-init 检测（D-14）：** 如果 `signals.existingConfig` 不为 null，说明已有 config.json。
+
+必要时也可以单独读取当前配置作为回填默认值：
+
+```bash
+node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command load-existing
+```
+
+- 询问用户：「检测到已有项目配置。请选择：(1) 完整重新配置 (2) 只更新部分配置」
+- 选择 (2) 时，展示五个功能组让用户勾选要重新配置的组（D-15）：
+  - ① 基础信息（项目名、显示名、用例根目录）
+  - ② 模块配置
+  - ③ 源码仓库
+  - ④ 集成工具
+  - ⑤ 快捷方式和目录
+- 未勾选的组保持现有值不变
+- 如果选择 (1)，执行完整的 0.1 ~ 0.5 流程
+
+**新项目流程：** 如果 `signals.existingConfig` 为 null，直接进入推断展示。
+
+### 0.2 展示推断结果（D-03）
+
+将 `modules[]` 数组格式化为 Markdown 表格展示：
+
+```text
+### 📋 项目结构推断结果
+
+| 模块 key | 是否版本化 | 路径 | 推断来源 |
+|----------|-----------|------|----------|
+| {key}    | {versioned ? '✅ 是' : '❌ 否'} | {paths.xmind || 'cases/xmind/' + key + '/'} | {inferredFrom} |
+```
+
+同时展示检测到的信号摘要：
+
+- `.repos/` 目录: {hasReposDir ? '已检测到 → 建议配置源码仓库' : '未检测到'}
+- 历史文件: {historyFiles.length} 个 ({historyFiles.map(f => f.path).join(', ')})
+- PRD 版本号: {prdVersionPatterns.join(', ') || '无'}
+- 图片目录: {hasImages ? '已检测到' : '未检测到'}
+
+如果 `modules` 为空且 `historyFiles` 也为空（完全空白项目）：
+
+- 提示：「未检测到现有结构，将通过问答方式引导你配置项目。」
+- 直接跳到 0.4 全量问答
+
+**用户确认：** 询问「以上推断是否正确？(y/n)」
+
+- 如果 n：逐项询问修正（D-04）——对每个模块询问 key 是否正确、versioned 是否正确，用户输入新值后更新，重新展示表格直到用户确认
+
+### 0.3 历史文件解析（D-05 / D-06 / D-07）
+
+**自动检测部分：** 如果 `signals.historyFiles` 非空：
+
+- 对每个历史文件调用：
+
+```bash
+node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command parse-file --path {filePath}
+```
+
+- 展示解析结果：「从 {filename} 检测到模块候选名：{candidates.join(', ')}」
+- 对每个候选名，询问用户确认（D-06）：「检测到模块名 "{candidate}"，请确认或输入正确的英文 key：」
+- 用户输入后，还需确认该模块是否版本化
+
+**主动追问部分：** 完成自动检测后，追问（D-05）：「还有其他历史文件要导入吗？如有请提供文件路径，没有请回复 n」
+
+- 如果用户提供路径，继续调用 `parse-file` 解析
+
+**合并展示（D-07）：** 将目录扫描推断结果 + 历史文件解析结果分别展示：
+
+```text
+### 来自目录扫描的模块：
+| 模块 key | 是否版本化 | 来源 |
+...
+
+### 来自历史文件的新增模块：
+| 模块 key | 是否版本化 | 来源文件 |
+...
+
+### 冲突项（同名模块，不同来源）：
+| 模块 key | 目录扫描结果 | 历史文件结果 | 请选择保留哪个 |
+...
+```
+
+用户逐项决定冲突项后，合并为最终模块列表。
+
+### 0.4 功能分组问答（D-08 / D-09）
+
+按五个功能组逐一询问所有配置字段：
+
+**① 基础信息**
+
+```text
+### ① 基础信息
+请提供以下信息：
+- 项目英文标识（project.name）：（用于内部标识，如 my-project）
+- 项目显示名（displayName）：（用于展示，如「我的项目」）
+- 用例根目录（casesRoot）：（默认 cases/）
+```
+
+**② 模块配置**
+
+```text
+### ② 模块配置
+以下是当前确认的模块列表（来自扫描 + 历史文件解析）：
+{展示模块表格}
+
+需要添加新模块吗？(y/n)
+如果 y：询问模块 key、是否版本化、中文名（可选）
+
+对每个模块最终确认 versioned 状态。
+```
+
+**③ 源码仓库**
+
+```text
+### ③ 源码仓库配置
+{如果 signals.hasReposDir: '检测到 .repos/ 目录，建议配置源码仓库。'}
+
+是否需要配置源码仓库分析能力？(y/n)
+如果 y：
+- 询问仓库名和本地路径（可多次添加）
+- 是否配置分支映射文件？（默认路径 .claude/repo-branch-mapping.yaml）
+- 是否配置 stackTrace 分析？（Java 包名等）
+如果 n：repos = {}, branchMapping = null, stackTrace = {}
+```
+
+**④ 集成工具**
+
+```text
+### ④ 集成工具
+是否需要配置蓝湖 MCP 集成？(y/n)
+如果 y：逐一确认各字段（展示默认值，用户可直接回车接受）
+- runtimePath（默认 tools/lanhu-mcp/）
+- envFile（默认 tools/lanhu-mcp/.env）
+- ...其余字段展示默认值
+如果 n：使用默认 lanhuMcp 配置
+```
+
+**⑤ 最终确认写入（D-10）**
+
+```text
+### ⑤ 确认写入
+
+以下是将要写入的配置摘要：
+
+**基础信息**
+- 项目标识：{project.name}
+- 显示名：{displayName}
+- 用例根目录：{casesRoot}
+
+**模块配置（{moduleCount} 个）**
+{模块列表}
+
+**源码仓库**
+{repos 摘要或「未配置」}
+
+**集成工具**
+{lanhuMcp 摘要}
+
+确认写入吗？(y/n)
+```
+
+不展示完整 JSON（D-10），只展示纯文字分组摘要。
+
+### 0.5 写入文件
+
+用户确认后：
+
+1. **构建 config JSON** —— 将所有收集到的字段组装为完整 config 对象（脚本端调用 `buildConfigObject`）
+2. **写入 config.json：**
+
+```bash
+node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command write --config-json '{完整JSON}' --root-dir .
+```
+
+3. **生成 CLAUDE.md** —— 询问用户是否同时更新 CLAUDE.md（re-init 时 D-16 要求必须询问，不默认覆盖）：
+
+```bash
+node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command render-template \
+  --template-path .claude/skills/using-qa-flow/templates/CLAUDE.md.template \
+  --replacements '{"{{PROJECT_NAME}}": "{displayName}", "{{MODULE_KEY_EXAMPLE}}": "{firstModuleKey}", "{{CASES_ROOT}}": "{casesRoot}"}'
+```
+
+然后将渲染结果作为 `--claude-md` 参数传给 `write` 命令，或者分两步：先 `render-template` 获取内容，再 `write`。
+
+4. **完成提示：**
+
+```text
+✅ 项目配置完成！
+- config.json 已写入 .claude/config.json
+- CLAUDE.md 已写入项目根目录（如已选择生成）
+
+是否继续执行环境初始化（Step 1-5）？
+```
+
+## 环境初始化（Step 1-5）
+
+> 前提：Step 0（项目配置向导）已完成。如未完成，请先执行 `/using-qa-flow init`。
 
 仅在 `$ARGUMENTS` 包含 `init` / `初始化` / `0` 时执行。每步均支持跳过。
 
