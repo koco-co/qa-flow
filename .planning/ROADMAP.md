@@ -103,7 +103,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Core notification module (notify.mjs + tests + .env.example + nodemailer)
+- [x] 05-01-PLAN.md — Core notification module (notify.mjs + tests + .env.example + nodemailer)
 - [ ] 05-02-PLAN.md — Skill integration (test-case-generator, code-analysis-report, archive-converter notify calls)
 
 ### Phase 6: Documentation
