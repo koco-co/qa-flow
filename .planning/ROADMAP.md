@@ -80,7 +80,8 @@ Plans:
   2. prd-enhancer processes a generic PRD with images and produces a health-checked enhanced output with no DTStack field references in warnings or suggestions
   3. xmind-converter generates a valid .xmind file from an intermediate JSON using the root node format defined in config, not a hardcoded product name
   4. using-qa-flow displays a feature menu that accurately reflects all available Skills, accessible without prior knowledge of the codebase
-**Plans:** 3/5 plans executed
+**Plans:** 5/5 plans executed
+**Verification:** automated checks passed; human smoke verification required — see `.planning/phases/04-core-skills-redesign/04-VERIFICATION.md`
 
 Plans:
 - [x] 04-01-PLAN.md — xmind-converter generalization (isDtstackMeta removal, config-driven title builders, SKILL.md update)
@@ -121,6 +122,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Generalization Refactor | 5/5 | Complete    | 2026-03-31 |
 | 2. Project Structure + Shared Scripts | 3/3 | Complete    | 2026-03-31 |
 | 3. Init Wizard | 3/3 | Complete    | 2026-03-31 |
-| 4. Core Skills Redesign | 3/5 | In Progress|  |
+| 4. Core Skills Redesign | 5/5 | Awaiting human verification |  |
 | 5. IM Notification Integration | 0/TBD | Not started | - |
 | 6. Documentation | 0/TBD | Not started | - |
