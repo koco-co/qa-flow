@@ -67,7 +67,7 @@ INSERT INTO ${schema}.${table} VALUES (...);
 | `prd_version` | 否 | 迭代版本号（如 `v6.4.10`） |
 | `prd_path` | 是 | 关联 PRD 文档的相对路径 |
 | `prd_url` | 否 | 蓝湖需求 URL |
-| `product` | 是 | 模块 key（如 `data-assets`、`xyzh`） |
+| `product` | 是 | 模块 key（如 `${module_key}`） |
 | `dev_version` | 否 | 开发版本 / 分支描述 |
 | `tags` | 是 | 领域关键词（3-10个），核心检索字段；由脚本/Writer 自动推断 |
 | `create_at` | 是 | 创建日期（YYYY-MM-DD） |

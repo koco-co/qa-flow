@@ -169,17 +169,18 @@ Step 9: 向用户展示增强摘要
 
 - 文件绝对路径（如 `/path/to/qa-flow/cases/...`）
 - 相对路径（相对于 qa-flow 根目录）
-- 版本目录 + PRD 编号（如 `data-assets/v6.4.10/PRD-26`）
+- 版本目录 + PRD 编号（如 `orders/v2.0/PRD-26`）
 
 如用户未明确指定，询问 PRD 文件路径。
 
 ### 输出文件约定
 
 - **命名**：直接使用需求名称作为文件名，不加 `-enhanced` 后缀
-  - 文件名使用需求标题，如 `【内置规则丰富】合理性校验-多表字段值对比.md`、`数据质量-质量问题台账.md`
+  - 文件名使用需求标题，如 `【批量导入规则】商品字段校验.md`、`订单中心-异常订单处理.md`
 - **位置**：与原 PRD 文件同级目录
 - **原始文件处理**：增强完成后，将原始 PRD（raw / formalized 版本）移入同目录下的 `.trash/` 子目录
-  - 示例：`cases/requirements/data-assets/v6.4.10/.trash/raw-15530.md`
+  - prd-enhancer 不要求在 requirements 目录保留 formalized 文件（formalized 是中间产物，由 prd-formalizer 临时生成）
+  - 示例：`cases/requirements/orders/v2.0/.trash/raw-15530.md`
 - **后续消费**：test-case-generator 的 Step 2 将自动查找增强后的 PRD 文件（通过 front-matter 中的 `status: enhanced` 识别）
 
 ---
@@ -299,11 +300,11 @@ done
 | 时间戳            | `Pasted image 20250101120000.png` | `<功能名>-<页面类型>.png` |
 | UUID              | `22a6a7c3-4697-...png`            | `<功能名>-<页面类型>.png` |
 | MD5 哈希          | `md5__ffe56f...png`               | `<功能名>-<页面类型>.png` |
-| 已有语义化名称    | `质量问题台账列表页.png`          | 保持不变                  |
+| 已有语义化名称    | `商品管理列表页.png`              | 保持不变                  |
 
 示例：
 
-- `Pasted image 20260322143521.png` → `质量问题台账-列表页面.png`
+- `Pasted image 20260322143521.png` → `商品管理-列表页面.png`
 - `22a6a7c3-4697-...png` → `流程详情页截图.png`
 
 ### 7.2 图片存放位置
@@ -324,18 +325,18 @@ done
 
 | 文件位置 | 相对路径前缀 |
 |---------|------------|
-| `cases/requirements/custom/xyzh/*.md` | `../../../../assets/images/` |
-| `cases/requirements/data-assets/v{version}/*.md` | `../../../../assets/images/` |
-| `cases/requirements/<module>/v{version}/*.md` | `../../../../assets/images/` |
+| `cases/requirements/<module_key>/v{version}/*.md` | `../../../../assets/images/` |
+| `cases/requirements/<module_key>/*.md` | `../../../assets/images/` |
+| `cases/requirements/shared/*.md` | `../../../assets/images/` |
 
-示例（PRD 在 `cases/requirements/custom/xyzh/` 下）：
+示例（PRD 在 `cases/requirements/orders/v2.0/` 下）：
 
 ```markdown
 # Obsidian 原始格式（输入）
 ![[Pasted image 20260322143521.png]]
 
 # 标准 Markdown 格式（输出）
-![质量问题台账列表页](../../../../assets/images/质量问题台账-列表页面.png)
+![商品管理列表页](../../../../assets/images/商品管理-列表页面.png)
 ```
 
 ### 7.4 操作步骤
@@ -354,8 +355,8 @@ done
 
 | 来源 | 输出文件名 |
 |------|-----------|
-| 蓝湖需求 `15530【内置规则丰富】合理性...` | `【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比.md` |
-| 定制项目 `PRD-26-数据质量-质量问题台账.md` | `数据质量-质量问题台账.md` |
+| 蓝湖需求 `15530【批量导入规则】商品字段校验.md` | `【批量导入规则】商品字段校验.md` |
+| 需求文档 `PRD-26-订单中心-异常订单处理.md` | `订单中心-异常订单处理.md` |
 
 输出位置：与原文件同级目录。
 

@@ -56,18 +56,12 @@ maxTurns: 100
 
 ### 仓库定位映射
 
-| 报错特征 / Java 包名           | 仓库路径                                    |
-| ------------------------------ | ------------------------------------------- |
-| `com.dtstack.center.assets`    | `.repos/dt-insight-web/dt-center-assets/`    |
-| `com.dtstack.center.metadata`  | `.repos/dt-insight-web/dt-center-metadata/`  |
-| `com.dtstack.dagschedulex`     | `.repos/dt-insight-plat/DAGScheduleX/`       |
-| `com.dtstack.datasource`       | `.repos/dt-insight-plat/datasourcex/`        |
-| `com.dtstack.ide`              | `.repos/dt-insight-plat/dt-center-ide/`      |
-| `com.dtstack.public.service`   | `.repos/dt-insight-plat/dt-public-service/`  |
-| `com.dtstack.sql.parser`       | `.repos/dt-insight-plat/SQLParser/`          |
-| `com.dtstack.engine`           | `.repos/dt-insight-engine/engine-plugins/`   |
-| 前端报错 / `dt-insight-studio` | `.repos/dt-insight-front/dt-insight-studio/` |
-| 定制项目（信永中和等）         | `.repos/CustomItem/<对应仓库>/`              |
+| 报错特征 / 线索 | 定位方式 |
+| ---------------- | -------- |
+| 命中 `config.stackTrace` 的包名前缀、路径别名、关键字 | 使用配置中的 repo / path 映射定位源码 |
+| 命中 `.repos/` 下仓库名、模块名或接口路径关键字 | 优先匹配最接近的源码仓库 |
+| 前端报错中的组件名、`src/...` 路径或 `@/...` 别名 | 优先匹配前端仓库与对应 path alias |
+| 无法匹配 | 展示候选仓库列表并请求用户确认；若无 `.repos/`，则只基于日志分析 |
 
 ### 分析深度要求
 

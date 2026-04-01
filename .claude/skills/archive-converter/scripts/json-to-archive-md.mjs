@@ -10,7 +10,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve, dirname, basename, extname } from "path";
 import { fileURLToPath } from "url";
-import { getModuleKeys, loadConfig } from "../../../shared/scripts/load-config.mjs";
+import { getModuleKeys, loadConfig, resolveModulePath } from "../../../shared/scripts/load-config.mjs";
 import {
   deriveArchiveBaseName,
   deriveArchiveBaseNameFromXmind,
@@ -442,8 +442,9 @@ function extractCase(node) {
 
 // ─── 路径与工具函数 ─────────────────────────────────────────
 
+const _config = loadConfig();
 const _allModuleKeys = getModuleKeys();
-const _moduleConfig = loadConfig().modules || {};
+const _moduleConfig = _config.modules || {};
 const _allModuleKeysSet = new Set(_allModuleKeys);
 // Build zh→key map from config for output dir resolution (config-driven, no hardcoded names)
 const MODULE_MAP = {};
@@ -490,17 +491,18 @@ export function determineOutputDirWithMeta(projectName, versionOrTitle, requirem
   // 通用：使用 resolveModulePath 路由到 config 驱动路径
   const moduleKey = resolveModuleKey(projectName, requirementName, meta);
   if (moduleKey) {
-    if (isSemanticVersion(version)) {
-      return resolve(base, `archive/${moduleKey}/${version}`);
-    }
-    return resolve(base, `archive/${moduleKey}`);
+    return resolve(
+      SCRIPT_DIR,
+      "../../../../",
+      resolveModulePath(moduleKey, "archive", _config, version || null),
+    );
   }
 
-  // 无法匹配模块：报错而非静默兜底，避免产生意外目录
-  throw new Error(
-    `无法确定归档目录：找不到与 projectName="${projectName}"、requirementName="${requirementName}" 匹配的模块。` +
-    `请在 .claude/config.json 的 modules 中添加对应模块，或在 meta.module_key 中显式指定。`
-  );
+  // 通用项目允许在未命中模块时回退到 repo-root cases/archive/<version>/
+  if (version) {
+    return resolve(base, `archive/${version}`);
+  }
+  return resolve(base, "archive");
 }
 
 // ─── CLI 入口 ───────────────────────────────────────────────

@@ -202,39 +202,39 @@ function createXmindFixtureBuffer(title) {
 async function main() {
   ensureTempRoot();
 
-  console.log("\n=== Test: json-to-archive-md.mjs 默认路由到 XYZH 归档目录 ===");
-  const xyzhVersion = `vtest-${runId}`;
-  const xyzhRequirementName = `__qa-routing-xyzh-${runId}`;
-  const xyzhInputPath = resolve(tempRoot, `${xyzhRequirementName}.json`);
-  const xyzhOutputDir = resolve(repoRoot, "cases/archive/custom/xyzh", xyzhVersion);
-  const xyzhOutputPath = resolve(xyzhOutputDir, `${xyzhRequirementName}.md`);
+  console.log("\n=== Test: json-to-archive-md.mjs 未命中模块时回退到版本目录 ===");
+  const fallbackVersion = `vtest-${runId}`;
+  const fallbackRequirementName = `__qa-routing-unmatched-${runId}`;
+  const fallbackInputPath = resolve(tempRoot, `${fallbackRequirementName}.json`);
+  const fallbackOutputDir = resolve(repoRoot, "cases/archive", fallbackVersion);
+  const fallbackOutputPath = resolve(fallbackOutputDir, `${fallbackRequirementName}.md`);
   writeFileSync(
-    xyzhInputPath,
+    fallbackInputPath,
     JSON.stringify(
       createJsonFixture({
-        projectName: "信永中和",
-        requirementName: xyzhRequirementName,
-        version: xyzhVersion,
+        projectName: "外部项目",
+        requirementName: fallbackRequirementName,
+        version: fallbackVersion,
       }),
       null,
       2,
     ),
     "utf8",
   );
-  generatedDirPaths.add(xyzhOutputDir);
-  const xyzhResult = runNodeScript(archiveScriptPath, [xyzhInputPath]);
-  assert(xyzhResult.code === 0, "XYZH 默认路由执行成功", [
-    xyzhResult.stderr.trim(),
-    xyzhResult.stdout.trim(),
+  generatedDirPaths.add(fallbackOutputDir);
+  const fallbackResult = runNodeScript(archiveScriptPath, [fallbackInputPath]);
+  assert(fallbackResult.code === 0, "未命中模块时归档转换执行成功", [
+    fallbackResult.stderr.trim(),
+    fallbackResult.stdout.trim(),
   ].filter(Boolean));
-  assert(existsSync(xyzhOutputPath), "XYZH 默认路由写入 cases/archive/custom/xyzh/<version>/", [
-    xyzhOutputPath,
+  assert(existsSync(fallbackOutputPath), "未命中模块时写入 cases/archive/<version>/", [
+    fallbackOutputPath,
   ]);
-  if (existsSync(xyzhOutputPath)) {
-    generatedFilePaths.add(xyzhOutputPath);
-    const xyzhMd = readFileSync(xyzhOutputPath, "utf8");
-    assert(xyzhMd.includes(`suite_name: ${xyzhRequirementName}`), "XYZH 归档 Markdown frontmatter 包含 suite_name");
-    assert(xyzhMd.includes("##### 【P1】验证归档路由脚本"), "XYZH 归档 Markdown 包含测试用例内容");
+  if (existsSync(fallbackOutputPath)) {
+    generatedFilePaths.add(fallbackOutputPath);
+    const fallbackMd = readFileSync(fallbackOutputPath, "utf8");
+    assert(fallbackMd.includes(`suite_name: ${fallbackRequirementName}`), "fallback 归档 Markdown frontmatter 包含 suite_name");
+    assert(fallbackMd.includes("##### 【P1】验证归档路由脚本"), "fallback 归档 Markdown 包含测试用例内容");
   }
 
   console.log("\n=== Test: json-to-archive-md.mjs 默认路由到 DTStack 模块归档目录 ===");

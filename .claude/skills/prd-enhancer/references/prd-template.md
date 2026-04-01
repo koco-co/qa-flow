@@ -12,11 +12,11 @@ PRD 增强后的输出文件（`*-enhanced.md`）应尽量符合以下结构。
 prd_name: "需求名称（与蓝湖一致）"
 description: "一句话描述（≤60字）"
 prd_id: 10287
-prd_version: v6.4.10
-prd_source: "cases/requirements/data-assets/v6.4.10/【功能名】需求标题.md"
+prd_version: v2.0.0
+prd_source: "cases/requirements/orders/v2.0/【功能名】需求标题.md"
 prd_url: "https://lanhuapp.com/..."
-product: data-assets
-dev_version: "6.3岚图定制化分支"
+product: orders
+dev_version: "release/v2.0"
 tags:
   - 关键词1
 create_at: "YYYY-MM-DD"
@@ -25,7 +25,7 @@ status: enhanced
 health_warnings:
   - "W001: 缺少字段定义表"
 repos:
-  - ".repos/DTStack/dt-center-assets"
+  - ".repos/orders-service"
 case_path: ""
 ---
 ```
@@ -63,7 +63,7 @@ case_path: ""
 
 ## 4. 功能详细设计
 
-### 4.1 [菜单/模块名称]（如：质量问题台账）
+### 4.1 [菜单/模块名称]（如：商品管理）
 
 #### 4.1.1 列表页
 
@@ -80,7 +80,7 @@ case_path: ""
 
 ##### 字段定义（搜索区域）
 
-> `DTO字段名` 列仅 DTStack 模块填写（链接前端字段名与后端字段名）。`来源` 列说明信息可信度。
+> `DTO字段名` 列在需要映射页面字段与接口字段时填写，非必填。`来源` 列说明信息可信度。
 
 | 字段名称 | DTO字段名 | 字段类型 | 是否必填 | 校验规则 | 枚举值/说明 | 来源 |
 |---------|----------|---------|---------|---------|------------|------|

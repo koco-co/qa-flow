@@ -1,10 +1,10 @@
-# Bug 报告模板（HTML 格式 · 禅道富文本编辑器专用）
+# Bug 报告模板（HTML 格式 · 富文本编辑器通用）
 
 ## 核心规范
 
 - 纯 HTML 片段，**无** `<html>` / `<head>` / `<body>` 标签
 - **全部内联 style**，禁止 `<style>` 块和 CSS 类名
-- **严禁任何 Emoji**（🐛🔥💡🚀✨ 等）——会导致禅道保存失败，全部改用 `[BUG]`/`[!]`/`[x]`/`[v]` 或 `⚠️`/`×`/`✓`
+- **严禁任何 Emoji**（🐛🔥💡🚀✨ 等）——部分富文本编辑器保存时可能失败，全部改用 `[BUG]`/`[!]`/`[x]`/`[v]` 或 `⚠️`/`×`/`✓`
 - 代码块用 `<pre>` 标签，禁止 Markdown 围栏
 
 ---
@@ -72,16 +72,16 @@
           <tr>
             <td style="padding: 8px 16px 8px 0; color: #656d76; width: 85px; vertical-align: top;">环境信息</td>
             <td style="padding: 8px 0;">
-              <code style="background-color: #e8f0fe; color: #1a73e8; padding: 3px 8px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 600;">{curl 中的完整 baseurl，如 http://shuzhan63-dfsyc-dev.k8s.dtstack.cn}</code>
+              <code style="background-color: #e8f0fe; color: #1a73e8; padding: 3px 8px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 600;">{curl 中的完整 baseurl，如 https://qa.example.com}</code>
             </td>
           </tr>
           <tr>
             <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">租户信息</td>
-            <td style="padding: 8px 0; color: #1f2328; font-weight: 600;">{从 cookie dt_tenant_name 提取，如 DT_demo}</td>
+              <td style="padding: 8px 0; color: #1f2328; font-weight: 600;">{从 Header / Cookie 提取，如 tenant-demo}</td>
           </tr>
           <tr>
             <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">项目信息</td>
-            <td style="padding: 8px 0; color: #1f2328;">{从 X-Valid-Project-ID header 提取，如 ID:3}</td>
+              <td style="padding: 8px 0; color: #1f2328;">{从 URL 路径、Header 或请求体提取，如 project=mall-admin}</td>
           </tr>
           <tr>
             <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">问题类型</td>
