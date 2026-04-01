@@ -24,6 +24,12 @@ qa-flow 是一套基于 Claude Code Skills 的通用 QA 自动化工具套件，
 - ✓ 多迭代版本 / 多产品线场景支持 — validated in Phase 3
 - ✓ 重新设计 CLAUDE.md 模板（标准化主编排入口）— validated in Phase 3
 - ✓ config.json 模板生成与 re-init 增量更新 — validated in Phase 3
+- ✓ 钉钉 webhook 通知（含安全关键词自动追加）— validated in Phase 5
+- ✓ 飞书 webhook 通知（post 富文本格式）— validated in Phase 5
+- ✓ 企业微信 webhook 通知 — validated in Phase 5
+- ✓ 邮箱通知（nodemailer SMTP）— validated in Phase 5
+- ✓ 统一 dispatch() 多渠道通知入口 — validated in Phase 5
+- ✓ 通知触发点集成（用例生成/Bug报告/归档转化）— validated in Phase 5
 
 ### Active
 
@@ -46,12 +52,12 @@ qa-flow 是一套基于 Claude Code Skills 的通用 QA 自动化工具套件，
 - [ ] 无头浏览器模式验证脚本执行
 
 **IM 通知 + 项目管理对接：**
-- [ ] 钉钉通知集成
-- [ ] 飞书通知集成
-- [ ] 企业微信通知集成
-- [ ] 邮箱通知集成
+- [x] 钉钉通知集成 — validated in Phase 5
+- [x] 飞书通知集成 — validated in Phase 5
+- [x] 企业微信通知集成 — validated in Phase 5
+- [x] 邮箱通知集成 — validated in Phase 5
 - [ ] 禅道 Bug 自动提交 + 指派
-- [ ] 通知触发点：Bug 报告 / 用例生成 / 脚本执行完成
+- [x] 通知触发点：Bug 报告 / 用例生成 / 脚本执行完成 — validated in Phase 5
 
 **文档重建：**
 - [ ] GitHub 风格 README（badges, feature highlights, quick start）
@@ -100,4 +106,4 @@ qa-flow 是一套基于 Claude Code Skills 的通用 QA 自动化工具套件，
 | 开源发布 | 扩大影响力，接受社区反馈 | — Pending |
 
 ---
-*Last updated: 2026-03-31 after Phase 3 completion*
+*Last updated: 2026-04-01 after Phase 5 completion*
