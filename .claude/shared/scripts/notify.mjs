@@ -15,6 +15,7 @@
  */
 
 import { request } from "node:https";
+import { createHmac } from "node:crypto";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -214,8 +215,22 @@ export function buildMessage(event, data) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Compute DingTalk HMAC-SHA256 signature for signed-mode robots.
+ * @param {string} secret - The signing secret (SEC...)
+ * @param {number} timestamp - Current timestamp in milliseconds
+ * @returns {string} URL-encoded Base64 signature
+ */
+function dingtalkSign(secret, timestamp) {
+  const stringToSign = `${timestamp}\n${secret}`;
+  const hmac = createHmac("sha256", secret).update(stringToSign).digest("base64");
+  return encodeURIComponent(hmac);
+}
+
+/**
  * Send a markdown message to DingTalk webhook.
- * Auto-appends DINGTALK_KEYWORD to title when configured and not present (D-05).
+ * Supports two security modes:
+ * - Keyword mode (D-05): auto-appends DINGTALK_KEYWORD to title
+ * - Signing mode: HMAC-SHA256 via DINGTALK_SIGN_SECRET
  * @param {string} title
  * @param {string} markdownText
  * @param {boolean} [dryRun=false]
@@ -230,7 +245,16 @@ export async function sendDingTalk(title, markdownText, dryRun = false) {
     msgtype: "markdown",
     markdown: { title: safeTitle, text: markdownText },
   };
-  const url = process.env.DINGTALK_WEBHOOK_URL;
+  let url = process.env.DINGTALK_WEBHOOK_URL;
+
+  // Signing mode: append timestamp + sign to URL
+  const signSecret = process.env.DINGTALK_SIGN_SECRET;
+  if (signSecret) {
+    const timestamp = Date.now();
+    const sign = dingtalkSign(signSecret, timestamp);
+    const sep = url.includes("?") ? "&" : "?";
+    url = `${url}${sep}timestamp=${timestamp}&sign=${sign}`;
+  }
 
   if (dryRun) {
     console.log(JSON.stringify({ channel: "dingtalk", url, body: payload }, null, 2));
