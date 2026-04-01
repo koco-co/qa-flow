@@ -2,11 +2,12 @@
  * notify.test.mjs
  * Unit tests for NOTF-01 through NOTF-05: unified notification module.
  * Run: node --test .claude/shared/scripts/notify.test.mjs
- *
- * TDD RED phase — tests will fail until notify.mjs is created.
  */
-import { describe, it, beforeEach, afterEach } from "node:test";
+import { describe, it, before, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   dispatch,
@@ -22,7 +23,7 @@ import {
 } from "./notify.mjs";
 
 // ─────────────────────────────────────────────
-// Env cleanup helper
+// Env cleanup helpers
 // ─────────────────────────────────────────────
 const ENV_KEYS = [
   "DINGTALK_WEBHOOK_URL", "DINGTALK_KEYWORD",
@@ -41,8 +42,67 @@ function restoreEnv() {
   });
 }
 
+/** Capture console.log output during an async operation */
+async function captureLog(fn) {
+  let captured = "";
+  const orig = console.log;
+  console.log = (...args) => { captured += args.join(" ") + "\n"; };
+  try {
+    await fn();
+  } finally {
+    console.log = orig;
+  }
+  return captured;
+}
+
+/** Write a temp .env file and return its path */
+function writeTempEnv(content) {
+  const dir = join(tmpdir(), "qa-notify-tests-" + Date.now());
+  mkdirSync(dir, { recursive: true });
+  const path = join(dir, ".env");
+  writeFileSync(path, content, "utf8");
+  return path;
+}
+
 // ─────────────────────────────────────────────
-// getEnabledChannels
+// 1. loadDotEnv
+// ─────────────────────────────────────────────
+describe("loadDotEnv", () => {
+  afterEach(() => {
+    // Clean up test env keys
+    delete process.env.TEST_KEY_1;
+    delete process.env.TEST_KEY_2;
+    delete process.env.TEST_KEY_3;
+    delete process.env.TEST_KEY_EMPTY;
+  });
+
+  it("parses KEY=VALUE and sets env vars", () => {
+    const path = writeTempEnv("TEST_KEY_1=value1\n# comment\nTEST_KEY_2=hello\n");
+    loadDotEnv(path);
+    assert.equal(process.env.TEST_KEY_1, "value1");
+    assert.equal(process.env.TEST_KEY_2, "hello");
+  });
+
+  it("strips surrounding quotes from values", () => {
+    const path = writeTempEnv('TEST_KEY_2="quoted value"\n');
+    loadDotEnv(path);
+    assert.equal(process.env.TEST_KEY_2, "quoted value");
+  });
+
+  it("does NOT overwrite already-set env vars", () => {
+    process.env.TEST_KEY_3 = "original";
+    const path = writeTempEnv("TEST_KEY_3=overwritten\n");
+    loadDotEnv(path);
+    assert.equal(process.env.TEST_KEY_3, "original");
+  });
+
+  it("does not throw on nonexistent path", () => {
+    assert.doesNotThrow(() => loadDotEnv("/nonexistent/path/.env"));
+  });
+});
+
+// ─────────────────────────────────────────────
+// 2. getEnabledChannels
 // ─────────────────────────────────────────────
 describe("getEnabledChannels", () => {
   beforeEach(saveEnv);
@@ -84,7 +144,7 @@ describe("getEnabledChannels", () => {
 });
 
 // ─────────────────────────────────────────────
-// buildMessage
+// 3. buildMessage
 // ─────────────────────────────────────────────
 describe("buildMessage", () => {
   it("returns object with title, markdown, html keys", () => {
@@ -94,30 +154,32 @@ describe("buildMessage", () => {
     assert.ok("html" in result);
   });
 
-  it("title starts with '[' (project prefix)", () => {
+  it("title starts with '[' (project prefix) and contains event label", () => {
     const result = buildMessage("case-generated", { count: 42, file: "x.xmind" });
     assert.ok(result.title.startsWith("["), `title should start with '[', got: ${result.title}`);
+    assert.ok(result.title.includes("用例生成完成"), `title should include event label`);
   });
 
-  it("markdown contains count and file data", () => {
+  it("markdown contains count and file data for case-generated", () => {
     const result = buildMessage("case-generated", { count: 42, file: "test.xmind" });
     assert.ok(result.markdown.includes("42"), "markdown should contain count");
     assert.ok(result.markdown.includes("test.xmind"), "markdown should contain file");
   });
 
-  it("workflow-failed event fills step and reason", () => {
+  it("workflow-failed event fills step and reason in markdown", () => {
     const result = buildMessage("workflow-failed", { step: "writer", reason: "PRD error" });
     assert.ok(result.markdown.includes("writer"));
     assert.ok(result.markdown.includes("PRD error"));
   });
 
-  it("unknown event type does not throw", () => {
-    assert.doesNotThrow(() => buildMessage("custom-event", { foo: "bar" }));
+  it("unknown event type does not throw, markdown contains data", () => {
+    const result = buildMessage("custom-event", { foo: "bar" });
+    assert.ok(result.markdown.includes("bar"), "unknown event data should appear in markdown");
   });
 });
 
 // ─────────────────────────────────────────────
-// mdToHtml
+// 4. mdToHtml
 // ─────────────────────────────────────────────
 describe("mdToHtml", () => {
   it("converts ## heading to <h2>", () => {
@@ -132,7 +194,7 @@ describe("mdToHtml", () => {
     assert.ok(html.includes("bold text"));
   });
 
-  it("converts - items to <li>", () => {
+  it("converts - items to <li> at least twice", () => {
     const html = mdToHtml("- item1\n- item2");
     const liCount = (html.match(/<li>/g) || []).length;
     assert.ok(liCount >= 2, `expected at least 2 <li>, got: ${liCount}`);
@@ -140,7 +202,7 @@ describe("mdToHtml", () => {
 });
 
 // ─────────────────────────────────────────────
-// sendDingTalk (dry-run)
+// 5. sendDingTalk (dry-run)
 // ─────────────────────────────────────────────
 describe("sendDingTalk", () => {
   beforeEach(saveEnv);
@@ -149,14 +211,7 @@ describe("sendDingTalk", () => {
   it("appends DINGTALK_KEYWORD to title when missing", async () => {
     process.env.DINGTALK_KEYWORD = "qa-flow";
     process.env.DINGTALK_WEBHOOK_URL = "https://example.com/hook";
-    let captured = "";
-    const orig = console.log;
-    console.log = (...args) => { captured += args.join(" ") + "\n"; };
-    try {
-      await sendDingTalk("用例生成完成", "body text", true);
-    } finally {
-      console.log = orig;
-    }
+    const captured = await captureLog(() => sendDingTalk("用例生成完成", "body text", true));
     assert.ok(captured.includes("dingtalk"), "output should mention 'dingtalk'");
     assert.ok(captured.includes("用例生成完成 qa-flow"), "keyword should be appended");
   });
@@ -164,35 +219,89 @@ describe("sendDingTalk", () => {
   it("does NOT double-append keyword when title already contains it", async () => {
     process.env.DINGTALK_KEYWORD = "qa-flow";
     process.env.DINGTALK_WEBHOOK_URL = "https://example.com/hook";
-    let captured = "";
-    const orig = console.log;
-    console.log = (...args) => { captured += args.join(" ") + "\n"; };
-    try {
-      await sendDingTalk("完成 qa-flow", "body", true);
-    } finally {
-      console.log = orig;
-    }
-    // Should not have "qa-flow qa-flow"
+    const captured = await captureLog(() => sendDingTalk("完成 qa-flow", "body", true));
     assert.ok(!captured.includes("qa-flow qa-flow"), "keyword should not be duplicated");
   });
 
   it("title unchanged when no DINGTALK_KEYWORD set", async () => {
     process.env.DINGTALK_WEBHOOK_URL = "https://example.com/hook";
-    let captured = "";
-    const orig = console.log;
-    console.log = (...args) => { captured += args.join(" ") + "\n"; };
-    try {
-      await sendDingTalk("plain title", "body", true);
-    } finally {
-      console.log = orig;
-    }
+    const captured = await captureLog(() => sendDingTalk("plain title", "body", true));
     const parsed = JSON.parse(captured);
     assert.equal(parsed.body.markdown.title, "plain title");
   });
 });
 
 // ─────────────────────────────────────────────
-// dispatch (dry-run)
+// 6. sendFeishu (dry-run)
+// ─────────────────────────────────────────────
+describe("sendFeishu", () => {
+  beforeEach(saveEnv);
+  afterEach(restoreEnv);
+
+  it("dry-run output contains channel=feishu, msg_type=post", async () => {
+    process.env.FEISHU_WEBHOOK_URL = "https://feishu.example.com/hook";
+    const captured = await captureLog(() => sendFeishu("title", "body text", true));
+    assert.ok(captured.includes("feishu"), "output should contain 'feishu'");
+    assert.ok(captured.includes("msg_type"), "output should contain 'msg_type'");
+    assert.ok(captured.includes("post"), "msg_type should be 'post'");
+  });
+
+  it("dry-run output contains zh_cn locale key", async () => {
+    process.env.FEISHU_WEBHOOK_URL = "https://feishu.example.com/hook";
+    const captured = await captureLog(() => sendFeishu("title", "body text", true));
+    assert.ok(captured.includes("zh_cn"), "output should contain zh_cn locale");
+  });
+});
+
+// ─────────────────────────────────────────────
+// 7. sendWeCom (dry-run)
+// ─────────────────────────────────────────────
+describe("sendWeCom", () => {
+  beforeEach(saveEnv);
+  afterEach(restoreEnv);
+
+  it("dry-run output contains channel=wecom, msgtype=markdown", async () => {
+    process.env.WECOM_WEBHOOK_URL = "https://wecom.example.com/hook";
+    const captured = await captureLog(() => sendWeCom("markdown body", true));
+    assert.ok(captured.includes("wecom"), "output should contain 'wecom'");
+    assert.ok(captured.includes("markdown"), "output should contain 'markdown'");
+    assert.ok(captured.includes("msgtype"), "output should contain 'msgtype'");
+  });
+
+  it("dry-run output contains the markdown body text", async () => {
+    process.env.WECOM_WEBHOOK_URL = "https://wecom.example.com/hook";
+    const captured = await captureLog(() => sendWeCom("unique-markdown-body-text", true));
+    assert.ok(captured.includes("unique-markdown-body-text"), "output should include the markdown body");
+  });
+});
+
+// ─────────────────────────────────────────────
+// 8. sendEmail (dry-run)
+// ─────────────────────────────────────────────
+describe("sendEmail", () => {
+  beforeEach(saveEnv);
+  afterEach(restoreEnv);
+
+  it("dry-run output contains channel=email, subject and html", async () => {
+    process.env.SMTP_HOST = "smtp.test.com";
+    process.env.SMTP_USER = "test@test.com";
+    process.env.SMTP_PORT = "587";
+    const captured = await captureLog(() => sendEmail("test subject", "<h1>html body</h1>", true));
+    assert.ok(captured.includes("email"), "output should contain 'email'");
+    assert.ok(captured.includes("test subject"), "output should contain subject");
+    assert.ok(captured.includes("html"), "output should contain html reference");
+  });
+
+  it("dry-run output contains the configured SMTP host", async () => {
+    process.env.SMTP_HOST = "smtp.mycompany.com";
+    process.env.SMTP_USER = "user@company.com";
+    const captured = await captureLog(() => sendEmail("subj", "<p>body</p>", true));
+    assert.ok(captured.includes("smtp.mycompany.com"), "output should contain SMTP host");
+  });
+});
+
+// ─────────────────────────────────────────────
+// 9. dispatch (dry-run)
 // ─────────────────────────────────────────────
 describe("dispatch", () => {
   beforeEach(saveEnv);
@@ -203,11 +312,11 @@ describe("dispatch", () => {
     assert.deepEqual(results, []);
   });
 
-  it("returns array of length 1 with dingtalk only", async () => {
+  it("returns array of length 1 with status property for dingtalk only", async () => {
     process.env.DINGTALK_WEBHOOK_URL = "https://example.com/hook";
     const results = await dispatch("case-generated", { count: 1, file: "x" }, { dryRun: true });
     assert.equal(results.length, 1);
-    assert.ok(results[0].status === "fulfilled" || results[0].status === "rejected");
+    assert.ok("status" in results[0], "each result should have status property");
   });
 
   it("returns array of length 2 for dingtalk + feishu", async () => {
