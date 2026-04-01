@@ -59,10 +59,10 @@ qa-flow/
 | ---------------------- | -------------------------------------------------- | ------------------------------- |
 | `using-qa-flow`        | 功能菜单 + 环境初始化                              | `/using-qa-flow`                |
 | `test-case-generator`  | 完整用例生成流程                                   | `生成测试用例` / `为 Story-xxx` |
-| `prd-enhancer`         | PRD 图片描述 + 增强 + 健康度预检                   | `帮我增强这个 PRD`              |
+| `prd-enhancer`         | PRD 图片增强与标准化                               | `帮我增强这个 PRD`              |
 | `xmind-converter`      | JSON → XMind 转换                                  | `转换为 XMind`                  |
 | `archive-converter`    | CSV/XMind → 归档 Markdown                          | `转化历史用例`                  |
-| `code-analysis-report` | 报错日志 → HTML 分析报告（支持前端/后端/冲突分析） | `帮我分析这个报错`              |
+| `code-analysis-report` | 报错日志 → HTML 分析报告（支持前端/后端/冲突分析）；Hotfix 分支 → 线上问题转化测试用例 | `帮我分析这个报错`              |
 
 ---
 
