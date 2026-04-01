@@ -25,6 +25,9 @@
 帮我增强这个 PRD：<PRD文件路径>
 帮我分析这个报错
 转化所有历史用例
+
+# 线上问题转化（直接发禅道链接）
+http://zenpms.dtstack.cn/zentao/bug-view-138845.html
 ```
 
 ---
@@ -62,7 +65,7 @@ qa-flow/
 | `prd-enhancer`         | PRD 图片描述 + 增强 + 健康度预检                   | `帮我增强这个 PRD`              |
 | `xmind-converter`      | JSON → XMind 转换                                  | `转换为 XMind`                  |
 | `archive-converter`    | CSV/XMind → 归档 Markdown                          | `转化历史用例`                  |
-| `code-analysis-report` | 报错日志 → HTML 分析报告（支持前端/后端/冲突分析） | `帮我分析这个报错`              |
+| `code-analysis-report` | 报错日志 → HTML 分析报告（支持前端/后端/冲突分析）；禅道 Bug 链接 → 自动提取修复分支 → 线上问题转化测试用例 | `帮我分析这个报错` / `http://zenpms.dtstack.cn/zentao/bug-view-{bugId}.html` |
 
 ---
 
