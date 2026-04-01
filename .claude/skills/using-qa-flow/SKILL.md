@@ -97,37 +97,93 @@ argument-hint: "[init | 功能编号或关键词]"
 
 ### 0.5 写入文件
 
-- 用户确认后，构建完整 config 对象并写入 `.claude/config.json`。
-- 必须询问是否同时更新 `CLAUDE.md`；re-init 不允许默认覆盖。
+- 用户确认后，先构建完整 config 对象，并执行 `write` 子命令写入 `.claude/config.json`：
+
+```bash
+node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command write \
+  --config-json '{完整JSON}' \
+  --root-dir .
+```
+
+- 如用户选择同时更新 `CLAUDE.md`，先渲染模板：
+
+```bash
+node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command render-template \
+  --template-path .claude/skills/using-qa-flow/templates/CLAUDE.md.template \
+  --replacements '{"{{PROJECT_NAME}}":"{displayName}","{{MODULE_KEY_EXAMPLE}}":"{firstModuleKey}","{{CASES_ROOT}}":"{casesRoot}"}'
+```
+
+- 再将上一步输出作为 `--claude-md` 传给 `write`；re-init 场景必须先询问是否覆盖，不能默认写入：
+
+```bash
+node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command write \
+  --config-json '{完整JSON}' \
+  --claude-md '{render-template 输出的完整内容}' \
+  --root-dir .
+```
+
 - 完成后给出写入结果，并询问是否继续执行环境初始化（Step 1-5）。
 
 ## 环境初始化（Step 1-5）
 
 > 前提：Step 0（项目配置向导）已完成。如未完成，请先执行 `/using-qa-flow init`。
 
-仅在 `$ARGUMENTS` 包含 `init` / `初始化` / `0` 时执行。每步均支持跳过，主文档只保留执行目标与验证要点。
+仅在 `$ARGUMENTS` 包含 `init` / `初始化` / `0` 时执行。每步均支持跳过；主文档保留最小可执行命令，细化说明继续放在 references / prompts。
 
 ### Step 1：Python 环境
 
-- 优先使用 `uv venv .venv` 创建虚拟环境；若不可用则回退到 `python3 -m venv .venv`。
+```bash
+# 优先使用 uv
+which uv && uv venv .venv && echo "✅ uv venv 创建成功" \
+  || python3 -m venv .venv && echo "✅ python3 venv 创建成功"
+```
+
 - 目标：确保后续 Python 依赖安装有独立运行环境。
 
 ### Step 2：lanhu-mcp 依赖安装
 
-- 激活 `.venv` 后执行 `pip install -r tools/lanhu-mcp/requirements.txt`。
+```bash
+# 激活虚拟环境后安装
+source .venv/bin/activate && pip install -r tools/lanhu-mcp/requirements.txt
+```
+
 - 若 `tools/lanhu-mcp/requirements.txt` 缺失，跳过并提示用户补齐工具目录。
 
 ### Step 3：脚本运行环境（Node.js）
 
-- 在 `.claude/skills/xmind-converter/scripts` 安装 Node 依赖。
-- 使用 `node .claude/skills/xmind-converter/scripts/json-to-xmind.mjs --help` 做可用性验证。
+```bash
+cd .claude/skills/xmind-converter/scripts && npm install
+node .claude/skills/xmind-converter/scripts/json-to-xmind.mjs --help
+```
+
+- 安装完成后，必须通过 `--help` 验证脚本可用。
 
 ### Step 4：源码仓库配置
 
-- 按 `prompts/source-repo-setup.md` 执行交互式问答，生成 `.repos/source-map.yaml`。
+```bash
+ls -la .repos/ 2>/dev/null || echo "（.repos/ 目录为空或不存在）"
+mkdir -p .repos && cat > .repos/source-map.yaml <<YAML
+# 由 using-qa-flow init 自动生成（暂无仓库配置）
+repos: []
+initialized_at: "$(date +%F)"
+YAML
+```
+
+- 按 `prompts/source-repo-setup.md` 执行交互式问答，将 `repos: []` 补全为真实仓库映射并生成/更新 `.repos/source-map.yaml`。
 - 当任一 Skill 需要 `.repos/` 上下文但映射文件缺失时，应自动触发此步骤。
 
 ### Step 5：验证并输出状态汇总
+
+```bash
+# Python 环境
+python3 --version
+# Node.js
+node --version
+# 脚本可用性
+node .claude/skills/xmind-converter/scripts/json-to-xmind.mjs --help 2>&1 | head -3
+# 源码仓库
+cat .repos/source-map.yaml 2>/dev/null || echo "（未配置源码仓库）"
+```
 
 - 汇总 Python、Node.js、xmind-converter 脚本和 `.repos/source-map.yaml` 的状态。
 - 验证通过后，提示用户可以继续使用测试用例生成、PRD 增强等核心功能。
