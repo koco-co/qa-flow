@@ -41,13 +41,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### IM Notification
 
-- [ ] **NOTF-01**: 统一 notify.mjs 通知模块 — 单一入口，多渠道分发
-- [ ] **NOTF-02**: 钉钉 webhook 通知 — 支持安全关键词配置
-- [ ] **NOTF-03**: 飞书 webhook 通知
-- [ ] **NOTF-04**: 企业微信 webhook 通知
-- [ ] **NOTF-05**: 邮箱通知 — 使用 nodemailer
+- [x] **NOTF-01**: 统一 notify.mjs 通知模块 — 单一入口，多渠道分发
+- [x] **NOTF-02**: 钉钉 webhook 通知 — 支持安全关键词配置
+- [x] **NOTF-03**: 飞书 webhook 通知
+- [x] **NOTF-04**: 企业微信 webhook 通知
+- [x] **NOTF-05**: 邮箱通知 — 使用 nodemailer
 - [ ] **NOTF-06**: 通知触发点集成 — Bug 报告 / 用例生成 / 脚本执行完成后自动触发
-- [ ] **NOTF-07**: .env 配置模板 — 各渠道 webhook URL / SMTP 配置
+- [x] **NOTF-07**: .env 配置模板 — 各渠道 webhook URL / SMTP 配置
 
 ### Documentation
 
@@ -112,13 +112,13 @@ Deferred to future release. Tracked but not in current roadmap.
 | SKIL-04 | Phase 4 | Complete |
 | SKIL-05 | Phase 4 | Complete |
 | SKIL-06 | Phase 4 | Complete |
-| NOTF-01 | Phase 5 | Pending |
-| NOTF-02 | Phase 5 | Pending |
-| NOTF-03 | Phase 5 | Pending |
-| NOTF-04 | Phase 5 | Pending |
-| NOTF-05 | Phase 5 | Pending |
+| NOTF-01 | Phase 5 | Complete |
+| NOTF-02 | Phase 5 | Complete |
+| NOTF-03 | Phase 5 | Complete |
+| NOTF-04 | Phase 5 | Complete |
+| NOTF-05 | Phase 5 | Complete |
 | NOTF-06 | Phase 5 | Pending |
-| NOTF-07 | Phase 5 | Pending |
+| NOTF-07 | Phase 5 | Complete |
 | DOCS-01 | Phase 6 | Pending |
 | DOCS-02 | Phase 6 | Pending |
 | DOCS-03 | Phase 6 | Pending |
