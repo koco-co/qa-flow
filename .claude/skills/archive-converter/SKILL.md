@@ -176,6 +176,25 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --module
 
 ---
 
+### IM 通知
+
+在终端输出转化统计后，调用通知模块：
+
+```bash
+node .claude/shared/scripts/notify.mjs \
+  --event archive-converted \
+  --data '{"fileCount":<成功转化文件数>,"caseCount":<总用例数>}'
+```
+
+参数说明：
+- `fileCount`：成功转化的文件数量（数字）
+- `caseCount`：总用例条数（数字）
+
+> ⚠️ 若 notify.mjs 执行失败，仅 console.error 记录，不影响已转化的归档文件。
+> 💡 调试：添加 `--dry-run` 查看发送内容。
+
+---
+
 ## 参考文件
 
 - `.claude/skills/archive-converter/scripts/convert-history-cases.mjs` — 转化脚本
