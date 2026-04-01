@@ -1,3 +1,10 @@
+/**
+ * frontmatter-status-utils.mjs
+ *
+ * normalize* 系列统一返回脚本内部使用的 canonical 英文状态值；
+ * to*DocumentStatus 系列返回写回 Markdown frontmatter 的中文状态值。
+ * `.qa-state.json` 等运行态枚举不在本模块的中文化/兼容转换范围内。
+ */
 export const REQUIREMENT_STATUS_READ_MAP = new Map([
   ["raw", "raw"],
   ["elicited", "elicited"],
@@ -18,13 +25,17 @@ export const ARCHIVE_STATUS_READ_MAP = new Map([
   ["已归档", "archived"],
 ]);
 
+function normalizeStatusKey(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
 export function normalizeRequirementStatus(value) {
-  const key = String(value ?? "").trim();
+  const key = normalizeStatusKey(value);
   return REQUIREMENT_STATUS_READ_MAP.get(key) ?? "";
 }
 
 export function normalizeArchiveStatus(value) {
-  const key = String(value ?? "").trim();
+  const key = normalizeStatusKey(value);
   return ARCHIVE_STATUS_READ_MAP.get(key) ?? "";
 }
 

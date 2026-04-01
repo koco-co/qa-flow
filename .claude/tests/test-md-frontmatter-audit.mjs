@@ -15,6 +15,12 @@ import {
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
+import {
+  normalizeArchiveStatus,
+  normalizeRequirementStatus,
+  toArchiveDocumentStatus,
+  toRequirementDocumentStatus,
+} from "../shared/scripts/frontmatter-status-utils.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..", "..");
@@ -211,7 +217,7 @@ writeFixture(
     "description: 已澄清需求",
     "product: data-assets",
     "create_at: 2026-03-02",
-    "status: elicited",
+    "status: ELICITED",
     "---",
     requirementBody,
   ].join("\n"),
@@ -237,7 +243,7 @@ writeFixture(
     "---",
     "product: data-assets",
     "create_at: 2026-03-04",
-    "status: raw",
+    "status: RAW",
     "---",
     "# 任务交接文档：PRD 15696【通用配置】json格式配置",
     "",
@@ -284,7 +290,7 @@ writeFixture(
     "create_at: 2026-03-05",
     "case_count: 1",
     "origin: xmind",
-    "status: archived",
+    "status: ARCHIVED",
     "health_warnings: []",
     "---",
     canonicalArchiveBody,
@@ -367,6 +373,14 @@ const originalChineseArchive = readFixture(chineseArchiveRelativePath);
 const originalCanonicalArchive = readFixture(nonSemverRelativePath);
 const originalPlainPreconditionArchive = readFixture(plainPreconditionRelativePath);
 
+console.log("\n=== Test: status utils preserve case-insensitive compatibility ===");
+assert(normalizeRequirementStatus("RAW") === "raw", "normalizeRequirementStatus 兼容大写 RAW");
+assert(normalizeRequirementStatus("ELICITED") === "elicited", "normalizeRequirementStatus 兼容大写 ELICITED");
+assert(toRequirementDocumentStatus("RAW") === "未开始", "toRequirementDocumentStatus 会把大写 RAW 写回中文文档值");
+assert(toRequirementDocumentStatus("ELICITED") === "已澄清", "toRequirementDocumentStatus 会把大写 ELICITED 写回中文文档值");
+assert(normalizeArchiveStatus("ARCHIVED") === "archived", "normalizeArchiveStatus 兼容大写 ARCHIVED");
+assert(toArchiveDocumentStatus("ARCHIVED") === "已归档", "toArchiveDocumentStatus 会把大写 ARCHIVED 写回中文文档值");
+
 console.log("\n=== Test: dry-run reports issues but does not modify fixtures ===");
 const dryRunResult = runAudit(["--dry-run"]);
 assert(dryRunResult.status === 0, "dry-run 执行成功", [
@@ -391,12 +405,22 @@ assert(
 assert(dryRunResult.stdout.includes(requirementRelativePath), "dry-run 报告包含 requirement 文件路径");
 assert(
   !hasStatusIssue(dryRunResult.stdout, elicitedRequirementRelativePath),
-  "合法的 requirement status: elicited 不会被误报为非法",
+  "合法的大写 requirement status: ELICITED 不会被误报为非法",
   [dryRunResult.stdout],
 );
 assert(
   !hasStatusIssue(dryRunResult.stdout, chineseRequirementRelativePath),
   "中文 requirement status: 已澄清 不会被误报为非法",
+  [dryRunResult.stdout],
+);
+assert(
+  !hasStatusIssue(dryRunResult.stdout, headingOnlyRequirementRelativePath),
+  "合法的大写 requirement status: RAW 不会被误报为非法",
+  [dryRunResult.stdout],
+);
+assert(
+  !hasStatusIssue(dryRunResult.stdout, englishArchiveStatusRelativePath),
+  "合法的大写 archive status: ARCHIVED 不会被误报为非法",
   [dryRunResult.stdout],
 );
 assert(
@@ -494,7 +518,7 @@ assert(
   [fixedRequirement],
 );
 const fixedElicitedRequirement = readFixture(elicitedRequirementRelativePath);
-assert(/(^|\n)status:\s*已澄清/.test(fixedElicitedRequirement), "fix 模式会把合法的 elicited requirement 状态写为中文文档值", [
+assert(/(^|\n)status:\s*已澄清/.test(fixedElicitedRequirement), "fix 模式会把合法的大写 ELICITED requirement 状态写为中文文档值", [
   fixedElicitedRequirement,
 ]);
 const fixedChineseRequirement = readFixture(chineseRequirementRelativePath);
@@ -502,6 +526,11 @@ assert(/(^|\n)status:\s*已澄清/.test(fixedChineseRequirement), "fix 模式会
   fixedChineseRequirement,
 ]);
 const fixedHeadingOnlyRequirement = readFixture(headingOnlyRequirementRelativePath);
+assert(
+  /(^|\n)status:\s*未开始/.test(fixedHeadingOnlyRequirement),
+  "fix 模式会把合法的大写 RAW requirement 状态写为中文文档值",
+  [fixedHeadingOnlyRequirement],
+);
 assert(
   /(^|\n)prd_name:\s*任务交接文档：PRD 15696【通用配置】json格式配置/.test(fixedHeadingOnlyRequirement),
   "缺少 prd_name 的 requirement 会从首个 H1 安全回填",
@@ -536,7 +565,7 @@ assert(
 const fixedEnglishArchiveStatus = readFixture(englishArchiveStatusRelativePath);
 assert(
   /(^|\n)status:\s*已归档/.test(fixedEnglishArchiveStatus),
-  "fix 模式会把合法的英文 archive 状态写为中文文档值",
+  "fix 模式会把合法的大写 ARCHIVED archive 状态写为中文文档值",
   [fixedEnglishArchiveStatus],
 );
 const fixedChineseArchive = readFixture(chineseArchiveRelativePath);
