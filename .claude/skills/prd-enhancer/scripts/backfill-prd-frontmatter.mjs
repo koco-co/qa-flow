@@ -24,6 +24,7 @@ import {
   extractModuleKey,
   extractVersionFromPath,
 } from "../../../shared/scripts/front-matter-utils.mjs";
+import { toRequirementDocumentStatus } from "../../../shared/scripts/frontmatter-status-utils.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../..");
@@ -185,7 +186,8 @@ function processFile(filePath) {
   } = parsePrdHeader(rawBody);
 
   const fileName = basename(filePath);
-  const status = inferStatus(fileName);
+  const canonicalStatus = inferStatus(fileName);
+  const documentStatus = toRequirementDocumentStatus(canonicalStatus);
 
   // 从路径推断模块 key 和版本
   const moduleKey = extractModuleKey(filePath);
@@ -253,9 +255,9 @@ function processFile(filePath) {
       dev_version: devVersion || undefined,
       story: story || undefined,
       created_at: createdAt,
-      status,
+      status: documentStatus,
     };
-    if (status === "enhanced" && enhancedAt) {
+    if (canonicalStatus === "enhanced" && enhancedAt) {
       fields.enhanced_at = enhancedAt;
       if (imagesProcessed) fields.images_processed = imagesProcessed;
       if (healthWarnings !== null) fields.health_warnings = healthWarnings;
@@ -274,8 +276,8 @@ function processFile(filePath) {
       dev_version: devVersion || undefined,
       tags: [],
       create_at: createdAt,
-      update_at: status === "enhanced" && enhancedAt ? enhancedAt.slice(0, 10) : today,
-      status,
+      update_at: canonicalStatus === "enhanced" && enhancedAt ? enhancedAt.slice(0, 10) : today,
+      status: documentStatus,
       health_warnings: [],
       repos: [],
       case_path: "",

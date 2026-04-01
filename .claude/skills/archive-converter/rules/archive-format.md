@@ -10,6 +10,7 @@
 ---
 suite_name: "需求名称（与 PRD 一致）"
 description: "一句话描述（≤60字）"
+# 若已关联 PRD，再填写以下字段；若暂无 PRD，请整段省略，不写空字符串占位
 prd_id: 10001
 prd_version: v1.0.0
 prd_path: "cases/requirements/${module}/v${version}/【功能名】需求标题.md"
@@ -21,7 +22,7 @@ tags:
   - 关键词2
 create_at: "YYYY-MM-DD"
 update_at: "YYYY-MM-DD"
-status: ""
+status: "" # 草稿 / 已评审 / 已归档
 health_warnings: []
 repos:
   - ".repos/${org}/${repo}"
@@ -65,16 +66,16 @@ INSERT INTO ${schema}.${table} VALUES (...);
 |------|------|------|
 | `suite_name` | 是 | 需求名称（与蓝湖/PRD 一致），用于快速识别 |
 | `description` | 是 | 一句话描述（≤60字） |
-| `prd_id` | 是 | 需求 ID（数字，如 `10287`） |
-| `prd_version` | 否 | 迭代版本号（如 `v6.4.10`） |
-| `prd_path` | 是 | 关联 PRD 文档的相对路径 |
-| `prd_url` | 否 | 蓝湖需求 URL |
+| `prd_id` | 有关联 PRD 时填写 | 需求 ID（数字，如 `10287`） |
+| `prd_version` | 有关联 PRD 时填写 | 迭代版本号（如 `v6.4.10`） |
+| `prd_path` | 有关联 PRD 时填写 | 关联 PRD 文档的相对路径 |
+| `prd_url` | 有关联 PRD 时可选 | 蓝湖需求 URL |
 | `product` | 是 | 模块 key（如 `${module_key}`） |
 | `dev_version` | 否 | 开发版本 / 分支描述 |
 | `tags` | 是 | 领域关键词（3-10个），核心检索字段；由脚本/Writer 自动推断 |
 | `create_at` | 是 | 创建日期（YYYY-MM-DD） |
 | `update_at` | 否 | 最后更新日期（YYYY-MM-DD） |
-| `status` | 否 | 文档状态（draft / reviewed / archived） |
+| `status` | 否 | 文档状态（`草稿 / 已评审 / 已归档`） |
 | `health_warnings` | 否 | 健康检查警告列表，如 `["W001: 缺少字段定义表"]` |
 | `repos` | 否 | 参考仓库相对路径列表，如 `[".repos/${org}/${repo}"]` |
 | `case_count` | 否 | 用例总数（自动统计 `#####` 标题数量，backfill 脚本写入） |

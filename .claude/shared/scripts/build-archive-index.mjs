@@ -18,6 +18,10 @@ import { readdirSync, readFileSync, writeFileSync } from "fs";
 import { join, relative } from "path";
 import { getWorkspaceRoot, loadConfig } from "./load-config.mjs";
 import { parseFrontMatter, extractModuleKey, extractVersionFromPath } from "./front-matter-utils.mjs";
+import {
+  normalizeArchiveStatus,
+  toArchiveDocumentStatus,
+} from "./frontmatter-status-utils.mjs";
 
 const ROOT = getWorkspaceRoot();
 const config = loadConfig();
@@ -65,7 +69,10 @@ function extractEntry(absPath) {
   const tags = Array.isArray(frontMatter?.tags) ? frontMatter.tags : [];
   const caseCount = frontMatter?.case_count ?? countCases(content);
   const createAt = frontMatter?.create_at ?? frontMatter?.created_at ?? "";
-  const status = frontMatter?.status ?? "";
+  const normalizedStatus = normalizeArchiveStatus(frontMatter?.status);
+  const status = normalizedStatus
+    ? toArchiveDocumentStatus(normalizedStatus)
+    : String(frontMatter?.status ?? "");
   const prdId = frontMatter?.prd_id ?? null;
   const origin = frontMatter?.origin ?? "";
 
@@ -174,6 +181,7 @@ function queryIndex(index, moduleFilter, tagFilters) {
     v: e.prd_version,
     t: e.tags,
     c: e.case_count,
+    s: e.status,
   }));
 
   return { matched: compact.length, total: index.total_files, results: compact };
@@ -203,7 +211,7 @@ if (statsOnly) {
     generated_at: index.generated_at,
     total_files: index.total_files,
     total_cases: index.total_cases,
-    // 紧凑条目：p=path, n=suite_name, m=product, v=version, t=tags, c=case_count
+    // 紧凑条目：p=path, n=suite_name, m=product, v=version, t=tags, c=case_count, s=status
     entries: index.entries.map(e => ({
       p: e.path,
       n: e.suite_name,
@@ -211,6 +219,7 @@ if (statsOnly) {
       v: e.prd_version,
       t: e.tags,
       c: e.case_count,
+      s: e.status,
     })),
   };
   writeFileSync(INDEX_PATH, JSON.stringify(compact) + "\n", "utf8");

@@ -11,6 +11,7 @@ import {
   buildCanonicalArchiveCaseBlock,
   classifyArchiveBodyStructure,
   parseFrontMatter,
+  validateFrontMatter,
 } from "../shared/scripts/front-matter-utils.mjs";
 
 let passed = 0;
@@ -231,6 +232,54 @@ assert(
   [
     `actual: ${JSON.stringify(parsedBody)}`,
   ],
+);
+
+console.log("\n=== Test: archive front-matter 允许无关联 PRD 的独立文档 ===");
+const hotfixArchiveValidation = validateFrontMatter({
+  suite_name: "在线问题转化-145513-资产目录列表分页",
+  description: "验证资产目录列表第二页数据正常加载",
+  product: "online-cases",
+  dev_version: "hotfix_6.2.x_145513",
+  tags: ["hotfix", "online-case"],
+  create_at: "2026-04-01",
+  status: "草稿",
+  origin: "json",
+}, "archive");
+assert(
+  hotfixArchiveValidation.valid,
+  "archive new schema 允许无 prd_path 的独立 hotfix 文档",
+  [JSON.stringify(hotfixArchiveValidation)],
+);
+
+const partialPrdLinkedArchiveValidation = validateFrontMatter({
+  suite_name: "关联 PRD 但缺路径",
+  description: "验证部分关联 PRD 字段不会误通过",
+  product: "data-assets",
+  tags: ["回归"],
+  create_at: "2026-04-01",
+  prd_id: 12345,
+  prd_version: "v1.0.0",
+}, "archive");
+assert(
+  !partialPrdLinkedArchiveValidation.valid && partialPrdLinkedArchiveValidation.missing.includes("prd_path"),
+  "archive 一旦出现 PRD 关联字段，缺失 prd_path 时必须报错",
+  [JSON.stringify(partialPrdLinkedArchiveValidation)],
+);
+
+const pathOnlyArchiveValidation = validateFrontMatter({
+  suite_name: "仅写 prd_path 的归档",
+  description: "验证 PRD 关联字段必须成组出现",
+  product: "data-assets",
+  tags: ["回归"],
+  create_at: "2026-04-01",
+  prd_path: "cases/requirements/data-assets/v1.0.0/示例.md",
+}, "archive");
+assert(
+  !pathOnlyArchiveValidation.valid
+    && pathOnlyArchiveValidation.missing.includes("prd_id")
+    && pathOnlyArchiveValidation.missing.includes("prd_version"),
+  "archive 已关联 PRD 时，prd_id / prd_version / prd_path 必须成组完整",
+  [JSON.stringify(pathOnlyArchiveValidation)],
 );
 
 console.log(`\n══════════════════════════════════════`);

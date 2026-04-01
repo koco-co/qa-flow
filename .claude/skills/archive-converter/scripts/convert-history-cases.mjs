@@ -43,13 +43,17 @@ import {
 } from "../../../shared/scripts/load-config.mjs";
 import {
   buildFrontMatter,
+  buildCanonicalArchiveCaseBlock,
   inferTags,
   extractModuleKey,
   extractVersionFromPath,
 } from "../../../shared/scripts/front-matter-utils.mjs";
+import { toArchiveDocumentStatus } from "../../../shared/scripts/frontmatter-status-utils.mjs";
+import { parseXmindToArchiveResults } from "./json-to-archive-md.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../../../.."); // qa-flow 根目录
+const DEFAULT_ARCHIVE_DOCUMENT_STATUS = toArchiveDocumentStatus("archived");
 
 // ─── Config 驱动的模块映射 ──────────────────────────────────────────────────
 
@@ -209,6 +213,12 @@ function formatPriority(val) {
   return s || "—";
 }
 
+function normalizeCsvPriority(val) {
+  const normalized = formatPriority(val).toUpperCase();
+  if (normalized === "P0" || normalized === "P1" || normalized === "P2") return normalized;
+  return "P2";
+}
+
 /**
  * 将步骤/预期文本格式化为 Markdown 有序列表
  * 如果原文已有 "1. " 编号，保留；否则当做单条输出
@@ -260,19 +270,33 @@ function getNodePriority(node) {
       return `P${Math.max(0, n)}`;
     }
   }
-  return "P1"; // default
+  return "P2"; // default
+}
+
+function hasPriorityMarker(node) {
+  return (node.markers ?? []).some((marker) => /^priority-\d+$/.test(String(marker?.markerId || "")));
 }
 
 /**
  * 判断节点是否为测试用例：
- * 所有子节点都恰好有 1 个叶子孙节点（步骤 → 预期 配对结构）
+ * - 带优先级 marker 的叶子节点视为 marker-only 用例
+ * - 其余节点只要所有孙节点都是叶子，即视为步骤/预期结构
  */
 function isTestCase(node) {
+  if (hasPriorityMarker(node)) return true;
   const children = node.children?.attached || [];
   if (children.length === 0) return false;
+  if (!children.some((child) => (child.children?.attached || []).length > 0)) return false;
   return children.every((child) => {
+    if ((child.markers?.length || 0) > 0 || child.notes?.plain?.content?.trim()) {
+      return false;
+    }
     const gc = child.children?.attached || [];
-    return gc.length === 1 && (gc[0].children?.attached || []).length === 0;
+    return gc.every((leaf) =>
+      (leaf.children?.attached || []).length === 0
+      && !(leaf.markers?.length)
+      && !leaf.notes?.plain?.content?.trim(),
+    );
   });
 }
 
@@ -281,31 +305,21 @@ function testCaseToMd(node) {
   const title = (node.title || "").trim();
   const priority = getNodePriority(node);
   const children = node.children?.attached || [];
-
-  let md = `##### 【${priority}】${title}\n\n`;
-
-  // 前置条件：存储在 XMind 节点的 notes.plain.content 字段
   const precondition = (node.notes?.plain?.content || "").trim();
-  if (precondition) {
-    md += `> 前置条件\n\n`;
-    md += "```\n";
-    md += `${precondition}\n`;
-    md += "```\n\n";
-  }
+  const steps = children.map((stepNode) => ({
+    step: stripHtml(stepNode.title || ""),
+    expected: (stepNode.children?.attached || [])
+      .map((expectedNode) => stripHtml(expectedNode?.title || ""))
+      .filter(Boolean)
+      .join("\n"),
+  }));
 
-  md += `> 用例步骤\n\n`;
-  md += `| 编号 | 步骤 | 预期 |\n`;
-  md += `| --- | --- | --- |\n`;
-
-  children.forEach((step, i) => {
-    const stepText = escCell(step.title || "");
-    const expectedLeaf = (step.children?.attached || [])[0];
-    const expected = escCell(expectedLeaf?.title || "");
-    md += `| ${i + 1} | ${stepText} | ${expected} |\n`;
+  return buildCanonicalArchiveCaseBlock({
+    priority,
+    title,
+    precondition,
+    steps,
   });
-  md += "\n";
-
-  return md;
 }
 
 /** 移除 HTML 标签，将 <br> 转为换行 */
@@ -360,19 +374,19 @@ function convertCSV(csvPath, version) {
   });
 
   const fm = buildFrontMatter({
-    name: title,
+    suite_name: title,
     description: csvName,
+    product: moduleKey || undefined,
     tags,
-    module: moduleKey || undefined,
-    version: ver || undefined,
-    source: relPath,
+    create_at: new Date().toISOString().slice(0, 10),
+    update_at: new Date().toISOString().slice(0, 10),
+    status: DEFAULT_ARCHIVE_DOCUMENT_STATUS,
+    health_warnings: [],
     case_count: totalCases,
-    created_at: new Date().toISOString().slice(0, 10),
     origin: "csv",
   });
 
   let md = fm + "\n";
-  md += `# ${title}\n\n---\n\n`;
 
   for (const [mod, caseRows] of groups) {
     md += `## ${mod}\n\n`;
@@ -382,28 +396,22 @@ function convertCSV(csvPath, version) {
       const pre = stripHtml((row[idxPre] || "").trim());
       const stepsRaw = stripHtml((row[idxSteps] || "").trim());
       const expectedRaw = stripHtml((row[idxExpected] || "").trim());
-      const priority = formatPriority(row[idxPriority] || "");
-
-      md += `##### ${title} 「${priority}」\n\n`;
-      md += `> 前置条件\n`;
-      md += "```\n";
-      md += `${pre || "无"}\n`;
-      md += "```\n\n";
-
+      const priority = normalizeCsvPriority(row[idxPriority] || "");
       const stepLines = parseNumberedLines(stepsRaw);
       const expectLines = parseNumberedLines(expectedRaw);
       const maxLen = Math.max(stepLines.length, expectLines.length);
+      const steps = Array.from({ length: maxLen }, (_, i) => ({
+        step: stepLines[i] || "",
+        expected: expectLines[i] || "",
+      }));
 
-      if (maxLen > 0) {
-        md += "| 编号 | 步骤 | 预期 |\n";
-        md += "| --- | --- | --- |\n";
-        for (let i = 0; i < maxLen; i++) {
-          const s = escPipe(stepLines[i] || "");
-          const e = escPipe(expectLines[i] || "");
-          md += `| ${i + 1} | ${s} | ${e} |\n`;
-        }
-        md += "\n";
-      }
+      md += buildCanonicalArchiveCaseBlock({
+        priority,
+        title,
+        precondition: pre || "",
+        steps,
+      });
+      md += "\n";
     }
   }
 
@@ -503,6 +511,41 @@ function xmlToMd(xmlText) {
 }
 
 async function convertXMind(xmindPath) {
+  try {
+    const results = await parseXmindToArchiveResults(xmindPath);
+    if (results.length === 1) {
+      return results[0].content;
+    }
+    if (results.length > 1) {
+      const fileTitle = basename(xmindPath, ".xmind");
+      const mergedBody = results
+        .map((result) => result.body)
+        .filter(Boolean)
+        .join("\n\n")
+        .trim();
+      const headings = [...mergedBody.matchAll(/^## (.+)$/gm)].map((match) => match[1]);
+      const moduleKey = extractModuleKey(xmindPath);
+      const tags = inferTags({ title: fileTitle, headings, modulePath: xmindPath, meta: {} });
+      const today = new Date().toISOString().slice(0, 10);
+      const totalCases = results.reduce((sum, result) => sum + (result.totalCases || 0), 0);
+      const fm = buildFrontMatter({
+        suite_name: fileTitle,
+        description: fileTitle.replace(/[（(][^）)]*[）)]/g, "").trim().slice(0, 60),
+        product: moduleKey || undefined,
+        tags,
+        create_at: today,
+        update_at: today,
+        status: DEFAULT_ARCHIVE_DOCUMENT_STATUS,
+        health_warnings: [],
+        case_count: totalCases || undefined,
+        origin: "xmind",
+      });
+      return `${fm}\n${mergedBody}\n`;
+    }
+  } catch {
+    // Fall back to the legacy parser for historical XMind packages without content.json.
+  }
+
   const { default: JSZip } = await import("jszip");
   const buf = readFileSync(xmindPath);
   const zip = await JSZip.loadAsync(buf);
@@ -533,26 +576,20 @@ async function convertXMind(xmindPath) {
     treeMd += xmlToMd(xmlText);
   }
 
-  // 从 suite_name 提取 prd_id（括号内数字，如 #10307）
-  const prdIdMatch = suiteName.match(/[（(]#(\d+)[）)]/);
-  const prdId = prdIdMatch ? parseInt(prdIdMatch[1]) : undefined;
-
   const headings = [...treeMd.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
   const caseCount = [...treeMd.matchAll(/^##### /gm)].length;
   const moduleKey = extractModuleKey(xmindPath);
-  const xmindVersion = extractVersionFromPath(fileTitle) || extractVersionFromPath(xmindPath);
   const tags = inferTags({ title: suiteName, headings, modulePath: xmindPath, meta: {} });
+  const today = new Date().toISOString().slice(0, 10);
 
   const fm = buildFrontMatter({
     suite_name: suiteName,
     description: suiteName.replace(/[（(][^）)]*[）)]/g, "").trim().slice(0, 60),
-    prd_id: prdId,
-    prd_version: xmindVersion || undefined,
-    prd_path: "",
     product: moduleKey || undefined,
     tags,
-    create_at: new Date().toISOString().slice(0, 10),
-    status: "",
+    create_at: today,
+    update_at: today,
+    status: DEFAULT_ARCHIVE_DOCUMENT_STATUS,
     health_warnings: [],
     case_count: caseCount || undefined,
     origin: "xmind",
@@ -570,6 +607,7 @@ async function convertXMind(xmindPath) {
  * cases/xmind/batch-works/xxx.xmind → cases/archive/batch-works/
  */
 function xmindOutputDir(xmindPath) {
+  const config = loadConfig();
   const rel = xmindPath.replace(ROOT + "/", "");
   // rel 类似 cases/xmind/batch-works/xxx.xmind 或
   //          cases/xmind/data-assets/v6.4.9/xxx.xmind 或
@@ -577,13 +615,19 @@ function xmindOutputDir(xmindPath) {
   const parts = rel.split("/");
   // parts[0]='cases', parts[1]='xmind', parts[2]=模块目录, [3]=子目录或文件名
   const top = parts[2] || "";
+  const moduleKey = extractModuleKey(xmindPath);
+  const possibleSubdir = parts[3];
+  const isSubdir = possibleSubdir && !possibleSubdir.endsWith(".xmind");
+  const isVersionDir = isSubdir && /^v?\d+\.\d+/.test(possibleSubdir);
+  if (moduleKey && config.modules?.[moduleKey] && (!isSubdir || isVersionDir)) {
+    const archivePath = resolveModulePath(moduleKey, "archive", config, isVersionDir ? possibleSubdir : null);
+    return join(ROOT, archivePath);
+  }
   if (top === "custom") {
     const subProject = parts[3] || "";
     return join(ROOT, "cases/archive/custom", subProject);
   }
   // parts[3] 存在且不是 .xmind 文件时，为版本子目录（如 v6.4.9、6.3.x、主流程）
-  const possibleSubdir = parts[3];
-  const isSubdir = possibleSubdir && !possibleSubdir.endsWith(".xmind");
   if (isSubdir) {
     return join(ROOT, "cases/archive", top, possibleSubdir);
   }

@@ -17,9 +17,18 @@ const claudeMdPath = resolve(repoRoot, "CLAUDE.md");
 const prdEnhancerSkillPath = resolve(skillsRoot, "prd-enhancer", "SKILL.md");
 const prdTemplatePath = resolve(skillsRoot, "prd-enhancer", "references", "prd-template.md");
 const xmindRulePath = resolve(claudeRoot, "rules", "xmind-output.md");
+const archiveFormatPath = resolve(claudeRoot, "rules", "archive-format.md");
+const archiveSkillPath = resolve(skillsRoot, "archive-converter", "SKILL.md");
+const archiveSkillRuleMirrorPath = resolve(skillsRoot, "archive-converter", "rules", "archive-format.md");
 const xmindSkillPath = resolve(skillsRoot, "xmind-converter", "SKILL.md");
 const xmindStructureSpecPath = resolve(skillsRoot, "xmind-converter", "references", "xmind-structure-spec.md");
 const jsonToXmindPath = resolve(skillsRoot, "xmind-converter", "scripts", "json-to-xmind.mjs");
+const codeAnalysisSkillPath = resolve(skillsRoot, "code-analysis-report", "SKILL.md");
+const codeAnalyzerPromptPath = resolve(skillsRoot, "code-analysis-report", "prompts", "code-analyzer.md");
+const backendAnalysisFlowPath = resolve(skillsRoot, "code-analysis-report", "references", "backend-analysis-flow.md");
+const frontendAnalysisFlowPath = resolve(skillsRoot, "code-analysis-report", "references", "frontend-analysis-flow.md");
+const conflictAnalysisFlowPath = resolve(skillsRoot, "code-analysis-report", "references", "conflict-analysis-flow.md");
+const hotfixCaseFlowPath = resolve(skillsRoot, "code-analysis-report", "references", "hotfix-case-flow.md");
 const readmePath = resolve(repoRoot, "README.md");
 const directoryNamingPath = resolve(claudeRoot, "rules", "directory-naming.md");
 const repoSafetyPath = resolve(claudeRoot, "rules", "repo-safety.md");
@@ -68,6 +77,10 @@ function walkFiles(dir, predicate, acc = []) {
 
 function relativePath(filePath) {
   return relative(repoRoot, filePath) || filePath;
+}
+
+function stripMirrorNotice(content) {
+  return content.replace(/^> .*?\n\n/s, "").trim();
 }
 
 function findLineMatches(filePaths, matcher) {
@@ -210,6 +223,7 @@ assert(
 
 console.log("\n=== Test: latest-output.xmind 文档有脚本实现支撑 ===");
 const claudeMdContent = readFileSync(claudeMdPath, "utf8");
+const archiveSkillContent = readFileSync(archiveSkillPath, "utf8");
 const xmindRuleContent = readFileSync(xmindRulePath, "utf8");
 const xmindSkillContent = readFileSync(xmindSkillPath, "utf8");
 const xmindStructureSpecContent = readFileSync(xmindStructureSpecPath, "utf8");
@@ -257,6 +271,87 @@ assert(
 assert(
   !directoryNamingContent.includes("不做强制迁移"),
   "directory-naming.md 已移除“历史不迁移”的旧口径",
+);
+
+console.log("\n=== Test: Task 6 相关 Skill / references 必须使用 repo 根相对路径 ===");
+const codeAnalysisSkillContent = readFileSync(codeAnalysisSkillPath, "utf8");
+const hotfixCaseFlowContent = readFileSync(hotfixCaseFlowPath, "utf8");
+const archiveSkillRuleMirrorContent = readFileSync(archiveSkillRuleMirrorPath, "utf8");
+const archiveFormatContent = readFileSync(archiveFormatPath, "utf8");
+assert(
+  archiveSkillContent.includes(".claude/rules/archive-format.md"),
+  "archive-converter Skill 使用 repo 根相对路径引用 archive-format",
+);
+assert(
+  stripMirrorNotice(archiveSkillRuleMirrorContent) === archiveFormatContent.trim(),
+  "archive-converter skill 内镜像规则已同步到最新 Archive frontmatter 口径",
+);
+assert(
+  xmindSkillContent.includes(".claude/rules/xmind-output.md") &&
+    xmindSkillContent.includes(".claude/skills/xmind-converter/references/xmind-structure-spec.md"),
+  "xmind-converter Skill 使用 repo 根相对路径引用 rules 与 references",
+);
+assert(
+  codeAnalysisSkillContent.includes(".claude/skills/code-analysis-report/references/bug-report-template.md") &&
+    codeAnalysisSkillContent.includes(".claude/skills/code-analysis-report/references/hotfix-case-writing.md"),
+  "code-analysis-report Skill 使用 repo 根相对路径引用 references",
+);
+assert(
+  hotfixCaseFlowContent.includes(".claude/skills/code-analysis-report/references/hotfix-case-writing.md"),
+  "hotfix-case-flow 使用 repo 根相对路径引用 hotfix-case-writing",
+);
+
+console.log("\n=== Test: code-analysis-report 快捷链接命令必须显式传参 ===");
+const codeAnalyzerPromptContent = readFileSync(codeAnalyzerPromptPath, "utf8");
+const backendAnalysisFlowContent = readFileSync(backendAnalysisFlowPath, "utf8");
+const frontendAnalysisFlowContent = readFileSync(frontendAnalysisFlowPath, "utf8");
+const conflictAnalysisFlowContent = readFileSync(conflictAnalysisFlowPath, "utf8");
+assert(
+  backendAnalysisFlowContent.includes('"reports/bugs/{date}/{BugTitle}.html"') &&
+    backendAnalysisFlowContent.includes('"latest-bug-report.html"'),
+  "backend-analysis-flow 显式传入 latest-bug-report.html 快捷链接参数",
+);
+assert(
+  frontendAnalysisFlowContent.includes('"reports/bugs/{date}/{BugTitle}.html"') &&
+    frontendAnalysisFlowContent.includes('"latest-bug-report.html"'),
+  "frontend-analysis-flow 显式传入 latest-bug-report.html 快捷链接参数",
+);
+assert(
+  conflictAnalysisFlowContent.includes('"reports/conflicts/{date}/{description}.html"') &&
+    conflictAnalysisFlowContent.includes('"latest-conflict-report.html"'),
+  "conflict-analysis-flow 显式传入 latest-conflict-report.html 快捷链接参数",
+);
+assert(
+  codeAnalyzerPromptContent.includes("latest-bug-report.html") &&
+    codeAnalyzerPromptContent.includes("latest-conflict-report.html"),
+  "code-analyzer prompt 显式说明快捷链接命令参数",
+);
+assert(
+  !codeAnalyzerPromptContent.includes("## 两种工作模式") &&
+    [
+      "模式 A：后端 Bug 分析",
+      "模式 B：合并冲突分析",
+      "模式 C：前端报错分析",
+      "模式 D：信息不足补料",
+      "模式 E：Hotfix 用例生成",
+    ].every((heading) => codeAnalyzerPromptContent.includes(heading)),
+  "code-analyzer prompt 已与 code-analysis-report 的模式集合保持一致",
+);
+assert(
+  frontendAnalysisFlowContent.includes("git branch --show-current") &&
+    frontendAnalysisFlowContent.includes("等待用户确认当前分支是否正确") &&
+    codeAnalyzerPromptContent.includes("等待确认后再继续"),
+  "前端报错分析在未提供分支时会先展示当前分支并等待确认",
+);
+assert(
+  codeAnalyzerPromptContent.includes("模式 A：后端 Bug 分析")
+    && codeAnalyzerPromptContent.includes("若用户未提供分支，先输出当前仓库 / remote / branch / latest commit，等待确认后再继续"),
+  "后端 Bug 分析在未提供分支时会先展示当前分支并等待确认",
+);
+assert(
+  codeAnalyzerPromptContent.includes("模式 B：合并冲突分析")
+    && codeAnalyzerPromptContent.includes("若仓库 / 分支可定位，先执行只读同步"),
+  "合并冲突分析在仓库上下文可定位时会先同步当前分支",
 );
 
 console.log("\n=== Test: .claude/tests 统一入口必须完整 ===");

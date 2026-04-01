@@ -21,13 +21,40 @@ import {
   buildCanonicalArchiveCaseBlock,
   inferTags,
   extractModuleKey,
+  extractPrdId,
   extractVersionFromPath,
 } from "../../../shared/scripts/front-matter-utils.mjs";
+import { toArchiveDocumentStatus } from "../../../shared/scripts/frontmatter-status-utils.mjs";
 
 // ─── JSON → MD ──────────────────────────────────────────────
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const CASES_ROOT = resolve(SCRIPT_DIR, "../../../../cases");
+const DEFAULT_ARCHIVE_DOCUMENT_STATUS = toArchiveDocumentStatus("archived");
+
+function hasPresentPrdValue(value) {
+  return value !== undefined && value !== null && String(value).trim() !== "";
+}
+
+function buildArchivePrdLinkFields({ prdId, prdVersion, prdPath, prdUrl }) {
+  const hasAssociationSignal = [prdId, prdVersion, prdPath, prdUrl].some(hasPresentPrdValue);
+  if (!hasAssociationSignal) return {};
+
+  const missing = [];
+  if (!hasPresentPrdValue(prdId)) missing.push("prd_id");
+  if (!hasPresentPrdValue(prdVersion)) missing.push("prd_version");
+  if (!hasPresentPrdValue(prdPath)) missing.push("prd_path");
+  if (missing.length > 0) {
+    throw new Error(`Archive PRD link is incomplete: missing ${missing.join(", ")}`);
+  }
+
+  return {
+    prd_id: prdId,
+    prd_version: prdVersion,
+    prd_path: prdPath,
+    prd_url: prdUrl || undefined,
+  };
+}
 
 function countCaseTypes(modules) {
   const counts = { normal: 0, abnormal: 0, boundary: 0 };
@@ -157,21 +184,39 @@ export function jsonToMd(data, sourcePath) {
     extractVersionFromPath(meta?.prd_version || "") ||
     extractVersionFromPath(meta?.version || "") ||
     extractVersionFromPath(inferredOutputDir);
+  const hasExplicitPrdAssociation = Boolean(
+    meta?.requirement_id || meta?.prd_path || meta?.prd_url || meta?.prd_version,
+  );
+  const prdPath = meta?.prd_path || undefined;
+  const prdId = meta?.requirement_id
+    ? Number(String(meta.requirement_id).replace(/\D/g, "")) || undefined
+    : extractPrdId(prdPath || "") || undefined;
+  const prdVersion = hasExplicitPrdAssociation
+    ? String(meta?.prd_version || "").trim()
+      || String(meta?.version || "").trim()
+      || extractVersionFromPath(prdPath || "")
+      || version
+      || undefined
+    : undefined;
 
   const today = new Date().toISOString().slice(0, 10);
   const fm = buildFrontMatter({
     suite_name: meta?.requirement_name || title,
     description: meta?.requirement_name || title,
-    prd_id: meta?.requirement_id ? Number(String(meta.requirement_id).replace(/\D/g, "")) || undefined : undefined,
-    prd_version: version || undefined,
-    prd_path: meta?.prd_path || undefined,
-    prd_url: meta?.prd_url || "",
+    ...(hasExplicitPrdAssociation
+      ? buildArchivePrdLinkFields({
+        prdId,
+        prdVersion,
+        prdPath,
+        prdUrl: meta?.prd_url || "",
+      })
+      : {}),
     product: moduleKey || undefined,
     dev_version: meta?.dev_version || "",
     tags,
     create_at: today,
     update_at: today,
-    status: "",
+    status: DEFAULT_ARCHIVE_DOCUMENT_STATUS,
     health_warnings: [],
     repos: Array.isArray(meta?.repos) ? meta.repos : [],
     // 可选保留统计字段（脚本内部）
@@ -313,33 +358,25 @@ export async function parseXmindToArchiveResults(xmindPath) {
 
       // 收集 L2 模块名作为 headings
       const xmindHeadings = modNodes.map((n) => n.title || "");
-      const xmindOutputDirForTags = determineOutputDir(
-        projectName,
-        l1Title,
-        l1Title,
-      );
       const xmindTags = inferTags({
         title: l1Title,
         headings: xmindHeadings,
-        modulePath: xmindOutputDirForTags,
+        modulePath: xmindPath,
         meta: {},
       });
-      const xmindModuleKey = extractModuleKey(xmindOutputDirForTags) || extractModuleKey(xmindPath);
+      const xmindModuleKey = extractModuleKey(xmindPath);
       const xmindVersion = extractVersionFromPath(l1Title) || extractVersionFromPath(xmindPath);
 
       const xmindToday = new Date().toISOString().slice(0, 10);
       const xmindFm = buildFrontMatter({
         suite_name: l1Title,
         description: l1Title,
-        prd_version: xmindVersion || undefined,
-        prd_path: xmindPath,
-        prd_url: "",
         product: xmindModuleKey || undefined,
         dev_version: "",
         tags: xmindTags,
         create_at: xmindToday,
         update_at: xmindToday,
-        status: "",
+        status: DEFAULT_ARCHIVE_DOCUMENT_STATUS,
         health_warnings: [],
         repos: [],
         case_count: totalCases,
@@ -379,9 +416,6 @@ export async function parseXmindToArchiveResults(xmindPath) {
         for (const tc of block.cases) {
           bodyLines.push(...formatArchiveCaseLines(tc, {
             defaultPrecondition: "无",
-            ensureStepRow: true,
-            defaultStepText: "待补充",
-            defaultExpectedText: "待补充",
           }));
         }
       }
@@ -405,13 +439,25 @@ async function xmindToMd(xmindPath) {
   return parseXmindToArchiveResults(xmindPath);
 }
 
+function hasPriorityMarker(node) {
+  return (node.markers ?? []).some((marker) => /^priority-\d+$/.test(String(marker?.markerId || "")));
+}
+
 function isTestCase(node) {
-  if (node.markers && node.markers.length > 0) return true;
+  if (hasPriorityMarker(node)) return true;
   const children = node.children?.attached ?? [];
   if (children.length === 0) return false;
+  if (!children.some((child) => (child.children?.attached ?? []).length > 0)) return false;
   return children.every((child) => {
+    if ((child.markers?.length || 0) > 0 || child.notes?.plain?.content?.trim()) {
+      return false;
+    }
     const grandchildren = child.children?.attached ?? [];
-    return grandchildren.every((gc) => !gc.children?.attached?.length);
+    return grandchildren.every((gc) =>
+      !gc.children?.attached?.length
+      && !(gc.markers?.length)
+      && !gc.notes?.plain?.content?.trim(),
+    );
   });
 }
 

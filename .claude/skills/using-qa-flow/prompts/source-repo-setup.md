@@ -4,7 +4,7 @@
 
 ## 目标
 
-引导用户配置 `.repos/` 下的源码仓库，输出 `.repos/source-map.yaml`（供 `sync-source-repos.mjs` 使用）。
+引导用户配置 `.repos/` 下的源码仓库，输出 `.repos/source-map.yaml` 作为本地仓库清单与初始化回显；后续 `sync-source-repos.mjs` 仍以 `.claude/config.json` 的 `repos` 与 `branchMapping` 为准。
 
 ## 前置状态检查
 
@@ -65,6 +65,6 @@ initialized_at: "<YYYY-MM-DD>"
 ## 完成提示
 
 ```
-源码仓库配置已保存至 .repos/source-map.yaml。
-如需后续添加仓库，可重新运行 /using-qa-flow init，或直接编辑该文件。
+源码仓库清单已保存至 .repos/source-map.yaml。
+如需后续添加仓库，可重新运行 /using-qa-flow init，或直接编辑该文件；真正参与 source-sync 的仓库路径与分支映射仍以 .claude/config.json 为准。
 ```
