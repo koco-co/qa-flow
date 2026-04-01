@@ -154,15 +154,11 @@ curl -s --connect-timeout 5 "http://zenpms.dtstack.cn/zentao/bug-view-{bugId}.ht
 
 ```yaml
 ---
-title: "「在线问题转化」{功能简述}"
-suite_name: "在线问题转化"
+suite_name: "在线问题转化-{bugId}-{功能简述}"
 description: "{一句话描述本用例验证的内容}"
-prd_id: ""
-prd_version: ""
-prd_path: ""
-product: "{产品名}"
-zentao_bug_id: {bugId}
-zentao_url: "http://zenpms.dtstack.cn/zentao/bug-view-{bugId}.html"
+# 若已关联到 PRD，再补充 prd_id / prd_version / prd_path / prd_url；
+# 若暂无 PRD，请不要写空字符串占位。
+product: "{module_key}"
 dev_version: "hotfix_{version}_{bugId}"
 tags:
   - hotfix
@@ -170,13 +166,17 @@ tags:
   - {功能关键词}
 create_at: "{YYYY-MM-DD}"
 update_at: "{YYYY-MM-DD}"
-status: "draft"
+status: "草稿"
+health_warnings: []
 repos:
   - ".repos/{org}/{repo}"
 case_count: 1
-origin: zentao
+origin: json
 ---
 ```
+
+> 说明：禅道来源信息请写入正文「问题背景 / 来源说明」段或完成报告，不要在 frontmatter 中新增 `title`、`zentao_*`，也不要把 `origin` 写成当前 schema 不支持的 `zentao`。
+> 如未来确实要支持 `origin=zentao`，需同步扩展 `.claude/shared/schemas/front-matter-schema.md` 与 `.claude/rules/archive-format.md`。
 
 **存储路径：** `cases/archive/online-cases/{filename}.md`
 
@@ -216,7 +216,9 @@ Bug ID   : #{bugId}
 - [ ] 表单字段名称与前端 TSX 源码一致
 - [ ] SQL 字段名与 Mapper XML / 建表 SQL 一致
 - [ ] 预期结果使用“xxx（修复后）”格式，无“修复前”描述
-- [ ] front-matter 中 `origin: zentao`，且 `prd_id` / `prd_version` / `prd_path` 为空字符串
+- [ ] front-matter 仅使用 canonical Archive 字段；未写 `title` / `zentao_*` / 非法 `origin` 值
+- [ ] `origin` 使用当前 schema 允许的值（Hotfix 示例默认 `json`），`status` 使用中文值（如 `草稿`）
+- [ ] 若暂无 PRD 信息，未把 `prd_id` / `prd_version` / `prd_path` 写成空字符串占位
 - [ ] 文件已保存到 `cases/archive/online-cases/`
 - [ ] 根目录同名快捷链接已创建并指向正确路径
 - [ ] 步骤从零开始（包含新建测试数据），无跳步假设
