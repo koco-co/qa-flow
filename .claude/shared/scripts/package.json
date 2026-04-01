@@ -4,6 +4,7 @@
   "private": true,
   "description": "Shared foundation scripts used by multiple qa-flow skills",
   "dependencies": {
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "nodemailer": "^8.0.4"
   }
 }
