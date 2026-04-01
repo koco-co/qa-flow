@@ -112,7 +112,7 @@
    tags: []
    create_at: "<YYYY-MM-DD>"
    update_at: "<YYYY-MM-DD>"
-   status: raw
+   status: 未开始
    health_warnings: []
    repos: []
    case_path: ""
@@ -197,7 +197,7 @@
 
 读取状态文件，向用户展示上次进度（中断步骤、已完成/未完成项），询问是否继续。
 
-这一步只用于判断**是否进入续传模式**；如果用户明确要"只重跑某个模块"，应走后文的模块级重跑流程；如果用户要"从头重来"，应先删除对应状态文件和已增强的 PRD 文件（`status: enhanced`）后再重新发起完整流程或快速模式。
+这一步只用于判断**是否进入续传模式**；如果用户明确要"只重跑某个模块"，应走后文的模块级重跑流程；如果用户要"从头重来"，应先删除对应状态文件和已增强的 PRD 文件（`status: 已增强`）后再重新发起完整流程或快速模式。
 
 - 选「是」→ 按以下逻辑恢复：
   - `awaiting_verification: true`：说明流程已停在 Step `archive` 的用户验证阶段。保持 `last_completed_step: "archive"` 不变，重新展示验证提示（XMind 路径来自 `output_xmind`，归档 MD 来自 `archive_md_path`），等待用户回复后执行 `notify`

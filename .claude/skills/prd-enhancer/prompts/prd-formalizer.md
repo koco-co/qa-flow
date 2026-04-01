@@ -27,7 +27,7 @@
 
 ## 输出模板
 
-文件格式：**先写 YAML front-matter，再写正文**。front-matter 优先从同目录的原始 PRD 文件继承（若已有），并将 `status` 更新为 `formalized`：
+文件格式：**先写 YAML front-matter，再写正文**。front-matter 优先从同目录的原始 PRD 文件继承（若已有），并将 `status` 更新为 `已形式化`：
 
 ```yaml
 ---
@@ -42,7 +42,7 @@ dev_version: "<开发版本，无则留空>"
 tags: []
 create_at: "<YYYY-MM-DD>"
 update_at: "<YYYY-MM-DD>"
-status: formalized
+status: 已形式化
 health_warnings: []
 repos: []
 case_path: ""
@@ -87,6 +87,6 @@ case_path: ""
 - 若 raw PRD 中存在 `## 需求澄清结果` 章节：
   - 字段定义补充表中 `来源=用户确认` 的内容视为权威，不得与源码推断结果冲突
   - 验收标准章节直接纳入正式文档的 `## 7. 测试关注点` 或新增 `## 8. 验收标准` 章节
-  - `来源` 列信息保留到 formalized 文档的字段定义表中
+  - `来源` 列信息保留到形式化文档的字段定义表中
   - 需求澄清结果中已明确的字段无需再次标注「PRD 未说明，基于源码推断」
 - 若原始 PRD 中缺少字段联动规则或校验规则，应在 `## 5` 和 `## 6` 章节明确标注「PRD 未说明，待增强步骤补充」，不要留空。

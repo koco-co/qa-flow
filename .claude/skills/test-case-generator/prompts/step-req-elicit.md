@@ -4,7 +4,7 @@
 > 前置条件: `last_completed_step` == `"parse-input"`
 > 快速模式: **简化执行**（最多 3 个问题，仅 Tier 1 维度，1 轮 Q&A）
 
-本步骤在进入流水线执行之前，先评估需求的可测试性，识别关键缺失信息，通过 3-7 个有针对性的问题补全，最终将澄清结果追加到 raw PRD 中。
+本步骤在进入流水线执行之前，先评估需求的可测试性，识别关键缺失信息，通过 3-7 个有针对性的问题补全，最终将澄清结果追加到原始 PRD 中。
 
 **执行前必须阅读 `references/elicitation-dimensions.md`（维度定义、评分规则、问题模板）。**
 
@@ -12,7 +12,7 @@
 
 ## Phase 1: 可测试性评估（自动，无需等待用户）
 
-读取工作目录下所有 raw PRD 文件内容，按 `elicitation-dimensions.md` 中定义的 10 个维度评分：
+读取工作目录下所有原始 PRD 文件内容，按 `elicitation-dimensions.md` 中定义的 10 个维度评分：
 
 1. 对每个维度，根据评分规则计算 0-100% 的得分
 2. 可选维度（`time_limits`、`tech_constraints`）：检测 PRD 中是否含对应关键词，有则启用，否则标记 `N/A`
@@ -273,13 +273,15 @@ grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
 
 ## Phase 6: 输出澄清结果
 
-将澄清结果追加到 raw PRD 文件末尾（**不修改 PRD 原有内容，仅追加新章节**）：
+将澄清结果追加到原始 PRD 文件末尾（**不修改 PRD 原有内容，仅追加新章节**）：
 
 ```markdown
 
 ---
 
-## 需求澄清结果（AI 生成，基于用户回答和源码分析）
+## 需求澄清结果
+
+> 以下内容基于用户回答和源码分析整理。
 
 <!-- elicitation-status: completed | round: {N} | questions: {asked}/{answered} | auto-inferred: {count} -->
 
@@ -322,7 +324,7 @@ grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
 - **仍待确认**: {remaining_gaps，或「无」}
 ```
 
-**更新 PRD frontmatter**：将 `status` 从 `raw` 更新为 `elicited`。
+**更新 PRD frontmatter**：将 `status` 从 `未开始` 更新为 `已澄清`。
 
 ---
 
@@ -331,7 +333,7 @@ grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
 - **PRD 文件不存在或无法读取**: 提示用户检查文件路径，不继续
 - **多个 PRD 文件**: 合并分析所有 PRD，生成统一的澄清问题（而不是分别澄清）
 - **源码预扫描失败（grep 报错/仓库不存在）**: 跳过 Phase 2，不提示用户，继续生成问题
-- **PRD 已有 `status: elicited` 或 `status: enhanced`**: 跳过澄清步骤，说明「需求已澄清，直接继续」
+- **PRD 已有 `status: 已澄清` 或 `status: 已增强`**: 跳过澄清步骤，说明「需求已澄清，直接继续」
 
 ---
 
