@@ -35,5 +35,6 @@
 ### 5. 独立调用需求澄清
 
 - 仅在用户直接触发 `prd-enhancer` 时，根据前置检查结果决定是否补做需求澄清。
+- 独立调用需求澄清的评估维度与权重，统一参考权威来源 `../../test-case-generator/references/elicitation-dimensions.md`，本 Skill 不重复定义。
 - 若由 `test-case-generator` 自动调用，则跳过该节点。
 - 本节点只决定是否补齐上游信息，不在本 Skill 文档中定义额外结果章节格式。
