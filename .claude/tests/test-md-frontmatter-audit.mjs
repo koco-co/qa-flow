@@ -21,10 +21,19 @@ import {
   toArchiveDocumentStatus,
   toRequirementDocumentStatus,
 } from "../shared/scripts/frontmatter-status-utils.mjs";
+import { jsonToMd } from "../skills/archive-converter/scripts/json-to-archive-md.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..", "..");
 const scriptPath = resolve(repoRoot, ".claude/shared/scripts/audit-md-frontmatter.mjs");
+const prdBackfillScriptPath = resolve(
+  repoRoot,
+  ".claude/skills/prd-enhancer/scripts/backfill-prd-frontmatter.mjs",
+);
+const archiveBackfillScriptPath = resolve(
+  repoRoot,
+  ".claude/skills/archive-converter/scripts/backfill-archive-frontmatter.mjs",
+);
 const runId = `${process.pid}-${Date.now()}`;
 const tempRoot = resolve(__dirname, `__test_md_frontmatter_audit_${runId}`);
 
@@ -81,9 +90,13 @@ function hasStatusIssue(output, relativePath) {
 }
 
 function runAudit(args = []) {
+  return runNodeScript(scriptPath, ["--root", tempRoot, ...args]);
+}
+
+function runNodeScript(script, args = []) {
   return spawnSync(
     process.execPath,
-    [scriptPath, "--root", tempRoot, ...args],
+    [script, ...args],
     {
       cwd: repoRoot,
       encoding: "utf8",
@@ -102,6 +115,9 @@ const englishArchiveStatusRelativePath = "cases/archive/data-assets/v6.4.9/engli
 const chineseArchiveRelativePath = "cases/archive/data-assets/v6.4.9/chinese-status-archive.md";
 const nonSemverRelativePath = "cases/archive/data-assets/主流程/flow-archive.md";
 const plainPreconditionRelativePath = "cases/archive/data-assets/v6.4.9/plain-precondition-archive.md";
+const directBackfillRequirementRelativePath = "cases/requirements/data-assets/v6.4.9/direct-backfill-prd-formalized.md";
+const directBackfillArchiveRelativePath = "cases/archive/data-assets/v6.4.9/direct-backfill-archive.md";
+const directReviewedArchiveRelativePath = "cases/archive/data-assets/v6.4.9/direct-reviewed-status-archive.md";
 
 const archiveBody = [
   "# Legacy archive(#12345)",
@@ -185,6 +201,7 @@ writeFixture(
     "version: v6.4.9",
     "source: cases/xmind/data-assets/v6.4.9/legacy-archive.xmind",
     "created_at: 2026-03-01",
+    "status: ARCHIVED",
     "tags:",
     "  - 数据资产",
     "  - 数据质量",
@@ -268,7 +285,7 @@ writeFixture(
     "create_at: 2026-03-03",
     "case_count: 0",
     "origin: xmind",
-    "status: \"\"",
+    "status: 已归档",
     "health_warnings: []",
     "---",
     bulletArchiveBody,
@@ -333,7 +350,7 @@ writeFixture(
     "create_at: 2026-03-03",
     "case_count: 1",
     "origin: xmind",
-    "status: \"\"",
+    "status: 已归档",
     "health_warnings: []",
     "---",
     canonicalArchiveBody,
@@ -355,10 +372,73 @@ writeFixture(
     "create_at: 2026-03-03",
     "case_count: 1",
     "origin: xmind",
-    "status: \"\"",
+    "status: 已归档",
     "health_warnings: []",
     "---",
     plainPreconditionArchiveBody,
+  ].join("\n"),
+);
+
+writeFixture(
+  directBackfillRequirementRelativePath,
+  [
+    "# 直接回填 PRD",
+    "",
+    "这里是待回填状态的正文。",
+    "",
+  ].join("\n"),
+);
+
+writeFixture(
+  directBackfillArchiveRelativePath,
+  [
+    "# 直接回填 Archive",
+    "",
+    "> 来源：cases/xmind/data-assets/v6.4.9/direct-backfill-archive.xmind",
+    "> 用例数：1",
+    "",
+    "## 数据资产",
+    "",
+    "##### 【P1】验证默认归档状态",
+    "",
+    "> 前置条件",
+    "```",
+    "```",
+    "",
+    "> 用例步骤",
+    "",
+    "| 编号 | 步骤 | 预期 |",
+    "| --- | --- | --- |",
+    "| 1 | 进入【数据资产】页面 | 成功 |",
+    "",
+  ].join("\n"),
+);
+
+writeFixture(
+  directReviewedArchiveRelativePath,
+  [
+    "---",
+    "suite_name: 旧评审状态归档",
+    "description: 旧评审状态归档",
+    "prd_path: cases/requirements/data-assets/v6.4.9/reviewed-prd.md",
+    "product: data-assets",
+    "prd_version: v6.4.9",
+    "status: REVIEWED",
+    "---",
+    "## 数据资产",
+    "",
+    "##### 【P1】验证旧状态兼容",
+    "",
+    "> 前置条件",
+    "```",
+    "```",
+    "",
+    "> 用例步骤",
+    "",
+    "| 编号 | 步骤 | 预期 |",
+    "| --- | --- | --- |",
+    "| 1 | 进入【数据资产】页面 | 成功 |",
+    "",
   ].join("\n"),
 );
 
@@ -380,6 +460,86 @@ assert(toRequirementDocumentStatus("RAW") === "未开始", "toRequirementDocumen
 assert(toRequirementDocumentStatus("ELICITED") === "已澄清", "toRequirementDocumentStatus 会把大写 ELICITED 写回中文文档值");
 assert(normalizeArchiveStatus("ARCHIVED") === "archived", "normalizeArchiveStatus 兼容大写 ARCHIVED");
 assert(toArchiveDocumentStatus("ARCHIVED") === "已归档", "toArchiveDocumentStatus 会把大写 ARCHIVED 写回中文文档值");
+
+console.log("\n=== Test: backfill/json scripts write chinese document statuses ===");
+const directPrdBackfillResult = runNodeScript(prdBackfillScriptPath, [
+  "--path",
+  resolve(tempRoot, directBackfillRequirementRelativePath),
+]);
+assert(directPrdBackfillResult.status === 0, "PRD backfill 脚本执行成功", [
+  directPrdBackfillResult.stderr.trim(),
+  directPrdBackfillResult.stdout.trim(),
+].filter(Boolean));
+const directBackfilledRequirement = readFixture(directBackfillRequirementRelativePath);
+assert(
+  /(^|\n)status:\s*已形式化/.test(directBackfilledRequirement),
+  "PRD backfill 会根据文件名写入中文 requirement 状态",
+  [directBackfilledRequirement],
+);
+
+const directArchiveBackfillResult = runNodeScript(archiveBackfillScriptPath, [
+  "--path",
+  resolve(tempRoot, directBackfillArchiveRelativePath),
+]);
+assert(directArchiveBackfillResult.status === 0, "archive backfill 脚本执行成功", [
+  directArchiveBackfillResult.stderr.trim(),
+  directArchiveBackfillResult.stdout.trim(),
+].filter(Boolean));
+const directBackfilledArchive = readFixture(directBackfillArchiveRelativePath);
+assert(
+  /(^|\n)status:\s*已归档/.test(directBackfilledArchive),
+  "archive backfill 默认写入中文归档状态",
+  [directBackfilledArchive],
+);
+
+const directReviewedArchiveBackfillResult = runNodeScript(archiveBackfillScriptPath, [
+  "--force",
+  "--path",
+  resolve(tempRoot, directReviewedArchiveRelativePath),
+]);
+assert(directReviewedArchiveBackfillResult.status === 0, "archive backfill force 模式执行成功", [
+  directReviewedArchiveBackfillResult.stderr.trim(),
+  directReviewedArchiveBackfillResult.stdout.trim(),
+].filter(Boolean));
+const directReviewedArchive = readFixture(directReviewedArchiveRelativePath);
+assert(
+  /(^|\n)status:\s*已评审/.test(directReviewedArchive),
+  "archive backfill 会把旧英文 REVIEWED 状态写成中文文档值",
+  [directReviewedArchive],
+);
+
+const generatedArchiveFromJson = jsonToMd(
+  {
+    meta: {
+      requirement_name: "状态回填样例",
+      module_key: "data-assets",
+      version: "v6.4.9",
+    },
+    modules: [
+      {
+        name: "数据资产",
+        test_cases: [
+          {
+            title: "验证归档状态默认值",
+            priority: "P1",
+            steps: [
+              {
+                step: "进入【数据资产】页面",
+                expected: "成功",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "cases/final-reviewed/data-assets/v6.4.9/status-sample.json",
+);
+assert(
+  /(^|\n)status:\s*已归档/.test(generatedArchiveFromJson),
+  "json-to-archive-md 默认写入中文归档状态",
+  [generatedArchiveFromJson],
+);
 
 console.log("\n=== Test: dry-run reports issues but does not modify fixtures ===");
 const dryRunResult = runAudit(["--dry-run"]);
@@ -468,7 +628,7 @@ assert(/(^|\n)product:\s*data-assets/.test(fixedArchive), "archive 已写入 pro
 assert(/(^|\n)create_at:\s*2026-03-01/.test(fixedArchive), "archive 已迁移 create_at");
 assert(/(^|\n)case_count:\s*1/.test(fixedArchive), "archive 已写入正确 case_count");
 assert(/(^|\n)origin:\s*xmind/.test(fixedArchive), "archive 已推断 origin");
-assert(/(^|\n)status:\s*""/.test(fixedArchive), "archive 已补空字符串 status");
+assert(/(^|\n)status:\s*已归档/.test(fixedArchive), "archive 会把旧英文 status 写为中文文档值");
 assert(/(^|\n)health_warnings:\s*\[\]/.test(fixedArchive), "archive 已补空数组 health_warnings");
 assert(!/(^|\n)name:/.test(fixedArchive), "archive 已移除 legacy name 字段");
 assert(!/(^|\n)module:/.test(fixedArchive), "archive 已移除 legacy module 字段");

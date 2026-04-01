@@ -23,11 +23,13 @@ import {
   extractModuleKey,
   extractVersionFromPath,
 } from "../../../shared/scripts/front-matter-utils.mjs";
+import { toArchiveDocumentStatus } from "../../../shared/scripts/frontmatter-status-utils.mjs";
 
 // ─── JSON → MD ──────────────────────────────────────────────
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const CASES_ROOT = resolve(SCRIPT_DIR, "../../../../cases");
+const DEFAULT_ARCHIVE_DOCUMENT_STATUS = toArchiveDocumentStatus("archived");
 
 function countCaseTypes(modules) {
   const counts = { normal: 0, abnormal: 0, boundary: 0 };
@@ -168,14 +170,14 @@ export function jsonToMd(data, sourcePath) {
     prd_url: meta?.prd_url || "",
     product: moduleKey || undefined,
     dev_version: meta?.dev_version || "",
-    tags,
-    create_at: today,
-    update_at: today,
-    status: "",
-    health_warnings: [],
-    repos: Array.isArray(meta?.repos) ? meta.repos : [],
-    // 可选保留统计字段（脚本内部）
-    case_count: totalCases,
+      tags,
+      create_at: today,
+      update_at: today,
+      status: DEFAULT_ARCHIVE_DOCUMENT_STATUS,
+      health_warnings: [],
+      repos: Array.isArray(meta?.repos) ? meta.repos : [],
+      // 可选保留统计字段（脚本内部）
+      case_count: totalCases,
     case_types: caseTypes || undefined,
     origin: "json",
   });
@@ -339,7 +341,7 @@ export async function parseXmindToArchiveResults(xmindPath) {
         tags: xmindTags,
         create_at: xmindToday,
         update_at: xmindToday,
-        status: "",
+        status: DEFAULT_ARCHIVE_DOCUMENT_STATUS,
         health_warnings: [],
         repos: [],
         case_count: totalCases,

@@ -20,6 +20,10 @@ import {
   extractModuleKey,
   extractVersionFromPath,
 } from "../../../shared/scripts/front-matter-utils.mjs";
+import {
+  normalizeArchiveStatus,
+  toArchiveDocumentStatus,
+} from "../../../shared/scripts/frontmatter-status-utils.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "../..");
@@ -116,6 +120,9 @@ function processFile(filePath) {
   }
 
   const { frontMatter, body } = parseFrontMatter(content);
+  const documentStatus = toArchiveDocumentStatus(
+    normalizeArchiveStatus(frontMatter?.status) || "archived",
+  );
 
   if (frontMatter !== null && !FORCE) {
     return { status: "skip", reason: "已有 front-matter" };
@@ -175,7 +182,7 @@ function processFile(filePath) {
         tags,
         create_at: today,
         update_at: today,
-        status: "",
+        status: documentStatus,
         health_warnings: [],
         repos: [],
         case_count: case_count !== null ? case_count : undefined,
