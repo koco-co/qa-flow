@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-03-31T17:10:32.712Z"
-last_activity: 2026-03-31 -- Phase 04 execution started
+status: Automated checks passed; 2 human smoke tests remain
+stopped_at: Phase 5 context gathered
+last_updated: "2026-04-01T01:30:07.278Z"
+last_activity: 2026-03-31 -- Phase 04 automated verification passed; awaiting human smoke verification
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 17
-  completed_plans: 14
+  completed_plans: 16
   percent: 50
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 
 ## Current Position
 
-Phase: 04 (core-skills-redesign) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 04
-Last activity: 2026-03-31 -- Phase 04 execution started
+Phase: 04 (core-skills-redesign) — AWAITING HUMAN VERIFICATION
+Plan: 5 of 5
+Status: Automated checks passed; 2 human smoke tests remain
+Last activity: 2026-03-31 -- Phase 04 automated verification passed; awaiting human smoke verification
 
 Progress: [█████░░░░░] 50%
 
@@ -109,11 +109,12 @@ None yet.
 
 ### Blockers/Concerns
 
+- Phase 04 awaiting human smoke verification per `.planning/phases/04-core-skills-redesign/04-VERIFICATION.md`: (1) run a non-DTStack image-rich PRD through full test-case-generator flow, (2) run prd-enhancer directly on a generic image-rich PRD and confirm runtime wording/output quality
 - Phase 5 (IM Notifications): DingTalk keyword edge-case behavior not fully confirmed by docs — include --dry-run validation step during planning
 - Phase 4 research flag: Playwright integration (AUTO-01 to AUTO-07) is v2 scope; does not block current roadmap
 
 ## Session Continuity
 
-Last session: 2026-03-31T16:38:08.570Z
-Stopped at: Completed 04-03-PLAN.md
-Resume file: None
+Last session: 2026-04-01T01:30:07.271Z
+Stopped at: Phase 5 context gathered
+Resume file: .planning/phases/05-im-notification-integration/05-CONTEXT.md
