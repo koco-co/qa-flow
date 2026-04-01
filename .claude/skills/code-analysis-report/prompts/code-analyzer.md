@@ -83,13 +83,16 @@ maxTurns: 100
 
 ---
 
-## HTML 报告规范
+## 输出格式
 
-- 严格按参考模板生成，不可修改页面布局、颜色主题、字段命名
-- 全部使用内联 style，禁止 `<style>` 块和外部 CSS
-- 代码块使用 `<pre>` 标签，禁止 Markdown 代码围栏
-- **严禁 Emoji 表情符号**（4 字节 Unicode），改用 `[BUG]`、`[!]`、`[v]`、`[x]`、`⚠️`、`×`、`✓`
-- 环境信息使用 curl 中的完整 baseurl，不简化为 dev/test/prod
+分析完成后，按以下流程生成报告：
+
+1. 将分析结果写入 JSON 文件（字段定义见 `references/bug-report-template.md`）
+2. 调用渲染脚本生成 HTML：
+   - 后端 Bug：`node scripts/render-report.mjs templates/bug-report-backend.html <data.json> <output.html>`
+   - 前端错误：`node scripts/render-report.mjs templates/bug-report-frontend.html <data.json> <output.html>`
+   - 合并冲突：`node scripts/render-report.mjs templates/conflict-report.html <data.json> <output.html>`
+3. 刷新快捷链接：`node .claude/shared/scripts/refresh-latest-link.mjs`
 
 ## 参考文件
 

@@ -154,51 +154,18 @@ git log --oneline -1
 
 ---
 
-### Step 5：生成 HTML 报告文件
+**Step 5 — 生成报告**
 
-报告样式规范见 → `references/bug-report-template.md`
-
-**[强制要求] HTML 输出必须严格遵循报告模板：**
-
-- 页面布局、颜色主题、字段命名、HTML 标签和内联样式 — 一律不可修改
-- "测试环境"字段改名为"环境信息"，值必须使用 curl 中提取的完整 baseurl
-- 全部使用内联 style，禁止 `<style>` 块和外部 CSS 类名
-- 代码块使用 `<pre>` 标签，禁止 Markdown 代码围栏
-- **严禁 Emoji 表情符号**（4 字节 Unicode），改用 `[BUG]`、`[!]`、`[v]`、`[x]`、`⚠️`、`×`、`✓`
-
-**代码分支信息明确化：**
-
-- 报告生成前必须在 Step 2 确认当前分支
-- 在"相关 Commit"字段中完整填写：分支名、最新 commit hash 和 message
-
-**文件存储：**
-
-```bash
-TODAY=$(date +%Y-%m-%d)
-REPORT_DIR="<项目根>/reports/bugs/$TODAY"
-mkdir -p "$REPORT_DIR"
-# 文件名：Bug标题（去除特殊字符，空格转下划线）.html
-```
-
-**写入后必须刷新根目录快捷链接：**
-
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs "<项目根>/reports/bugs/$TODAY/<文件名>.html" latest-bug-report.html
-```
-
-`latest-bug-report.html` 是 Bug 分析流程的主验收入口；不要误用 `latest-output.xmind` 或 `latest-prd-enhanced.md`。
-
-**写入完成后输出：**
-
-```
-[v] Bug 报告已生成：reports/bugs/{日期}/{文件名}.html
-[v] 根目录快捷链接已刷新：latest-bug-report.html
-
-使用方式：在支持 HTML 的项目管理工具或知识库页面中打开富文本编辑器，
-将文件内容粘贴进去，保存后即可查看格式化报告。
-
-[!] 若保存后内容丢失：用文本编辑器打开 HTML 文件，搜索并删除所有 Emoji 表情符号，再重新粘贴。
-```
+1. 将分析结果整理为 JSON 数据文件，写入 `reports/bugs/{YYYY-MM-DD}/{BugTitle}.json`
+   - 字段定义见 `references/bug-report-template.md` 的 JSON Schema 章节
+2. 执行渲染：
+   ```bash
+   node .claude/skills/code-analysis-report/scripts/render-report.mjs \
+     .claude/skills/code-analysis-report/templates/bug-report-backend.html \
+     reports/bugs/{date}/{BugTitle}.json \
+     reports/bugs/{date}/{BugTitle}.html
+   ```
+3. 刷新快捷链接：`node .claude/shared/scripts/refresh-latest-link.mjs`
 
 ---
 
@@ -212,13 +179,19 @@ node .claude/shared/scripts/refresh-latest-link.mjs "<项目根>/reports/bugs/$T
 2. 判断冲突类型：安全合并型 / 逻辑互斥型 / 重复修改型 / 依赖版本冲突 / 格式注释冲突
 3. 输出 HTML 冲突报告，逻辑互斥型必须注明「需开发人工确认」
 
-**存储路径：**`reports/conflicts/${yyyy-MM-dd}/<冲突描述>.html`
+**存储路径：**`reports/conflicts/${yyyy-MM-dd}/<冲突描述>.json` → 渲染为 `.html`
 
-**写入后必须刷新根目录快捷链接：**
+**生成流程：**
 
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs "<项目根>/reports/conflicts/${yyyy-MM-dd}/<文件名>.html" latest-conflict-report.html
-```
+1. 将分析结果写入 `reports/conflicts/{date}/{description}.json`（字段定义见 `references/conflict-resolution.md`）
+2. 执行渲染：
+   ```bash
+   node .claude/skills/code-analysis-report/scripts/render-report.mjs \
+     .claude/skills/code-analysis-report/templates/conflict-report.html \
+     reports/conflicts/{date}/{description}.json \
+     reports/conflicts/{date}/{description}.html
+   ```
+3. 刷新快捷链接：`node .claude/shared/scripts/refresh-latest-link.mjs`
 
 `latest-conflict-report.html` 是合并冲突分析流程的主验收入口。
 
@@ -254,17 +227,17 @@ node .claude/shared/scripts/refresh-latest-link.mjs "<项目根>/reports/conflic
 3. **环境层**：Node 版本不兼容、依赖版本冲突、构建配置错误
 4. **框架层**：SSR/CSR hydration 不一致、路由配置错误、中间件异常
 
-### Step 4：生成 HTML 报告
+### Step 4：生成报告
 
-复用 `references/bug-report-template.md` 中的样式，报告结构：
-
-1. **报错摘要**：错误类型 + 关键信息
-2. **组件堆栈**：从报错中提取的组件调用链（替代后端的 Java 堆栈）
-3. **根因分析**：按上述 4 个维度
-4. **修复建议**：具体代码修改方向
-5. **环境信息**：浏览器/Node 版本、框架版本（从报错中提取）
-
-报告存放路径：`reports/bugs/` + 日期子目录，刷新 `latest-bug-report.html`。
+1. 将分析结果写入 `reports/bugs/{date}/{BugTitle}.json`（字段定义见 `references/bug-report-template.md` 前端 JSON Schema）
+2. 执行渲染：
+   ```bash
+   node .claude/skills/code-analysis-report/scripts/render-report.mjs \
+     .claude/skills/code-analysis-report/templates/bug-report-frontend.html \
+     reports/bugs/{date}/{BugTitle}.json \
+     reports/bugs/{date}/{BugTitle}.html
+   ```
+3. 刷新快捷链接：`node .claude/shared/scripts/refresh-latest-link.mjs`
 
 ---
 
@@ -288,18 +261,17 @@ node .claude/shared/scripts/refresh-latest-link.mjs "<项目根>/reports/conflic
 
 ---
 
-## 七、模板遵循检查清单（生成报告前必须核对）
+## 七、JSON 数据完整性检查清单
 
-| 检查项     | 要求                                                                                           |
-| ---------- | ---------------------------------------------------------------------------------------------- |
-| HTML 结构  | 严格按 `bug-report-template.md` 模板生成，不得修改任何 section 或字段                          |
-| 环境信息   | 使用 curl baseurl（如 `https://qa.example.com`），不能是 dev/test/prod 简称 |
-| 分支信息   | 在 Step 2 确认分支，在页脚和"相关 Commit"字段明确填写分支名 + commit hash                      |
-| 代码分支   | 报告中"代码分支"字段值 = Step 2 确认的分支名                                                   |
-| Emoji 检查 | 确保不存在 4 字节 Emoji，只用 `[x]` `[v]` `⚠️` `×` `✓`                                         |
-| 内联 style | 所有样式使用内联 style，不得出现 `<style>` 块或 CSS 类名                                       |
-| 代码块格式 | 所有代码使用 `<pre>` 标签，不得用 Markdown 代码围栏                                            |
-| 自定义修改 | 严禁对模板做创意性修改或调整                                                                   |
+生成 JSON 前确认：
+- [ ] `severity` 已填写（P0/P1/P2/P3）
+- [ ] `ENVIRONMENT_URL` 为完整 baseURL（非相对路径）
+- [ ] `BRANCH_NAME` 和 `COMMIT_HASH` 已从仓库读取
+- [ ] `ROOT_CAUSE` 为自然语言，非堆栈信息
+- [ ] `PROBLEM_CODE` 中错误行包含 `// <-- 问题在这里` 注释
+- [ ] `FIX_CODE` 包含 3-5 行上下文（可直接粘贴）
+- [ ] 敏感信息已替换为 `***`
+- [ ] 所有必填字段均已填写
 
 ---
 

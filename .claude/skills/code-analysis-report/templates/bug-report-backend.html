@@ -1,0 +1,231 @@
+<!--
+  Bug Report Template (Backend)
+  Render: node scripts/render-report.mjs templates/bug-report-backend.html data.json output.html
+
+  Text (HTML-escaped): {{BUG_TITLE}} {{EXCEPTION_TYPE}} {{CLASS_NAME}} {{LINE_NUMBER}}
+    {{MODULE_NAME}} {{HTTP_METHOD}} {{API_PATH}} {{BRANCH_NAME}} {{COMMIT_HASH}}
+    {{ENVIRONMENT_URL}} {{TENANT_INFO}} {{PROJECT_INFO}} {{ISSUE_TYPE}} {{ROOT_CAUSE}}
+    {{PROBLEM_FILE}} {{PROBLEM_METHOD}} {{PROBLEM_LINE}} {{FIX_NAME}} {{FIX_FILE}} {{DATETIME}}
+  Style: {{SEVERITY_GRADIENT}} {{SEVERITY_BADGE_BG}} {{SEVERITY_LABEL}}
+  HTML (raw): {{{CALL_CHAIN}}} {{{PROBLEM_CODE}}} {{{FIX_CODE}}} {{{FIX_POINTS}}}
+    {{{CURL_COMMAND}}} {{{REPRO_STEPS}}} {{{ACTUAL_RESULT}}} {{{EXPECTED_RESULT}}}
+    {{{KEY_EXCEPTION}}} {{{FULL_LOG}}} {{{IMPACT_ITEMS}}} {{{VERIFICATION_ROWS}}}
+  Conditional: {{#IF CODE_COMPARISON}}...{{/IF CODE_COMPARISON}}
+-->
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; max-width: 960px; margin: 0 auto; padding: 24px; background-color: #f4f6f8; color: #1f2328; line-height: 1.6;">
+
+<div style="background: linear-gradient(90deg, {{SEVERITY_GRADIENT}}); padding: 35px 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(115, 103, 240, 0.2);">
+    <div style="font-size: 22px; font-weight: 700; color: #ffffff; margin-bottom: 8px; letter-spacing: 0.5px;">
+      {{BUG_TITLE}}
+    </div>
+    <div style="font-size: 14px; color: rgba(255, 255, 255, 0.9); font-family: 'Consolas', 'Monaco', monospace;">
+      {{EXCEPTION_TYPE}} @ {{CLASS_NAME}}.java:{{LINE_NUMBER}}
+    </div>
+  </div>
+
+  <table style="width: 100%; border-collapse: separate; border-spacing: 24px 0; margin-left: -12px; margin-right: -12px; margin-bottom: 24px;">
+    <tr style="vertical-align: top;">
+      <td style="width: 50%; background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+        <h2 style="font-size: 15px; font-weight: 700; color: #1f2328; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid #e1e4e8; display: flex; align-items: center;"> 基本信息</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <tr>
+            <td style="padding: 8px 16px 8px 0; color: #656d76; width: 85px; vertical-align: top;">所属模块</td>
+            <td style="padding: 8px 0; color: #1f2328; font-weight: 600;">{{MODULE_NAME}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">接口路径</td>
+            <td style="padding: 8px 0;">
+              <code style="background-color: #ddf4ff; padding: 3px 8px; border-radius: 6px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 13px; color: #0969da; border: 1px solid #b6e3ff;">{{HTTP_METHOD}} {{API_PATH}}</code>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">代码分支</td>
+            <td style="padding: 8px 0;">
+              <code style="background-color: #f6f8fa; padding: 3px 8px; border-radius: 6px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 13px; color: #24292f; border: 1px solid #d0d7de;">{{BRANCH_NAME}}</code>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">相关 Commit</td>
+            <td style="padding: 8px 0;">
+              <code style="background-color: #f6f8fa; padding: 3px 8px; border-radius: 6px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 13px; color: #24292f; border: 1px solid #d0d7de;">{{COMMIT_HASH}}</code>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <td style="width: 50%; background-color: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+        <h2 style="font-size: 15px; font-weight: 700; color: #1f2328; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid #e1e4e8; display: flex; align-items: center;">环境与上下文</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <tr>
+            <td style="padding: 8px 16px 8px 0; color: #656d76; width: 85px; vertical-align: top;">环境信息</td>
+            <td style="padding: 8px 0;">
+              <code style="background-color: #e8f0fe; color: #1a73e8; padding: 3px 8px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 600;">{{ENVIRONMENT_URL}}</code>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">租户信息</td>
+              <td style="padding: 8px 0; color: #1f2328; font-weight: 600;">{{TENANT_INFO}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">项目信息</td>
+              <td style="padding: 8px 0; color: #1f2328;">{{PROJECT_INFO}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px 8px 0; color: #656d76; vertical-align: top;">问题类型</td>
+            <td style="padding: 8px 0;">
+              <span style="display: inline-block; background-color: #fff8c5; color: #9a6700; padding: 3px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;">{{ISSUE_TYPE}}</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <div style="background-color: #ffffff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2328; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid #ff9e64;">根本原因分析</h2>
+
+    <div style="background-color: #fff9f0; border-left: 4px solid #ff9e64; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+      <p style="margin: 0 0 6px 0; font-size: 13px; color: #b45309; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">问题本质</p>
+      <p style="margin: 0; color: #3d444d; font-size: 14px; line-height: 1.8;">{{ROOT_CAUSE}}</p>
+    </div>
+
+    <h3 style="font-size: 14px; font-weight: 700; color: #1f2328; margin: 0 0 10px 0;">调用链路：</h3>
+    <div style="background-color: #f6f8fa; border: 1px solid #d0d7de; padding: 16px 20px; border-radius: 8px; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 13px; line-height: 2; color: #24292f;">
+      {{{CALL_CHAIN}}}
+    </div>
+  </div>
+
+  <div style="background-color: #ffffff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2328; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid #f7768e;"> 问题代码定位</h2>
+
+    <table style="border-collapse: collapse; margin-bottom: 16px;">
+      <tr>
+        <td style="padding: 0 10px 0 0;">
+          <span style="display: inline-block; background-color: #ffebe9; color: #cf222e; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid #ff818266;">文件：<strong>{{PROBLEM_FILE}}</strong></span>
+        </td>
+        <td style="padding: 0 10px 0 0;">
+          <span style="display: inline-block; background-color: #ffebe9; color: #cf222e; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid #ff818266;">方法：<strong>{{PROBLEM_METHOD}}</strong></span>
+        </td>
+        <td>
+          <span style="display: inline-block; background-color: #ffebe9; color: #cf222e; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: 1px solid #ff818266;">出错行：<strong>第 {{PROBLEM_LINE}} 行</strong></span>
+        </td>
+      </tr>
+    </table>
+
+    <pre style="background-color: #1a1b26; color: #a9b1d6; padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace; font-size: 13px; line-height: 1.7; margin: 0; white-space: pre-wrap; word-break: break-all; border: 1px solid #292e42; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">{{{PROBLEM_CODE}}}</pre>
+  </div>
+
+  {{#IF CODE_COMPARISON}}
+  <div style="background-color: #ffffff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2328; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid #7aa2f7;">代码对比：{{CORRECT_METHOD}} vs {{PROBLEM_METHOD_LABEL}}</h2>
+    <table style="width: 100%; border-collapse: separate; border-spacing: 16px 0; margin-left: -8px; margin-right: -8px;">
+      <tr style="vertical-align: top;">
+        <td style="width: 50%; background-color: #dafbe1; border-radius: 8px; padding: 16px; border-left: 4px solid #2da44e;">
+          <p style="margin: 0 0 12px 0; color: #1a7f37; font-size: 14px; font-weight: 700;"> {{CORRECT_METHOD}} — 正确处理</p>
+          <pre style="background-color: #ffffff; padding: 16px; border-radius: 6px; font-size: 12px; font-family: 'JetBrains Mono', monospace; line-height: 1.7; margin: 0; white-space: pre-wrap; word-break: break-all; border: 1px solid #4ac26b4d; color: #24292f;">{{{CORRECT_CODE}}}</pre>
+        </td>
+        <td style="width: 50%; background-color: #ffebe9; border-radius: 8px; padding: 16px; border-left: 4px solid #cf222e;">
+          <p style="margin: 0 0 12px 0; color: #a40e26; font-size: 14px; font-weight: 700;">{{PROBLEM_METHOD_LABEL}} — 存在问题</p>
+          <pre style="background-color: #ffffff; padding: 16px; border-radius: 6px; font-size: 12px; font-family: 'JetBrains Mono', monospace; line-height: 1.7; margin: 0; white-space: pre-wrap; word-break: break-all; border: 1px solid #ff81824d; color: #24292f;">{{{PROBLEM_CODE_COMPARE}}}</pre>
+        </td>
+      </tr>
+    </table>
+  </div>
+  {{/IF CODE_COMPARISON}}
+
+  <div style="background-color: #ffffff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2328; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid #7aa2f7;"> 复现步骤</h2>
+
+    <p style="font-size: 14px; font-weight: 700; color: #1f2328; margin: 0 0 8px 0;">原始请求：</p>
+    <pre style="background-color: #1a1b26; color: #7aa2f7; padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; margin: 0 0 20px 0; white-space: pre-wrap; word-break: break-all; border: 1px solid #292e42;">{{{CURL_COMMAND}}}</pre>
+
+    <p style="font-size: 14px; font-weight: 700; color: #1f2328; margin: 0 0 10px 0;">复现条件：</p>
+    <ol style="font-size: 14px; line-height: 1.9; margin: 0 0 20px 0; padding-left: 24px; color: #3d444d;">
+      {{{REPRO_STEPS}}}
+    </ol>
+
+    <table style="width: 100%; border-collapse: separate; border-spacing: 16px 0; margin-left: -8px; margin-right: -8px;">
+      <tr style="vertical-align: top;">
+        <td style="width: 50%; background-color: #ffebe9; border-radius: 8px; padding: 16px 20px; border-left: 4px solid #cf222e; border: 1px solid #ff81824d;">
+          <p style="margin: 0 0 6px 0; font-size: 13px; color: #a40e26; font-weight: 700; text-transform: uppercase;">实际结果</p>
+          <p style="margin: 0; font-size: 14px; color: #24292f; font-family: 'JetBrains Mono', monospace;">{{{ACTUAL_RESULT}}}</p>
+        </td>
+        <td style="width: 50%; background-color: #dafbe1; border-radius: 8px; padding: 16px 20px; border-left: 4px solid #2da44e; border: 1px solid #4ac26b4d;">
+          <p style="margin: 0 0 6px 0; font-size: 13px; color: #1a7f37; font-weight: 700; text-transform: uppercase;">期望结果</p>
+          <p style="margin: 0; font-size: 14px; color: #24292f; font-family: 'JetBrains Mono', monospace;">{{{EXPECTED_RESULT}}}</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="background-color: #ffffff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2328; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid #d0d7de;"> 错误日志</h2>
+
+    <p style="font-size: 14px; font-weight: 700; color: #cf222e; margin: 0 0 8px 0;">关键异常（定位重点）：</p>
+    <pre style="background-color: #fff1f0; border: 1px solid #ffccc7; border-left: 4px solid #ff4d4f; padding: 16px 20px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #cf1322; margin: 0 0 20px 0; white-space: pre-wrap; word-break: break-all;">{{{KEY_EXCEPTION}}}</pre>
+
+    <p style="font-size: 14px; font-weight: 700; color: #656d76; margin: 0 0 8px 0;">完整日志：</p>
+    <pre style="background-color: #1a1b26; color: #a9b1d6; padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; margin: 0; white-space: pre-wrap; word-break: break-all; border: 1px solid #292e42; max-height: 400px; overflow-y: auto;">{{{FULL_LOG}}}</pre>
+  </div>
+
+  <div style="background-color: #ffffff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2328; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 2px solid #9ece6a;"> 修复建议</h2>
+
+    <div style="background-color: #f6f8fa; border: 1px dashed #d0d7de; border-radius: 8px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: flex-start;">
+      <span style="margin-right: 10px; font-size: 16px;">⚠️</span>
+      <p style="margin: 0; font-size: 13px; color: #656d76; line-height: 1.6;">
+        <strong style="color: #24292f;">以下为 AI 分析结果，仅供参考，请开发人员结合实际业务逻辑酌情判断后再实施修改。</strong><br>
+        AI 可能无法感知所有上下文依赖，修改前请确认相关调用方与测试用例不受影响。
+      </p>
+    </div>
+
+    <h3 style="font-size: 15px; font-weight: 700; color: #1a7f37; margin: 0 0 10px 0;">方案一：{{FIX_NAME}}（推荐）</h3>
+    <p style="font-size: 13px; color: #656d76; margin: 0 0 10px 0;">
+      修改文件：<code style="background-color: #f6f8fa; padding: 3px 8px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #24292f; border: 1px solid #d0d7de;">{{FIX_FILE}}</code>
+    </p>
+    <pre style="background-color: #1a1b26; color: #9ece6a; border-left: 4px solid #9ece6a; padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; margin: 0 0 16px 0; white-space: pre-wrap; word-break: break-all; border-top: 1px solid #292e42; border-right: 1px solid #292e42; border-bottom: 1px solid #292e42;">{{{FIX_CODE}}}</pre>
+
+    <h4 style="font-size: 14px; font-weight: 700; color: #1f2328; margin: 0 0 10px 0;">修改要点：</h4>
+    <ul style="font-size: 14px; line-height: 1.9; margin: 0; padding-left: 24px; color: #3d444d;">
+      {{{FIX_POINTS}}}
+    </ul>
+  </div>
+
+  <div style="background-color: #ffffff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2328; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 2px solid #bb86fc;">影响范围</h2>
+    <ul style="font-size: 14px; line-height: 2; margin: 0; padding-left: 24px; color: #3d444d;">
+      {{{IMPACT_ITEMS}}}
+    </ul>
+  </div>
+
+  <div style="background-color: #ffffff; border-radius: 12px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e1e4e8;">
+    <h2 style="font-size: 16px; font-weight: 700; color: #1f2328; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid #7aa2f7;"> 测试验证 </h2>
+
+    <p style="font-size: 14px; font-weight: 700; color: #cf222e; margin: 0 0 8px 0;">① 复现场景验证（期望：不再报错）：</p>
+    <pre style="background-color: #1a1b26; color: #a9b1d6; padding: 16px 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; margin: 0 0 20px 0; white-space: pre-wrap; word-break: break-all; border: 1px solid #292e42;">{{{CURL_COMMAND}}}</pre>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px; border-radius: 8px; overflow: hidden; border: 1px solid #d0d7de;">
+      <thead>
+        <tr style="background-color: #f6f8fa;">
+          <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #d0d7de; border-right: 1px solid #d0d7de; color: #24292f; font-weight: 600; width: 50%;">验证项</th>
+          <th style="padding: 12px 16px; text-align: left; border-bottom: 1px solid #d0d7de; color: #24292f; font-weight: 600; width: 50%;">预期结果</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{{VERIFICATION_ROWS}}}
+      </tbody>
+    </table>
+  </div>
+
+  <table style="width: 100%; border-collapse: collapse; background-color: transparent; padding: 16px 20px;">
+    <tr>
+      <td style="padding: 0;">
+        <span style="font-size: 12px; color: #8c959f; font-family: 'JetBrains Mono', monospace;">Code Analysis Report &nbsp;·&nbsp; {{BRANCH_NAME}} &nbsp;·&nbsp; {{DATETIME}}</span>
+      </td>
+      <td style="padding: 0; text-align: right;">
+        <span style="font-size: 12px; color: #8c959f; font-family: 'JetBrains Mono', monospace;">Generated by AI Analysis Engine</span>
+      </td>
+    </tr>
+  </table>
+
+</div>
