@@ -100,7 +100,11 @@ Plans:
   3. Running notify.mjs with --dry-run prints the rendered payload for each enabled channel without making any network calls
   4. A user can enable or disable individual channels by setting or unsetting the corresponding env var in .env, with no code changes required
   5. .env.example documents every required and optional env var for all four channels with example values
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Core notification module (notify.mjs + tests + .env.example + nodemailer)
+- [ ] 05-02-PLAN.md — Skill integration (test-case-generator, code-analysis-report, archive-converter notify calls)
 
 ### Phase 6: Documentation
 **Goal**: A first-time visitor to the GitHub repository can understand what qa-flow does, install it, and run their first test-case-generator workflow using only the README
