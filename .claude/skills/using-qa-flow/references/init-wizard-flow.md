@@ -57,6 +57,8 @@ node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command load-existin
 
 ## 配置 3：历史文件解析
 
+> 如果 `signals.historyFiles` 为空且目录扫描已获取到完整模块列表，自动跳过本步骤，直接进入配置 4。
+
 **自动检测部分：** 如果 `signals.historyFiles` 非空：
 
 - 对每个历史文件调用：

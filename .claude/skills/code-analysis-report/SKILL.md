@@ -3,7 +3,7 @@ name: code-analysis-report
 description: 测试工程师专用的代码分析报告工作流 Skill。当用户粘贴前端或后端报错日志、curl 请求信息、Jenkins 合并冲突信息，或提到「帮我分析这个报错」「生成 bug 报告」「分析一下这个错误」「分析一下冲突」「看看这个异常」时，必须触发此 Skill。还支持 Hotfix 分支用例生成：当用户发送禅道 Bug 链接（如 http://zenpms.dtstack.cn/zentao/bug-view-145513.html）时，自动从禅道页面提取修复分支信息、拉取代码、分析变更、生成一条线上问题转化测试用例。支持四种模式：(1) 后端 Bug 分析 → 生成 HTML 格式报告存入 reports/bugs/ 目录；(2) Jenkins 合并冲突分析 → 生成 HTML 报告存入 reports/conflicts/ 目录；(3) 前端报错分析 → 生成 HTML 报告存入 reports/bugs/ 目录；(4) Hotfix 用例生成 → 转化线上 Bug 为测试用例存入 cases/issues/ 目录。所有模式在开始分析前必须确认代码分支并自动拉取。
 ---
 
-# Code Analysis Report Skill
+# 代码分析报告 Skill
 
 ## 用途与触发词
 
