@@ -58,13 +58,16 @@
 ```bash
 node .claude/shared/scripts/notify.mjs \
   --event case-generated \
-  --data '{"count":<用例总数>,"file":"<xmind输出文件路径>","duration":"<耗时>"}'
+  --data '{"count":<用例总数>,"file":"<xmind文件相对路径>","archiveFile":"<归档MD相对路径>","priorities":{"p0":<P0数>,"p1":<P1数>,"p2":<P2数>},"modules":"<覆盖模块摘要，如「规则配置 + 质量报告」>","duration":"<耗时>"}'
 ```
 
 参数说明：
 - `count`：生成的用例总数（数字）
-- `file`：XMind 输出文件的相对路径（真实文件路径，如 `cases/xmind/orders/v2.0/功能名.xmind`）
-- `duration`：工作流总耗时（如 `3m21s`，可从 execution_log 首尾时间差计算）
+- `file`：XMind 输出文件的相对路径，如 `cases/xmind/202604/功能名.xmind`
+- `archiveFile`：归档 Markdown 的相对路径，如 `cases/archive/202604/功能名.md`
+- `priorities`：优先级分布对象，如 `{"p0":4,"p1":9,"p2":5}`（从 Reviewer 质量报告中统计）
+- `modules`：覆盖模块摘要，简短描述覆盖范围，如 `规则配置（表单/联动）+ 质量报告 + 规则库`
+- `duration`：工作流总耗时（如 `3m21s`，从 execution_log 首尾时间差计算）
 
 > 💡 调试提示：添加 `--dry-run` 参数可打印完整 payload 而不发送网络请求。
 > ⚠️ 若 notify.mjs 执行失败（如 .env 未配置），仅 console.error 记录，不阻断流程。流程的用例文件已经生成完毕。
