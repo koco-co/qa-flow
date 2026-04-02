@@ -217,7 +217,21 @@ Bug ID   : #{bugId}
 
 ---
 
-## Step 10：自审查清单（必须执行，不可跳过）
+## Step 10：IM 通知（必须执行）
+
+完成报告输出后，调用通知模块：
+
+```bash
+node .claude/shared/scripts/notify.mjs \
+  --event hotfix-case-generated \
+  --data '{"bugId":<bugId>,"branch":"hotfix_{version}_{bugId}","file":"cases/issues/{filename}.md","changedFiles":<变更文件数>}'
+```
+
+> ⚠️ 若 notify.mjs 执行失败，仅 console.error 记录，不影响已生成的用例文件。
+
+---
+
+## Step 11：自审查清单（必须执行，不可跳过）
 
 - [ ] 用例标题使用 `【{zentao_bug_id}】验证xxx`，未使用 `【P0/P1/P2】`
 - [ ] 前端仓库可定位时，导航路径已与前端菜单配置一致；不可定位时，已标记待确认项且未猜测
