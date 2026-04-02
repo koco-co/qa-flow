@@ -10,7 +10,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve, dirname, basename, extname } from "path";
 import { fileURLToPath } from "url";
-import { getModuleKeys, loadConfig, resolveModulePath } from "../../../shared/scripts/load-config.mjs";
+import { getModuleKeys, loadConfig, resolveModulePath, getCurrentPeriod } from "../../../shared/scripts/load-config.mjs";
 import {
   deriveArchiveBaseName,
   deriveArchiveBaseNameFromXmind,
@@ -528,27 +528,27 @@ function resolveModuleKey(projectName, requirementName, meta = {}) {
 
 export function determineOutputDirWithMeta(projectName, versionOrTitle, requirementName, meta = {}) {
   const base = CASES_ROOT;
-  // prd_version 优先（语义版本 vX.Y.Z），其次从 versionOrTitle 提取
-  let version = meta.prd_version
-    ? String(meta.prd_version).trim()
-    : (versionOrTitle || "").replace(/版本$/, "").trim();
-  if (version && !version.startsWith("v")) version = "v" + version;
 
-  // 通用：使用 resolveModulePath 路由到 config 驱动路径
+  // 仅当模块显式配置了 archive 路径时才走模块路由（如带版本的自定义子目录）
   const moduleKey = resolveModuleKey(projectName, requirementName, meta);
   if (moduleKey) {
-    return resolve(
-      SCRIPT_DIR,
-      "../../../../",
-      resolveModulePath(moduleKey, "archive", _config, version || null),
-    );
+    const mod = _config.modules?.[moduleKey];
+    if (mod?.archive) {
+      let version = meta.prd_version
+        ? String(meta.prd_version).trim()
+        : (versionOrTitle || "").replace(/版本$/, "").trim();
+      if (version && !version.startsWith("v")) version = "v" + version;
+      return resolve(
+        SCRIPT_DIR,
+        "../../../../",
+        resolveModulePath(moduleKey, "archive", _config, version || null),
+      );
+    }
+    // 模块无显式 archive 路径 → 落到 YYYYMM 统一路由
   }
 
-  // 通用项目允许在未命中模块时回退到 repo-root cases/archive/<version>/
-  if (version) {
-    return resolve(base, `archive/${version}`);
-  }
-  return resolve(base, "archive");
+  // 统一 YYYYMM 归档目录（directory-naming.md 规范）
+  return resolve(base, `archive/${getCurrentPeriod()}`);
 }
 
 // ─── CLI 入口 ───────────────────────────────────────────────
