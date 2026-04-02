@@ -43,6 +43,11 @@ assert(config.project?.name === "qa-flow", "project.name 标记为 qa-flow");
 assert(config.integrations?.lanhuMcp?.runtimePath === "tools/lanhu-mcp/", "lanhuMcp runtimePath 配置正确");
 // envFile 已迁移到根 .env，config.json 不再保留 envFile 字段
 assert(config.integrations?.lanhuMcp?.envFile === undefined, "lanhuMcp envFile 已迁移到根 .env，config.json 不再保留");
+// ── reports / assets 路径断言（防止配置误改） ──
+assert(config.casesRoot === "cases/", "casesRoot 应为 cases/");
+assert(config.reports?.bugs === "reports/bugs/", "reports.bugs 应为 reports/bugs/");
+assert(config.reports?.conflicts === "reports/conflicts/", "reports.conflicts 应为 reports/conflicts/");
+assert(config.assets?.images === "assets/images/", "assets.images 应为 assets/images/");
 // shortcuts 已移除，改为在通知消息中携带文件绝对路径
 assert(config.shortcuts === undefined, "shortcuts 已移除（快捷链接机制已废弃）");
 assert(config.repoBranchMapping === undefined, "config 不应有 repoBranchMapping 字段（已迁移为 branchMapping）");
