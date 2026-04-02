@@ -289,6 +289,30 @@ assert(
   stripMirrorNotice(archiveSkillRuleMirrorContent) === archiveFormatContent.trim(),
   "archive-converter skill 内镜像规则已同步到最新 Archive frontmatter 口径",
 );
+
+// ─── 新增：全部规则镜像守卫 ───
+const xmindSkillRuleMirrorPath = resolve(skillsRoot, "xmind-converter", "rules", "xmind-output.md");
+const xmindSkillRuleMirrorContent = readFileSync(xmindSkillRuleMirrorPath, "utf8");
+assert(
+  stripMirrorNotice(xmindSkillRuleMirrorContent) === xmindRuleContent.trim(),
+  "xmind-converter skill 内镜像规则已同步到最新全局 xmind-output 口径",
+);
+
+const globalTCWContent = readFileSync(globalTestCaseWritingPath, "utf8");
+const skillTCWContent = readFileSync(skillTestCaseWritingPath, "utf8");
+assert(
+  stripMirrorNotice(skillTCWContent) === globalTCWContent.trim(),
+  "test-case-generator skill 内镜像规则已同步到最新全局 test-case-writing 口径",
+);
+
+const imageConventionsPath = resolve(claudeRoot, "rules", "image-conventions.md");
+const imageSkillMirrorPath = resolve(skillsRoot, "prd-enhancer", "rules", "image-conventions.md");
+const imageGlobalContent = readFileSync(imageConventionsPath, "utf8");
+const imageSkillMirrorContent = readFileSync(imageSkillMirrorPath, "utf8");
+assert(
+  stripMirrorNotice(imageSkillMirrorContent) === imageGlobalContent.trim(),
+  "prd-enhancer skill 内镜像规则已同步到最新全局 image-conventions 口径",
+);
 assert(
   xmindSkillContent.includes(".claude/rules/xmind-output.md") &&
     xmindSkillContent.includes(".claude/skills/xmind-converter/references/xmind-structure-spec.md"),
@@ -432,6 +456,22 @@ assert(
     stepArchiveContent.includes("才允许写入 `archive_md_path`"),
   "step-archive 明确要求 archive 落盘成功后再写状态",
 );
+
+console.log("\n=== Test: config.json 声明的业务目录在磁盘上真实存在 ===");
+const configContent = JSON.parse(readFileSync(resolve(claudeRoot, "config.json"), "utf8"));
+const requiredDirs = [
+  configContent.casesRoot,
+  ...configContent.casesTypes.map(t => `${configContent.casesRoot}${t}/`),
+  configContent.reports.bugs,
+  configContent.reports.conflicts,
+  configContent.assets.images,
+];
+for (const dir of requiredDirs) {
+  assert(
+    existsSync(resolve(repoRoot, dir)),
+    `config.json 声明的目录存在: ${dir}`,
+  );
+}
 
 console.log(`\n══════════════════════════════════════`);
 console.log(`总计: ${passed + failed} 测试, ✅ ${passed} 通过, ❌ ${failed} 失败`);

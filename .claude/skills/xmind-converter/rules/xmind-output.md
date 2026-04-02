@@ -14,14 +14,17 @@
 
 参考 `.claude/config.json` 中的 `modules[].xmind` 与 `modules[].archive` 字段确定输出目录。
 
-输出路径由 `.claude/config.json` 中各模块的 `xmind` 和 `archive` 字段决定。以下是通用路径模式：
+配置了版本目录的模块，新生成的 xmind 文件按版本放入 `v{version}/` 子目录，每需求一个独立文件：
 
-| 模块 key | XMind 路径                           | Archive 路径                            |
-| -------- | ------------------------------------ | --------------------------------------- |
-| `${module}` | `cases/xmind/${module}/`          | `cases/archive/${module}/`              |
-| `${module}` (含版本) | `cases/xmind/${module}/v${version}/` | `cases/archive/${module}/v${version}/` |
+| XMind 路径               | Archive 路径               |
+| ------------------------ | -------------------------- |
+| `cases/xmind/YYYYMM/`   | `cases/archive/YYYYMM/`   |
 
-> 实际模块 key 和路径从 `.claude/config.json` 的 `modules` 字段读取。模块 key 与文件系统路径别名不同时，以 config.json 的配置为准。
+实际模块列表定义在 `.claude/config.json` 的 `modules` 字段中。
+
+**特殊分类目录**（不含版本号，按功能类型归档）：
+
+某些模块可能在版本目录之外包含特殊分类子目录（如 `主流程/`、`集成测试/`），这些是规范内允许的目录形态。
 
 ## 层级结构
 
@@ -50,11 +53,13 @@ XMind L1 对应 Archive MD 的 `suite_name` frontmatter 字段：
 - XMind [L4] → Archive `#### 功能子组`
 - 用例标题 → Archive `##### 【P0】验证xxx`（优先级前缀格式）
 
-## Issue Tracker 标注规则（当 config.modules[].trackerId 非空时启用）
+## 样例驱动规则（当模块配置了 trackerId 时启用）
 
-> 以下规则仅在 config.json 中对应模块的 `trackerId` 字段为非空值时适用。若 `trackerId` 未配置，省略括号标注。
+> 以下规则仅在模块的 config 配置中包含 `trackerId` 字段时适用。
 
-- Root：`<项目名><版本>迭代用例(#<trackerId>)`（trackerId 来自 `config.json` 的 `modules[].trackerId`，无 trackerId 时省略该后缀）
+配置了 `trackerId` 的模块输出格式如下：
+
+- Root：`<中文产品名><版本>迭代用例(#<追踪器ID>)`（追踪器ID 来自 `config.json` 的 `modules[].trackerId`，无 `trackerId` 时省略该后缀）
 - L1 title：`<需求标题>(#<requirement_ticket>)`
 - L1 labels：`(#<requirement_id>)`（对应 Archive frontmatter `prd_id`，来源为 `meta.requirement_id`）
 - L1 默认 `folded`
