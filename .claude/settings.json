@@ -1,5 +1,16 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\nINPUT=$(cat)\nCMD=$(echo \"$INPUT\" | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get(\\\"command\\\",\\\"\\\"))\" 2>/dev/null || echo \"\")\necho \"$CMD\" | grep -qE \"git (checkout|switch)\" || exit 0\nROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0\ncd \"$ROOT\"\nHAS_CHANGES=false\ngit diff --quiet || HAS_CHANGES=true\ngit diff --cached --quiet || HAS_CHANGES=true\ngit ls-files --others --exclude-standard | grep -q . && HAS_CHANGES=true\n[ \"$HAS_CHANGES\" = \"true\" ] || exit 0\nBRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo \"unknown\")\ngit add -A\ngit commit -m \"chore: auto-commit before switching from $BRANCH\"\necho \"[pre-checkout] 已自动提交 $BRANCH 的改动\"\nexit 0\n'"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
