@@ -145,6 +145,7 @@ Writer Subagent 输出时可包含以下可选字段（提升 frontmatter 填充
 | 字段 | 约束 |
 |------|------|
 | `meta.project_name` | 必须与 XMind 输出目录对应 |
+| `meta.requirement_name` | **只写功能名称**，不含版本号或数字序号前缀。例如 PRD `prd_name` 为 `数据资产V6.4.10 - 15525【内置规则丰富】一致性校验`，则 `requirement_name` 应为 `【内置规则丰富】一致性校验`（从第一个【或功能关键词开始，去掉项目名/版本/序号） |
 | `meta.prd_version` | 格式 `vX.Y.Z`（如 `v1.0.0`）；从 PRD frontmatter `prd_version` 字段获取；驱动 archive 和 xmind 输出的版本子目录（如 `product-mgmt/v1.0.0/`）。无版本子目录时可省略 |
 | `meta.version` | 有版本时与 `prd_version` 保持一致（如 `v1.0.0`）；无版本时用日期格式（如 `202603版本`）供 XMind L1 标题显示 |
 | `meta.tags` | 可选；3-8 个领域关键词；产品/功能域名词、业务实体名词、客户标识（不含页面级通用词） |

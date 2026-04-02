@@ -258,6 +258,8 @@ export function buildMessage(event, data) {
       bodyLines = [
         `### ${emoji} ${label}`,
         "",
+        "---",
+        "",
         "**📊 用例摘要**",
         "",
         row("总用例数",     data.count ? `${data.count} 条` : null),
@@ -265,12 +267,16 @@ export function buildMessage(event, data) {
         row("覆盖范围",     data.modules),
         row("耗时",         data.duration),
         "",
+        "---",
+        "",
         "**📁 输出文件**",
         "",
         row("XMind",      fileLink(data.file)),
         row("归档 MD",     fileLink(data.archiveFile)),
         "",
-        `完成时间：${timestamp}`,
+        "---",
+        "",
+        `更新时间：${timestamp}`,
       ];
       break;
     }
@@ -337,11 +343,7 @@ export function buildMessage(event, data) {
       ];
   }
 
-  // Footer: repo link
-  if (gitRemoteUrl) {
-    const repoWeb = gitRemoteUrl.replace(/\.git$/, "").replace(/^git@([^:]+):/, "https://$1/");
-    bodyLines.push("", "---", `[${projectName}](${repoWeb})`);
-  }
+  // No footer appended — timestamp is already the last line of each case
 
   const markdown = bodyLines.filter((l) => l !== null).join("\n");
   return { title, markdown, html: mdToHtml(markdown) };

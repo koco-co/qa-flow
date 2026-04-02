@@ -36,6 +36,13 @@ fi
 COUNT=$(echo "$OUTPUT" | grep -oE '[0-9]+ 条' | head -1 | grep -oE '[0-9]+' || echo "0")
 [ -z "$COUNT" ] && COUNT=0
 
+# 发送通知前先 commit + push，确保 GitHub 文件链接有内容
+cd "$PROJECT_DIR" || exit 0
+git add -A 2>/dev/null || true
+git diff --cached --quiet 2>/dev/null || \
+  git commit -m "chore: auto-commit before notify — xmind generated" 2>/dev/null || true
+git push 2>/dev/null || true
+
 # 发送通知
 node "$PROJECT_DIR/.claude/shared/scripts/notify.mjs" \
   --event case-generated \
