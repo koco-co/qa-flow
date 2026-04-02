@@ -8,7 +8,7 @@
   "modules": {},
   "repos": {},
   "stackTrace": {},
-  "branchMapping": null,
+  "branchMapping": "config/repo-branch-mapping.yaml",
   "trash": {
     "dir": ".trash/",
     "retentionDays": 30
