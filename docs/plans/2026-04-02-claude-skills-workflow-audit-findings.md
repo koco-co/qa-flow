@@ -129,6 +129,22 @@ date: "2026-04-02"
 - 建议：README 不再枚举会漂移的目录树和输出快捷链接；目录入口应直接引用 `CLAUDE.md` 中的工作区结构 / 规范索引，路径名以 `.claude/config.json` 为准；“详细规范入口”改成真实存在的 rules / shared schema 链接，移除失效的 CLAUDE 章节锚点。
 - 涉及文件：`README.md`、`CLAUDE.md`、`.claude/config.json`、`.claude/tests/test-workflow-doc-validator.mjs`、`.claude/tests/test-output-convention-migration.mjs`
 
+## P1-test-case-public-example-conflict：测试用例公开示例写法在主入口与 using-qa-flow 菜单之间已形成事实性冲突
+
+- 问题：`CLAUDE.md` 与 `README.md` 的公开示例均以 `为 Story-20260322 生成测试用例`、`继续 Story-20260322 的用例生成` 为主入口写法，但 `.claude/skills/using-qa-flow/SKILL.md` 的功能菜单与“快速示例”却要求 `为 ${module_key} v${version} 生成测试用例`、`继续 ${module_key} v${version} 的用例生成`。这已经是同一路由的两套对外示例 contract 冲突，而非单纯风格差异。
+- 原因：主入口文档与 `/using-qa-flow` 菜单分别手写测试用例入口示例，却没有明确单一 canonical 写法与兼容策略；`Story-xxx` 和 `${module_key} v${version}` 分别占据不同入口后，公开路由说明自然分叉。
+- 影响：用户和 agent 从不同入口进入时会收到不同格式指引，难以判断当前产品要求的是 Story 标识还是 module/version 组合；后续若测试、帮助文案或 reviewer 只沿用其中一套示例，另一套就会继续被误判为非标准入口，放大主入口漂移。
+- 建议：将测试用例公开示例冲突作为正式入口问题收口，统一一套对外 canonical 写法，并把另一套写法明确标注为兼容别名或内部映射；`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md` 只保留同一主示例及必要兼容说明。
+- 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`
+
+## P1-code-analysis-hotfix-route-missing：禅道 Bug / Hotfix 线上问题转化路由未在入口文档中得到对等覆盖
+
+- 问题：`CLAUDE.md` 已明确 `code-analysis-report` 支持“禅道 Bug 链接 → 自动提取修复分支 → 线上问题转化测试用例”，并给出 `http://zenpms.dtstack.cn/zentao/bug-view-{bugId}.html` 入口示例；但 `README.md` 的快速开始仍只写“帮我分析这个报错（附报错日志 + curl）”，`.claude/skills/using-qa-flow/SKILL.md` 的功能菜单与“快速示例”也仅覆盖粘贴报错日志的 route，基本未覆盖禅道 Bug URL / Hotfix 入口。
+- 原因：主入口与 `/using-qa-flow` 菜单对 `code-analysis-report` 的描述仍停留在“日志分析 → HTML 报告”，没有同步 `CLAUDE.md` 已经成立的双路由 contract（报错分析 + 禅道 Bug / Hotfix 线上问题转化）。
+- 影响：用户和 agent 很难从 README 或 `/using-qa-flow` 菜单得知可以直接发送禅道 Bug URL 触发线上问题转化，导致实际已支持的 route 在主要入口不可发现；不同入口对同一 skill 的能力描述不一致，也会削弱主入口可信度与路由稳定性。
+- 建议：在 `README.md` 的快速开始、`.claude/skills/using-qa-flow/SKILL.md` 的功能菜单与“快速示例”中补充“直接发送禅道 Bug URL / Hotfix 线上问题转化”入口，并与 `CLAUDE.md` 使用同一表述，明确这是 `code-analysis-report` 的标准 route 之一。
+- 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`
+
 ### P2（文案 / 可读性 / 向导体验）
 
 - 暂无新增条目；本轨低确定性口径差异见“待用户确认项”。
@@ -179,4 +195,4 @@ date: "2026-04-02"
   - 兼容旧触发词、旧路径、旧话术的保留策略
 - Task 1 暂不预写具体确认项；后续仅在出现真实分歧时追加。
 
-- **测试用例公开示例口径是否统一到单一 canonical 写法**：`CLAUDE.md` / `README.md` 当前以 `为 Story-20260322 生成测试用例`、`继续 Story-20260322` 为主示例，但 `.claude/skills/using-qa-flow/SKILL.md` 仍以 `为 ${module_key} v${version} 生成测试用例`、`继续 ${module_key} v${version}` 为菜单示例，且 `README.md` 额外声明自然语言“快速生成测试用例”也等价于 `--quick`。若三套写法都要保留，建议维护者明确哪一套是对外 canonical 入口，哪一套只是兼容示例；否则后续 README / CLAUDE / menu 仍会持续分叉。
+- **测试用例公开示例的兼容策略是否继续保留双写法**：`P1-test-case-public-example-conflict` 已确认 `Story-xxx` 与 `${module_key} v${version}` 同时对外暴露属于事实性入口冲突；本节仅保留整改策略层面的待拍板项：最终对外 canonical 写法选哪一套，另一套是否作为兼容 alias 保留，以及 README 中“快速生成测试用例”这类自然语言等价提示是否继续公开展示。该项属于取舍问题，不再替代正式 findings。
