@@ -145,6 +145,56 @@ date: "2026-04-02"
 - 建议：在 `README.md` 的快速开始、`.claude/skills/using-qa-flow/SKILL.md` 的功能菜单与“快速示例”中补充“直接发送禅道 Bug URL / Hotfix 线上问题转化”入口，并与 `CLAUDE.md` 使用同一表述，明确这是 `code-analysis-report` 的标准 route 之一。
 - 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`
 
+> Skill inventory 复核结论：`archive-converter`、`code-analysis-report`、`prd-enhancer`、`xmind-converter` 基本维持单一工作流 / 单一产物 contract；职责边界问题主要集中在 `using-qa-flow`（网关型）与 `test-case-generator`（编排型）。
+
+#### skill 规范
+
+## P1-skill-contract-layer-break：`using-qa-flow` 与 `test-case-generator` 的 `SKILL.md` 仍在承担 step / reference 级细节
+
+- 问题：`using-qa-flow/references/init-wizard-flow.md:3`、`references/config-questionnaire.md:3` 都明确声明 `SKILL.md` “只保留入口摘要”，但 `using-qa-flow/SKILL.md` 仍完整展开 Step 0.1~0.5 与环境初始化 Step 1~5 的命令级细节；`test-case-generator/SKILL.md:13` 虽声明“本文件仅定义编排流程”，却继续承载 `.qa-state` 初始结构、Writer 自动重试、Reviewer 并行拆分阈值、模块级重跑流程等执行细节。
+- 原因：两个复杂 skill 仍把 `SKILL.md` 同时当作“高层 contract”“执行手册”“状态机补充说明”使用，导致高层说明没有真正与 prompt / reference 层分离。
+- 影响：维护者调整初始化命令、状态字段或 reviewer 策略时，必须同步改 `SKILL.md`、step prompt、reference 多处文档；复杂 skill 的稳定 contract 无法沉淀，轻量 skill 与重型 skill 的文档分层标准也会继续失真。
+- 建议：`SKILL.md` 仅保留触发词、输入/输出契约、模式说明、step 索引和必要边界；命令级步骤、状态机、问答模板与阈值规则收口到单一 reference / prompt，并让 `SKILL.md` 只引用而不重复叙述。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/using-qa-flow/references/init-wizard-flow.md`、`.claude/skills/using-qa-flow/references/config-questionnaire.md`、`.claude/skills/test-case-generator/SKILL.md`、`.claude/skills/test-case-generator/references/intermediate-format.md`
+
+#### prompt 分层
+
+## P1-test-case-generator-contract-drift：`test-case-generator` 的快速模式与 `.qa-state` contract 已出现事实性漂移
+
+- 问题：同一流程规则在 `SKILL.md`、step prompt、reference 中重复维护后已经出现冲突：`SKILL.md:93` 说明快速模式的 `brainstorm` “仅执行历史用例检索”，`step-brainstorm.md:5/22` 也明确它是“部分执行”而不是跳过；但 `SKILL.md:97` 又要求 Writer 在“`brainstorm` 步骤已跳过”时重做同一历史检索。另一处，`SKILL.md:99-113/140` 将 Writer 自动重试定义为“自动重试 1 次”，而 `references/intermediate-format.md:304` 又写成 “达到上限（默认 2 次）后写 failed”。
+- 原因：`SKILL.md` 仍在手写快速模式、重试与断点续传的细粒度行为；step prompt 与 reference 也各自补充同一 contract，缺少单一权威。
+- 影响：实现编排器或后续维护 prompt 时，很难判断“快速模式到底是部分执行还是跳过”“retry_count 到底代表 1 次还是 2 次重试”；续传、Writer 回退和质量阻断逻辑都可能因读取不同文档而走到不同分支。
+- 建议：把快速模式 / 重试 / 状态转移 contract 收口到单一状态机 reference（或单个 canonical step 文档）；`SKILL.md` 仅保留模式摘要；移除当前已经无法成立的“`brainstorm` 已跳过时再做历史检索”分支，并统一 `retry_count` 语义。
+- 涉及文件：`.claude/skills/test-case-generator/SKILL.md`、`.claude/skills/test-case-generator/prompts/step-brainstorm.md`、`.claude/skills/test-case-generator/prompts/step-parse-input.md`、`.claude/skills/test-case-generator/references/intermediate-format.md`
+
+#### reference 过载
+
+## P1-intermediate-format-reference-overload：`intermediate-format.md` 已从输出 Schema 膨胀成编排状态手册
+
+- 问题：`.claude/skills/test-case-generator/references/intermediate-format.md` 除了 Writer / Reviewer 的中间 JSON Schema 外，还同时承载 Archive/PRD frontmatter 映射、Checklist JSON 格式、`.qa-state` 命名规则、字段说明与完整状态转移表，实际已经覆盖“输出格式 + 工作流状态机 + 对话中间产物”三类不同 contract。
+- 原因：当前 reference 没有按“输出结构”“状态结构”“评审中间产物”拆开，后续新增 contract 时不断追加到同一文件，文件名与真实职责逐渐失配。
+- 影响：Writer 为了查 JSON Schema 被迫读取大量编排状态说明；状态字段或 checklist 变更时也会改动一个名为“intermediate-format”的文件，进一步诱发 `SKILL.md` / step prompt 对局部内容的二次摘录和漂移。
+- 建议：至少拆成 “case JSON schema”“qa-state schema / transition”“frontmatter / checklist mapping” 三个 reference；`writer-subagent.md` 仅引用 case JSON schema，状态机相关文档只由编排层和相关 step prompt 消费。
+- 涉及文件：`.claude/skills/test-case-generator/references/intermediate-format.md`、`.claude/skills/test-case-generator/SKILL.md`、`.claude/skills/test-case-generator/prompts/writer-subagent.md`、`.claude/skills/test-case-generator/prompts/step-parse-input.md`
+
+#### 多 agent 协同设计
+
+## P1-source-analyze-authority-blur：`source-analyze` 与 Writer 的源码阅读职责没有收敛到单一权威
+
+- 问题：`step-source-analyze.md:14-15` 把该步骤定义为“集中完成一次源码分析”，并要求 Writer / Reviewer 直接读取 `source-context.md`、无需再全量 grep 源码仓库；`writer-subagent.md:53` 也要求“直接 Read 上方文件路径即可，无需自行 grep 源码仓库”。但 `writer-subagent-reference.md:78-92` 又把 “Grep 搜索 Controller”“提取 DTO/VO 字段”“提取业务逻辑分支” 定义为 Writer 在有源码时必须执行的动作；`step-source-analyze.md:70` 还在部分失败分支写入“Writer 请自行 grep”。
+- 原因：`source-analyze` 作为预提取层加入后，Writer 的旧版深度源码分析义务没有同步退场，导致“预提取是权威输入”还是“只是性能优化”没有写清。
+- 影响：源码阅读被 source-analyzer 与 Writer 双重承担，多 agent 的上下文隔离优势被削弱；后续若 source-context 与 Writer 二次 grep 结果不一致，也缺少明确的裁决规则。
+- 建议：维护者需要选定单一模式并写成 contract：要么 `source-analyze` 成为唯一正常路径、Writer 仅在明确降级条件下回源 grep；要么显式把它定义为缓存 / 预热层，并写清 Writer 允许二次 grep 的触发条件与优先级。
+- 涉及文件：`.claude/skills/test-case-generator/prompts/step-source-analyze.md`、`.claude/skills/test-case-generator/prompts/writer-subagent.md`、`.claude/skills/test-case-generator/prompts/writer-subagent-reference.md`、`.claude/skills/test-case-generator/references/intermediate-format.md`
+
+## P1-uncertainty-owner-conflict：Writer / Reviewer 对“待核实”标记没有单一所有者
+
+- 问题：`references/intermediate-format.md:158-164` 明确规定 `待核实` 仅能由 Reviewer 设置；`reviewer-subagent.md:208-210` 也把它定义为 Reviewer 在 3 轮修正后仍无法确认时的专属动作。但 `writer-subagent-reference.md:67-69` 却要求 Writer 在 PRD 矛盾时直接在 `precondition` 末尾标注 `[待核实：...]`；与此同时，`writer-subagent.md:191/263` 又明确禁止 Writer 在 `precondition / steps / expected` 中写入任何 `[待核实]`、`[待确认]` 等内部注释。
+- 原因：不确定性处理被拆散到 Writer 主 prompt、Writer reference、Reviewer prompt 和 Schema 四处维护，没有单一 owner。
+- 影响：Writer 的合法输出边界变成自相矛盾：既被要求禁止写 `[待核实]`，又被 reference 指导去写；Reviewer 也无法判断“待核实”是自己接管的问题，还是 Writer 可以提前暴露的标记，进而污染中间 JSON 与最终用例文本。
+- 建议：把“不确定性如何暴露”收口到单一角色（建议继续由 Reviewer / 评审报告独占）；Writer reference 改为输出摘要或跳过原因，而不是在用户可见用例正文里夹带 `[待核实]` 注释。
+- 涉及文件：`.claude/skills/test-case-generator/prompts/writer-subagent-reference.md`、`.claude/skills/test-case-generator/prompts/writer-subagent.md`、`.claude/skills/test-case-generator/prompts/reviewer-subagent.md`、`.claude/skills/test-case-generator/references/intermediate-format.md`
+
 ### P2（文案 / 可读性 / 向导体验）
 
 - 暂无新增条目；本轨低确定性口径差异见“待用户确认项”。
@@ -196,3 +246,5 @@ date: "2026-04-02"
 - Task 1 暂不预写具体确认项；后续仅在出现真实分歧时追加。
 
 - **测试用例公开示例的兼容策略是否继续保留双写法**：`P1-test-case-public-example-conflict` 已确认 `Story-xxx` 与 `${module_key} v${version}` 同时对外暴露属于事实性入口冲突；本节仅保留整改策略层面的待拍板项：最终对外 canonical 写法选哪一套，另一套是否作为兼容 alias 保留，以及 README 中“快速生成测试用例”这类自然语言等价提示是否继续公开展示。该项属于取舍问题，不再替代正式 findings。
+- **`source-analyze` 是权威输入还是性能优化层**：`P1-source-analyze-authority-blur` 已证实 `source-analyze`、Writer 主 prompt、Writer reference 对源码阅读职责存在双写；需要维护者拍板：后续是把 `source-context.md` 定义为 Writer / Reviewer 的唯一正常输入，还是允许 Writer 在常规路径继续二次 grep 源码。该项决定多 agent 设计究竟走“集中预提取”还是“预提取 + 自主回源”模型。
+- **`using-qa-flow` 是否允许作为例外继续承载命令级 onboarding 内容**：`P1-skill-contract-layer-break` 已确认 `using-qa-flow` 当前没有遵守其 reference 所声明的“SKILL.md 只保留入口摘要”；若维护者认为它本质上兼具菜单与 onboarding 手册双角色，应把这一例外明确写进 contract，而不是继续保持 `SKILL.md` 与 references 互相否定的状态。
