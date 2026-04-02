@@ -473,6 +473,56 @@ for (const dir of requiredDirs) {
   );
 }
 
+console.log("\n=== Test: CLAUDE.md 触发词必须在对应 SKILL.md description 中出现 ===");
+const claudeTriggerTable = claudeMdContent.match(/\| `[a-z-]+`\s+\|[^|]+\|[^|]+\|/g) || [];
+for (const row of claudeTriggerTable) {
+  const skillMatch = row.match(/\| `([a-z-]+)`/);
+  if (!skillMatch) continue;
+  const skillName = skillMatch[1];
+  const triggersMatch = row.match(/\|[^|]+\|\s*([^|]+)\|$/);
+  if (!triggersMatch) continue;
+  const triggers = triggersMatch[1]
+    .split(/[·、,，]/)
+    .map(t => t.replace(/`/g, "").trim())
+    .filter(Boolean);
+  const skillMdPath = resolve(skillsRoot, skillName, "SKILL.md");
+  if (!existsSync(skillMdPath)) continue;
+  const skillDesc = readFileSync(skillMdPath, "utf8").split("\n").slice(0, 5).join(" ");
+  for (const trigger of triggers) {
+    const normalized = trigger.replace(/\s+/g, "");
+    const descNormalized = skillDesc.replace(/\s+/g, "");
+    assert(
+      descNormalized.includes(normalized),
+      `${skillName} SKILL.md description 包含触发词「${trigger}」`,
+    );
+  }
+}
+
+console.log("\n=== Test: config.json 路径与 Skill 文案硬编码路径一致 ===");
+const configPaths = {
+  "reports/bugs/": configContent.reports.bugs,
+  "reports/conflicts/": configContent.reports.conflicts,
+  "assets/images/": configContent.assets.images,
+};
+const pathCheckFiles = [
+  resolve(skillsRoot, "code-analysis-report", "SKILL.md"),
+  resolve(skillsRoot, "code-analysis-report", "prompts", "code-analyzer.md"),
+  resolve(skillsRoot, "prd-enhancer", "SKILL.md"),
+];
+for (const filePath of pathCheckFiles) {
+  if (!existsSync(filePath)) continue;
+  const content = readFileSync(filePath, "utf8");
+  const fileName = relative(repoRoot, filePath);
+  for (const [literal, configVal] of Object.entries(configPaths)) {
+    if (content.includes(literal)) {
+      assert(
+        configVal === literal || configVal.replace(/\/$/, "") === literal.replace(/\/$/, ""),
+        `${fileName} 中的 ${literal} 与 config.json 声明一致`,
+      );
+    }
+  }
+}
+
 console.log(`\n══════════════════════════════════════`);
 console.log(`总计: ${passed + failed} 测试, ✅ ${passed} 通过, ❌ ${failed} 失败`);
 console.log(`══════════════════════════════════════`);

@@ -119,6 +119,7 @@ const plainPreconditionRelativePath = "cases/archive/data-assets/v6.4.9/plain-pr
 const directBackfillRequirementRelativePath = "cases/prds/data-assets/v6.4.9/direct-backfill-prd-formalized.md";
 const directBackfillArchiveRelativePath = "cases/archive/data-assets/v6.4.9/direct-backfill-archive.md";
 const directReviewedArchiveRelativePath = "cases/archive/data-assets/v6.4.9/direct-reviewed-status-archive.md";
+const issuesRelativePath = "cases/issues/202604/zentao-bug-141713.md";
 
 const archiveBody = [
   "# Legacy archive(#12345)",
@@ -464,6 +465,46 @@ writeFixture(
   ].join("\n"),
 );
 
+writeFixture(
+  issuesRelativePath,
+  [
+    "---",
+    'suite_name: "在线问题转化"',
+    "description: 验证 DmMySQL 元数据同步 SQL 缺少逗号导致同步失败",
+    "product: data-assets",
+    "zentao_bug_id: 141713",
+    'zentao_url: "http://zenpms.dtstack.cn/zentao/bug-view-141713.html"',
+    "dev_version: hotfix_6.3.x_141713",
+    "tags: [hotfix, online-case]",
+    'keywords: "6.3|元数据同步|DmMySQL||6.3|SQL缺少逗号"',
+    'create_at: "2026-04-01"',
+    'update_at: "2026-04-01"',
+    "status: 已归档",
+    "origin: zentao",
+    "---",
+    "## 在线问题转化",
+    "",
+    "### 元数据同步",
+    "",
+    "#### DmMySQL 同步失败修复验证",
+    "",
+    "##### 【P1】验证 DmMySQL 元数据同步 SQL 修复",
+    "",
+    "> 前置条件",
+    "```",
+    "已部署 hotfix_6.3.x_141713 分支代码",
+    "```",
+    "",
+    "> 用例步骤",
+    "",
+    "| 编号 | 步骤 | 预期 |",
+    "| --- | --- | --- |",
+    "| 1 | 进入【元数据同步】页面 | 成功 |",
+    "| 2 | 创建 DmMySQL 类型同步任务并执行 | 同步成功，无 SQL 语法错误 |",
+    "",
+  ].join("\n"),
+);
+
 const originalArchive = readFixture(archiveRelativePath);
 const originalRequirement = readFixture(requirementRelativePath);
 const originalElicitedRequirement = readFixture(elicitedRequirementRelativePath);
@@ -804,6 +845,30 @@ assert(
     && !postFixDryRunResult.stdout.includes(`${bulletArchiveRelativePath}\n- ⚠️ 步骤表格第一步未以“进入【”开头`),
   "修复后 bullet/XMind-style archive 不再出现 body 结构/首步格式警告",
   [postFixDryRunResult.stdout],
+);
+
+console.log("\n=== Test: Issues 类型 front-matter 保留必填字段 ===");
+const issuesContent = readFixture(issuesRelativePath);
+assert(
+  issuesContent.includes("zentao_bug_id:"),
+  "Issues fixture 包含必填字段 zentao_bug_id",
+  [issuesContent.slice(0, 300)],
+);
+assert(
+  issuesContent.includes("zentao_url:"),
+  "Issues fixture 包含必填字段 zentao_url",
+);
+assert(
+  issuesContent.includes("origin: zentao"),
+  "Issues fixture 的 origin 字段为 zentao",
+);
+assert(
+  /keywords:.*\|.*\|/.test(issuesContent),
+  "Issues fixture 的 keywords 字段使用竖线分隔格式",
+);
+assert(
+  issuesContent.includes('suite_name: "在线问题转化"'),
+  "Issues fixture 的 suite_name 为「在线问题转化」",
 );
 
 console.log(`\n══════════════════════════════════════`);
