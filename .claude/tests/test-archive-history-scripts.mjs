@@ -25,6 +25,9 @@ const runId = `${process.pid}-${Date.now()}`;
 const tempRoot = resolve(__dirname, `__test_archive_history_${runId}`);
 const generatedFilePaths = new Set();
 const generatedDirPaths = new Set();
+// 当前年月，用于 YYYYMM 归档目录期望值
+const now = new Date();
+const currentPeriod = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
 
 let passed = 0;
 let failed = 0;
@@ -215,7 +218,7 @@ async function main() {
   const fallbackVersion = `vtest-${runId}`;
   const fallbackRequirementName = `__qa-routing-unmatched-${runId}`;
   const fallbackInputPath = resolve(tempRoot, `${fallbackRequirementName}.json`);
-  const fallbackOutputDir = resolve(repoRoot, "cases/archive", fallbackVersion);
+  const fallbackOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const fallbackOutputPath = resolve(fallbackOutputDir, `${fallbackRequirementName}.md`);
   writeFileSync(
     fallbackInputPath,
@@ -230,13 +233,13 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(fallbackOutputDir);
+  // YYYYMM 目录是真实工作目录，不追踪整个目录；仅追踪测试文件
   const fallbackResult = runNodeScript(archiveScriptPath, [fallbackInputPath]);
   assert(fallbackResult.code === 0, "未命中模块时归档转换执行成功", [
     fallbackResult.stderr.trim(),
     fallbackResult.stdout.trim(),
   ].filter(Boolean));
-  assert(existsSync(fallbackOutputPath), "未命中模块时写入 cases/archive/<version>/", [
+  assert(existsSync(fallbackOutputPath), "未命中模块时写入 cases/archive/YYYYMM/", [
     fallbackOutputPath,
   ]);
   if (existsSync(fallbackOutputPath)) {
@@ -252,8 +255,8 @@ async function main() {
   console.log("\n=== Test: json-to-archive-md.mjs 默认路由到 DTStack 模块归档目录 ===");
   const dtRequirementName = `__qa-routing-data-assets-${runId}`;
   const dtInputPath = resolve(tempRoot, `${dtRequirementName}.json`);
-  // With generic config (empty modules), routing falls back to cases/archive/{version}/ rather than cases/archive/{module}/
-  const dtOutputDir = resolve(repoRoot, "cases/archive/vtest-route");
+  // 模块无显式 archive 路径 → 路由到 cases/archive/YYYYMM/
+  const dtOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const dtOutputPath = resolve(dtOutputDir, `${dtRequirementName}.md`);
   writeFileSync(
     dtInputPath,
@@ -268,13 +271,12 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(dtOutputDir);
   const dtResult = runNodeScript(archiveScriptPath, [dtInputPath]);
   assert(dtResult.code === 0, "DTStack 模块默认路由执行成功", [
     dtResult.stderr.trim(),
     dtResult.stdout.trim(),
   ].filter(Boolean));
-  assert(existsSync(dtOutputPath), "DTStack 模块默认路由写入 cases/archive/data-assets/", [
+  assert(existsSync(dtOutputPath), "DTStack 模块无显式 archive 路径时写入 cases/archive/YYYYMM/", [
     dtOutputPath,
   ]);
   if (existsSync(dtOutputPath)) {
@@ -287,8 +289,8 @@ async function main() {
   console.log("\n=== Test: json-to-archive-md.mjs 为 DTStack 语义版本自动创建版本目录 ===");
   const dtVersionedRequirementName = `__qa-routing-data-assets-semver-${runId}`;
   const dtVersionedInputPath = resolve(tempRoot, `${dtVersionedRequirementName}.json`);
-  // With generic config (empty modules), versioned routing falls back to cases/archive/{version}/ (no module subdir)
-  const dtVersionedOutputDir = resolve(repoRoot, "cases/archive/v6.4.10");
+  // 模块无显式 archive 路径 → 路由到 cases/archive/YYYYMM/（version 仅用于 frontmatter，不影响目录）
+  const dtVersionedOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const dtVersionedOutputPath = resolve(dtVersionedOutputDir, `${dtVersionedRequirementName}.md`);
   writeFileSync(
     dtVersionedInputPath,
@@ -303,13 +305,12 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(dtVersionedOutputDir);
   const dtVersionedResult = runNodeScript(archiveScriptPath, [dtVersionedInputPath]);
   assert(dtVersionedResult.code === 0, "DTStack 语义版本路由执行成功", [
     dtVersionedResult.stderr.trim(),
     dtVersionedResult.stdout.trim(),
   ].filter(Boolean));
-  assert(existsSync(dtVersionedOutputPath), "DTStack 语义版本路由写入 cases/archive/data-assets/v6.4.10/", [
+  assert(existsSync(dtVersionedOutputPath), "DTStack 语义版本路由写入 cases/archive/YYYYMM/", [
     dtVersionedOutputPath,
   ]);
 
@@ -317,8 +318,8 @@ async function main() {
   const titledInputPath = resolve(tempRoot, `final-reviewed-titled-${runId}.json`);
   const titledRequirementName = "数据资产V6.4.10";
   const titledArchiveFileName = `【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比-${runId}`;
-  // With generic config (empty modules), module_key "data-assets" not recognized — falls back to cases/archive/v6.4.10/
-  const titledOutputDir = resolve(repoRoot, "cases/archive/v6.4.10");
+  // 模块无显式 archive 路径 → 路由到 cases/archive/YYYYMM/
+  const titledOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const titledOutputPath = resolve(
     titledOutputDir,
     `${titledArchiveFileName}.md`,
@@ -348,7 +349,6 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(titledOutputDir);
   const titledResult = runNodeScript(archiveScriptPath, [titledInputPath]);
   assert(titledResult.code === 0, "DTStack 需求标题命名执行成功", [
     titledResult.stderr.trim(),
@@ -373,7 +373,7 @@ async function main() {
   console.log("\n=== Test: json-to-archive-md.mjs 显式 PRD 关联缺路径时拒绝生成不合法归档 ===");
   const partialPrdRequirementName = `partial-prd-signal-${runId}`;
   const partialPrdInputPath = resolve(tempRoot, `${partialPrdRequirementName}.json`);
-  const partialPrdOutputDir = resolve(repoRoot, "cases/archive/v6.4.11");
+  const partialPrdOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const partialPrdOutputPath = resolve(partialPrdOutputDir, `${partialPrdRequirementName}.md`);
   writeFileSync(
     partialPrdInputPath,
@@ -389,7 +389,6 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(partialPrdOutputDir);
   const partialPrdResult = runNodeScript(archiveScriptPath, [partialPrdInputPath]);
   assert(partialPrdResult.code !== 0, "显式 PRD 关联缺路径输入会失败而不是生成半套 frontmatter", [
     partialPrdResult.stderr.trim(),
@@ -406,7 +405,7 @@ async function main() {
   console.log("\n=== Test: json-to-archive-md.mjs 仅显式 prd_version 时也拒绝生成不合法归档 ===");
   const prdVersionOnlyRequirementName = `partial-prd-version-only-${runId}`;
   const prdVersionOnlyInputPath = resolve(tempRoot, `${prdVersionOnlyRequirementName}.json`);
-  const prdVersionOnlyOutputDir = resolve(repoRoot, "cases/archive/v6.4.12");
+  const prdVersionOnlyOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const prdVersionOnlyOutputPath = resolve(prdVersionOnlyOutputDir, `${prdVersionOnlyRequirementName}.md`);
   writeFileSync(
     prdVersionOnlyInputPath,
@@ -431,7 +430,6 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(prdVersionOnlyOutputDir);
   const prdVersionOnlyResult = runNodeScript(archiveScriptPath, [prdVersionOnlyInputPath]);
   assert(prdVersionOnlyResult.code !== 0, "仅显式 prd_version 输入也会失败而不是静默吞掉关联信号", [
     prdVersionOnlyResult.stderr.trim(),
@@ -452,8 +450,8 @@ async function main() {
   console.log("\n=== Test: DTStack 临时 final-reviewed 文件名不会污染归档文件名 ===");
   const tempReviewedRequirementName = `【内置规则丰富】有效性，json中key对应的value值格式校验-${runId}`;
   const tempReviewedInputPath = resolve(tempRoot, `final-reviewed-${runId}-clean.json`);
-  // With generic config, prd_version "v6.4.10" overrides and routes to cases/archive/v6.4.10/
-  const tempReviewedOutputDir = resolve(repoRoot, "cases/archive/v6.4.10");
+  // 模块无显式 archive 路径 → 路由到 cases/archive/YYYYMM/
+  const tempReviewedOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const tempReviewedOutputPath = resolve(
     tempReviewedOutputDir,
     `${tempReviewedRequirementName}.md`,
@@ -486,7 +484,6 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(tempReviewedOutputDir);
   const tempReviewedResult = runNodeScript(archiveScriptPath, [tempReviewedInputPath]);
   assert(tempReviewedResult.code === 0, "DTStack 临时 final-reviewed 输入执行成功", [
     tempReviewedResult.stderr.trim(),
@@ -514,8 +511,8 @@ async function main() {
   const prefixedRequirementName = `__qa-prd-prefix-${runId}`;
   const prefixedInputBaseName = `PRD-26-${prefixedRequirementName}.json`;
   const prefixedInputPath = resolve(tempRoot, prefixedInputBaseName);
-  // With generic config, version "vtest-prefix" routes to cases/archive/vtest-prefix/
-  const prefixedOutputDir = resolve(repoRoot, "cases/archive/vtest-prefix");
+  // 模块无显式 archive 路径 → 路由到 cases/archive/YYYYMM/
+  const prefixedOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const prefixedOutputPath = resolve(
     prefixedOutputDir,
     prefixedInputBaseName.replace(/\.json$/, ".md"),
@@ -533,7 +530,6 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(prefixedOutputDir);
   const prefixedResult = runNodeScript(archiveScriptPath, [prefixedInputPath]);
   assert(prefixedResult.code === 0, "PRD 前缀输入执行成功", [
     prefixedResult.stderr.trim(),
@@ -552,8 +548,8 @@ async function main() {
   const metaRequirementName = `质量问题台账-${runId}`;
   const metaPrdBaseName = `PRD-52-${metaRequirementName}.md`;
   const metaInputPath = resolve(tempRoot, `final-reviewed-${runId}.json`);
-  // With generic config, version "vtest-meta" routes to cases/archive/vtest-meta/
-  const metaOutputDir = resolve(repoRoot, "cases/archive/vtest-meta");
+  // 模块无显式 archive 路径 → 路由到 cases/archive/YYYYMM/
+  const metaOutputDir = resolve(repoRoot, "cases/archive", currentPeriod);
   const metaOutputPath = resolve(metaOutputDir, metaPrdBaseName);
   writeFileSync(
     metaInputPath,
@@ -571,7 +567,6 @@ async function main() {
     ),
     "utf8",
   );
-  generatedDirPaths.add(metaOutputDir);
   const metaResult = runNodeScript(archiveScriptPath, [metaInputPath]);
   assert(metaResult.code === 0, "meta 驱动命名输入执行成功", [
     metaResult.stderr.trim(),
@@ -794,8 +789,9 @@ async function main() {
     ].join("\n"),
     "utf8",
   );
-  generatedDirPaths.add(csvHistoryDir);
-  generatedDirPaths.add(csvArchiveDir);
+  // 追踪父目录，确保 cleanup 能递归删除整个 __archive-csv-{runId}/ 目录
+  generatedDirPaths.add(resolve(repoRoot, "cases", "history", csvModuleKey));
+  generatedDirPaths.add(resolve(repoRoot, "cases", "archive", csvModuleKey));
   const csvConvertResult = runNodeScript(historyScriptPath, ["--module", csvModuleKey, "--force"]);
   assert(csvConvertResult.code === 0, "convert-history-cases CSV 扫描执行成功", [
     csvConvertResult.stderr.trim(),
