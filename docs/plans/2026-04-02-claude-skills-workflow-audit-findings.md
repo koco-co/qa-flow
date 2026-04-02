@@ -151,12 +151,12 @@ date: "2026-04-02"
 
 | Skill | 类型判断 | 多 agent | 是否发现明显分层问题 | 精简证据 |
 | --- | --- | --- | --- | --- |
-| `archive-converter` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/archive-converter/SKILL.md:8-21/53-72` 聚焦“历史用例 → Archive Markdown”单一路由，canonical 步骤 1-5 直接收口到 `convert-history-cases.mjs`。 |
-| `prd-enhancer` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/prd-enhancer/SKILL.md:16-24/51-81` 只围绕单 PRD 增强、图片要点、健康度预检展开，输入 / 输出边界清楚。 |
-| `xmind-converter` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/xmind-converter/SKILL.md:16-22/52-72` 收敛为 JSON → XMind 单一产物，主步骤集中在输入识别、路径计算、转换与结构验证。 |
-| `code-analysis-report` | 网关型 | 否 | 未见本轮显著问题 | `.claude/skills/code-analysis-report/SKILL.md:16-21/36-43/77-99` 负责 A/B/C/D/E 五路模式识别与路由，但模式入口、产物目录与 reference 绑定关系仍相对清晰；本轮问题主要出在上游入口未对等暴露 Hotfix route。 |
-| `using-qa-flow` | 网关型 | 否 | **有** | `.claude/skills/using-qa-flow/SKILL.md:24-66/69-201` 同时承担菜单路由、项目配置向导与环境初始化命令手册；与其 references 声称“主文档只保留流程总览 / 入口摘要”不一致。 |
-| `test-case-generator` | 编排型 | **是** | **有** | `.claude/skills/test-case-generator/SKILL.md:40-58/85-123` 明确串联 11 个 step，并同时承载 `source-analyze` 双 Agent、并行 Writer、Reviewer 分片、重试与状态机约束；本轮 prompt / reference / 多 agent 协同问题主要集中于此。 |
+| `archive-converter` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/archive-converter/SKILL.md:8-12「用途与触发词」/53-61「Canonical 步骤总表」` 聚焦“历史 CSV / XMind 用例 → Archive Markdown”单一路由，canonical 步骤 1-5 直接收口到 `convert-history-cases.mjs`。 |
+| `prd-enhancer` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/prd-enhancer/SKILL.md:16-24「使用口径速查」/51-69「主流程」` 只围绕“单个 PRD 的增强与标准化”“图N 页面要点”“PRD 健康度预检”展开，输入 / 输出边界清楚。 |
+| `xmind-converter` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/xmind-converter/SKILL.md:16-21「使用口径速查」/52-62「Canonical 步骤总表」` 收敛为“JSON → XMind 单一产物”，主步骤集中在输入识别、路径计算、转换与结构验证。 |
+| `code-analysis-report` | 网关型 | 否 | 未见本轮显著问题 | `.claude/skills/code-analysis-report/SKILL.md:16-21「四种执行模式 + 信息不足补料」/36-42「模式A/B/C/E/D 路由表」/77-85「Canonical 步骤总表」` 负责多模式识别与路由，但模式入口、产物目录与 reference 绑定关系仍相对清晰；本轮问题主要出在上游入口未对等暴露 Hotfix route。 |
+| `using-qa-flow` | 网关型 | 否 | **有** | `.claude/skills/using-qa-flow/SKILL.md:11-20「功能菜单」/69-125「Step 0: 项目配置向导」/127-200「环境初始化（Step 1-5）」` 同时承担菜单路由、项目配置向导与环境初始化命令手册；与其 references 声称“主文档只保留流程总览 / 入口摘要”不一致。 |
+| `test-case-generator` | 编排型 | **是** | **有** | `.claude/skills/test-case-generator/SKILL.md:40-58「步骤顺序定义（canonical）」/95-123「Writer 步骤 / Reviewer 步骤」` 明确串联 11 个 step，并同时承载 `source-analyze` 双 Agent、并行 Writer、Reviewer 分片、重试与状态机约束；本轮 prompt / reference / 多 agent 协同问题主要集中于此。 |
 
 #### skill 规范
 
@@ -200,15 +200,15 @@ date: "2026-04-02"
 
 ## P1-reviewer-shard-global-contract-conflict：Reviewer 分片策略与全局查漏 / 去重职责互相冲突
 
-- 问题：`test-case-generator/SKILL.md:115-122` 规定总用例数 > 80 条时拆成 2 个并行 `case-reviewer`，分别只接收前 / 后半 Writer 输出，编排器最后仅做一次“跨 Reviewer 的同名用例标题轻量去重”。但 `prompts/reviewer-subagent.md:17-23` 把 Reviewer 定义为“对所有 Writer 生成的用例进行系统性评审、查漏补缺，并直接输出修正后的完整 JSON”；`reviewer-subagent.md:110-123` 又要求其基于增强 PRD 对全量功能点查漏补缺，`reviewer-subagent.md:212-223/232-242` 还要求在最终输出前做历史用例去重与多文件全量合并。也就是说，分片 Reviewer 实际拿到的是局部输入，却被赋予了全局 Reviewer 的职责。
+- 问题：`test-case-generator/SKILL.md:115-122` 规定总用例数 > 80 条时拆成 2 个并行 `case-reviewer`，分别只接收前 / 后半 Writer 输出，编排器最后仅做一次“跨 Reviewer 的同名用例标题轻量去重”。但 `prompts/reviewer-subagent.md:17-23` 把 Reviewer 定义为“对所有 Writer 生成的用例进行系统性评审、查漏补缺，并直接输出修正后的完整 JSON”；`reviewer-subagent.md:110-123` 又要求其基于增强 PRD 对全量功能点查漏补缺，`reviewer-subagent.md:212-223/232-242` 还要求在最终输出前做历史用例去重与多文件全量合并。也就是说，分片 Reviewer 实际只拿到局部输入，却被要求承担“基于全部 Writer 输出做全局查漏、历史去重并产出完整 JSON”的 contract；这个 contract 在输入条件上就无法成立。
 - 原因：编排层新增了 Reviewer 分片并行策略，但 reviewer prompt 仍按“单个全局 Reviewer”撰写，没有补一个最终全局 reviewer / aggregator 来承接跨分片 coverage、历史去重与最终合并裁决。
-- 影响：当遗漏点跨越两个 Writer 分片、或重复用例分散在不同 Reviewer 半区时，任一 Reviewer 都无法独立满足“基于全部 Writer 输出做全量查漏补缺和历史去重”的 contract；编排器末尾仅按同名标题做轻量扫描，也不足以替代全局 PRD / 历史语义复核，易产生跨分片漏补、重复补 case 或合并后 JSON 再漂移。
+- 影响：这不是“可能漏补”，而是分片 Reviewer 必然无法独立完成 prompt 要求的全局查漏 / 历史去重 contract：它从未拿到另一半 Writer 输出，也看不到合并后的全量语义，因此逻辑上不可能验证“全部功能点是否覆盖”“历史重复是否已消解”。编排器末尾仅按同名标题做轻量扫描，也不足以替代基于完整 PRD / 历史语义的全局复核；结果是当前并行策略下，全局 Reviewer contract 本身不可完成，跨分片漏补、重复补 case 或合并后 JSON 再漂移就不是边缘风险，而是未被 contract 兜住的确定性缺口。
 - 建议：二选一收口：要么恢复单 Reviewer 的全局语义；要么把 Reviewer 显式拆成“局部分片 Reviewer + 最终全局 Reviewer / Aggregator”两层，并把 `reviewer-subagent.md` 改写为局部 / 全局两套不同 contract，避免让分片 reviewer 持有无法完成的全局职责。
 - 涉及文件：`.claude/skills/test-case-generator/SKILL.md`、`.claude/skills/test-case-generator/prompts/reviewer-subagent.md`
 
 ## P1-uncertainty-owner-conflict：Writer / Reviewer 对“待核实”标记没有单一所有者
 
-- 问题：`references/intermediate-format.md:158-164` 明确规定 `待核实` 仅能由 Reviewer 设置；`reviewer-subagent.md:208-210` 也把它定义为 Reviewer 在 3 轮修正后仍无法确认时的专属动作。但 `writer-subagent-reference.md:67-69` 却要求 Writer 在 PRD 矛盾时直接在 `precondition` 末尾标注 `[待核实：...]`；与此同时，`writer-subagent.md:191/263` 又明确禁止 Writer 在 `precondition / steps / expected` 中写入任何 `[待核实]`、`[待确认]` 等内部注释。
+- 问题：核心冲突很直接：`references/intermediate-format.md:158-164` 与 `reviewer-subagent.md:208-210` 都规定 `[待核实]` 是 Reviewer 专属标记；但 `writer-subagent-reference.md:67-69` 却要求 Writer 在 PRD 矛盾时，直接在 `precondition` 末尾写 `[待核实：...]`。`writer-subagent.md:191/263` 对 Writer 的禁止规则只是进一步加剧混乱——它让 Writer 处于“reference 要求写、主 prompt 又禁止写”的叠加冲突中，但主冲突首先已经发生在 `[待核实]` 的 owner 定义本身。
 - 原因：不确定性处理被拆散到 Writer 主 prompt、Writer reference、Reviewer prompt 和 Schema 四处维护，没有单一 owner。
 - 影响：Writer 的合法输出边界变成自相矛盾：既被要求禁止写 `[待核实]`，又被 reference 指导去写；Reviewer 也无法判断“待核实”是自己接管的问题，还是 Writer 可以提前暴露的标记，进而污染中间 JSON 与最终用例文本。
 - 建议：把“不确定性如何暴露”收口到单一角色（建议继续由 Reviewer / 评审报告独占）；Writer reference 改为输出摘要或跳过原因，而不是在用户可见用例正文里夹带 `[待核实]` 注释。
