@@ -12,12 +12,11 @@ argument-hint: "[init | 功能编号或关键词]"
 
 | 编号  | 功能             | 说明                                                                     |
 | ----- | ---------------- | ------------------------------------------------------------------------ |
+| ⚙️ **0** | **项目配置 + 环境初始化** | ⚠️ 首次使用必做：项目结构推断、config.json 生成 + 环境初始化 |
 | **1** | 生成测试用例     | 根据 PRD 文档或蓝湖 URL 自动生成 XMind 测试用例（支持普通/快速/续传模式） |
 | **2** | 增强 PRD 文档    | 为 PRD 补充图片描述、格式规范化、健康度预检                              |
-| **3** | 分析代码报错     | 粘贴报错日志，定位问题根因并生成 HTML 报告（支持前端/后端/冲突分析）     |
+| **3** | 分析代码报错     | 粘贴报错日志 / 禅道 Bug 链接，定位问题根因并生成 HTML 报告              |
 | **4** | 转换历史用例     | 将 CSV/XMind 历史用例转为 Markdown 归档格式                              |
-| **5** | XMind 转换       | 将 JSON 数据转换为 XMind 文件                                            |
-| **0** | 项目配置 + 环境初始化 | 首次使用时执行：项目结构推断、config.json 生成、CLAUDE.md 创建 + 环境初始化 |
 
 ---
 
@@ -36,14 +35,10 @@ argument-hint: "[init | 功能编号或关键词]"
 
 如果 `$ARGUMENTS` 包含 `1` 或 `用例` 或 `test`：
 
-- 引导用户提供模块和版本，例如：`为 ${module_key} v${version} 生成测试用例`
-- 可补充一个具体示例：`例如：为 orders v2.0 生成测试用例`
-- 如需快速模式，推荐写法：`为 ${module_key} v${version} --quick 生成测试用例`
-- 说明：`--quick` 会跳过 Step 3（Brainstorming）、Step 4（Checklist 预览）、Step 5（用户确认）
-- 或直接提供蓝湖 URL，例如：`生成测试用例 https://lanhuapp.com/web/#/item/project/product?...`（自动从文档标题提取版本号）
-- 如果用户还没有 PRD 文件，提示将 PRD 放到 `cases/prds/YYYYMM/` 对应目录下
-- 如检测到 `.qa-state.json`，提示可直接说：`继续 ${module_key} v${version} 的用例生成`
-- 如需只重跑某个页面/模块，提示可说：`重新生成 ${module_key} v${version} 的「${page}」模块用例`
+- 引导用户提供 PRD 标识，例如：`为 Story-20260322 生成测试用例`
+- 快速模式：`为 Story-20260322 --quick 生成测试用例`
+- 也支持蓝湖 URL：`生成测试用例 https://lanhuapp.com/web/#/item/...`
+- 更多用法（续传/重跑）可回复「更多选项」查看
 
 如果 `$ARGUMENTS` 包含 `2` 或 `PRD` 或 `增强`：
 
@@ -51,14 +46,13 @@ argument-hint: "[init | 功能编号或关键词]"
 
 如果 `$ARGUMENTS` 包含 `3` 或 `报错` 或 `bug` 或 `分析`：
 
-- 引导用户粘贴报错日志和 curl 信息
+- 引导用户粘贴报错日志和 curl 信息，或直接发禅道 Bug 链接
 - 提示格式：`帮我分析这个报错` + 粘贴日志内容
-- 建议同时补充：`curl` 请求、当前分支（若已知）
+- 禅道 Bug：直接发送 `http://zenpms.dtstack.cn/zentao/bug-view-{bugId}.html` 即可自动提取修复分支并生成用例
 
 如果 `$ARGUMENTS` 包含 `4` 或 `转换` 或 `归档` 或 `archive`：
 
-- 引导用户选择：`转化所有历史用例` 或 `转化 ${module_key} 的历史用例` 或 `检查哪些历史用例还没转化`
-- 可补充一个具体示例：`例如：转化 orders 的历史用例`
+- 引导用户选择：`转化所有历史用例` 或 `转化 orders 的历史用例` 或 `检查哪些历史用例还没转化`
 
 如果 `$ARGUMENTS` 包含 `5` 或 `xmind`：
 
@@ -199,26 +193,25 @@ cat .repos/source-map.yaml 2>/dev/null || echo "（未配置源码仓库）"
 ## 快速示例
 
 ```
-# 生成测试用例（最常用）
-为 ${module_key} v${version} 生成测试用例
-为 ${module_key} v${version} --quick 生成测试用例
-例如：为 orders v2.0 生成测试用例
+# ⭐ 最常用：生成测试用例
+为 Story-20260322 生成测试用例
+为 Story-20260322 --quick 生成测试用例
+
+# 蓝湖 URL 导入
 生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx
 
 # 增强 PRD
 帮我增强这个 PRD：cases/prds/202604/商品管理需求.md
 
-# 分析报错
+# 分析报错 / 禅道 Bug
 帮我分析这个报错
-（然后粘贴报错日志 + curl 信息；若知道分支也一并提供）
+http://zenpms.dtstack.cn/zentao/bug-view-138845.html
 
 # 转化历史用例
 转化所有历史用例
-检查哪些历史用例还没转化
 
 # 环境初始化（首次使用）
 /using-qa-flow init
 ```
 
 > 提示：你也可以直接用自然语言描述需求，系统会自动匹配对应功能。
-> 验收建议：测试用例流查看终端输出的 XMind 文件路径和增强版 PRD 路径；代码分析流查看终端输出的报告文件路径。
