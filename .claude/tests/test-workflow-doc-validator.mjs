@@ -523,6 +523,29 @@ for (const filePath of pathCheckFiles) {
   }
 }
 
+console.log("\n=== Test: 关键 Schema/契约文档包含核心约束声明 ===");
+const qaStateContractPath = resolve(skillsRoot, "test-case-generator", "references", "qa-state-contract.md");
+const qaStateContract = readFileSync(qaStateContractPath, "utf8");
+assert(
+  qaStateContract.includes(".qa-state-{prd-slug}.json") && qaStateContract.includes(".qa-state.json"),
+  "qa-state-contract.md 声明了单 PRD 和批量两种状态文件命名",
+);
+const frontMatterSchemaPath = resolve(claudeRoot, "shared", "schemas", "front-matter-schema.md");
+const frontMatterSchema = readFileSync(frontMatterSchemaPath, "utf8");
+assert(
+  /description.*≤\s*60/.test(frontMatterSchema),
+  "front-matter-schema.md 声明了 description ≤60 字约束",
+);
+assert(
+  frontMatterSchema.includes("zentao_bug_id") && frontMatterSchema.includes("origin: zentao"),
+  "front-matter-schema.md 包含 Issues 类型必填字段声明",
+);
+const xmindRuleForPath = readFileSync(xmindRulePath, "utf8");
+assert(
+  xmindRuleForPath.includes("YYYYMM"),
+  "xmind-output.md 声明了 YYYYMM 时间周期路径",
+);
+
 console.log(`\n══════════════════════════════════════`);
 console.log(`总计: ${passed + failed} 测试, ✅ ${passed} 通过, ❌ ${failed} 失败`);
 console.log(`══════════════════════════════════════`);
