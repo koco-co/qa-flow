@@ -83,4 +83,4 @@ developmentVersionRules:
     repoProfileKey: ltqc-custom
     branches:
       backend: release_6.3.x_ltqc
-      frontend: release_6.3.x_ltqc
+      frontend: dataAssets/release_6.3.x_ltqc
