@@ -11,7 +11,7 @@
 
 ## 目标
 
-在 Writer 启动之前，集中完成一次源码分析，将前端/后端关键信息写入 `source-context.md`。
+在 Writer 启动之前，集中完成一次源码分析，将前端/后端关键信息与**可直接复用的前置条件模板**写入 `source-context.md`。
 Writer 和 Reviewer 直接读取该文件，**无需再全量 grep 源码仓库**。
 
 ---
@@ -31,8 +31,8 @@ Writer 和 Reviewer 直接读取该文件，**无需再全量 grep 源码仓库*
 
 | Agent | prompt 文件 | 职责 |
 |-------|------------|------|
-| `source-analyzer-frontend` | `prompts/source-analyzer-frontend.md` | 提取菜单路径、按钮文案、表单字段 label、多步骤向导 |
-| `source-analyzer-backend` | `prompts/source-analyzer-backend.md` | 提取接口路径、DTO 字段与校验注解、枚举值、业务逻辑分支 |
+| `source-analyzer-frontend` | `prompts/source-analyzer-frontend.md` | 提取菜单路径、按钮文案、表单字段 label、多步骤向导、关键交互补充 |
+| `source-analyzer-backend` | `prompts/source-analyzer-backend.md` | 提取接口路径、DTO 字段与校验注解、枚举值、业务逻辑分支、测试可直接复用的前置条件模板 |
 
 启动时传入：
 - 增强后 PRD 文件的完整路径（可多个，逐一传入）
@@ -56,11 +56,11 @@ Writer 和 Reviewer 直接读取该文件，**无需再全量 grep 源码仓库*
 
 ---
 
-[前端 Agent 输出的内容，以 ## 一、前端源码摘要 开头]
+[前端 Agent 输出的内容，以 ## 一、前端源码摘要 开头，至少包含 1.1 ~ 1.5]
 
 ---
 
-[后端 Agent 输出的内容，以 ## 二、后端源码摘要 开头]
+[后端 Agent 输出的内容，以 ## 二、后端源码摘要 开头，至少包含 2.1 ~ 2.6]
 ```
 
 ### 4. 错误处理

@@ -65,6 +65,17 @@ grep -rn "Steps\|Wizard\|StepForm\|current.*step\|step.*current" \
 
 若存在多步骤向导，Read 对应文件确认各步骤的 title。
 
+### 第六步：提取关键交互补充
+
+针对 PRD 相关页面，重点 grep / Read 以下信息：
+
+- 条件渲染 / 禁用规则（如某类节点不可点击、某类筛选不可取消）
+- 右键菜单 / 下拉菜单项
+- Tab / 二级切换 / 视图切换
+- 隐藏规则 / 特殊图标 / 特殊提示语
+
+优先提炼对 Writer / Reviewer 有直接价值的结论，不要复述源码实现细节。
+
 ---
 
 ## 输出格式
@@ -102,6 +113,11 @@ grep -rn "Steps\|Wizard\|StepForm\|current.*step\|step.*current" \
 |------------|--------|---------|----------------|
 | CreateRuleWizard | 1 | 基础配置 | src/.../Wizard.tsx:12 |
 | CreateRuleWizard | 2 | 规则条件 | src/.../Wizard.tsx:13 |
+
+### 1.5 关键交互补充
+
+1. [条件渲染 / 右键菜单 / 隐藏规则等，可直接用于写用例的结论]
+2. [如无，填写「无」]
 ```
 
 **注意事项：**

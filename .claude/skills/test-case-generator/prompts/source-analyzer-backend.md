@@ -26,7 +26,7 @@
 读取增强后 PRD，提取：
 - 所有涉及的业务实体名（如 `Rule`、`Lineage`、`Job`）
 - 功能关键词（如 `lineage`、`rule`、`bloodRelation` 等可能用于 grep 的英文词）
-- 是否涉及数据表操作、批量同步、调度任务、对账、规则配置等场景
+- 是否涉及数据表操作、批量同步、调度任务、对账、规则配置、血缘解析、指标生成、历史回刷等场景
 
 ### 第二步：定位 Controller 文件
 
@@ -83,6 +83,19 @@ grep -n "throw new\|BusinessException\|if.*status\|if.*type\|switch\|throw" \
 - 状态流转判断（如 `if (rule.getStatus() == RuleStatus.RUNNING)`）
 - 必填/权限/唯一性校验的 if 分支
 
+### 第六步：归纳测试可直接复用的前置条件模板
+
+若 PRD 涉及血缘 / 同步 / 回刷 / 解析 / 指标生成，结合 PRD 与源码，总结 Writer 必须补齐的前置条件要素：
+
+- 执行目标（在哪个引擎 / 集群执行）
+- 建表 / 灌数对象
+- 建链 SQL / 调度任务 SQL / 解析依赖 SQL
+- 指标定义 / 脚本模式 SQL
+- 历史回刷 SQL 或历史样例准备方式
+- 执行顺序（如先建链再同步）
+
+如果源码无法直接给出完整 SQL，不要编造，但要明确指出 Writer 在前置条件中**必须补齐哪一类执行语句**。
+
 ---
 
 ## 输出格式
@@ -119,6 +132,26 @@ grep -n "throw new\|BusinessException\|if.*status\|if.*type\|switch\|throw" \
 |-----------|--------|---------|----------------|
 | RuleServiceImpl.addRule | ruleName 重复时抛出异常 | "规则名称已存在" | src/.../RuleServiceImpl.java:88 |
 | RuleServiceImpl.deleteRule | status=RUNNING 时禁止删除 | 运行中规则不可删除 | src/.../RuleServiceImpl.java:120 |
+
+### 2.5 测试编写直接可用结论
+
+1. [从源码可直接落到用例中的结论，如“删除入口只对手工节点显示”]
+2. [如无，填写「无」]
+
+### 2.6 测试可直接复用的前置条件模板
+
+- 适用场景：[如血缘 / 同步 / 回刷 / 解析]
+- 执行目标：[引擎 / 集群；如无则写「未明确，Writer 需补齐」]
+- 必须包含：
+  1. 建表 / 灌数 SQL
+  2. 建链 SQL / 调度任务 SQL / 解析依赖 SQL
+  3. 指标定义 / 脚本模式 SQL
+  4. 历史回刷 SQL 或历史样例准备方式
+  5. 同步 / 刷新 / 执行顺序
+- 禁止写法：
+  - 确保建立可追溯血缘关系
+  - 保留查询结果的上游表记录
+  - 准备历史样例后验证
 ```
 
 **注意事项：**
