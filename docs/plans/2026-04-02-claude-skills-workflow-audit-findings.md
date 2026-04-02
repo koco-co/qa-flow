@@ -252,6 +252,58 @@ date: "2026-04-02"
 - 建议：以 `archive-format` 已存在的 `test-workflow-doc-validator.mjs` 单点 guard 为最小模板，将 `test-case-writing` 与 `xmind-output` 也补成 pair-wise diff 守护，或直接让 skill-local rules 退化为薄引用 / 生成产物。问题本质是“守护覆盖不完整 + 双权威未收口”，而不是“仓库完全没有守护”。
 - 涉及文件：`.claude/rules/archive-format.md`、`.claude/skills/archive-converter/rules/archive-format.md`、`.claude/rules/test-case-writing.md`、`.claude/skills/test-case-generator/rules/test-case-writing.md`、`.claude/rules/xmind-output.md`、`.claude/skills/xmind-converter/rules/xmind-output.md`
 
+## P1-load-config-test-expectation-drift：`test-load-config.mjs` 的 4 项断言假设与 `config.json` 实际状态不一致
+
+- 问题：`test-load-config.mjs` 中 4 项断言——"空 modules 时 getModuleMap() 返回空对象"、"空 modules 时 getModuleKeys() 返回空数组"、"branchMapping 为 null 时 getBranchMappingPath() 返回 null"、"getRepoBranchMappingPath() 作为 alias 正常工作"——均假设 `config.json` 的 `modules` 为空对象且 `branchMapping` 为 `null`。但当前 `config.json` 已声明 `modules: { "data-assets": ... }` 和 `branchMapping: "config/repo-branch-mapping.yaml"`，导致这 4 项断言必然失败。
+- 原因：测试用例是在配置"空态"阶段编写的，但 `config.json` 后续填入了真实配置值，测试断言未同步更新。测试既没有使用 fixture/mock 隔离，也没有读取实际 config 做动态断言。
+- 影响：`load-config` 是几乎所有 workflow 路径的第一跳；4/38 持续红灯导致该测试文件的回归守护信度降低——开发者无法一眼区分"老旧 false negative"和"真实新故障"，削弱了维护回归能力。
+- 建议：将这 4 项断言改为基于 `loadConfig()` 返回值的动态断言（例如 `keys.length === Object.keys(config.modules).length`），或使用 `loadConfigFromPath()` 传入 fixture config 隔离环境。
+- 涉及文件：`.claude/tests/test-load-config.mjs`、`.claude/config.json`
+
+### 测试验证摘要（Task 6）
+
+> 以下是 Task 6 运行全量测试后对 workflow contract 闭环状态的客观记录。
+
+#### 测试环境
+
+- 入口：`npm test` → `node .claude/tests/run-all.mjs`
+- 测试文件数：17
+- 总断言数：约 500+（17 文件各自汇总）
+
+#### 关键 contract 测试结果
+
+| 测试文件 | 结果 | 与 workflow contract 的关系 |
+| --- | --- | --- |
+| `test-workflow-doc-validator.mjs` | ✅ 40/40 | Skill 路径引用、CLAUDE.md 章节锚定、快捷链接废弃、archive 落盘状态 |
+| `test-no-hardcoded-paths.mjs` | ✅ 13/13 | shared scripts 不含硬编码 `cases/` 路径字面量 |
+| `test-output-convention-migration.mjs` | ✅ 6/6 | XMind 日期前缀移除、快捷链接清理、state 文件迁移 |
+| `test-load-config.mjs` | ⚠️ 34/38 | config 读取 contract（4 项 false negative，见 P1-load-config-test-expectation-drift） |
+| `test-front-matter-utils.mjs` | ✅ 21/21 | front-matter 解析 / 序列化契约 |
+| `test-formalized-prd-contract.mjs` | ✅ 6/6 | PRD 形式化输出契约 |
+| `test-init-wizard.mjs` | ✅ 62/62 | 初始化向导 contract |
+| `test-md-frontmatter-audit.mjs` | ✅ 95/95 | front-matter 审计规则 |
+| `test-md-body-normalization.mjs` | ✅ 26/26 | Markdown 正文规范化 |
+| `test-md-content-source-resolver.mjs` | ✅ 27/27 | 内容来源解析 |
+| `test-md-semantic-enrichment.mjs` | ✅ 11/11 | 语义增强 |
+| `test-md-xmind-regeneration.mjs` | ✅ 40/40 | XMind 再生成 |
+| `test-lanhu-mcp-runtime.mjs` | ✅ 13/13 | 蓝湖 MCP 运行时 |
+| `test-latest-link-utils.mjs` | ✅ 14/14 | 快捷链接工具函数 |
+
+#### 既存失败（已排除，非新发现）
+
+| 测试文件 | 失败数 | 排除原因 |
+| --- | --- | --- |
+| `test-archive-history-scripts.mjs` | 8/68 | archive 归档路由与 CSV 转换的既存模块映射问题，属于 archive 脚本迭代中的已知断裂，不涉及 workflow 入口 contract |
+| `test-json-to-xmind.mjs` | 2/37 | XMind L1 title 通用格式的既存规范变更，属于输出格式迭代，不影响 workflow 路由或文档可信度 |
+| `test-repo-branch-mapping.mjs` | 1/19 | 前端分支映射值的既存偏差，属于配置数据层问题，不影响 workflow contract 本身 |
+
+#### 已验证闭环的正面结论
+
+1. **仓库级测试入口 contract 完整**：`package.json#scripts.test` → `run-all.mjs` → 自动发现 `test-*.mjs` 的三层链路可用，`.claude/tests/package.json#scripts.test` 也可独立运行，两个入口等价。
+2. **文档-代码路径 contract 已闭环**：`test-workflow-doc-validator` 验证了 Skill 文档引用的 `.claude/rules/` 路径、CLAUDE.md 章节锚点、快捷链接废弃、archive 状态写入等关键 contract 全部一致。
+3. **硬编码路径 contract 已闭环**：`test-no-hardcoded-paths` 验证了 13 个 shared script 均不含 `cases/` 硬编码字面量，与 `load-config` 配置化路径 contract 一致。
+4. **输出命名迁移 contract 已闭环**：`test-output-convention-migration` 验证了 XMind 无日期前缀命名、快捷链接清理、state 文件更新均已到位。
+
 ### P2（文案 / 可读性 / 向导体验）
 
 - 暂无新增条目；本轨低确定性口径差异见“待用户确认项”。
