@@ -306,7 +306,77 @@ date: "2026-04-02"
 
 ### P2（文案 / 可读性 / 向导体验）
 
-- 暂无新增条目；本轨低确定性口径差异见“待用户确认项”。
+#### 新手引导
+
+## P2-quickstart-no-recommended-path：快速开始示例缺少"最推荐的一种"标记，新手扫读后选择困难
+
+- 问题：`CLAUDE.md` 快速开始一次性列出 8 条示例（涵盖 5 种功能 + 续传 + 重跑 + 禅道），`README.md` 也列出 6 条，`using-qa-flow` 的"快速示例"又列出 9 条；三处均无推荐标记（如 ⭐ 或"推荐"徽标），也没有"第一次只需试这一个"的引导句。
+- 原因：每处文档独立扩写示例后，都追求覆盖面而没有做减法或加优先级标注；缺少面向新手的"推荐入口"设计惯例。
+- 影响：首次接触的用户面对三份几乎等长的示例列表，无法快速判断"最常用的功能是什么、第一步应该输入什么"，选择困难导致 onboarding 成本升高。
+- 建议：在 `CLAUDE.md` 和 `using-qa-flow` 的快速开始中，将"生成测试用例"标为推荐入口（如 `# ⭐ 最常用` 或加粗 + 一句提示），其余示例折叠到"更多用法"或用次级标题分隔；`README.md` 作为 landing page 只保留 1–2 条最短示例。
+- 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`
+
+## P2-init-timing-unclear：init 时机和必要性说明不足，用户不清楚何时需要初始化
+
+- 问题：`CLAUDE.md` 和 `README.md` 的引导条都写"首次使用输入 `/using-qa-flow init` 初始化环境"，但没有说明哪些功能不需要 init 即可使用（如"帮我分析这个报错"只需粘贴日志，不依赖 `config.json`）。`using-qa-flow` 的 Step 0 标题为"首次使用必须完成"，但功能菜单的编号 0 又叫"项目配置 + 环境初始化"——"首次使用必须"与"项目配置"之间的关系没有显式说明。
+- 原因：init 同时承载了两件事——项目配置向导（`config.json` 生成）和环境初始化（Python/Node.js/lanhu/repos），但面向用户的文案没有区分"哪些功能依赖 config、哪些不依赖"。
+- 影响：新用户可能以为必须跑完 5 步 init 才能开始任何操作，或者反过来跳过 init 后使用"生成测试用例"时才遇到 config 缺失报错，体验不连贯。
+- 建议：在引导条或快速开始区域补充一句说明，例如："首次使用'生成测试用例'前需完成 init；'分析报错'和'转化历史用例'可直接使用。" 同时在 `using-qa-flow` 功能 0 的描述中区分"项目配置（必需）"和"环境初始化（按需）"。
+- 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`
+
+#### 选项设计
+
+## P2-menu-lacks-recommendation-and-grouping：功能菜单选项无推荐标记，init 向导功能组缺"可选"提示
+
+- 问题：`using-qa-flow` 功能菜单有 6 个选项（0–5），但功能 1"生成测试用例"作为最高频入口没有任何推荐标记；功能 0"项目配置 + 环境初始化"的编号最小却排在表格最后一行，位置与编号逻辑矛盾。`config-questionnaire.md` 的 5 个功能组（①–⑤）也全部以同等权重展示，③ 源码仓库和 ④ 集成工具对大多数新用户属于高级选项，但既没有标注"可选/高级"，也没有给出推荐默认值（如 ③ 默认为 n）。
+- 原因：菜单和向导都追求完整性而没有做分级标注或默认值推荐。
+- 影响：新手看到等权重的选项列表时，容易在源码仓库和集成工具上犹豫或误配，延长 onboarding 时长；菜单编号 0 放最后也让"init"的入口位置不直觉。
+- 建议：1）功能菜单给功能 1 加推荐标记，将功能 0 移到表格首行或尾注独立区域并标注"首次使用"；2）`config-questionnaire.md` 的 ③④ 标注为"可选 / 高级"，并在问题文案中给出推荐默认值（如"是否需要配置源码仓库？(y/n，大多数项目选 n)"）。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/using-qa-flow/references/config-questionnaire.md`
+
+## P2-wizard-question-order-not-progressive：init 向导步骤未按"简单→复杂"排列，历史文件步骤对空项目冗余
+
+- 问题：init 向导的执行顺序为 0.1 扫描 → 0.2 展示推断 → 0.3 历史文件解析 → 0.4 功能分组问答 → 0.5 写入。步骤 0.3 对没有历史文件的项目（占新用户多数场景）会产生一轮"还有其他历史文件要导入吗？(y/n)"的无效交互。同时，环境初始化 Step 1–5 的排列是 Python → lanhu-cli → Node.js → 源码仓库 → 验证，但实际依赖关系是 Node.js 被 xmind-converter 直接需要、Python 仅被 lanhu 间接需要；先装 Python 再装 lanhu-cli 的顺序虽无硬依赖问题，但从"最常用到最不常用"的认知顺序看，Node.js / xmind-converter 应该更靠前。
+- 原因：向导步骤按实现层的逻辑拆分（扫描→解析→问答），没有按用户认知或频率排序；环境初始化沿用了 Python 优先的安装惯例但没有考虑业务频率。
+- 影响：空项目用户被迫在 0.3 回答无用问题；环境初始化在最先安装的 Python/lanhu 上花费较多时间，但这两步并非必须（纯文本模式可跳过 Playwright），延长了首次可用时间。
+- 建议：1）0.3 在 `historyFiles` 为空时自动跳过，不再追问；2）环境初始化调整为 Node.js → Python → lanhu → 源码仓库 → 验证，或至少将 Node.js 提到 Python 之前，并在每步开头标注"必需/可选"。
+- 涉及文件：`.claude/skills/using-qa-flow/references/init-wizard-flow.md`、`.claude/skills/using-qa-flow/SKILL.md`
+
+#### 文案一致性
+
+## P2-terminology-convert-vs-transform：跨文档"转换"与"转化"混用，"历史用例"与"归档用例"边界模糊
+
+- 问题：同一个动作在不同位置使用了不同动词——`using-qa-flow` 菜单功能 4 叫"转换历史用例"、快速示例写"转化所有历史用例"、`CLAUDE.md` Skill 索引触发词写"转化历史用例"、`archive-converter` description 写"历史用例归档转化"；功能 5 则叫"XMind 转换"。"转换"与"转化"在中文语境下语义不同（转换偏格式变换、转化偏质变归档），但当前使用无规律。同时，"历史用例"（输入端原始 CSV/XMind）与"归档用例"（输出端 Markdown）这对概念在菜单和触发词中混为一体，用户无法从文案判断到底是在操作输入还是输出。
+- 原因：多处文案独立编写，没有统一术语表；"归档"既是动词（转化到归档格式）又是名词（归档目录），增加混淆。
+- 影响：用户搜索帮助或回忆触发词时可能用错动词，触发词匹配率下降；维护者也容易在迭代中继续引入新变体。
+- 建议：统一为一组约定——例如动作统一用"转化"（convert & archive），输入端称"历史用例"，输出端称"归档用例"或"归档 Markdown"；在 `CLAUDE.md`、`README.md`、`using-qa-flow` 菜单、`archive-converter` description 中一次性对齐；格式变换类（JSON→XMind）统一用"转换"。
+- 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/archive-converter/SKILL.md`
+
+## P2-terminology-prd-story-requirement：同一概念在跨文档中有多个叫法——PRD / Story / 需求文档 / requirements / prds
+
+- 问题：用户输入的需求来源在不同位置有至少 5 种叫法：`CLAUDE.md` 工作区结构写 `PRD / Story 文档（原 requirements/）`；`CLAUDE.md` Skill 索引写 `PRD 图片描述`；`README.md` 写 `帮我增强这个 PRD`；`using-qa-flow` 菜单写 `PRD 文档` 和 `PRD 文件路径`；`test-case-generator` description 写 `根据需求文档生成用例`；目录名用 `cases/prds/`；`README.md` 目录树仍残留 `cases/requirements/`。用户无法确定"PRD"、"Story"、"需求文档"是同一个东西还是不同东西。
+- 原因：项目经历了从 `requirements/` 到 `prds/` 的目录迁移，但文案层面没有做一次性术语归一；`Story-xxx` 是版本标识写法、`PRD` 是文档类型、`需求文档` 是通俗称呼，三者各有使用场景但从未显式定义关系。
+- 影响：新用户不确定自己手上的文件应该叫"PRD"还是"Story"，不确定应该放到 `prds/` 还是 `requirements/`（后者在 README 仍可见），触发词也会因为叫法不统一而犹豫。
+- 建议：在 `CLAUDE.md` 快速开始或 Skill 索引上方增加一句术语约定（如"本项目中 PRD、Story、需求文档均指同一类输入文件，统一存放于 `cases/prds/`"），并在 `README.md` 和 `using-qa-flow` 中保持同一主称呼（建议以"PRD"为主称，"Story-xxx"仅作为版本标识写法说明）。
+- 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/test-case-generator/SKILL.md`
+
+## P2-skill-title-language-inconsistency：Skill 标题与 heading 语言风格不统一，`code-analysis-report` 使用英文而其余全中文
+
+- 问题：5 个 Skill 的 `SKILL.md` 一级标题中，`test-case-generator` 用 `# 测试用例生成编排 Skill`、`prd-enhancer` 用 `# PRD 文档增强 Skill`、`xmind-converter` 用 `# XMind 转换 Skill`、`archive-converter` 用 `# 历史用例归档转化 Skill`，但 `code-analysis-report` 用 `# Code Analysis Report Skill`（全英文）。`CLAUDE.md` 顶部明确要求"使用中文回复"。
+- 原因：`code-analysis-report` 的标题可能是早期英文模板遗留，后续迭代未统一。
+- 影响：语言不一致会降低文档整体专业感，也可能让 agent 在生成回复时混用中英文。
+- 建议：将 `code-analysis-report/SKILL.md` 的标题改为 `# 代码分析报告 Skill`，与其他 4 个 Skill 保持一致的中文标题风格。
+- 涉及文件：`.claude/skills/code-analysis-report/SKILL.md`
+
+#### 可读性
+
+## P2-using-qa-flow-route1-overload：`using-qa-flow` 功能 1 的引导说明信息过载，单个选项下堆叠 8 行指引
+
+- 问题：`using-qa-flow/SKILL.md` 在 `$ARGUMENTS` 包含 `1` 的路由下，一次性给出普通模式、快速模式、蓝湖 URL 导入、PRD 目录提示、续传检测、模块重跑共 8 行说明（第 38–46 行）。这些信息虽然都与"生成测试用例"相关，但新手在第一次看到时无法消化全部变体。
+- 原因：功能 1 的所有使用模式被平铺在同一路由下，没有按"基本用法 → 进阶用法"分层或折叠。
+- 影响：agent 按路由展示引导时，会一次性输出全部 8 行，用户面对长文本容易忽略关键信息（如最基本的写法）或感到压迫。
+- 建议：将功能 1 的引导拆为两层——第一层只展示最基本写法（`为 xxx 生成测试用例`）和一个进阶提示（"输入 `更多选项` 查看快速模式、蓝湖 URL、续传等用法"）；第二层按需展开。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`
 
 ### 统一问题模板
 
