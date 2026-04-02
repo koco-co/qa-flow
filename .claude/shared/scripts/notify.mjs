@@ -19,6 +19,7 @@ import { createHmac } from "node:crypto";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execSync } from "node:child_process";
 import nodemailer from "nodemailer";
 import { loadConfig } from "./load-config.mjs";
 
@@ -166,6 +167,30 @@ export function getEnabledChannels() {
  * @param {object} data  - Event-specific data
  * @returns {{ title: string, markdown: string, html: string }}
  */
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: build a web URL for a file in the git remote repository
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildGitFileUrl(remoteUrl, branch, filePath) {
+  if (!remoteUrl || !filePath) return null;
+  // Normalize: git@github.com:org/repo.git → https://github.com/org/repo
+  const base = remoteUrl
+    .replace(/\.git$/, "")
+    .replace(/^git@([^:]+):/, "https://$1/");
+  if (base.includes("gitlab")) {
+    return `${base}/-/blob/${branch}/${filePath}`;
+  }
+  return `${base}/blob/${branch}/${filePath}`;
+}
+
+function getGitBranch() {
+  try {
+    return execSync("git rev-parse --abbrev-ref HEAD", { encoding: "utf8" }).trim();
+  } catch {
+    return "main";
+  }
+}
+
 export function buildMessage(event, data) {
   // Project name from config (graceful fallback)
   let projectName = "qa-flow";
@@ -176,14 +201,23 @@ export function buildMessage(event, data) {
   }
 
   const timestamp = new Date().toLocaleString("zh-CN", { hour12: false });
+  const gitRemoteUrl = process.env.GIT_REMOTE_URL;
+  const gitBranch = getGitBranch();
 
   // Helper: extract filename from path
-  const fileName = (p) => p ? p.split("/").pop() : "";
+  const fileName = (p) => (p ? p.split("/").pop() : "");
 
-  // Helper: only include a line when value is meaningful
-  const line = (label, value) =>
+  // Helper: file as clickable link when git URL available, else plain path
+  const fileLink = (p) => {
+    if (!p) return null;
+    const url = buildGitFileUrl(gitRemoteUrl, gitBranch, p);
+    return url ? `[${fileName(p)}](${url})` : p;
+  };
+
+  // Helper: omit line when value is empty / zero / N/A
+  const row = (label, value) =>
     (value && value !== "N/A" && value !== "0" && value !== 0)
-      ? `> **${label}**：${value}`
+      ? `- **${label}**：${value}`
       : null;
 
   const emojiMap = {
@@ -205,113 +239,108 @@ export function buildMessage(event, data) {
   const emoji = emojiMap[event] ?? "📌";
   const label = labelMap[event] ?? event;
 
-  // Push title: short, contains keyword for DingTalk security filter
+  // Push title (short, contains keyword for DingTalk security filter)
   const title = `[${projectName}] ${emoji} ${label}`;
 
-  // Build body per event
-  const gitRemoteUrl = process.env.GIT_REMOTE_URL;
-  const serverWorkspacePath = process.env.SERVER_WORKSPACE_PATH;
-
   let bodyLines;
+
   switch (event) {
     case "case-generated": {
-      const xmindName = fileName(data.file);
-      const absPath = (serverWorkspacePath && data.file)
-        ? serverWorkspacePath.replace(/\/$/, "") + "/" + data.file.replace(/^\//, "")
+      // Priority breakdown: data.priorities = {p0, p1, p2}  OR  data.p0/p1/p2
+      const p = data.priorities ?? {};
+      const p0 = p.p0 ?? data.p0;
+      const p1 = p.p1 ?? data.p1;
+      const p2 = p.p2 ?? data.p2;
+      const priorityText = (p0 != null || p1 != null || p2 != null)
+        ? `P0: ${p0 ?? 0} / P1: ${p1 ?? 0} / P2: ${p2 ?? 0}`
         : null;
+
       bodyLines = [
-        `## ${emoji} ${label}`,
+        `### ${emoji} ${label}`,
         "",
-        line("需求", xmindName.replace(/\.xmind$/, "")),
-        line("用例数", data.count ? `${data.count} 条` : null),
-        line("耗时", data.duration),
-        line("完整路径", absPath),
+        "**📊 用例摘要**",
         "",
-        `> 完成时间：${timestamp}`,
+        row("总用例数",     data.count ? `${data.count} 条` : null),
+        row("优先级分布",   priorityText),
+        row("覆盖范围",     data.modules),
+        row("耗时",         data.duration),
+        "",
+        "**📁 输出文件**",
+        "",
+        row("XMind",      fileLink(data.file)),
+        row("归档 MD",     fileLink(data.archiveFile)),
+        "",
+        `完成时间：${timestamp}`,
       ];
       break;
     }
-    case "bug-report": {
-      const absPath = (serverWorkspacePath && data.reportFile)
-        ? serverWorkspacePath.replace(/\/$/, "") + "/" + data.reportFile.replace(/^\//, "")
-        : null;
+    case "bug-report":
       bodyLines = [
-        `## ${emoji} ${label}`,
+        `### ${emoji} ${label}`,
         "",
-        line("报告", fileName(data.reportFile)),
-        line("摘要", data.summary),
-        line("完整路径", absPath),
+        row("报告文件",   fileLink(data.reportFile)),
+        row("摘要",       data.summary),
         "",
-        `> 完成时间：${timestamp}`,
+        `完成时间：${timestamp}`,
       ];
       break;
-    }
     case "workflow-failed":
       bodyLines = [
-        `## ${emoji} ${label}`,
+        `### ${emoji} ${label}`,
         "",
-        `> **失败步骤**：${data.step}`,
-        `> **错误原因**：${data.reason}`,
+        `- **失败步骤**：${data.step}`,
+        `- **错误原因**：${data.reason}`,
         "",
-        `> 发生时间：${timestamp}`,
+        `发生时间：${timestamp}`,
       ];
       break;
     case "archive-converted":
       bodyLines = [
-        `## ${emoji} ${label}`,
+        `### ${emoji} ${label}`,
         "",
-        line("文件数", data.fileCount ? `${data.fileCount} 个` : null),
-        line("用例数", data.caseCount ? `${data.caseCount} 条` : null),
+        row("文件数",   data.fileCount ? `${data.fileCount} 个` : null),
+        row("用例数",   data.caseCount ? `${data.caseCount} 条` : null),
         "",
-        `> 完成时间：${timestamp}`,
+        `完成时间：${timestamp}`,
       ];
       break;
-    case "hotfix-case-generated": {
-      const absPath = (serverWorkspacePath && data.file)
-        ? serverWorkspacePath.replace(/\/$/, "") + "/" + data.file.replace(/^\//, "")
-        : null;
+    case "hotfix-case-generated":
       bodyLines = [
-        `## ${emoji} ${label}`,
+        `### ${emoji} ${label}`,
         "",
-        line("Bug ID", data.bugId),
-        line("修复分支", data.branch),
-        line("用例文件", fileName(data.file)),
-        line("变更文件数", data.changedFiles ? `${data.changedFiles} 个` : null),
-        line("完整路径", absPath),
+        row("Bug ID",     data.bugId),
+        row("修复分支",   data.branch),
+        row("用例文件",   fileLink(data.file)),
+        row("变更文件数", data.changedFiles ? `${data.changedFiles} 个` : null),
         "",
-        `> 完成时间：${timestamp}`,
+        `完成时间：${timestamp}`,
       ];
       break;
-    }
-    case "conflict-analyzed": {
-      const absPath = (serverWorkspacePath && data.reportFile)
-        ? serverWorkspacePath.replace(/\/$/, "") + "/" + data.reportFile.replace(/^\//, "")
-        : null;
+    case "conflict-analyzed":
       bodyLines = [
-        `## ${emoji} ${label}`,
+        `### ${emoji} ${label}`,
         "",
-        line("报告", fileName(data.reportFile)),
-        line("冲突文件数", data.conflictCount ? `${data.conflictCount} 个` : null),
-        line("涉及分支", data.branches),
-        line("完整路径", absPath),
+        row("报告文件",   fileLink(data.reportFile)),
+        row("冲突文件数", data.conflictCount ? `${data.conflictCount} 个` : null),
+        row("涉及分支",   data.branches),
         "",
-        `> 完成时间：${timestamp}`,
+        `完成时间：${timestamp}`,
       ];
       break;
-    }
     default:
       bodyLines = [
-        `## ${emoji} ${event}`,
+        `### ${emoji} ${event}`,
         "",
         `\`\`\`\n${JSON.stringify(data, null, 2)}\n\`\`\``,
         "",
-        `> ${timestamp}`,
+        `完成时间：${timestamp}`,
       ];
   }
 
-  // Append repo link in footer if configured
+  // Footer: repo link
   if (gitRemoteUrl) {
-    bodyLines.push("", `---`, `[${projectName}](${gitRemoteUrl})`);
+    const repoWeb = gitRemoteUrl.replace(/\.git$/, "").replace(/^git@([^:]+):/, "https://$1/");
+    bodyLines.push("", "---", `[${projectName}](${repoWeb})`);
   }
 
   const markdown = bodyLines.filter((l) => l !== null).join("\n");
