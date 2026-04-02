@@ -30,8 +30,8 @@ argument-hint: "[init | 功能编号或关键词]"
 
 如果 `$ARGUMENTS` 包含 `init` 或 `初始化` 或 `0`：
 
-- 先执行下方「Step 0: 项目配置向导」
-- Step 0 完成后，询问用户是否继续执行「环境初始化（Step 1-5）」
+- 先执行下方「阶段一：项目配置向导」
+- 阶段一完成后，询问用户是否继续执行「阶段二：环境初始化」
 
 如果 `$ARGUMENTS` 包含 `1` 或 `用例` 或 `test`：
 
@@ -60,36 +60,36 @@ argument-hint: "[init | 功能编号或关键词]"
 
 ---
 
-## Step 0: 项目配置向导（首次使用必须完成）
+## 阶段一：项目配置向导（首次使用必须完成）
 
 仅在 `$ARGUMENTS` 包含 `init` / `初始化` / `0` 时执行。此步骤生成 `config.json` 和 `CLAUDE.md`，是所有其他 Skill 正常工作的前提。主文档只保留流程总览，详细向导编排见 [references/init-wizard-flow.md](references/init-wizard-flow.md)，功能组问答模板与默认值规则见 [references/config-questionnaire.md](references/config-questionnaire.md)。
 
-### 0.1 扫描项目结构
+### 配置 1：扫描项目结构
 
 - 执行 `node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command scan`，读取 `modules[]`、`signals`、历史文件和已有配置状态。
 - 若需要回填已有配置默认值，可额外执行 `node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command load-existing`。
 - 空白项目直接转入问答模式；已有配置时先按重新初始化 / 部分更新规则分流。
 - 详情见 [references/init-wizard-flow.md](references/init-wizard-flow.md) 与 [references/config-questionnaire.md](references/config-questionnaire.md)。
 
-### 0.2 展示推断结果（D-03）
+### 配置 2：展示推断结果
 
 - 将模块推断结果、`.repos/`、历史文件、PRD 版本号、图片目录等信号整理成摘要给用户确认。
 - 若用户否定推断，需要支持逐项修正并重新展示。
 - 详情见 [references/init-wizard-flow.md](references/init-wizard-flow.md)。
 
-### 0.3 历史文件解析（D-05 / D-06 / D-07）
+### 配置 3：历史文件解析
 
 - 对检测到或用户追加的历史文件调用 `parse-file`，确认模块英文 key 与是否版本化。
 - 合并目录扫描与历史文件结果，冲突项逐条确认。
 - 详情见 [references/init-wizard-flow.md](references/init-wizard-flow.md)。
 
-### 0.4 功能分组问答（D-08 / D-09）
+### 配置 4：功能分组问答
 
 - 按功能分组采集配置字段，只对需要更新的组发问，其他字段沿用现有值。
 - 问题模板、默认值说明、re-init / 部分更新规则见 [references/config-questionnaire.md](references/config-questionnaire.md)。
 - 向导执行顺序与展示格式见 [references/init-wizard-flow.md](references/init-wizard-flow.md)。
 
-### 0.5 写入文件
+### 配置 5：写入文件
 
 - 用户确认后，先构建完整 config 对象，并执行 `write` 子命令写入 `.claude/config.json`：
 
@@ -116,15 +116,15 @@ node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command write \
   --root-dir .
 ```
 
-- 完成后给出写入结果，并询问是否继续执行环境初始化（Step 1-5）。
+- 完成后给出写入结果，并询问是否继续执行环境初始化（阶段二）。
 
-## 环境初始化（Step 1-5）
+## 阶段二：环境初始化
 
-> 前提：Step 0（项目配置向导）已完成。如未完成，请先执行 `/using-qa-flow init`。
+> 前提：阶段一（项目配置向导）已完成。如未完成，请先执行 `/using-qa-flow init`。
 
 仅在 `$ARGUMENTS` 包含 `init` / `初始化` / `0` 时执行。每步均支持跳过；主文档保留最小可执行命令，细化说明继续放在 references / prompts。
 
-### Step 1：Python 环境
+### 环境 1：Python 环境
 
 ```bash
 # 优先使用 uv
@@ -134,7 +134,7 @@ which uv && uv venv .venv && echo "✅ uv venv 创建成功" \
 
 - 目标：确保后续 Python 依赖安装有独立运行环境。
 
-### Step 2：lanhu-mcp 安装与验证
+### 环境 2：lanhu-mcp 安装与验证
 
 ```bash
 # 进入 lanhu-mcp 目录并执行安装脚本
@@ -145,7 +145,7 @@ cd tools/lanhu-mcp && bash setup-env.sh
 - 若 `tools/lanhu-mcp/.venv/` 已存在，跳过安装步骤，直接验证可用性。
 - Cookie 配置：在项目根目录 `.env` 中填写 `LANHU_COOKIE="<从浏览器 DevTools 复制的完整 Cookie>"`（根 `.env` 优先；`tools/lanhu-mcp/.env` 作为回退）
 
-### Step 3：脚本运行环境（Node.js）
+### 环境 3：脚本运行环境（Node.js）
 
 ```bash
 cd .claude/skills/xmind-converter/scripts && npm install
@@ -154,7 +154,7 @@ node json-to-xmind.mjs --help
 
 - 安装完成后，必须通过 `--help` 验证脚本可用。
 
-### Step 4：源码仓库配置
+### 环境 4：源码仓库配置
 
 ```bash
 ls -la .repos/ 2>/dev/null || echo "（.repos/ 目录为空或不存在）"
@@ -169,7 +169,7 @@ YAML
 - `.repos/source-map.yaml` 仅作为本地仓库清单与初始化回显使用；`sync-source-repos.mjs` 实际以 `.claude/config.json` 的 `repos` 与 `branchMapping` 为准。
 - 当任一 Skill 需要 `.repos/` 上下文但映射文件缺失时，应自动触发此步骤。
 
-### Step 5：验证并输出状态汇总
+### 环境 5：验证并输出状态汇总
 
 ```bash
 # Python 环境
