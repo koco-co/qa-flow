@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0; cd \"$ROOT\"; git diff --quiet && git diff --cached --quiet || (git add -A && git commit -m \"chore: auto-commit session changes\" && echo \"[stop-hook] 已自动提交\") || true'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0; cd \"$ROOT\"; BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); [ \"$BRANCH\" = \"main\" ] || exit 0; UNPUSHED=$(git log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d \" \"); [ \"$UNPUSHED\" -gt 0 ] && echo \"[sync-hint] main 有 ${UNPUSHED} 个未推送提交，如需同步到子分支可运行：bash .claude/shared/scripts/sync-to-branches.sh --branches xyzh,assets\" || true'"
+          }
+        ]
+      }
+    ]
+  }
+}
