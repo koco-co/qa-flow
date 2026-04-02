@@ -28,7 +28,13 @@ function assert(condition, msg, details = []) {
 }
 
 function walkFiles(dir, predicate, acc = []) {
-  for (const entry of readdirSync(dir)) {
+  let entries;
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return acc; // directory does not exist, skip
+  }
+  for (const entry of entries) {
     const fullPath = resolve(dir, entry);
     const stat = statSync(fullPath);
     if (stat.isDirectory()) {
