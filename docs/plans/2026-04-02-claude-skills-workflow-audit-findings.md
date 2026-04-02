@@ -260,6 +260,74 @@ date: "2026-04-02"
 - 建议：将这 4 项断言改为基于 `loadConfig()` 返回值的动态断言（例如 `keys.length === Object.keys(config.modules).length`），或使用 `loadConfigFromPath()` 传入 fixture config 隔离环境。
 - 涉及文件：`.claude/tests/test-load-config.mjs`、`.claude/config.json`
 
+#### 向导与引导
+
+## P1-no-error-recovery-guidance：init 向导全流程缺少错误恢复指引
+
+- 问题：`init-wizard-flow.md` 和 `SKILL.md` 的 Step 0–5 均未描述任何失败场景处理：扫描脚本执行失败、`parse-file` 报错、写入 config.json 权限不足、蓝湖安装失败等情况均无恢复路径，也不支持单步重试（如 `/using-qa-flow init --step 2`）。
+- 原因：向导设计只覆盖了 happy path，缺少错误路径分支。
+- 影响：用户遇到任何异常只能从头重来或求助，初始化中断后的恢复成本高。
+- 建议：每个子步骤加"❌ 如果失败"分支，提供诊断命令和恢复建议；支持 `--step N` 单步重试。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/using-qa-flow/references/init-wizard-flow.md`
+
+## P1-menu-init-buried：init 操作排在菜单最末编号 0，首次使用者大概率跳过
+
+- 问题：功能菜单中 `0 项目配置 + 环境初始化` 排在最后一行。新用户看到 1–5 后可能直接选"1 生成测试用例"，但此时 `config.json` 尚未生成，所有 Skill 都无法工作。编号 0 意为"最高优先"但视觉上排最末，与阅读直觉相悖。
+- 原因：菜单按编号排列，0 自然落到末尾。
+- 影响：新用户首次使用大概率跳过初始化，直接触发报错。
+- 建议：(A) 将 init 置顶并标为"⚙️ 首次使用必做"；或 (B) 在菜单顶部加状态检测："⚠️ 未检测到 config.json，请先执行 init"。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`
+
+## P1-step0-step1-5-confusion：Step 0（0.1–0.5）与 Step 1–5 双编号系统令用户困惑
+
+- 问题：`SKILL.md` 将初始化拆成"Step 0: 项目配置向导"（内含 0.1–0.5 子步骤）和"环境初始化（Step 1–5）"两段。用户完成 Step 0 后被问"是否继续 Step 1–5？"——两套编号系统并存，0.5 和 Step 5 在数字上易混淆。
+- 原因：Step 0 从属于 init 流程但独立编号，与 Step 1–5 形成平行体系。
+- 影响：用户心智模型割裂——"我在第几步？一共几步？"
+- 建议：统一为一套编号，如 Phase 1（项目配置）→ Phase 2（Python）→ Phase 3（蓝湖）→ Phase 4（Node.js）→ Phase 5（源码仓库）→ Phase 6（验证），内部用 1.1–1.5 子编号。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/using-qa-flow/references/init-wizard-flow.md`
+
+#### 测试合约覆盖
+
+## P1-trigger-word-consistency：SKILL.md 触发词与 CLAUDE.md Skill 索引一致性无测试
+
+- 问题：CLAUDE.md Skill 索引表声明了 6 个 Skill 的触发词，各 SKILL.md 分别声明了更详细的触发词列表，但没有任何测试验证两者是否一致。例如 CLAUDE.md 写"帮我增强这个 PRD"，而 SKILL.md 实际声明"增强 PRD / 读取 PRD 图片 / PRD 预处理"，措辞已有差异但无测试捕获。
+- 原因：`test-workflow-doc-validator.mjs` 只校验路径引用和章节锚点，不校验触发词映射。
+- 影响：触发词漂移将导致用户按 CLAUDE.md 输入的命令无法匹配到正确 Skill。
+- 建议：在 `test-workflow-doc-validator.mjs` 增加触发词一致性断言。
+- 涉及文件：`CLAUDE.md`、`.claude/skills/*/SKILL.md`、`.claude/tests/test-workflow-doc-validator.mjs`
+
+## P1-issues-frontmatter-schema：Issues 类型 front-matter 无测试覆盖
+
+- 问题：`front-matter-schema.md` 为 Issues 类型定义了专用必填字段（`zentao_bug_id`、`zentao_url`、`keywords` 竖线格式、`origin: zentao`、`suite_name: "在线问题转化"`），但 `test-front-matter-utils.mjs` 和 `test-md-frontmatter-audit.mjs` 均无 Issues 类型 fixture。
+- 原因：Issues 子类型是后期新增，测试未同步。
+- 影响：Issues 归档可能产生不合规 front-matter（缺失 `zentao_bug_id`、`keywords` 格式错误）而不被检测。
+- 建议：在 `test-md-frontmatter-audit.mjs` 增加 Issues front-matter fixture 和断言。
+- 涉及文件：`.claude/shared/schemas/front-matter-schema.md`、`.claude/tests/test-md-frontmatter-audit.mjs`
+
+## P1-config-path-existence：config.json 声明的路径未验证实际磁盘存在
+
+- 问题：`config.json` 声明了 `casesRoot`、`reports.bugs`、`reports.conflicts`、`branchMapping` 等关键路径，但没有测试验证这些路径在仓库中实际存在。`test-load-config.mjs` 只验证字段值，不验证路径可达性。
+- 原因：测试聚焦 API 行为，缺少路径存在性断言。
+- 影响：路径拼写错误或目录重命名后无法被测试发现，config 作为 source-of-truth 的可信度降低。
+- 建议：新增测试，读取 config.json 所有路径类字段，逐一验证对应文件/目录存在。
+- 涉及文件：`.claude/config.json`、`.claude/tests/test-load-config.mjs`
+
+## P1-directory-structure-contract：CLAUDE.md 目录树声明无完整存在性验证
+
+- 问题：CLAUDE.md 声明了完整工作区目录树（`cases/xmind`、`cases/archive`、`cases/prds`、`cases/issues`、`cases/history`、`.repos/`、`reports/`、`assets/images/`、`tools/`），但没有测试遍历验证这些目录全部存在。
+- 原因：测试分散在多个文件，缺少统一的目录树完整性校验。
+- 影响：目录被意外删除或重命名时，文档与实际结构脱节无法感知。
+- 建议：在 `test-workflow-doc-validator.mjs` 增加 CLAUDE.md 目录树遍历断言。
+- 涉及文件：`CLAUDE.md`、`.claude/tests/test-workflow-doc-validator.mjs`
+
+## P1-reports-path-unused：reports 输出路径完全无测试覆盖
+
+- 问题：`config.json` 声明 `reports.bugs` 和 `reports.conflicts` 路径，`code-analysis-report` Skill 声称输出到这些目录，但没有任何测试验证报告实际写入正确路径。
+- 原因：`code-analysis-report` 是 Skill 级功能，没有对应的单元测试文件。
+- 影响：报告输出路径更改后无法被发现。
+- 建议：至少增加路径存在性测试；理想情况下增加输出路径集成测试。
+- 涉及文件：`.claude/config.json`、`.claude/skills/code-analysis-report/SKILL.md`
+
 ### 测试验证摘要（Task 6）
 
 > 以下是 Task 6 运行全量测试后对 workflow contract 闭环状态的客观记录。
@@ -378,7 +446,115 @@ date: "2026-04-02"
 - 建议：将功能 1 的引导拆为两层——第一层只展示最基本写法（`为 xxx 生成测试用例`）和一个进阶提示（"输入 `更多选项` 查看快速模式、蓝湖 URL、续传等用法"）；第二层按需展开。
 - 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`
 
-### 统一问题模板
+#### 配置与文案细节
+
+## P2-questionnaire-group5-mislabeled：配置问卷第 ⑤ 组"快捷方式和目录"在正文中无对应模板
+
+- 问题：`config-questionnaire.md` 重新初始化规则列出 5 个功能组（①–⑤），但正文模板只有 ①②③④，第 ⑤ 组"快捷方式和目录"没有对应问题。"⑤ 确认写入"实际是确认步骤而非功能组。
+- 原因：⑤ 的名称和内容不匹配，可能是重构时遗漏。
+- 影响：用户在"部分更新"模式勾选 ⑤ 后无问题可答。
+- 建议：补全 ⑤ 的问题模板或将其从勾选列表中移除。
+- 涉及文件：`.claude/skills/using-qa-flow/references/config-questionnaire.md`
+
+## P2-decision-d-codes-leak：向导文档中 D-xx 内部设计编码泄露到用户可见文案
+
+- 问题：`SKILL.md` 和 `init-wizard-flow.md` 标题中出现 `（D-03）`、`（D-05/D-06/D-07）`、`（D-08/D-09）`、`（D-14）`、`（D-15）` 等内部编码，用户无上下文时完全无意义。
+- 原因：设计文档的 decision ID 未在发布前清理。
+- 影响：增加阅读噪音，降低文档专业感。
+- 建议：从面向用户/agent 的文档中移除 D-xx 编码。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/using-qa-flow/references/init-wizard-flow.md`、`.claude/skills/using-qa-flow/references/config-questionnaire.md`
+
+## P2-duplicate-quick-examples：快速示例在 CLAUDE.md / README / SKILL.md 三处重复且略有差异
+
+- 问题：三个文件各维护一份"快速开始"示例，格式不同（SKILL.md 用占位符、CLAUDE.md/README 用具体值、README 多 `--quick` 注释行），无 single source of truth。
+- 原因：各文件独立扩写示例。
+- 影响：维护成本高，易漂移；用户在不同入口看到不一致写法时犹豫。
+- 建议：README 和 CLAUDE.md 保持一致（可同一模板生成）；SKILL.md 改为具体值。
+- 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`
+
+## P2-tone-inconsistency：编排指令与用户文案视角混用（"请提供" vs "询问用户" vs 无称呼命令式）
+
+- 问题：`config-questionnaire.md` 用"请提供"（第二人称），`init-wizard-flow.md` 用"询问用户"（第三人称指令），CLAUDE.md 直接列命令（无称呼）。
+- 原因：SKILL.md 和 init-wizard-flow.md 是 agent 编排指令，config-questionnaire.md 是用户可见文案，两种文体混在一起。
+- 影响：开发者参考文档编写提示语时视角混乱。
+- 建议：编排指令统一第三人称，用户可见部分用 `→ 展示给用户：「请提供…」` 格式显式标注。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/using-qa-flow/references/init-wizard-flow.md`、`.claude/skills/using-qa-flow/references/config-questionnaire.md`
+
+## P2-menu-feature5-low-value：功能 5"XMind 转换"作为独立菜单项价值低
+
+- 问题：功能 5 是测试用例生成流程的内部子步骤（由 `test-case-generator` 自动调用），极少单独使用。它与功能 1 存在包含关系，独立列出增加菜单长度。
+- 原因：所有 Skill 一一映射到菜单项。
+- 影响：菜单有 6 个选项对新用户选择稍多，5 号日常几乎不触发。
+- 建议：降级为"高级/调试"选项或合并到功能 4 下。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`
+
+## P2-source-of-truth-english：多处使用英文 "source of truth" 而非中文
+
+- 问题：`CLAUDE.md`、`README.md` 中 4 处出现 "source of truth"，文档整体为中文。
+- 原因：技术惯用语未本地化。
+- 影响：非技术背景 QA 人员可能不理解。
+- 建议：统一为「唯一权威来源」或首次出现加括号注释。
+- 涉及文件：`CLAUDE.md`、`README.md`
+
+## P2-init-step4-conditional-unclear：Step 4 源码仓库配置的触发条件模糊
+
+- 问题：`SKILL.md` Step 4 总是执行 `mkdir -p .repos && cat > .repos/source-map.yaml`，但当用户在 Step 0 问卷中选"不配置源码仓库"（`repos = {}`）时，Step 4 是否应跳过？文档无明确条件判断。
+- 原因：Step 0（配置）与 Step 4（执行）缺乏联动逻辑。
+- 影响：对不需源码仓库的用户造成困扰或生成无用空文件。
+- 建议：Step 4 开头加条件："若 `config.json` 中 `repos = {}`，显示『已跳过』并进入 Step 5"。
+- 涉及文件：`.claude/skills/using-qa-flow/SKILL.md`
+
+## P2-readme-double-hr：README L192–194 连续两条分隔线
+
+- 问题：`README.md` L192–194 出现连续两个 `---`，产生视觉空白断层。
+- 原因：编辑遗漏。
+- 影响：轻微，文档不够精细。
+- 建议：删除重复 `---`。
+- 涉及文件：`README.md`
+
+#### 测试合约覆盖细节
+
+## P2-xmind-output-period-path：XMind YYYYMM 时间周期路径缺少端到端测试
+
+- 问题：`xmind-output.md` 声明输出路径为 `cases/xmind/YYYYMM/`，`test-json-to-xmind.mjs` 未断言最终文件写入 YYYYMM 子目录。
+- 原因：XMind 测试聚焦文件命名和内部结构，路径路由由外层编排决定。
+- 影响：`json-to-xmind.mjs` 忽略时间周期路径时测试不会失败。
+- 建议：在 `test-json-to-xmind.mjs` 增加输出路径 YYYYMM 模式断言。
+- 涉及文件：`.claude/rules/xmind-output.md`、`.claude/tests/test-json-to-xmind.mjs`
+
+## P2-archive-yyyymm-path：归档 YYYYMM 通用场景路径覆盖不完整
+
+- 问题：CLAUDE.md 声明 Archive 按 `cases/archive/YYYYMM/` 落盘，但测试只覆盖了带 module 的路径（`cases/archive/data-assets/v6.4.9/`），无 module 时的 YYYYMM 路径未测试。
+- 原因：Archive 路径测试分散，通用场景被遗漏。
+- 影响：非 DTStack 项目归档可能路由到错误目录。
+- 建议：增加无模块配置下的 YYYYMM 路径断言。
+- 涉及文件：`CLAUDE.md`、`.claude/tests/test-md-xmind-regeneration.mjs`
+
+## P2-description-length-validation：front-matter description ≤60 字约束仅为 advisory 模式
+
+- 问题：`front-matter-schema.md` 声明 `description` 最大 60 字，但测试仅在 dry-run 模式校验，实际写入时不阻断超长。
+- 原因：schema 校验目前是 advisory 而非 enforced。
+- 影响：超长 description 可能被写入归档文件。
+- 建议：在 `test-md-frontmatter-audit.mjs` 增加长度写入阻断测试。
+- 涉及文件：`.claude/shared/schemas/front-matter-schema.md`、`.claude/tests/test-md-semantic-enrichment.mjs`
+
+## P2-state-file-schema：`.qa-state` 状态文件 schema 无独立测试
+
+- 问题：文档声明了 `.qa-state-{prd-slug}.json` 的完整 schema（`last_completed_step`、`writers`、`reviewer_status` 等），但没有独立测试验证初始化结构和 step ID 枚举值。
+- 原因：状态文件由 skill 编排生成，仅在其他测试中被间接触及。
+- 影响：状态 schema 修改时无测试保障。
+- 建议：新增 state file schema 测试。
+- 涉及文件：`CLAUDE.md`、`.claude/skills/test-case-generator/`
+
+### 去重说明（Task 7）
+
+> 以下条目在 Task 5 / Task 6 审查中被发现，但与已有 findings 存在实质性重叠，合并后不再单独列出。
+
+| 新发现 | 被吸收入 | 原因 |
+| --- | --- | --- |
+| P1-lanhu-cli-ghost-reference | P0-lanhu-integration-contract-split | 完全是 P0 所述蓝湖三套口径的子集 |
+| P1-readme-stale-dir-tree | P1-readme-stale-entry-routes | 目录路径不一致已被涵盖，新证据（cases/requirements/ vs cases/prds/）补入原 finding |
+| P2-terminology-inconsistency-story-prd | P2-terminology-prd-story-requirement | 完全相同的术语混用问题 |
 
 - **统一标题格式**：`## P{级别}-{标识}：问题标题`
 - **适用范围**：P0 / P1 / P2 全部问题条目统一使用该格式，不再按单一级别单独举例。
