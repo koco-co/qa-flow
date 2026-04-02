@@ -1,0 +1,162 @@
+{
+  "working_dir": "cases/prds/202604",
+  "project_name": "数据资产",
+  "prd_files": [
+    "【中电信息】【元数据】支持doris引擎下指标全链路血缘.md"
+  ],
+  "selected_pages": [
+    17,
+    18
+  ],
+  "analysis_mode": "tester",
+  "last_completed_step": "brainstorm",
+  "elicitation": {
+    "status": "skipped",
+    "testability_score_before": 93,
+    "testability_score_after": 93,
+    "questions_asked": 0,
+    "questions_answered": 0,
+    "auto_inferred_count": 7,
+    "dimension_scores": {
+      "goal": 100,
+      "target_user": 100,
+      "usage_scenario": 95,
+      "page_inventory": 100,
+      "field_definition": 85,
+      "io_criteria": 90,
+      "business_rules": 95,
+      "time_limits": null,
+      "tech_constraints": 95,
+      "risks_boundaries": 90
+    },
+    "target_branch_override": null
+  },
+  "prd_enhanced_at": "2026-04-02T09:22:58Z",
+  "enhanced_files": [
+    "cases/prds/202604/【中电信息】【元数据】支持doris引擎下指标全链路血缘.md"
+  ],
+  "checklist_confirmed": false,
+  "reviewer_status": "pending",
+  "awaiting_verification": false,
+  "writers": {},
+  "source_context_file": "cases/prds/202604/temp/source-context.md",
+  "archive_references": [
+    {
+      "path": "cases/archive/202504/数据地图-表详情展示功能.md",
+      "covered_points": [
+        "数据资产 → 数据地图 → 血缘分析页面入口与基础打开",
+        "表详情页查看基础血缘关系",
+        "离线任务产出表后的表级/字段级血缘正确性"
+      ]
+    },
+    {
+      "path": "cases/archive/202504/数据地图基础功能.md",
+      "covered_points": [
+        "数据地图通用页面打开与基础功能回归",
+        "通用血缘解析能力正常"
+      ]
+    },
+    {
+      "path": "cases/archive/202506/【数据资产】相似数据源逻辑优化.md",
+      "covered_points": [
+        "相似数据源识别与展示的历史验证思路"
+      ]
+    }
+  ],
+  "formalize_warnings": [
+    "历史数据是否需要补数/回刷未在需求中明确",
+    "指标删除、下线后的同步时效未在需求中明确"
+  ],
+  "mode": "normal",
+  "source_context": {
+    "manual": true,
+    "backend": [
+      {
+        "repoKey": "dt-center-metadata",
+        "path": ".repos/CustomItem/dt-center-metadata",
+        "branch": "test_6.3.x_zdxx_0323",
+        "status": "completed"
+      },
+      {
+        "repoKey": "dt-center-assets",
+        "path": ".repos/CustomItem/dt-center-assets",
+        "branch": "test_6.3.x_zdxx_0323",
+        "status": "completed"
+      }
+    ],
+    "frontend": [
+      {
+        "repoKey": "dt-insight-studio",
+        "path": ".repos/CustomItem/dt-insight-studio",
+        "branch": "easyIndex/release_6.3.x_zdxx_0323",
+        "scope": "easyIndex",
+        "status": "completed"
+      },
+      {
+        "repoKey": "dt-insight-studio",
+        "path": ".repos/CustomItem/dt-insight-studio",
+        "branch": "dataAssets/release_6.3.x_zdxx_0323",
+        "scope": "dataAssets",
+        "status": "completed"
+      }
+    ],
+    "notes": [
+      "用户显式提供源码仓库与分支，作为本次生成的临时源码参考",
+      "dt-insight-studio 当前工作区存在未提交改动，已改为在 session worktree 中读取目标分支",
+      "dataAssets 为资产侧真实血缘展示页，easyIndex 为指标侧辅助校验入口"
+    ]
+  },
+  "created_at": "2026-04-02T08:27:04.141Z",
+  "updated_at": "2026-04-02T09:22:58Z",
+  "execution_log": [
+    {
+      "step": "parse-input",
+      "status": "completed",
+      "at": "2026-04-02T08:27:04.141Z",
+      "duration_ms": null,
+      "summary": "已导入蓝湖 17/18 页，确认模块为 data-assets，生成单 PRD 与状态文件"
+    },
+    {
+      "step": "req-elicit",
+      "status": "skipped",
+      "at": "2026-04-02T09:22:58Z",
+      "duration_ms": null,
+      "summary": "需求信息已足够生成测试用例，可测试性评分 93%，跳过追加提问"
+    },
+    {
+      "step": "source-sync",
+      "status": "completed",
+      "at": "2026-04-02T09:22:58Z",
+      "duration_ms": null,
+      "summary": "已创建 metadata/assets/easyIndex/dataAssets 四个隔离 worktree 并切到目标分支"
+    },
+    {
+      "step": "prd-formalize",
+      "status": "completed",
+      "at": "2026-04-02T09:22:58Z",
+      "duration_ms": null,
+      "summary": "已将蓝湖 17/18 页整理为结构化 PRD，补齐页面范围、业务规则与测试关注点"
+    },
+    {
+      "step": "prd-enhancer",
+      "status": "completed",
+      "at": "2026-04-02T09:22:58Z",
+      "duration_ms": null,
+      "summary": "已结合补充截图与源码核对结果增强当前 PRD，当前文件作为增强后 PRD 使用"
+    },
+    {
+      "step": "source-analyze",
+      "status": "completed",
+      "at": "2026-04-02T09:22:58Z",
+      "duration_ms": null,
+      "summary": "前后端源码分析完成，输出 source-context.md（路径: cases/prds/202604/temp/source-context.md）"
+    },
+    {
+      "step": "brainstorm",
+      "status": "completed",
+      "at": "2026-04-02T09:22:58Z",
+      "duration_ms": null,
+      "summary": "完成历史用例检索，匹配 3 个文件并提炼已覆盖功能点"
+    }
+  ]
+}
