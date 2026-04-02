@@ -113,11 +113,25 @@ date: "2026-04-02"
 
 ### P1（漂移 / 双权威 / 高维护成本）
 
-- 暂无预置条目。
+## P1-readme-second-contract：README 仍在承担第二套高层工作流 contract
+
+- 问题：`README.md` 第 5 行声明自己“仅作入口导览”，但后文仍保留“用户视角极简流程”“架构概览”“测试用例生成详细流程”“代码分析报告流程”“快捷验收入口”“详细规范入口”等整套高层流程与验收 contract，实际已变成第二份主入口手册。
+- 原因：当前仓库已明确由 `CLAUDE.md` 承担“权威工作流手册”，并由 `.claude/config.json` 承担路径 source of truth；`README.md` 继续手写 step 级流程、输出物和验收话术，会把“导览”与“权威 contract”边界重新混在一起。
+- 影响：维护者后续只要调整高层步骤、验收回合或输出路径，就必须同步修改 `README.md`、`CLAUDE.md` 和下游 Skill；一旦 README 未同步，用户和 agent 会优先看到一套更具体但更容易过时的入口说明。
+- 建议：把 `README.md` 收敛为 landing page，只保留仓库用途、最小快速开始、`/using-qa-flow` 入口和“先读哪里”；step 级流程图、验收回合和详细 route 统一回收到 `CLAUDE.md` / 对应 Skill / rules。
+- 涉及文件：`README.md`、`CLAUDE.md`、`.claude/config.json`
+
+## P1-readme-stale-entry-routes：README 的具体入口路径与验收出口已脱离当前权威 contract
+
+- 问题：`README.md` 仍把测试用例工作目录写成 `cases/requirements/`，并把 `latest-prd-enhanced.md`、`latest-output.xmind`、`latest-bug-report.html`、`latest-conflict-report.html` 作为根目录快捷入口，还列出了 `CLAUDE.md#测试用例编写规范` 等当前不存在的章节锚点；但 `CLAUDE.md` / `.claude/config.json` 已切到 `cases/prds/`、`cases/issues/` 等目录口径，相关测试也已明确主流程不再依赖这些根目录快捷链接。
+- 原因：README 手工复制了路径、输出物和文档导航，而这些信息的真实权威已经分散到 `CLAUDE.md`、`.claude/config.json` 与现有测试 contract；只要 README 不跟随单一权威收口，就会继续出现死链接、旧目录名和已废弃出口。
+- 影响：首次进入仓库的用户/agent 可能把 PRD 放到错误目录、去仓库根目录寻找已退役的 `latest-*` 文件，或者沿 README 的锚点跳转到不存在的 CLAUDE 章节，直接削弱主入口可信度。
+- 建议：README 不再枚举会漂移的目录树和输出快捷链接；目录入口应直接引用 `CLAUDE.md` 中的工作区结构 / 规范索引，路径名以 `.claude/config.json` 为准；“详细规范入口”改成真实存在的 rules / shared schema 链接，移除失效的 CLAUDE 章节锚点。
+- 涉及文件：`README.md`、`CLAUDE.md`、`.claude/config.json`、`.claude/tests/test-workflow-doc-validator.mjs`、`.claude/tests/test-output-convention-migration.mjs`
 
 ### P2（文案 / 可读性 / 向导体验）
 
-- 暂无预置条目。
+- 暂无新增条目；本轨低确定性口径差异见“待用户确认项”。
 
 ### 统一问题模板
 
@@ -146,6 +160,16 @@ date: "2026-04-02"
   - **排除原因**：为什么不再列为当前问题
   - **备注**：如仍有残余风险，需写清“已闭环但需观察”
 
+- **历史条目来源**：已提交版 `docs/qa-flow-workflow-audit-and-optimization.md` 的 `P2-1：README / 目录规则文档仍残留 .claude/scripts 旧树结构`。
+  - **当前证据**：当前 `README.md` 目录树已经改为 `.claude/shared/scripts/`；`node .claude/tests/test-workflow-doc-validator.mjs` 中 “repo-facing 文档目录树不得残留旧的 .claude/scripts/ 描述” 已通过。
+  - **排除原因**：旧的 `.claude/scripts/` 入口误导已闭环，本轮不应再按历史问题原样回报。
+  - **备注**：已闭环；但 README 仍存在其他路径漂移，说明“目录树是否写进 README”本身仍需谨慎治理。
+
+- **历史条目来源**：已提交版 `docs/qa-flow-workflow-audit-and-optimization.md` 中 “旧 P1-3 / 旧 P1-7 / 旧 P2-4 已修复（CLAUDE.md 与 config.json 已对齐当前实现）”。
+  - **当前证据**：当前 `CLAUDE.md` 的工作区结构与 `.claude/config.json` 仍保持一致：`cases/prds`、`cases/issues`、`reports/bugs`、`reports/conflicts`、`assets/images` 均可在两处对应；`node .claude/tests/test-workflow-doc-validator.mjs` 也已通过 “CLAUDE.md 不再记录快捷链接 latest-output.xmind” 等入口 contract 校验。
+  - **排除原因**：当前主入口轨的主要问题不在 `CLAUDE.md` / `config.json` 双权威，而在 README 重新扩写并产生新的漂移。
+  - **备注**：已闭环但需观察；若未来继续在 README 或 Skill 重复手写路径 contract，仍可能再次出现“主入口已对齐、导览文档又漂移”的回归。
+
 ## 待用户确认项
 
 - 本节只记录“需要维护者拍板的取舍项”，不记录纯事实性问题。
@@ -154,3 +178,5 @@ date: "2026-04-02"
   - 哪个文件应成为某类路径 / 规则 / 路由的单一权威
   - 兼容旧触发词、旧路径、旧话术的保留策略
 - Task 1 暂不预写具体确认项；后续仅在出现真实分歧时追加。
+
+- **测试用例公开示例口径是否统一到单一 canonical 写法**：`CLAUDE.md` / `README.md` 当前以 `为 Story-20260322 生成测试用例`、`继续 Story-20260322` 为主示例，但 `.claude/skills/using-qa-flow/SKILL.md` 仍以 `为 ${module_key} v${version} 生成测试用例`、`继续 ${module_key} v${version}` 为菜单示例，且 `README.md` 额外声明自然语言“快速生成测试用例”也等价于 `--quick`。若三套写法都要保留，建议维护者明确哪一套是对外 canonical 入口，哪一套只是兼容示例；否则后续 README / CLAUDE / menu 仍会持续分叉。
