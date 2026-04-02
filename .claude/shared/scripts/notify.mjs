@@ -180,7 +180,7 @@ function buildGitFileUrl(remoteUrl, branch, filePath) {
   if (base.includes("gitlab")) {
     return `${base}/-/blob/${branch}/${filePath}`;
   }
-  return `${base}/blob/${branch}/${filePath}`;
+  return `${base}/tree/${branch}/${filePath}`;
 }
 
 function getGitBranch() {
