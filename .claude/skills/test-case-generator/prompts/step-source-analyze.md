@@ -12,7 +12,7 @@
 ## 目标
 
 在 Writer 启动之前，集中完成一次源码分析，将前端/后端关键信息与**可直接复用的前置条件模板**写入 `source-context.md`。
-Writer 和 Reviewer 直接读取该文件，**无需再全量 grep 源码仓库**。
+Writer 和 Reviewer 优先读取该文件。如信息不足（标注「未找到」且 PRD 也未覆盖），Writer 可针对性 grep `.repos/` 源码补充。
 
 ---
 
