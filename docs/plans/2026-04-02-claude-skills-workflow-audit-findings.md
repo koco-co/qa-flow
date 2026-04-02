@@ -145,7 +145,18 @@ date: "2026-04-02"
 - 建议：在 `README.md` 的快速开始、`.claude/skills/using-qa-flow/SKILL.md` 的功能菜单与“快速示例”中补充“直接发送禅道 Bug URL / Hotfix 线上问题转化”入口，并与 `CLAUDE.md` 使用同一表述，明确这是 `code-analysis-report` 的标准 route 之一。
 - 涉及文件：`CLAUDE.md`、`README.md`、`.claude/skills/using-qa-flow/SKILL.md`
 
-> Skill inventory 复核结论：`archive-converter`、`code-analysis-report`、`prd-enhancer`、`xmind-converter` 基本维持单一工作流 / 单一产物 contract；职责边界问题主要集中在 `using-qa-flow`（网关型）与 `test-case-generator`（编排型）。
+> Skill inventory 复核结论：本轮已对 `.claude/skills/` 下 6 个现有 skills 全量复核。`archive-converter`、`prd-enhancer`、`xmind-converter` 属于单一工作流且整体健康；`code-analysis-report` 虽为多模式网关型，但本轮未见显著分层失真；职责边界与多 agent contract 问题主要集中在 `using-qa-flow`（网关型）与 `test-case-generator`（编排型）。
+
+#### 精简 skill inventory 摘要
+
+| Skill | 类型判断 | 多 agent | 是否发现明显分层问题 | 精简证据 |
+| --- | --- | --- | --- | --- |
+| `archive-converter` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/archive-converter/SKILL.md:8-21/53-72` 聚焦“历史用例 → Archive Markdown”单一路由，canonical 步骤 1-5 直接收口到 `convert-history-cases.mjs`。 |
+| `prd-enhancer` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/prd-enhancer/SKILL.md:16-24/51-81` 只围绕单 PRD 增强、图片要点、健康度预检展开，输入 / 输出边界清楚。 |
+| `xmind-converter` | 单一工作流 | 否 | 未见明显问题 | `.claude/skills/xmind-converter/SKILL.md:16-22/52-72` 收敛为 JSON → XMind 单一产物，主步骤集中在输入识别、路径计算、转换与结构验证。 |
+| `code-analysis-report` | 网关型 | 否 | 未见本轮显著问题 | `.claude/skills/code-analysis-report/SKILL.md:16-21/36-43/77-99` 负责 A/B/C/D/E 五路模式识别与路由，但模式入口、产物目录与 reference 绑定关系仍相对清晰；本轮问题主要出在上游入口未对等暴露 Hotfix route。 |
+| `using-qa-flow` | 网关型 | 否 | **有** | `.claude/skills/using-qa-flow/SKILL.md:24-66/69-201` 同时承担菜单路由、项目配置向导与环境初始化命令手册；与其 references 声称“主文档只保留流程总览 / 入口摘要”不一致。 |
+| `test-case-generator` | 编排型 | **是** | **有** | `.claude/skills/test-case-generator/SKILL.md:40-58/85-123` 明确串联 11 个 step，并同时承载 `source-analyze` 双 Agent、并行 Writer、Reviewer 分片、重试与状态机约束；本轮 prompt / reference / 多 agent 协同问题主要集中于此。 |
 
 #### skill 规范
 
@@ -186,6 +197,14 @@ date: "2026-04-02"
 - 影响：源码阅读被 source-analyzer 与 Writer 双重承担，多 agent 的上下文隔离优势被削弱；后续若 source-context 与 Writer 二次 grep 结果不一致，也缺少明确的裁决规则。
 - 建议：维护者需要选定单一模式并写成 contract：要么 `source-analyze` 成为唯一正常路径、Writer 仅在明确降级条件下回源 grep；要么显式把它定义为缓存 / 预热层，并写清 Writer 允许二次 grep 的触发条件与优先级。
 - 涉及文件：`.claude/skills/test-case-generator/prompts/step-source-analyze.md`、`.claude/skills/test-case-generator/prompts/writer-subagent.md`、`.claude/skills/test-case-generator/prompts/writer-subagent-reference.md`、`.claude/skills/test-case-generator/references/intermediate-format.md`
+
+## P1-reviewer-shard-global-contract-conflict：Reviewer 分片策略与全局查漏 / 去重职责互相冲突
+
+- 问题：`test-case-generator/SKILL.md:115-122` 规定总用例数 > 80 条时拆成 2 个并行 `case-reviewer`，分别只接收前 / 后半 Writer 输出，编排器最后仅做一次“跨 Reviewer 的同名用例标题轻量去重”。但 `prompts/reviewer-subagent.md:17-23` 把 Reviewer 定义为“对所有 Writer 生成的用例进行系统性评审、查漏补缺，并直接输出修正后的完整 JSON”；`reviewer-subagent.md:110-123` 又要求其基于增强 PRD 对全量功能点查漏补缺，`reviewer-subagent.md:212-223/232-242` 还要求在最终输出前做历史用例去重与多文件全量合并。也就是说，分片 Reviewer 实际拿到的是局部输入，却被赋予了全局 Reviewer 的职责。
+- 原因：编排层新增了 Reviewer 分片并行策略，但 reviewer prompt 仍按“单个全局 Reviewer”撰写，没有补一个最终全局 reviewer / aggregator 来承接跨分片 coverage、历史去重与最终合并裁决。
+- 影响：当遗漏点跨越两个 Writer 分片、或重复用例分散在不同 Reviewer 半区时，任一 Reviewer 都无法独立满足“基于全部 Writer 输出做全量查漏补缺和历史去重”的 contract；编排器末尾仅按同名标题做轻量扫描，也不足以替代全局 PRD / 历史语义复核，易产生跨分片漏补、重复补 case 或合并后 JSON 再漂移。
+- 建议：二选一收口：要么恢复单 Reviewer 的全局语义；要么把 Reviewer 显式拆成“局部分片 Reviewer + 最终全局 Reviewer / Aggregator”两层，并把 `reviewer-subagent.md` 改写为局部 / 全局两套不同 contract，避免让分片 reviewer 持有无法完成的全局职责。
+- 涉及文件：`.claude/skills/test-case-generator/SKILL.md`、`.claude/skills/test-case-generator/prompts/reviewer-subagent.md`
 
 ## P1-uncertainty-owner-conflict：Writer / Reviewer 对“待核实”标记没有单一所有者
 
@@ -247,4 +266,5 @@ date: "2026-04-02"
 
 - **测试用例公开示例的兼容策略是否继续保留双写法**：`P1-test-case-public-example-conflict` 已确认 `Story-xxx` 与 `${module_key} v${version}` 同时对外暴露属于事实性入口冲突；本节仅保留整改策略层面的待拍板项：最终对外 canonical 写法选哪一套，另一套是否作为兼容 alias 保留，以及 README 中“快速生成测试用例”这类自然语言等价提示是否继续公开展示。该项属于取舍问题，不再替代正式 findings。
 - **`source-analyze` 是权威输入还是性能优化层**：`P1-source-analyze-authority-blur` 已证实 `source-analyze`、Writer 主 prompt、Writer reference 对源码阅读职责存在双写；需要维护者拍板：后续是把 `source-context.md` 定义为 Writer / Reviewer 的唯一正常输入，还是允许 Writer 在常规路径继续二次 grep 源码。该项决定多 agent 设计究竟走“集中预提取”还是“预提取 + 自主回源”模型。
+- **大体量用例是否保留 Reviewer 分片模型**：`P1-reviewer-shard-global-contract-conflict` 已确认当前 >80 条时的 Reviewer 分片，与 `reviewer-subagent.md` 要求的全量查漏补缺 / 历史去重职责存在事实性冲突；需要维护者拍板是回退为单 Reviewer，还是补“局部分片 + 最终全局总审”两层模型，并同步重写 reviewer prompt / 编排 contract。
 - **`using-qa-flow` 是否允许作为例外继续承载命令级 onboarding 内容**：`P1-skill-contract-layer-break` 已确认 `using-qa-flow` 当前没有遵守其 reference 所声明的“SKILL.md 只保留入口摘要”；若维护者认为它本质上兼具菜单与 onboarding 手册双角色，应把这一例外明确写进 contract，而不是继续保持 `SKILL.md` 与 references 互相否定的状态。
