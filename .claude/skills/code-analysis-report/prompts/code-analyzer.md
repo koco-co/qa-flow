@@ -41,7 +41,7 @@ maxTurns: 100
 
 **输出路径**：`reports/bugs/{yyyy-MM-dd}/<Bug标题>.html`
 
-**额外动作（必须）**：刷新仓库根目录快捷链接 `latest-bug-report.html`
+**额外动作（必须）**：在终端输出报告文件的绝对路径。
 
 ### 模式 B：合并冲突分析
 
@@ -57,7 +57,7 @@ maxTurns: 100
 
 **输出路径**：`reports/conflicts/{yyyy-MM-dd}/<冲突描述>.html`
 
-**额外动作（必须）**：刷新仓库根目录快捷链接 `latest-conflict-report.html`
+**额外动作（必须）**：在终端输出报告文件的绝对路径。
 
 ### 模式 C：前端报错分析
 
@@ -72,7 +72,7 @@ maxTurns: 100
 
 **输出路径**：`reports/bugs/{yyyy-MM-dd}/<Bug标题>.html`
 
-**额外动作（必须）**：刷新仓库根目录快捷链接 `latest-bug-report.html`
+**额外动作（必须）**：在终端输出报告文件的绝对路径。
 
 ### 模式 D：信息不足补料
 
@@ -96,9 +96,9 @@ maxTurns: 100
 4. 最后非阻塞尝试访问禅道
 5. 按 `.claude/skills/code-analysis-report/references/hotfix-case-flow.md` 与 `.claude/skills/code-analysis-report/references/hotfix-case-writing.md` 生成一条归档测试用例
 
-**输出路径**：`cases/archive/online-cases/{filename}.md`
+**输出路径**：`cases/issues/{filename}.md`
 
-**额外动作（必须）**：刷新仓库根目录同名快捷链接 `{filename}.md`
+**额外动作（必须）**：在终端输出归档文件的绝对路径。
 
 ---
 
@@ -137,10 +137,10 @@ maxTurns: 100
 
 分析完成后，按以下流程生成报告：
 
-- **模式 A / C**：将分析结果写入 JSON，调用 `.claude/skills/code-analysis-report/scripts/render-report.mjs` 生成 HTML，并执行 `node .claude/shared/scripts/refresh-latest-link.mjs <output.html> latest-bug-report.html`
-- **模式 B**：将分析结果写入 JSON，生成冲突 HTML，并执行 `node .claude/shared/scripts/refresh-latest-link.mjs <output.html> latest-conflict-report.html`
+- **模式 A / C**：将分析结果写入 JSON，调用 `.claude/skills/code-analysis-report/scripts/render-report.mjs` 生成 HTML，在终端输出报告文件的绝对路径
+- **模式 B**：将分析结果写入 JSON，生成冲突 HTML，在终端输出报告文件的绝对路径
 - **模式 D**：只输出补料清单，不生成任何文件
-- **模式 E**：生成 `cases/archive/online-cases/{filename}.md`，并执行 `node .claude/shared/scripts/refresh-latest-link.mjs "cases/archive/online-cases/{filename}.md" "{filename}.md"`
+- **模式 E**：生成 `cases/issues/{filename}.md`，在终端输出归档文件的绝对路径
 
 ## 参考文件
 

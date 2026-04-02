@@ -25,10 +25,14 @@ import {
   extractVersionFromPath,
 } from "../../../shared/scripts/front-matter-utils.mjs";
 import { toRequirementDocumentStatus } from "../../../shared/scripts/frontmatter-status-utils.mjs";
+import { getWorkspaceRoot } from "../../../shared/scripts/load-config.mjs";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, "../..");
-const REQ_DIR = join(ROOT, "cases/requirements");
+const ROOT = getWorkspaceRoot();
+// Scan both new cases/prds/ and legacy cases/requirements/ directories
+const REQ_DIRS = [
+  join(ROOT, "cases/prds"),
+  join(ROOT, "cases/requirements"),
+];
 
 // ─── CLI 参数 ─────────────────────────────────────────────────────────────────
 
@@ -303,7 +307,9 @@ function processFile(filePath) {
 // ─── 主流程 ───────────────────────────────────────────────────────────────────
 
 function main() {
-  const files = PATH_ARG ? [resolve(PATH_ARG)] : collectMdFiles(REQ_DIR);
+  const files = PATH_ARG
+    ? [resolve(PATH_ARG)]
+    : REQ_DIRS.flatMap((dir) => collectMdFiles(dir));
 
   const stats = { ok: 0, skip: 0, error: 0, dryRun: 0 };
 

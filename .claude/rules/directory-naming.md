@@ -6,13 +6,14 @@
 
 以上为模板示例。实际模块列表定义在 `.claude/config.json` 的 `modules` 字段中。
 
-| 中文名        | 模块 key        | XMind 路径                              | Archive 路径                              | Requirements 路径                         |
-| ------------- | --------------- | --------------------------------------- | ----------------------------------------- | ----------------------------------------- |
-| ${module_zh}  | ${module_key}   | `cases/xmind/${module_key}/`            | `cases/archive/${module_key}/`            | `cases/requirements/${module_key}/`       |
+| 中文名        | XMind 路径                | Archive 路径                | PRD 路径              |
+| ------------- | ------------------------- | --------------------------- | --------------------- |
+| ${module_zh}  | `cases/xmind/YYYYMM/`    | `cases/archive/YYYYMM/`    | `cases/prds/YYYYMM/` |
 
-- 模块 key 用于 config.json、脚本参数和状态文件；在 Archive/PRD frontmatter 中对应 `product` 字段。
-- 路径别名用于 `cases/xmind/`、`cases/archive/` 和 `cases/requirements/` 的目录层级。
+- YYYYMM 为年月数字（如 `202604`），按产物生成时间归档；同一批次产物归入同一 YYYYMM 目录。
+- 路径别名用于 `cases/xmind/`、`cases/archive/` 和 `cases/prds/` 的目录层级。
 - `cases/archive/` 是固定归档根目录；历史文档或旧 Prompt 中的 `archive-cases/` 统一映射到这里，不代表需要额外创建目录。
+- `cases/issues/` 存放线上问题转化的用例（原 `cases/archive/online-cases/`）。
 - `.claude/config.json` 的 `branchMapping` 字段用于定位 repo profile 与开发版本 → 分支映射文件。
 
 ## 顶层目录结构
@@ -24,7 +25,8 @@ qa-flow/
 ├── cases/
 │   ├── xmind/          # XMind 输出
 │   ├── archive/        # 归档 MD 根目录
-│   ├── requirements/   # PRD / Story 文档
+│   ├── issues/         # 线上问题用例（原 archive/online-cases/）
+│   ├── prds/           # PRD / Story 文档（原 requirements/）
 │   └── history/        # 历史 CSV 等原始资料
 ├── .repos/             # 隐藏源码仓库只读
 ├── reports/            # 代码分析报告
@@ -41,22 +43,15 @@ qa-flow/
 
 ## Story / PRD / 产物命名规则
 
-### 版本化模块（当模块配置了 trackerId 时适用）
+### 年月制路径（新约定）
 
-> 以下规则仅在模块的 config 配置中包含 `trackerId` 字段时适用。
-
-- Requirements 版本目录：`cases/requirements/${module}/v${version}/`
+- PRD 目录：`cases/prds/YYYYMM/`（按产物生成年月归档）
 - PRD 文件命名：需求标题（去掉编号前缀），如 `【功能名】需求标题.md`
 - 只保留增强版（`-enhanced`）；raw 和 formalized 版本在增强完成后移入 `.trash/`
-- XMind 版本目录：`cases/xmind/${module}/v${version}/`，每需求对应一个独立 xmind 文件
-- Archive 版本目录：`cases/archive/${module}/v${version}/`（保持不变）
-- 断点状态文件：生成过程中临时存放在 `cases/requirements/${module}/v${version}/`，完成后移入 `.trash/`
-
-### 扁平模块（无版本子目录）
-
-- Requirements 目录：`cases/requirements/${module}/`（扁平，无版本子目录）
-- PRD 文件命名：需求标题（去掉编号前缀），如 `功能名称.md`
-- 只保留增强版；无增强版时保留 raw 版并重命名
+- XMind 目录：`cases/xmind/YYYYMM/`，每需求对应一个独立 xmind 文件
+- Archive 目录：`cases/archive/YYYYMM/`
+- 线上问题用例目录：`cases/issues/`
+- 断点状态文件：生成过程中临时存放在对应 `cases/prds/YYYYMM/`，完成后移入 `.trash/`
 
 ### 通用
 

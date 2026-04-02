@@ -385,7 +385,15 @@ export function getDocTypeFromPath(filePath) {
   if (normalized.includes("/cases/archive/") || normalized.startsWith("cases/archive/")) {
     return "archive";
   }
+  // cases/issues/ = online issue cases, stored in archive format
+  if (normalized.includes("/cases/issues/") || normalized.startsWith("cases/issues/")) {
+    return "archive";
+  }
   if (normalized.includes("/cases/requirements/") || normalized.startsWith("cases/requirements/")) {
+    return "requirements";
+  }
+  // cases/prds/ = new name for requirements (PRD documents)
+  if (normalized.includes("/cases/prds/") || normalized.startsWith("cases/prds/")) {
     return "requirements";
   }
   return null;
@@ -428,15 +436,19 @@ function extractModuleKeyFromPath(p) {
   if (!p) return null;
   const s = p.replace(/\\/g, "/");
 
-  // custom/xyzh pattern
-  const customM = s.match(/(?:archive|xmind|requirements)\/custom\/([^/]+)/);
+  // custom/xyzh pattern (legacy)
+  const customM = s.match(/(?:archive|xmind|requirements|prds|issues)\/custom\/([^/]+)/);
   if (customM) return customM[1];
 
-  // archive/<key>  /  xmind/<key>  /  requirements/<key>  /  history/<key>
+  // archive/<key>  /  xmind/<key>  /  requirements/<key>  /  history/<key>  /  prds/<key>  /  issues/<key>
   const stdM = s.match(
-    /(?:archive|xmind|requirements|history)\/([^/]+)/,
+    /(?:archive|xmind|requirements|history|prds|issues)\/([^/]+)/,
   );
-  if (stdM && stdM[1] !== "custom") return stdM[1];
+  if (stdM && stdM[1] !== "custom") {
+    // Skip YYYYMM time-period directories (6-digit numbers)
+    if (/^\d{6}$/.test(stdM[1])) return null;
+    return stdM[1];
+  }
 
   return null;
 }

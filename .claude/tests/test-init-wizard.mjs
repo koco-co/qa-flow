@@ -339,7 +339,8 @@ console.log('\n=== Test: buildConfigObject ===');
   assert(result.casesRoot === 'cases/', "casesRoot === 'cases/'");
   assert(result.modules['mod-a'].versioned === false, "modules['mod-a'].versioned === false");
   assert(result.trash.dir === '.trash/', "trash.dir === '.trash/'");
-  assert(result.shortcuts.latestXmind === 'latest-output.xmind', "shortcuts.latestXmind is populated");
+  // shortcuts 已废弃，init-wizard 不再生成 shortcuts 字段
+  assert(result.shortcuts === undefined, "shortcuts 已废弃，buildConfigObject 不再生成该字段");
   assert(Boolean(result.integrations.lanhuMcp), 'default lanhuMcp config is present');
 }
 

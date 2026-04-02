@@ -214,7 +214,21 @@ export function buildMessage(event, data) {
       body = JSON.stringify(data, null, 2);
   }
 
-  const markdown = `${header}\n\n${body}`;
+  // 追加远程仓库链接和服务器绝对路径（若已配置）
+  const footerParts = [];
+  const gitRemoteUrl = process.env.GIT_REMOTE_URL;
+  if (gitRemoteUrl) {
+    footerParts.push(`- 仓库：${gitRemoteUrl}`);
+  }
+  const serverWorkspacePath = process.env.SERVER_WORKSPACE_PATH;
+  const filePath = data.file ?? data.reportFile;
+  if (serverWorkspacePath && filePath) {
+    const absPath = serverWorkspacePath.replace(/\/$/, "") + "/" + filePath.replace(/^\//, "");
+    footerParts.push(`- 服务器路径：${absPath}`);
+  }
+  const footer = footerParts.length > 0 ? `\n\n${footerParts.join("\n")}` : "";
+
+  const markdown = `${header}\n\n${body}${footer}`;
   return { title, markdown, html: mdToHtml(markdown) };
 }
 

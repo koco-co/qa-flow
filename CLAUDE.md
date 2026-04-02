@@ -41,7 +41,8 @@ qa-flow/
 ├── cases/
 │   ├── xmind/                         # XMind 输出
 │   ├── archive/                       # 归档 Markdown
-│   ├── requirements/                  # PRD / Story 文档
+│   ├── issues/                        # 线上问题用例（原 archive/online-cases/）
+│   ├── prds/                          # PRD / Story 文档（原 requirements/）
 │   └── history/                       # 历史 CSV 原始资料
 ├── .repos/                            # 源码仓库（只读，当 config.repos 非空时使用）
 ├── reports/                           # 代码分析报告
@@ -75,19 +76,18 @@ qa-flow/
 
 - PRD 只是线索，必须以 `.repos/` 目标分支源码为准。
 - 蓝湖导入后强制执行：`req-elicit` → `source-sync` → `prd-formalize` → `prd-enhancer` → Writer → Reviewer。
-- Archive 按版本目录落盘：`cases/archive/${module}/v${version}/`。
+- Archive 按年月目录落盘：`cases/archive/YYYYMM/`。
 
 ---
 
 ## 编排说明
 
 - 断点状态：
-  - 单 PRD：`<requirements目录>/.qa-state-{prd文件名}.json`
-  - 批量：`<requirements目录>/.qa-state.json`
+  - 单 PRD：`<prds目录>/.qa-state-{prd文件名}.json`
+  - 批量：`<prds目录>/.qa-state.json`
 - 质量阈值：`< 15%` 自动修正；`15-40%` 自动修正+警告；`> 40%` 阻断
 - 源码仓库清单：见 `.claude/config.json` 的 `repos` 字段
 - 报错定位：优先参考 config.json 的 `repos` 和 `stackTrace` 字段定位目标仓库
-- 快捷链接：`latest-output.xmind` 指向最新生成的 XMind 文件，`latest-prd-enhanced.md` 指向最新增强 PRD
 
 ---
 

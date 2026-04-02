@@ -11,7 +11,7 @@ description: "一句话描述（≤60字）"
 # 若已关联 PRD，再填写以下字段；若暂无 PRD，请整段省略，不写空字符串占位
 prd_id: 10001
 prd_version: v1.0.0
-prd_path: "cases/requirements/${module}/v${version}/【功能名】需求标题.md"
+prd_path: "cases/prds/YYYYMM/【功能名】需求标题.md"
 prd_url: "https://your-prd-url/..."
 product: ${module_key}
 dev_version: "${version}"
@@ -86,7 +86,7 @@ INSERT INTO ${schema}.${table} VALUES (...);
 grep -rl "${keyword}" cases/archive/ --include="*.md"
 
 # 读取匹配文件的 front-matter 概览（前 15 行）
-head -15 cases/archive/${module}/v${version}/PRD-xx-xxx.md
+head -15 cases/archive/YYYYMM/PRD-xx-xxx.md
 ```
 
 ### Backfill 命令（为现有文件添加 front-matter）
@@ -100,12 +100,12 @@ node .claude/skills/archive-converter/scripts/backfill-archive-frontmatter.mjs -
 ### 全量审计 / 安全修复
 
 ```bash
-# 全量只读审计（archive + requirements）
+# 全量只读审计（archive + prds）
 node .claude/shared/scripts/audit-md-frontmatter.mjs --dry-run
 
 # 仅审计某个目录/文件
-node .claude/shared/scripts/audit-md-frontmatter.mjs --path cases/archive/${module}/
-node .claude/shared/scripts/audit-md-frontmatter.mjs --path cases/requirements/${module}/v${version}/某需求.md
+node .claude/shared/scripts/audit-md-frontmatter.mjs --path cases/archive/YYYYMM/
+node .claude/shared/scripts/audit-md-frontmatter.mjs --path cases/prds/YYYYMM/某需求.md
 
 # 对可推断字段执行安全修复（仅修改 frontmatter）
 node .claude/shared/scripts/audit-md-frontmatter.mjs --fix
@@ -132,10 +132,10 @@ node .claude/shared/scripts/audit-md-frontmatter.mjs --fix
 
 实际模块列表定义在 `.claude/config.json` 的 `modules` 字段中。通用转化规则如下：
 
-| 来源                              | 目标目录                          | 格式                    |
-| --------------------------------- | --------------------------------- | ----------------------- |
-| `cases/history/${module}/*.csv`   | `cases/archive/${module}/`        | 完整用例（含步骤+预期） |
-| `cases/xmind/${module}/*.xmind`   | `cases/archive/${module}/`        | 标题树结构              |
+| 来源                              | 目标目录                    | 格式                    |
+| --------------------------------- | --------------------------- | ----------------------- |
+| `cases/history/YYYYMM/*.csv`      | `cases/archive/YYYYMM/`    | 完整用例（含步骤+预期） |
+| `cases/xmind/YYYYMM/*.xmind`      | `cases/archive/YYYYMM/`    | 标题树结构              |
 
 ## 文件粒度与命名
 
@@ -147,11 +147,9 @@ node .claude/shared/scripts/audit-md-frontmatter.mjs --fix
 - **新增/重跑策略**：模块级重跑或单 PRD 追加时，应优先写回对应的 PRD 级 Markdown，而不是继续扩大既有迭代总文件。
 - **可读性阈值**：如单个归档文件已明显超出人工审阅范围，应进一步拆回 PRD 级文件，避免产生难以定位和 diff 的超长 Markdown。
 
-## 版本目录归档规则（当模块配置了 trackerId 时适用）
+## 年月目录归档规则
 
-> 以下规则仅在模块的 config 配置中包含 `trackerId` 字段时适用。
-
-- 如模块配置了 `trackerId` 且可识别语义版本（如 `v${version}`），归档目录优先为 `cases/archive/${module}/v${version}/`。
+- 归档目录统一为 `cases/archive/YYYYMM/`，YYYYMM 为产物生成的年月（如 `202604`）。
 - 如输入来自形式化需求页，文件名优先使用需求标题（`meta.archive_file_name` / `meta.requirement_title`），例如：
   - `【功能名】需求标题.md`
 - 不再默认把整份需求文档聚合成一份归档；优先”一页需求 / 一份 MD”。

@@ -38,7 +38,7 @@ description: 历史用例归档转化 Skill。将非 Markdown 格式的历史测
 | 来源 | 输出目录 | 说明 |
 | --- | --- | --- |
 | 已配置模块的历史来源 | `resolveModulePath(moduleKey, 'archive', config, version)` | 配置驱动的 canonical 路由 |
-| 可识别语义版本且模块配置支持版本目录 | `cases/archive/${module_key}/v${version}/` | 仅作为常见落盘形态示例 |
+| 按年月归档 | `cases/archive/YYYYMM/` | 新约定落盘形态 |
 | 未配置模块 / `custom/` / 特殊分类目录 | `cases/archive/...` | 保留 source-relative fallback，避免模板仓库或历史目录失联 |
 
 **归档 front-matter 示例：**

@@ -20,7 +20,7 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 - 对同一 PRD 再次执行时，先做增量检测；若原始 PRD 未变化，优先复用现有增强文件。
 - 如需全量重来，删除同目录现有增强文件后重新执行。
 - 本 Skill 消费的是临时整理结果或正式 PRD；**不要求在 requirements 目录保留 formalized 文件**。
-- 单独调用本 Skill 时，主验收入口是仓库根目录 `latest-prd-enhanced.md`。
+- 单独调用本 Skill 时，增强版 PRD 直接通过输出文件路径访问。
 - `确认通过`、`已修改，请同步` 等回复口径属于 test-case-generator 验收阶段，不属于本 Skill 的单独执行口径。
 
 ---
@@ -44,7 +44,7 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 | 图片要点块 | 每张图片下方插入 `图N 页面要点`，格式见 `references/page-insight-format.md` |
 | 标准化图片引用 | 统一为标准 Markdown 引用，并指向 `assets/images/` |
 | front-matter | 继承原字段并按 `references/frontmatter-status-map.md` 写回中文状态 |
-| 快捷入口 | 刷新仓库根目录 `latest-prd-enhanced.md` |
+| 增强完成报告 | 在终端输出增强文件路径与摘要 |
 
 ---
 
@@ -64,7 +64,7 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 | 4 | 逐张读取图片 | 产出多模态识别结果 |
 | 5 | 生成页面要点 | 按 `references/page-insight-format.md` 写入 `图N 页面要点` |
 | 6 | 图片重命名与引用标准化 | 统一语义化命名、归档到 `assets/images/`、修正引用 |
-| 7 | 输出增强版 PRD | 按 `references/prd-template.md` 写入文档并刷新快捷链接 |
+| 7 | 输出增强版 PRD | 按 `references/prd-template.md` 写入文档并在终端输出增强文件路径 |
 | 8 | PRD 健康度预检 | 输出 warnings / errors，暴露 PRD 缺口 |
 | 9 | 向用户展示增强摘要 | 汇总图片处理结果、健康度与下一步建议 |
 
@@ -78,8 +78,7 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 - 读取阶段兼容英文/中文 front-matter 状态；写回阶段统一使用中文状态值。
 - 不删除原文内容，不改变正文业务语义；只做图片引用标准化、页面要点补充、front-matter 对齐与必要结构补全。
 - 图片下方的用户可见结构统一使用 `图N 页面要点`，不得回退到旧版图片描述块。
-- `latest-prd-enhanced.md` 是本 Skill 的主验收入口；若后续进入用例生成流程，再以 `latest-output.xmind` 作为最终验收物。
-- 刷新快捷链接时必须使用显式命令：`node .claude/shared/scripts/refresh-latest-link.mjs "<enhanced-path>" latest-prd-enhanced.md`
+- 增强完成后在终端输出增强文件路径；若后续进入用例生成流程，XMind 输出文件路径同样在终端报告。
 
 ---
 
@@ -91,7 +90,7 @@ description: PRD 文档增强 Skill。读取 PRD 中的 Obsidian 图片引用，
 2. 所有可定位图片均完成读取，失败项已在摘要中明确说明。
 3. 每张已处理图片下方都写入 `图N 页面要点`。
 4. 输出文件符合 `references/prd-template.md` 约定，front-matter 状态写回为中文。
-5. 图片引用已标准化，快捷入口 `latest-prd-enhanced.md` 已刷新。
+5. 图片引用已标准化，增强文件路径已在终端输出。
 6. 已输出 PRD 健康度预检结果与增强摘要，便于用户决定是否继续生成测试用例。
 
 ---

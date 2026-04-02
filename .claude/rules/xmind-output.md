@@ -14,9 +14,9 @@
 
 配置了版本目录的模块，新生成的 xmind 文件按版本放入 `v{version}/` 子目录，每需求一个独立文件：
 
-| 模块 key      | XMind 路径                                  | Archive 路径                                  |
-| ------------- | ------------------------------------------- | --------------------------------------------- |
-| ${module_key} | `cases/xmind/${module_key}/v{version}/`     | `cases/archive/${module_key}/v{version}/`     |
+| XMind 路径               | Archive 路径               |
+| ------------------------ | -------------------------- |
+| `cases/xmind/YYYYMM/`   | `cases/archive/YYYYMM/`   |
 
 实际模块列表定义在 `.claude/config.json` 的 `modules` 字段中。
 
@@ -63,6 +63,6 @@ XMind L1 对应 Archive MD 的 `suite_name` frontmatter 字段：
 - L1 默认 `folded`
 - 其余层级继续沿用 `模块/菜单 → 页面 → [子组] → 用例 → 步骤 → 预期`
 
-## XMind 快捷访问
+## XMind 输出路径
 
-生成、追加或替换成功后，脚本只会在仓库根目录创建或刷新固定快捷链接 `latest-output.xmind`，用于指向本次最新生成的真实 XMind 文件。
+生成、追加或替换成功后，脚本在终端输出真实 XMind 文件的绝对路径，供用户直接访问。

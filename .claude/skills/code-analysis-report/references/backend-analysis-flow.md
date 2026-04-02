@@ -100,14 +100,6 @@ node .claude/skills/code-analysis-report/scripts/render-report.mjs \
   reports/bugs/{date}/{BugTitle}.html
 ```
 
-4. 刷新快捷链接：
-
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs \
-  "reports/bugs/{date}/{BugTitle}.html" \
-  "latest-bug-report.html"
-```
-
 ---
 
 ## 输出前核对清单

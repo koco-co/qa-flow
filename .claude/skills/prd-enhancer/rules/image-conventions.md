@@ -26,13 +26,12 @@
 
 根据 md 文件所在深度，计算到 `assets/images/` 的相对路径：
 
-| 文件位置示例                                         | 相对路径前缀                 |
-| ---------------------------------------------------- | ---------------------------- |
-| `cases/requirements/<module_key>/v{version}/*.md`    | `../../../../assets/images/` |
-| `cases/requirements/<module_key>/*.md`               | `../../../assets/images/`    |
-| `cases/archive/<module_key>/v{version}/*.md`         | `../../../../assets/images/` |
-| `cases/archive/<module_key>/*.md`                    | `../../../assets/images/`    |
-| 根目录 `*.md`                                        | `assets/images/`             |
+| 文件位置示例                     | 相对路径前缀                 |
+| -------------------------------- | ---------------------------- |
+| `cases/prds/YYYYMM/*.md`         | `../../../assets/images/`    |
+| `cases/archive/YYYYMM/*.md`      | `../../../assets/images/`    |
+| `cases/issues/*.md`              | `../../assets/images/`       |
+| 根目录 `*.md`                    | `assets/images/`             |
 
 ## 文件命名规则
 

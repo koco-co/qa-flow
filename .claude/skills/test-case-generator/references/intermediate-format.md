@@ -169,12 +169,11 @@ Writer Subagent 输出时可包含以下可选字段（提升 frontmatter 填充
 Writer Subagent 输出的临时 JSON 文件命名（按工作目录隔离）：
 
 ```
-cases/requirements/<project>/<working-dir>/temp/<模块简称>.json
+cases/prds/YYYYMM/temp/<模块简称>.json
 ```
 
 示例：
-- `cases/requirements/product-mgmt/v1.0.0/temp/list.json`（版本化模块）
-- `cases/requirements/custom/my-module/temp/list.json`（自定义模块）
+- `cases/prds/202604/temp/list.json`
 
 ---
 
@@ -219,18 +218,18 @@ Checklist 字段说明：
 
 | 生成范围 | 状态文件名 | 示例 |
 |---------|-----------|------|
-| **单 PRD**（指定了一个具体 PRD 文件） | `.qa-state-{prd-slug}.json` | `cases/requirements/orders/v2.0/.qa-state-商品列表.json` |
-| **批量**（未指定，生成目录下全部 PRD） | `.qa-state.json` | `cases/requirements/orders/v2.0/.qa-state.json` |
+| **单 PRD**（指定了一个具体 PRD 文件） | `.qa-state-{prd-slug}.json` | `cases/prds/202604/.qa-state-商品列表.json` |
+| **批量**（未指定，生成目录下全部 PRD） | `.qa-state.json` | `cases/prds/202604/.qa-state.json` |
 
-示例（同版本目录下多 PRD 并行进行，互不干扰）：
-- `cases/requirements/orders/v2.0/.qa-state-商品列表.json`（商品列表，等待验收中）
-- `cases/requirements/orders/v2.0/.qa-state-退款审批.json`（退款审批，生成中）
+示例（同年月目录下多 PRD 并行进行，互不干扰）：
+- `cases/prds/202604/.qa-state-商品列表.json`（商品列表，等待验收中）
+- `cases/prds/202604/.qa-state-退款审批.json`（退款审批，生成中）
 
 **prd-slug**：取目标 PRD 文件的 basename 去掉 `.md` 后缀。
 
 ```json
 {
-  "working_dir": "cases/requirements/product-mgmt/v1.0.0",
+  "working_dir": "cases/prds/202604",
   "project_name": "电商平台",
   "prd_files": ["PRD-01-商品管理.md", "PRD-02-订单处理.md"],
   "last_completed_step": "prd-enhancer",

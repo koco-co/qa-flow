@@ -149,6 +149,35 @@ export function resolveModulePath(moduleKey, type, config = loadConfig(), versio
 }
 
 /**
+ * Resolve time-period (YYYYMM) artifact directory path.
+ * Used by the new flat directory structure: cases/{type}/{yyyymm}/
+ *
+ * @param {'prds'|'archive'|'xmind'|'issues'|'history'} type
+ * @param {string|number} yyyymm - 6-digit year-month, e.g. "202604" or 202604
+ * @param {object} [config]
+ * @returns {string} workspace-relative path, trailing slash included
+ */
+export function resolveTimePeriodPath(type, yyyymm, config = loadConfig()) {
+  const casesRoot = config.casesRoot ?? 'cases/';
+  const period = String(yyyymm).replace(/\D/g, '').slice(0, 6);
+  if (period.length !== 6) {
+    throw new Error(`Invalid YYYYMM period: "${yyyymm}". Expected 6-digit string like "202604".`);
+  }
+  return `${casesRoot}${type}/${period}/`;
+}
+
+/**
+ * Get the current year-month as YYYYMM string.
+ * @returns {string} e.g. "202604"
+ */
+export function getCurrentPeriod() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  return `${y}${m}`;
+}
+
+/**
  * Guard: require config.modules to be non-empty.
  * Throws with guidance when empty.
  * @param {object} [config]

@@ -33,7 +33,7 @@ const readmePath = resolve(repoRoot, "README.md");
 const directoryNamingPath = resolve(claudeRoot, "rules", "directory-naming.md");
 const repoSafetyPath = resolve(claudeRoot, "rules", "repo-safety.md");
 const globalTestCaseWritingPath = resolve(claudeRoot, "rules", "test-case-writing.md");
-const testsPackagePath = resolve(claudeRoot, "tests", "package.json");
+const testsPackagePath = resolve(repoRoot, "package.json");
 const testsRunnerPath = resolve(claudeRoot, "tests", "run-all.mjs");
 const testCaseGeneratorSkillPath = resolve(skillsRoot, "test-case-generator", "SKILL.md");
 const skillTestCaseWritingPath = resolve(skillsRoot, "test-case-generator", "rules", "test-case-writing.md");
@@ -221,7 +221,7 @@ assert(
   missingHeadingRefs,
 );
 
-console.log("\n=== Test: latest-output.xmind 文档有脚本实现支撑 ===");
+console.log("\n=== Test: XMind 输出规范文档与脚本一致性 ===");
 const claudeMdContent = readFileSync(claudeMdPath, "utf8");
 const archiveSkillContent = readFileSync(archiveSkillPath, "utf8");
 const xmindRuleContent = readFileSync(xmindRulePath, "utf8");
@@ -231,12 +231,12 @@ const jsonToXmindContent = readFileSync(jsonToXmindPath, "utf8");
 const stepXmindContent = readFileSync(stepXmindPath, "utf8");
 const directoryNamingContent = readFileSync(directoryNamingPath, "utf8");
 assert(
-  claudeMdContent.includes("latest-output.xmind"),
-  "CLAUDE.md 记录了 latest-output.xmind 工作流",
+  !claudeMdContent.includes("latest-output.xmind"),
+  "CLAUDE.md 不再记录快捷链接 latest-output.xmind",
 );
 assert(
-  xmindRuleContent.includes("latest-output.xmind"),
-  ".claude/rules/xmind-output.md 记录了 latest-output.xmind 工作流",
+  !xmindRuleContent.includes("创建或刷新固定快捷链接"),
+  ".claude/rules/xmind-output.md 不再描述快捷链接创建",
 );
 assert(
   xmindRuleContent.includes("<功能名>.xmind") &&
@@ -255,22 +255,25 @@ assert(
   "xmind 结构参考文档已切换到新命名 contract",
 );
 assert(
-  jsonToXmindContent.includes("function refreshLatestOutput(outputPath)") &&
-    jsonToXmindContent.includes("RESERVED_OUTPUT_NAME"),
-  "json-to-xmind.mjs 提供 latest-output.xmind 刷新逻辑",
+  !jsonToXmindContent.includes("function refreshLatestOutput") &&
+    !jsonToXmindContent.includes("symlinkSync"),
+  "json-to-xmind.mjs 已移除快捷链接创建逻辑",
+);
+assert(
+  jsonToXmindContent.includes("RESERVED_OUTPUT_NAME"),
+  "json-to-xmind.mjs 保留了保留文件名校验逻辑",
 );
 assert(
   !jsonToXmindContent.includes("legacyLinkPath"),
   "json-to-xmind.mjs 不再创建根目录同名快捷链接",
 );
 assert(
-  stepXmindContent.includes("latest-output.xmind") &&
-    !stepXmindContent.includes("与实际文件同名"),
-  "step-xmind prompt 已切换到固定 latest-output.xmind 快捷链接",
+  !stepXmindContent.includes("latest-output.xmind"),
+  "step-xmind prompt 不再引用快捷链接 latest-output.xmind",
 );
 assert(
   !directoryNamingContent.includes("不做强制迁移"),
-  "directory-naming.md 已移除“历史不迁移”的旧口径",
+  "directory-naming.md 已移除\"历史不迁移\"的旧口径",
 );
 
 console.log("\n=== Test: Task 6 相关 Skill / references 必须使用 repo 根相对路径 ===");
@@ -301,30 +304,26 @@ assert(
   "hotfix-case-flow 使用 repo 根相对路径引用 hotfix-case-writing",
 );
 
-console.log("\n=== Test: code-analysis-report 快捷链接命令必须显式传参 ===");
+console.log("\n=== Test: code-analysis-report 已移除快捷链接机制 ===");
 const codeAnalyzerPromptContent = readFileSync(codeAnalyzerPromptPath, "utf8");
 const backendAnalysisFlowContent = readFileSync(backendAnalysisFlowPath, "utf8");
 const frontendAnalysisFlowContent = readFileSync(frontendAnalysisFlowPath, "utf8");
 const conflictAnalysisFlowContent = readFileSync(conflictAnalysisFlowPath, "utf8");
 assert(
-  backendAnalysisFlowContent.includes('"reports/bugs/{date}/{BugTitle}.html"') &&
-    backendAnalysisFlowContent.includes('"latest-bug-report.html"'),
-  "backend-analysis-flow 显式传入 latest-bug-report.html 快捷链接参数",
+  !backendAnalysisFlowContent.includes("refresh-latest-link.mjs"),
+  "backend-analysis-flow 不再引用 refresh-latest-link.mjs",
 );
 assert(
-  frontendAnalysisFlowContent.includes('"reports/bugs/{date}/{BugTitle}.html"') &&
-    frontendAnalysisFlowContent.includes('"latest-bug-report.html"'),
-  "frontend-analysis-flow 显式传入 latest-bug-report.html 快捷链接参数",
+  !frontendAnalysisFlowContent.includes("refresh-latest-link.mjs"),
+  "frontend-analysis-flow 不再引用 refresh-latest-link.mjs",
 );
 assert(
-  conflictAnalysisFlowContent.includes('"reports/conflicts/{date}/{description}.html"') &&
-    conflictAnalysisFlowContent.includes('"latest-conflict-report.html"'),
-  "conflict-analysis-flow 显式传入 latest-conflict-report.html 快捷链接参数",
+  !conflictAnalysisFlowContent.includes("refresh-latest-link.mjs"),
+  "conflict-analysis-flow 不再引用 refresh-latest-link.mjs",
 );
 assert(
-  codeAnalyzerPromptContent.includes("latest-bug-report.html") &&
-    codeAnalyzerPromptContent.includes("latest-conflict-report.html"),
-  "code-analyzer prompt 显式说明快捷链接命令参数",
+  !codeAnalyzerPromptContent.includes("refresh-latest-link.mjs"),
+  "code-analyzer prompt 不再引用 refresh-latest-link.mjs",
 );
 assert(
   !codeAnalyzerPromptContent.includes("## 两种工作模式") &&
@@ -355,7 +354,7 @@ assert(
 );
 
 console.log("\n=== Test: .claude/tests 统一入口必须完整 ===");
-assert(existsSync(testsPackagePath), ".claude/tests/package.json 已存在");
+assert(existsSync(testsPackagePath), "根目录 package.json 已存在（已迁移至 bun 统一管理）");
 assert(existsSync(testsRunnerPath), ".claude/tests/run-all.mjs 已存在");
 
 console.log("\n=== Test: repo-facing 文档目录树不得残留旧的 .claude/scripts/ 描述 ===");
@@ -399,16 +398,16 @@ assert(
   hardcodedMappingAuthorityRefs,
 );
 
-console.log("\n=== Test: PRD 增强快捷链接必须显式指定 latest-prd-enhanced.md ===");
+console.log("\n=== Test: PRD 增强不再依赖快捷链接机制 ===");
 const prdEnhancerSkillContent = readFileSync(prdEnhancerSkillPath, "utf8");
 const stepPrdEnhancerContent = readFileSync(stepPrdEnhancerPath, "utf8");
 assert(
-  prdEnhancerSkillContent.includes('refresh-latest-link.mjs "<enhanced-path>" latest-prd-enhanced.md'),
-  "prd-enhancer Skill 使用显式 latest-prd-enhanced.md 快捷链接命令",
+  !prdEnhancerSkillContent.includes('refresh-latest-link.mjs'),
+  "prd-enhancer Skill 不再引用 refresh-latest-link.mjs",
 );
 assert(
-  stepPrdEnhancerContent.includes('refresh-latest-link.mjs "<实际enhanced.md路径>" latest-prd-enhanced.md'),
-  "step-prd-enhancer 使用显式 latest-prd-enhanced.md 快捷链接命令",
+  !stepPrdEnhancerContent.includes('refresh-latest-link.mjs'),
+  "step-prd-enhancer 不再引用 refresh-latest-link.mjs",
 );
 
 console.log("\n=== Test: waiting verification 状态必须使用 archive step ID ===");

@@ -35,8 +35,8 @@
    - 前置条件（数据源/环境依赖）
 5. 输出正式需求整理结果：
    - 产物形态：临时整理结果 / formalize 摘要
-   - 持久化策略：**不在 `cases/requirements` 下持久化 formalized.md**
-   - 如需短暂落盘，仅允许写入当前会话目录或 requirements 目录下的 `.trash/` 临时区，并在增强完成后清理
+   - 持久化策略：**不在 `cases/prds` 下持久化 formalized.md**
+   - 如需短暂落盘，仅允许写入当前会话目录或 prds 目录下的 `.trash/` 临时区，并在增强完成后清理
    - 后续 prd-enhancer 直接消费上述临时整理结果或摘要，不再依赖稳定的 `PRD-*-formalized.md` 文件
 
 ## 质量要求

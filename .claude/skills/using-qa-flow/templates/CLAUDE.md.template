@@ -86,7 +86,7 @@ qa-flow/
 - 质量阈值：`< 15%` 自动修正；`15-40%` 自动修正+警告；`> 40%` 阻断
 - 源码仓库清单：见 `.claude/config.json` 的 `repos` 字段
 - 报错定位：优先参考 config.json 的 `repos` 和 `stackTrace` 字段定位目标仓库
-- 快捷链接：`latest-output.xmind` 指向最新生成的 XMind 文件，`latest-prd-enhanced.md` 指向最新增强 PRD
+- 产物路径：XMind 文件与增强版 PRD 的绝对路径在流程完成后于终端输出
 
 ---
 

@@ -2,9 +2,10 @@
 .DS_Store
 **/.DS_Store
 
-# Node.js
+# Node.js / Bun
 node_modules/
 .npm/
+bun.lockb
 
 # Temp files
 **/temp/
@@ -40,6 +41,7 @@ reports/**/*.html
 cases/archive/INDEX.json
 
 tools/zentao/.env
+tools/zentao/
 
-# Root-level env file (notification credentials — do not commit)
+# Root-level unified env file (all credentials — do not commit)
 .env

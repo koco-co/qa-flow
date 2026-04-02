@@ -22,14 +22,6 @@
 **如有 ❌ 错误级问题：** 向用户展示，询问是否继续（推荐先修复 PRD）。
 **如仅有 ⚠️ 警告：** 记录在报告中，不阻断流程。
 
-## 快捷链接刷新
-
-增强成功后，刷新根目录固定快捷链接 `latest-prd-enhanced.md`：
-
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs "<实际enhanced.md路径>" latest-prd-enhanced.md
-```
-
 ## 错误处理
 
 - **图片读取失败率 > 50%**：暂停并提示用户，建议修改 PRD 中的图片引用后重试

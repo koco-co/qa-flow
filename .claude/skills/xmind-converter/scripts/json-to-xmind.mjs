@@ -29,15 +29,14 @@
  *                                 └── 预期结果
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync, symlinkSync } from 'fs'
-import { resolve, dirname, relative } from 'path'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { Topic, RootTopic, Marker, Workbook, writeLocalFile } from 'xmind-generator'
 import { assertNewOutputPathMatchesContract } from '../../../shared/scripts/output-naming-contracts.mjs'
 import { loadConfig } from '../../../shared/scripts/load-config.mjs'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
-const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..', '..', '..')
 const RESERVED_OUTPUT_NAME = 'latest-output.xmind'
 
 const PRIORITY_MAP = {
@@ -290,23 +289,6 @@ function validateOutputPath(outputPath) {
   })
 }
 
-function refreshLatestOutput(outputPath) {
-  const resolvedOutputPath = resolve(outputPath)
-  const linkTarget = relative(REPO_ROOT, resolvedOutputPath)
-  const linkPaths = [resolve(REPO_ROOT, RESERVED_OUTPUT_NAME)]
-
-  for (const linkPath of linkPaths) {
-    try {
-      unlinkSync(linkPath)
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        throw err
-      }
-    }
-
-    symlinkSync(linkTarget, linkPath)
-  }
-}
 
 async function appendToExisting(data, outputPath) {
   const { default: JSZip } = await import('jszip')
@@ -448,16 +430,13 @@ if (isDirectExecution()) {
 
     if (replaceMode && existsSync(resolve(outputPath))) {
       await replaceInExisting(data, outputPath)
-      refreshLatestOutput(outputPath)
       console.log(`XMind 文件已更新（替换模式）: ${resolve(outputPath)}`)
     } else if (appendMode && existsSync(resolve(outputPath))) {
       await appendToExisting(data, outputPath)
-      refreshLatestOutput(outputPath)
       console.log(`XMind 文件已更新（追加模式）: ${resolve(outputPath)}`)
     } else {
       const buf = await buildWorkbookBuffer(data)
       writeFileSync(resolve(outputPath), Buffer.from(buf))
-      refreshLatestOutput(outputPath)
       console.log(`XMind 文件已生成: ${resolve(outputPath)}`)
     }
   } catch (err) {

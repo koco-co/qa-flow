@@ -1,9 +1,0 @@
-{
-  "name": "using-qa-flow-scripts",
-  "type": "module",
-  "private": true,
-  "description": "Scripts for using-qa-flow skill (init wizard, etc.)",
-  "dependencies": {
-    "jszip": "^3.10.1"
-  }
-}

@@ -66,20 +66,12 @@ node .claude/skills/code-analysis-report/scripts/render-report.mjs \
   reports/conflicts/{date}/{description}.html
 ```
 
-4. 刷新快捷链接：
-
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs \
-  "reports/conflicts/{date}/{description}.html" \
-  "latest-conflict-report.html"
-```
-
 ---
 
 ## 输出前核对清单
 
 - [ ] 冲突块数量与输入材料一致
 - [ ] 每个冲突块都给出了类型判断与处理建议
-- [ ] 逻辑互斥项已显式标记“需人工决策”
+- [ ] 逻辑互斥项已显式标记”需人工决策”
 - [ ] 报告中说明了使用的仓库 / 分支上下文，或明确标记上下文缺失
-- [ ] `latest-conflict-report.html` 已刷新
+- [ ] 报告文件路径已在终端输出

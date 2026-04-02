@@ -250,7 +250,7 @@ meta 字段保留原始内容，只更新 generated_at 为当前时间，agent_i
 
 ### 写入位置
 
-将合并修正后的 JSON 写入：[最终 JSON 路径，如 cases/requirements/<requirements-root>/Story-20260322/temp/final-reviewed.json]
+将合并修正后的 JSON 写入：[最终 JSON 路径，如 cases/prds/YYYYMM/temp/final-reviewed.json]
 
 ### 评审报告（写入 JSON 后输出）
 

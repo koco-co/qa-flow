@@ -30,17 +30,20 @@ function ensureDir(dir) {
 function scaffoldFromConfig() {
   const config = loadConfig();
   const casesRoot = config.casesRoot ?? 'cases/';
-  const types = ['requirements', 'xmind', 'archive', 'history'];
+  // New flat YYYYMM structure types; also keep legacy types for backward compatibility
+  const newTypes = config.casesTypes ?? ['prds', 'archive', 'xmind', 'issues', 'history'];
+  const legacyTypes = ['requirements', 'xmind', 'archive', 'history'];
+  const allTopLevelTypes = [...new Set([...newTypes, ...legacyTypes])];
   let created = 0;
 
   // Ensure top-level type directories
-  for (const type of types) {
+  for (const type of allTopLevelTypes) {
     if (ensureDir(join(BASE, casesRoot, type))) created++;
   }
 
-  // Ensure per-module directories
+  // Ensure per-module directories (legacy module-based structure)
   for (const [moduleKey] of Object.entries(config.modules || {})) {
-    for (const type of types) {
+    for (const type of legacyTypes) {
       const relPath = resolveModulePath(moduleKey, type, config);
       if (ensureDir(join(BASE, relPath))) created++;
     }

@@ -179,6 +179,7 @@ function buildPrdCandidates({
     .map((value) => normalizeRelativePath(value));
 
   if (docType === "requirements") {
+    // Both cases/requirements/ and cases/prds/ are "requirements" doc type
     candidates.add(markdownRelPath);
     explicitMarkdownCandidates.forEach((value) => candidates.add(value));
     return candidates.values();

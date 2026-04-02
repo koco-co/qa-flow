@@ -83,5 +83,5 @@ case_path: ""                          # 关联的用例文件路径
 grep -rl "数据质量\|质量规则" cases/archive/ --include="*.md"
 
 # 读取匹配文件的 front-matter 概览（前 20 行）
-head -20 cases/archive/data-assets/v6.4.10/PRD-xx-xxx.md
+head -20 cases/archive/YYYYMM/PRD-xx-xxx.md
 ```

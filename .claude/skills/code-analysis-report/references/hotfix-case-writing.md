@@ -254,5 +254,4 @@ cases/archive/online-cases/{yyyy-MM-dd}/{hotfix_version}_{bugId}-{功能简述}.
 - [ ] 步骤从零开始（包含新建测试数据），无跳步假设
 - [ ] 无模糊词（"应该"、"可能"、"参考"等）
 - [ ] 文件存储在 `cases/archive/online-cases/{yyyy-MM-dd}/`
-- [ ] 根目录同名快捷链接已创建（使用 `refresh-latest-link.mjs`）
 - [ ] 完成报告已在终端输出

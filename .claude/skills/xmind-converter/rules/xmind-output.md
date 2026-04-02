@@ -60,6 +60,6 @@ XMind L1 对应 Archive MD 的 `suite_name` frontmatter 字段：
 - L1 默认 `folded`
 - 其余层级继续沿用 `模块/菜单 → 页面 → [子组] → 用例 → 步骤 → 预期`
 
-## XMind 快捷访问
+## XMind 输出路径
 
-生成、追加或替换成功后，脚本只会在仓库根目录创建或刷新固定快捷链接 `latest-output.xmind`，用于指向本次最新生成的真实 XMind 文件。
+生成、追加或替换成功后，脚本在终端输出真实 XMind 文件的绝对路径，供用户直接访问。

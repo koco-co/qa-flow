@@ -91,9 +91,8 @@
 
    - 用户回复数字或模块名 → 使用对应模块
    - **不得跳过此确认步骤**，即使推断置信度很高
-   - 用户确认后，根据模块 key、配置中的 `versioned` 标记和推断出的版本号决定文件保存路径：
-     - 版本化模块：`resolveModulePath(moduleKey, 'requirements', config, version)/PRD-<docName>.md`
-     - 非版本化模块：`resolveModulePath(moduleKey, 'requirements', config)/PRD-<docName>.md`
+   - 用户确认后，根据当前年月决定文件保存路径：
+     - 统一使用：`cases/prds/YYYYMM/PRD-<docName>.md`（YYYYMM 为当前年月）
    - `<docName>` 使用蓝湖文档名（空格替换为 `-`），版本号无法推断时询问用户
    - 向用户展示保存路径
 
@@ -135,24 +134,24 @@
 
 | 信息            | 来源                 | 示例                                                                                                                          |
 | --------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 工作目录路径    | 用户指令             | `cases/requirements/orders/v2.0/`（版本化模块）/ `cases/requirements/users/`（非版本化模块）                               |
+| 工作目录路径    | 用户指令             | `cases/prds/YYYYMM/`                                                                                                          |
 | PRD 文件列表    | 扫描工作目录         | `PRD-26-xxx.md`, `PRD-27-xxx.md`                                                                                              |
 | 项目名称        | 目录路径推断         | `订单中心` / `用户中心`                                                                                                        |
 | 源码仓库路径    | `.claude/config.json` 的 `repos` 字段 | 未配置源码仓库时记为「无源码参考」                                                                                             |
-| 输出 XMind 路径 | 配置解析结果         | `cases/xmind/orders/v2.0/`                                                                                                    |
-| 历史用例        | 自动查找             | `cases/archive/<module_key>/` 目录下的 .md 文件（版本化模块继续向 `v{version}/` 细分） |
+| 输出 XMind 路径 | 配置解析结果         | `cases/xmind/YYYYMM/`                                                                                                         |
+| 历史用例        | 自动查找             | `cases/archive/YYYYMM/` 目录下的 .md 文件                                                                                     |
 | 运行模式        | 用户指令关键词       | `--quick` / 普通                                                                                                              |
 
 **工作目录解析规则：**
-- `继续 orders v2.0 的用例生成` → `cases/requirements/orders/v2.0/`
-- `为 orders v2.0 生成测试用例` → `cases/requirements/orders/v2.0/`
+- `继续 202604 的用例生成` → `cases/prds/202604/`
+- `为 202604 生成测试用例` → `cases/prds/202604/`
 - 路径中包含 `Story-YYYYMMDD` 的旧格式指令（向后兼容）→ 直接使用该路径
 
 如果同一工作目录下有多个 PRD，询问用户要生成哪些（默认全部）。
 
 **路径验证：**
 
-- 如果工作目录不存在：向用户提示目录不存在，并列出 `cases/requirements/<module>/` 下可用的版本目录
+- 如果工作目录不存在：向用户提示目录不存在，并列出 `cases/prds/` 下可用的年月目录
 - 如果工作目录下无 PRD 文件：向用户提示目录下未找到 PRD 文件，请先添加 PRD 文档
 
 ---
@@ -163,8 +162,8 @@
 
 | 本次生成范围 | 状态文件名 | 示例 |
 |-------------|-----------|------|
-| **单 PRD**（用户指定了一个具体 PRD 文件） | `.qa-state-{prd-slug}.json` | `cases/requirements/orders/v2.0/.qa-state-商品列表.json` |
-| **批量**（用户未指定，生成目录下全部 PRD） | `.qa-state.json` | `cases/requirements/orders/v2.0/.qa-state.json` |
+| **单 PRD**（用户指定了一个具体 PRD 文件） | `.qa-state-{prd-slug}.json` | `cases/prds/202604/.qa-state-商品列表.json` |
+| **批量**（用户未指定，生成目录下全部 PRD） | `.qa-state.json` | `cases/prds/202604/.qa-state.json` |
 
 **prd-slug 生成规则：**
 - 取目标 PRD 文件的 basename，去掉 `.md` 后缀
@@ -262,7 +261,7 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --detect
 ## 错误处理
 
 - **蓝湖 URL 检测失败**：提示用户检查 URL 格式和网络连接
-- **路径不存在**：向用户列出 `cases/requirements/<module>/` 下可用的版本目录供选择
+- **路径不存在**：向用户列出 `cases/prds/` 下可用的年月目录供选择
 - **PRD 文件不存在**：提示用户先添加 PRD 文档
 - **状态文件损坏**：询问用户是否重新开始流程
 

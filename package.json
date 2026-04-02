@@ -1,0 +1,15 @@
+{
+  "name": "qa-flow",
+  "type": "module",
+  "private": true,
+  "description": "qa-flow QA 测试用例生成工作流",
+  "scripts": {
+    "test": "node .claude/tests/run-all.mjs",
+    "install:python": "cd tools/lanhu-mcp && uv venv && uv pip install -r requirements.txt"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "nodemailer": "^8.0.4",
+    "xmind-generator": "^1.0.1"
+  }
+}

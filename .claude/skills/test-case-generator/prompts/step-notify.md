@@ -41,8 +41,8 @@
 
 - XMind 路径、模式（新建/追加）、用例统计
 - 归档 MD 路径
-- 主验收快捷链接：`latest-output.xmind`
-- 上游 PRD 快捷链接：`latest-prd-enhanced.md`
+- XMind 文件绝对路径
+- 增强版 PRD 文件路径
 - Reviewer 质量评分
 - 提示用户可执行后续操作
 
@@ -60,7 +60,7 @@ node .claude/shared/scripts/notify.mjs \
 
 参数说明：
 - `count`：生成的用例总数（数字）
-- `file`：XMind 输出文件的相对路径（如 `latest-output.xmind`）
+- `file`：XMind 输出文件的相对路径（真实文件路径，如 `cases/xmind/orders/v2.0/功能名.xmind`）
 - `duration`：工作流总耗时（如 `3m21s`，可从 execution_log 首尾时间差计算）
 
 > 💡 调试提示：添加 `--dry-run` 参数可打印完整 payload 而不发送网络请求。

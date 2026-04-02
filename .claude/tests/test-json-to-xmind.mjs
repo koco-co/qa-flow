@@ -10,9 +10,7 @@ import {
   unlinkSync,
   existsSync,
   lstatSync,
-  readlinkSync,
   renameSync,
-  symlinkSync,
 } from "fs";
 import { resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
@@ -162,7 +160,6 @@ const dtstackJsonSecond = {
   ],
 };
 
-const repoRoot = resolve(__dirname, "..", "..");
 const tmpInput = resolve(__dirname, "_test_input.json");
 const tmpInputSecond = resolve(__dirname, "_test_input_second.json");
 const tmpOutput = resolve(__dirname, "测试需求.xmind");
@@ -170,25 +167,6 @@ const tmpOutputAlt = resolve(__dirname, "Story-20260322.xmind");
 const invalidNamedOutput = resolve(__dirname, "202603-测试需求.xmind");
 const reservedNamedOutput = resolve(__dirname, "latest-output.xmind");
 const legacyAppendOutput = resolve(__dirname, "legacy-output.xmind");
-const latestOutputLink = resolve(repoRoot, "latest-output.xmind");
-const legacyRootLink = resolve(repoRoot, "legacy-output.xmind");
-
-function captureExistingPath(path) {
-  if (!pathExists(path)) return null;
-  const stat = lstatSync(path);
-  if (stat.isSymbolicLink()) {
-    return { type: "symlink", target: readlinkSync(path) };
-  }
-  return { type: "file", content: readFileSync(path) };
-}
-
-const preservedLatestOutput = captureExistingPath(latestOutputLink);
-const preservedLegacyRootLink = captureExistingPath(legacyRootLink);
-
-/** 根据实际输出路径计算根目录快捷链接路径 */
-function getDynamicLinkPath(outputPath) {
-  return resolve(repoRoot, basename(outputPath));
-}
 
 function pathExists(path) {
   try {
@@ -203,44 +181,16 @@ function cleanup() {
   [tmpInput, tmpInputSecond, tmpOutput, tmpOutputAlt, invalidNamedOutput, reservedNamedOutput, legacyAppendOutput].forEach(
     (p) => { if (existsSync(p)) unlinkSync(p); }
   );
-  [latestOutputLink, legacyRootLink, tmpOutput, tmpOutputAlt, legacyAppendOutput].forEach((p) => {
-    const link = getDynamicLinkPath(p);
-    if (pathExists(link)) unlinkSync(link);
-  });
-  if (pathExists(latestOutputLink)) unlinkSync(latestOutputLink);
-  if (pathExists(legacyRootLink)) unlinkSync(legacyRootLink);
-}
-
-function restorePath(path, snapshot) {
-  if (!snapshot) return;
-  if (snapshot.type === "symlink") {
-    symlinkSync(snapshot.target, path);
-    return;
-  }
-  writeFileSync(path, snapshot.content);
 }
 
 process.on("exit", () => {
   cleanup();
-  restorePath(latestOutputLink, preservedLatestOutput);
-  restorePath(legacyRootLink, preservedLegacyRootLink);
 });
 
-function assertLatestOutputPointsTo(expectedOutputPath, label) {
-  assert(pathExists(latestOutputLink), `${label}: 创建了 latest-output.xmind 快捷链接`);
-  if (!pathExists(latestOutputLink)) return;
-
-  const linkStat = lstatSync(latestOutputLink);
-  assert(linkStat.isSymbolicLink(), `${label}: latest-output.xmind 是符号链接`);
-  if (linkStat.isSymbolicLink()) {
-    assert(
-      resolve(repoRoot, readlinkSync(latestOutputLink)) === resolve(expectedOutputPath),
-      `${label}: latest-output.xmind 指向实际输出文件`,
-    );
-  }
+function assertOutputFileExists(expectedOutputPath, label) {
   assert(
-    !pathExists(getDynamicLinkPath(expectedOutputPath)),
-    `${label}: 不再创建根目录同名快捷链接 ${basename(expectedOutputPath)}`,
+    pathExists(expectedOutputPath),
+    `${label}: XMind 文件已生成于目标路径 ${basename(expectedOutputPath)}`,
   );
 }
 
@@ -281,24 +231,24 @@ await runTest("新建 XMind 输出文件名必须符合命名 contract", () => {
   assert(!pathExists(invalidNamedOutput), "未生成不合规命名的 XMind 文件");
 });
 
-await runTest("latest-output.xmind 随成功输出刷新", () => {
+await runTest("各写入模式均能成功生成 XMind 文件", () => {
   writeFileSync(tmpInput, JSON.stringify(validJson), "utf8");
 
   const latestCreate = runScript(`${tmpInput} ${tmpOutput}`);
   assert(latestCreate.code === 0, "create 模式退出码为 0");
-  assertLatestOutputPointsTo(tmpOutput, "create 模式");
+  assertOutputFileExists(tmpOutput, "create 模式");
 
   const latestCreateAlt = runScript(`${tmpInput} ${tmpOutputAlt}`);
-  assert(latestCreateAlt.code === 0, "create 模式刷新到新路径时退出码为 0");
-  assertLatestOutputPointsTo(tmpOutputAlt, "create 模式刷新");
+  assert(latestCreateAlt.code === 0, "create 模式生成新路径时退出码为 0");
+  assertOutputFileExists(tmpOutputAlt, "create 模式新路径");
 
   const latestAppend = runScript(`--append ${tmpInput} ${tmpOutput}`);
   assert(latestAppend.code === 0, "append 模式退出码为 0");
-  assertLatestOutputPointsTo(tmpOutput, "append 模式");
+  assertOutputFileExists(tmpOutput, "append 模式");
 
   const latestReplace = runScript(`--replace ${tmpInput} ${tmpOutputAlt}`);
   assert(latestReplace.code === 0, "replace 模式退出码为 0");
-  assertLatestOutputPointsTo(tmpOutputAlt, "replace 模式");
+  assertOutputFileExists(tmpOutputAlt, "replace 模式");
 });
 
 await runTest("config 驱动输出根节点与 L1 元数据（原 DTStack 样例）", async () => {
@@ -376,7 +326,7 @@ await runTest("append 模式允许更新历史遗留文件名", () => {
   const appendResult = runScript(`--append ${tmpInput} ${legacyAppendOutput}`);
   assert(appendResult.code === 0, "append 模式可更新历史遗留文件名");
   assert(pathExists(legacyAppendOutput), "历史遗留文件名的 XMind 仍存在");
-  assertLatestOutputPointsTo(legacyAppendOutput, "append 历史遗留文件名");
+  assertOutputFileExists(legacyAppendOutput, "append 历史遗留文件名");
 });
 
 await runTest("缺少 meta 的 JSON 应失败", () => {
@@ -402,8 +352,6 @@ await runTest("参数不足应报错", () => {
 // ─── Cleanup & Summary ──────────────────────────────────────
 
 cleanup();
-restorePath(latestOutputLink, preservedLatestOutput);
-restorePath(legacyRootLink, preservedLegacyRootLink);
 
 if (testFilter && testsRun === 0) {
   console.error(`\n❌ 未找到匹配测试: ${testFilter}`);

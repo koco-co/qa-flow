@@ -1,6 +1,6 @@
 ---
 name: using-qa-flow
-description: qa-flow 使用指南与环境初始化。/using-qa-flow 展示功能菜单，/using-qa-flow init 执行 5 步环境初始化。替代旧的 /start 指令。
+description: qa-flow 使用指南与环境初始化。/using-qa-flow 展示功能菜单，/using-qa-flow init 执行 5 步环境初始化。
 argument-hint: "[init | 功能编号或关键词]"
 ---
 
@@ -41,13 +41,13 @@ argument-hint: "[init | 功能编号或关键词]"
 - 如需快速模式，推荐写法：`为 ${module_key} v${version} --quick 生成测试用例`
 - 说明：`--quick` 会跳过 Step 3（Brainstorming）、Step 4（Checklist 预览）、Step 5（用户确认）
 - 或直接提供蓝湖 URL，例如：`生成测试用例 https://lanhuapp.com/web/#/item/project/product?...`（自动从文档标题提取版本号）
-- 如果用户还没有 PRD 文件，提示将 PRD 放到 `cases/requirements/${module_key}/v{version}/` 对应目录下（非版本化模块则省略版本层）
+- 如果用户还没有 PRD 文件，提示将 PRD 放到 `cases/prds/YYYYMM/` 对应目录下
 - 如检测到 `.qa-state.json`，提示可直接说：`继续 ${module_key} v${version} 的用例生成`
 - 如需只重跑某个页面/模块，提示可说：`重新生成 ${module_key} v${version} 的「${page}」模块用例`
 
 如果 `$ARGUMENTS` 包含 `2` 或 `PRD` 或 `增强`：
 
-- 引导用户提供 PRD 文件路径，例如：`帮我增强这个 PRD：cases/requirements/orders/v2.0/商品管理需求.md`
+- 引导用户提供 PRD 文件路径，例如：`帮我增强这个 PRD：cases/prds/202604/商品管理需求.md`
 
 如果 `$ARGUMENTS` 包含 `3` 或 `报错` 或 `bug` 或 `分析`：
 
@@ -62,7 +62,7 @@ argument-hint: "[init | 功能编号或关键词]"
 
 如果 `$ARGUMENTS` 包含 `5` 或 `xmind`：
 
-- 引导用户提供 JSON 文件路径，例如：`将 cases/requirements/orders/v2.0/temp/cases.json 转换为 XMind`
+- 引导用户提供 JSON 文件路径，例如：`将 cases/prds/202604/temp/cases.json 转换为 XMind`
 
 ---
 
@@ -190,7 +190,7 @@ cat .repos/source-map.yaml 2>/dev/null || echo "（未配置源码仓库）"
 - 验证通过后，提示用户可以继续使用测试用例生成、PRD 增强等核心功能。
 
 <!-- DTStack 用户示例：为 data-assets v6.4.10 生成测试用例 -->
-<!-- DTStack 用户示例：帮我增强这个 PRD：cases/requirements/custom/xyzh/数据质量-质量问题台账.md -->
+<!-- DTStack 用户示例：帮我增强这个 PRD：cases/prds/202604/数据质量-质量问题台账.md -->
 
 ---
 
@@ -204,7 +204,7 @@ cat .repos/source-map.yaml 2>/dev/null || echo "（未配置源码仓库）"
 生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx
 
 # 增强 PRD
-帮我增强这个 PRD：cases/requirements/orders/v2.0/商品管理需求.md
+帮我增强这个 PRD：cases/prds/202604/商品管理需求.md
 
 # 分析报错
 帮我分析这个报错
@@ -219,4 +219,4 @@ cat .repos/source-map.yaml 2>/dev/null || echo "（未配置源码仓库）"
 ```
 
 > 提示：你也可以直接用自然语言描述需求，系统会自动匹配对应功能。
-> 验收建议：测试用例流优先打开 `latest-prd-enhanced.md` / `latest-output.xmind`；代码分析流优先打开 `latest-bug-report.html` / `latest-conflict-report.html`。
+> 验收建议：测试用例流查看终端输出的 XMind 文件路径和增强版 PRD 路径；代码分析流查看终端输出的报告文件路径。

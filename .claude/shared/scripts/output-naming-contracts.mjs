@@ -159,7 +159,7 @@ export function assertNewOutputPathMatchesContract(
   if (effectiveReservedBasenames.includes(normalizedFileName)) {
     throw new Error(
       reservedMessage ??
-        `${normalizedFileName} 是保留输出文件名，仅供仓库根目录的最近输出快捷链接使用`,
+        `${normalizedFileName} 是保留输出文件名，不允许作为真实产物输出路径使用`,
     );
   }
 

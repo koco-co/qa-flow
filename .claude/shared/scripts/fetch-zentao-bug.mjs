@@ -11,8 +11,9 @@
  *   { error: "..." }
  *
  * 凭据读取顺序：
- *   1. 环境变量 ZENTAO_BASE_URL / ZENTAO_ACCOUNT / ZENTAO_PASSWORD
- *   2. tools/zentao/.env 文件
+ *   1. 环境变量 ZENTAO_BASE_URL / ZENTAO_ACCOUNT / ZENTAO_PASSWORD（优先）
+ *   2. 根目录 .env 文件
+ *   3. tools/zentao/.env 文件（兼容旧配置）
  */
 import { readFileSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
@@ -40,13 +41,17 @@ function loadEnvFile(filePath) {
 }
 
 function loadCredentials() {
-  const fileEnv = loadEnvFile(resolve(WORKSPACE_ROOT, "tools/zentao/.env"));
-  const baseUrl = process.env.ZENTAO_BASE_URL || fileEnv.ZENTAO_BASE_URL;
-  const account = process.env.ZENTAO_ACCOUNT || fileEnv.ZENTAO_ACCOUNT;
-  const password = process.env.ZENTAO_PASSWORD || fileEnv.ZENTAO_PASSWORD;
+  // 优先读根目录 .env，其次读 tools/zentao/.env（兼容旧配置）
+  const rootEnv = loadEnvFile(resolve(WORKSPACE_ROOT, ".env"));
+  const zentaoEnv = loadEnvFile(resolve(WORKSPACE_ROOT, "tools/zentao/.env"));
+  const merged = { ...zentaoEnv, ...rootEnv };
+
+  const baseUrl = process.env.ZENTAO_BASE_URL || merged.ZENTAO_BASE_URL;
+  const account = process.env.ZENTAO_ACCOUNT || merged.ZENTAO_ACCOUNT;
+  const password = process.env.ZENTAO_PASSWORD || merged.ZENTAO_PASSWORD;
   if (!baseUrl || !account || !password) {
     throw new Error(
-      "缺少禅道凭据。请在 tools/zentao/.env 中配置 ZENTAO_BASE_URL、ZENTAO_ACCOUNT、ZENTAO_PASSWORD"
+      "缺少禅道凭据。请在根目录 .env 中配置 ZENTAO_BASE_URL、ZENTAO_ACCOUNT、ZENTAO_PASSWORD"
     );
   }
   return { baseUrl: baseUrl.replace(/\/$/, ""), account, password };

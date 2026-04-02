@@ -14,6 +14,8 @@ import {
   getWorkspaceRoot,
   getBranchMappingPath,
   getRepoBranchMappingPath,
+  resolveTimePeriodPath,
+  getCurrentPeriod,
 } from "../shared/scripts/load-config.mjs";
 import { existsSync, readFileSync } from "fs";
 import { resolve, dirname } from "path";
@@ -39,11 +41,10 @@ assert(config.modules !== undefined, "包含 modules 字段");
 assert(config.repos !== undefined, "包含 repos 字段");
 assert(config.project?.name === "qa-flow", "project.name 标记为 qa-flow");
 assert(config.integrations?.lanhuMcp?.runtimePath === "tools/lanhu-mcp/", "lanhuMcp runtimePath 配置正确");
-assert(config.integrations?.lanhuMcp?.envFile === "tools/lanhu-mcp/.env", "lanhuMcp envFile 配置正确");
-assert(config.shortcuts?.latestXmind === "latest-output.xmind", "latestXmind 快捷链接名正确");
-assert(config.shortcuts?.latestEnhancedPrd === "latest-prd-enhanced.md", "latestEnhancedPrd 快捷链接名正确");
-assert(config.shortcuts?.latestBugReport === "latest-bug-report.html", "latestBugReport 快捷链接名正确");
-assert(config.shortcuts?.latestConflictReport === "latest-conflict-report.html", "latestConflictReport 快捷链接名正确");
+// envFile 已迁移到根 .env，config.json 不再保留 envFile 字段
+assert(config.integrations?.lanhuMcp?.envFile === undefined, "lanhuMcp envFile 已迁移到根 .env，config.json 不再保留");
+// shortcuts 已移除，改为在通知消息中携带文件绝对路径
+assert(config.shortcuts === undefined, "shortcuts 已移除（快捷链接机制已废弃）");
 assert(config.repoBranchMapping === undefined, "config 不应有 repoBranchMapping 字段（已迁移为 branchMapping）");
 assert(config.dataAssetsVersionMap === undefined, "config 不应有 dataAssetsVersionMap 字段");
 assert(Object.prototype.hasOwnProperty.call(config, "branchMapping"), "config 应有 branchMapping 字段");
@@ -76,6 +77,28 @@ assert(mappingPath === null, "branchMapping 为 null 时 getBranchMappingPath() 
 console.log("\n=== Test: getRepoBranchMappingPath (deprecated alias) ===");
 const deprecatedPath = getRepoBranchMappingPath();
 assert(deprecatedPath === null, "getRepoBranchMappingPath() 作为 getBranchMappingPath() 的 alias 正常工作");
+
+console.log("\n=== Test: casesTypes 新目录结构 ===");
+const casesTypes = config.casesTypes;
+assert(Array.isArray(casesTypes), "config.casesTypes 已添加");
+assert(casesTypes.includes("prds"), "casesTypes 包含 prds");
+assert(casesTypes.includes("archive"), "casesTypes 包含 archive");
+assert(casesTypes.includes("xmind"), "casesTypes 包含 xmind");
+assert(casesTypes.includes("issues"), "casesTypes 包含 issues");
+assert(casesTypes.includes("history"), "casesTypes 包含 history");
+
+console.log("\n=== Test: resolveTimePeriodPath ===");
+const archivePath = resolveTimePeriodPath("archive", "202604");
+assert(archivePath === "cases/archive/202604/", `resolveTimePeriodPath('archive','202604') = ${archivePath}`);
+const prdsPath = resolveTimePeriodPath("prds", 202603);
+assert(prdsPath === "cases/prds/202603/", `resolveTimePeriodPath('prds', 202603) = ${prdsPath}`);
+const issuesPath = resolveTimePeriodPath("issues", "202604");
+assert(issuesPath === "cases/issues/202604/", `resolveTimePeriodPath('issues','202604') = ${issuesPath}`);
+
+console.log("\n=== Test: getCurrentPeriod ===");
+const period = getCurrentPeriod();
+assert(typeof period === "string", "getCurrentPeriod() 返回字符串");
+assert(/^\d{6}$/.test(period), `getCurrentPeriod() 格式正确: ${period}`);
 
 console.log("\n=== Test: Schema — no DTStack-specific fields ===");
 const loadConfigSource = readFileSync(resolve(root, ".claude/shared/scripts/load-config.mjs"), "utf8");

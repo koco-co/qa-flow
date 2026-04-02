@@ -154,6 +154,9 @@ function getTargetFiles() {
   return [
     ...collectMdFiles(join(ROOT, casesRoot, "archive")),
     ...collectMdFiles(join(ROOT, casesRoot, "requirements")),
+    // New YYYYMM-based directories
+    ...collectMdFiles(join(ROOT, casesRoot, "prds")),
+    ...collectMdFiles(join(ROOT, casesRoot, "issues")),
   ].sort();
 }
 

@@ -83,7 +83,7 @@ source_context（如有）：
 ### 输出格式
 输出必须为纯 JSON，完整 Schema 见 `references/intermediate-format.md`。关键要求：
 - `meta.agent_id` = `"writer-[模块简称]"`；`meta.tags` 3-8个领域关键词；`meta.module_key` 填模块 key
-- `meta.prd_version`：若 PRD frontmatter 中有 `prd_version` 字段，从中读取（如 `"v6.4.10"`）；此字段决定 archive/xmind 输出的版本子目录（如 `${module}/v6.4.10/`）
+- `meta.prd_version`：若 PRD frontmatter 中有 `prd_version` 字段，从中读取（如 `"v6.4.10"`）；archive/xmind 输出目录统一使用年月制（如 `cases/archive/202604/`）
 - `meta.version`：有版本号时与 `prd_version` 保持一致（如 `"v6.4.10"`）；无版本号时用日期格式（如 `"202603版本"`）
 - 层级：modules[].name（L2 菜单/模块名）→ pages[].name（L3 页面名）→ sub_groups[].name（L4 可选）→ test_cases
 - 页面功能单一或用例数 ≤ 5 条时，可跳过 sub_groups，直接在 pages 下放 test_cases
@@ -266,7 +266,7 @@ INSERT INTO ${schema}.${table} VALUES
 
 ## 输出要求
 
-将 JSON 写入文件：[临时文件路径，如 cases/requirements/orders/v2.0/temp/list.json]
+将 JSON 写入文件：[临时文件路径，如 cases/prds/202604/temp/list.json]
 
 然后输出简短摘要：
 - 共编写 X 条用例（P0: N / P1: N / P2: N）

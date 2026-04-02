@@ -4,6 +4,7 @@
     "displayName": "qa-flow"
   },
   "casesRoot": "cases/",
+  "casesTypes": ["prds", "archive", "xmind", "issues", "history"],
   "modules": {},
   "repos": {},
   "stackTrace": {},
@@ -22,13 +23,11 @@
   "integrations": {
     "zentao": {
       "baseUrl": "http://zenpms.dtstack.cn",
-      "envFile": "tools/zentao/.env",
       "version": "12.3.3",
       "fetchScript": ".claude/shared/scripts/fetch-zentao-bug.mjs"
     },
     "lanhuMcp": {
       "runtimePath": "tools/lanhu-mcp/",
-      "envFile": "tools/lanhu-mcp/.env",
       "setupScript": "tools/lanhu-mcp/setup-env.sh",
       "quickstartScript": "tools/lanhu-mcp/quickstart.sh",
       "entryScript": "tools/lanhu-mcp/lanhu_mcp_server.py",
@@ -39,12 +38,5 @@
       "logFile": ".claude/tmp/lanhu-mcp.log",
       "cookieRefreshScript": ".claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py"
     }
-  },
-  "shortcuts": {
-    "latestXmind": "latest-output.xmind",
-    "latestEnhancedPrd": "latest-prd-enhanced.md",
-    "latestBugReport": "latest-bug-report.html",
-    "latestConflictReport": "latest-conflict-report.html",
-    "latestOnlineCase": "latest-online-case.md"
   }
 }

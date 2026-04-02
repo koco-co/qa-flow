@@ -173,12 +173,6 @@ export function buildConfigObject({
         ? { ...defaultLanhuMcp, ...lanhuMcpConfig }
         : defaultLanhuMcp,
     },
-    shortcuts: {
-      latestXmind: 'latest-output.xmind',
-      latestEnhancedPrd: 'latest-prd-enhanced.md',
-      latestBugReport: 'latest-bug-report.html',
-      latestConflictReport: 'latest-conflict-report.html',
-    },
   };
 }
 
@@ -198,7 +192,6 @@ function validateConfig(config) {
     ['assets', config.assets],
     ['reports', config.reports],
     ['integrations', config.integrations],
-    ['shortcuts', config.shortcuts],
   ];
 
   for (const [fieldPath, value] of checks) {
@@ -352,10 +345,12 @@ export function scanProject(rootDir) {
 
   // Track module keys to avoid duplicates; key → module object
   const moduleMap = new Map();
+  // Helper: YYYYMM directories are time-period dirs (new flat structure), not module keys
+  const isYyyymmDir = (name) => /^\d{6}$/.test(name);
 
   // ── Signal 1: Scan cases/xmind/ for module keys ──────────────────────────
   const xmindDir = join(casesDir, 'xmind');
-  const xmindSubdirs = listSubdirectories(xmindDir);
+  const xmindSubdirs = listSubdirectories(xmindDir).filter((d) => !isYyyymmDir(d));
 
   for (const key of xmindSubdirs) {
     const moduleDir = join(xmindDir, key);
@@ -372,9 +367,9 @@ export function scanProject(rootDir) {
     });
   }
 
-  // Also scan cases/archive/ for additional module keys
+  // Also scan cases/archive/ for additional module keys (skip YYYYMM time-period dirs)
   const archiveDir = join(casesDir, 'archive');
-  const archiveSubdirs = listSubdirectories(archiveDir);
+  const archiveSubdirs = listSubdirectories(archiveDir).filter((d) => !isYyyymmDir(d));
   for (const key of archiveSubdirs) {
     if (!moduleMap.has(key)) {
       moduleMap.set(key, {
@@ -392,22 +387,25 @@ export function scanProject(rootDir) {
     }
   }
 
-  // Also scan cases/requirements/ for additional module keys
-  const reqDir = join(casesDir, 'requirements');
-  const reqSubdirs = listSubdirectories(reqDir);
-  for (const key of reqSubdirs) {
-    if (!moduleMap.has(key)) {
-      moduleMap.set(key, {
-        key,
-        versioned: false,
-        inferredFrom: 'cases/requirements',
-        paths: {
-          requirements: `cases/requirements/${key}/`,
-        },
-      });
-    } else {
-      const mod = moduleMap.get(key);
-      mod.paths.requirements = `cases/requirements/${key}/`;
+  // Also scan cases/requirements/ and cases/prds/ for additional module keys
+  // Note: YYYYMM directories (6-digit numbers) are time-period dirs, not module keys (isYyyymmDir defined above)
+  for (const reqDirName of ['requirements', 'prds']) {
+    const reqDir = join(casesDir, reqDirName);
+    const reqSubdirs = listSubdirectories(reqDir).filter((d) => !isYyyymmDir(d));
+    for (const key of reqSubdirs) {
+      if (!moduleMap.has(key)) {
+        moduleMap.set(key, {
+          key,
+          versioned: false,
+          inferredFrom: `cases/${reqDirName}`,
+          paths: {
+            requirements: `cases/${reqDirName}/${key}/`,
+          },
+        });
+      } else {
+        const mod = moduleMap.get(key);
+        mod.paths.requirements = `cases/${reqDirName}/${key}/`;
+      }
     }
   }
 
@@ -433,7 +431,11 @@ export function scanProject(rootDir) {
   const historyDir = join(casesDir, 'history');
   const historyFiles = findFilesRecursive(historyDir, ['.csv', '.xmind']);
 
-  // ── Signal 5: PRD version patterns from cases/requirements/ ──────────────
+  // ── Signal 5: PRD version patterns from cases/requirements/ or cases/prds/ ──
+  // Use the first existing directory (prefer new prds, fallback to requirements)
+  const reqDir = existsSync(join(casesDir, 'prds'))
+    ? join(casesDir, 'prds')
+    : join(casesDir, 'requirements');
   const prdVersionPatterns = [];
   if (existsSync(reqDir)) {
     const versionRegex = /\bv(\d+\.\d+\.\d+)\b/i;

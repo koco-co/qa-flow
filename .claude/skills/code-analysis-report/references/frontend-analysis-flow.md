@@ -75,14 +75,6 @@ node .claude/skills/code-analysis-report/scripts/render-report.mjs \
   reports/bugs/{date}/{BugTitle}.html
 ```
 
-4. 刷新快捷链接：
-
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs \
-  "reports/bugs/{date}/{BugTitle}.html" \
-  "latest-bug-report.html"
-```
-
 ---
 
 ## 输出前核对清单
@@ -91,4 +83,4 @@ node .claude/shared/scripts/refresh-latest-link.mjs \
 - [ ] 若能定位源码，报告中记录了仓库 / 分支 / 组件路径
 - [ ] 根因分析覆盖组件 / 数据 / 环境 / 框架至少两个维度
 - [ ] 报告 JSON 字段与前端模板匹配
-- [ ] `latest-bug-report.html` 已刷新
+- [ ] 报告文件路径已在终端输出

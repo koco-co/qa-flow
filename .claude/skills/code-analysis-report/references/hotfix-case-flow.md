@@ -195,15 +195,7 @@ origin: json
 > 说明：禅道来源信息请写入正文「问题背景 / 来源说明」段或完成报告，不要在 frontmatter 中新增 `title`、`zentao_*`，也不要把 `origin` 写成当前 schema 不支持的 `zentao`。
 > 如未来确实要支持 `origin=zentao`，需同步扩展 `.claude/shared/schemas/front-matter-schema.md` 与 `.claude/rules/archive-format.md`。
 
-**存储路径：** `cases/archive/online-cases/{filename}.md`
-
-**创建根目录快捷链接（同名）：**
-
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs \
-  "cases/archive/online-cases/{filename}.md" \
-  "{filename}.md"
-```
+**存储路径：** `cases/issues/{filename}.md`
 
 ---
 
@@ -216,11 +208,10 @@ node .claude/shared/scripts/refresh-latest-link.mjs \
 Bug ID   : #{bugId}
 应用     : {org}/{repo}
 分支     : hotfix_{version}_{bugId}
-输出文件 : cases/archive/online-cases/{filename}.md
-快捷链接 : ./{filename}.md（根目录）
+输出文件 : cases/issues/{filename}.md
 
 👉 请前往以下路径查收用例：
-   cases/archive/online-cases/{filename}.md
+   cases/issues/{filename}.md
 ══════════════════════════════════════════
 ```
 
@@ -236,7 +227,6 @@ Bug ID   : #{bugId}
 - [ ] front-matter 仅使用 canonical Archive 字段；未写 `title` / `zentao_*` / 非法 `origin` 值
 - [ ] `origin` 使用当前 schema 允许的值（Hotfix 示例默认 `json`），`status` 使用中文值（如 `草稿`）
 - [ ] 若暂无 PRD 信息，未把 `prd_id` / `prd_version` / `prd_path` 写成空字符串占位
-- [ ] 文件已保存到 `cases/archive/online-cases/`
-- [ ] 根目录同名快捷链接已创建并指向正确路径
+- [ ] 文件已保存到 `cases/issues/`
 - [ ] 步骤从零开始（包含新建测试数据），无跳步假设
 - [ ] 无模糊词（“应该”“可能”“参考”等）

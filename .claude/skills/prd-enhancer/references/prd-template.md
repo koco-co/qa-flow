@@ -13,7 +13,7 @@ prd_name: "需求名称（与蓝湖一致）"
 description: "一句话描述（≤60字）"
 prd_id: 10287
 prd_version: v2.0.0
-prd_source: "cases/requirements/orders/v2.0/【功能名】需求标题.md"
+prd_source: "cases/prds/YYYYMM/【功能名】需求标题.md"
 prd_url: "https://lanhuapp.com/..."
 product: orders
 dev_version: "release/v2.0"
