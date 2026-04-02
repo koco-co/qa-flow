@@ -109,7 +109,15 @@ date: "2026-04-02"
 
 ### P0（阻断 / 误导 agent）
 
-- 暂无预置条目。
+#### source-of-truth 漂移
+
+## P0-lanhu-integration-contract-split：蓝湖集成的配置、脚本与入口文档已经分裂成三套 path contract
+
+- 问题：`.claude/config.json` 已把蓝湖集成 canonical 化为 `integrations.lanhuMcp`，仓库中实际也只有 `tools/lanhu-mcp/`；但 `.claude/skills/using-qa-flow/SKILL.md` Step 2、`references/config-questionnaire.md` 与 `test-case-generator/prompts/step-parse-input.md` 仍要求安装 / 调用 `tools/lanhu-cli/.venv/bin/lanhu`、在 `tools/lanhu-cli/.env` 里维护 Cookie。另一边，`lanhu-mcp-runtime.mjs` 与 `.claude/tests/test-load-config.mjs` / `test-lanhu-mcp-runtime.mjs` 已明确 `envFile` 不再通过 config 传递、主路径改为根 `.env` 优先；但 `refresh-lanhu-cookie.py` 仍把 `integrations.lanhuMcp.envFile` 当成必填并写死“刷新 `tools/lanhu-mcp/.env`”。
+- 原因：蓝湖接入从 `lanhu-cli + envFile` 迁到 `lanhuMcp + runtime helper` 后，配置文件、运行时 helper、初始化问卷和上游 prompt 没有一次性收口到同一 source-of-truth。
+- 影响：用户 / agent 按菜单或 prompt 执行蓝湖导入时会直接落到仓库中不存在的 `tools/lanhu-cli/`；即使改为走当前 config 指向的 `cookieRefreshScript`，脚本也会继续要求已经移除的 `envFile` schema。蓝湖 URL 导入与 Cookie 刷新因此存在事实性阻断，而不是单纯文案过时。
+- 建议：以 `.claude/config.json` 的 `integrations.lanhuMcp` 为唯一权威，统一三处 contract：1）`using-qa-flow` / `test-case-generator` 全部改写为 `lanhu-mcp`；2）`refresh-lanhu-cookie.py` 与 `lanhu-mcp-runtime.mjs` 使用同一 `.env` 读取 / 回写策略；3）`config-questionnaire.md` / `init-wizard.mjs` 删除 `lanhuCli` / `envFile` 旧模型，改成 `lanhuMcp` 字段组或显式兼容层。
+- 涉及文件：`.claude/config.json`、`.claude/skills/using-qa-flow/SKILL.md`、`.claude/skills/using-qa-flow/references/config-questionnaire.md`、`.claude/skills/using-qa-flow/scripts/init-wizard.mjs`、`.claude/skills/using-qa-flow/scripts/lanhu-mcp-runtime.mjs`、`.claude/skills/using-qa-flow/scripts/refresh-lanhu-cookie.py`、`.claude/skills/test-case-generator/prompts/step-parse-input.md`、`.claude/tests/test-load-config.mjs`、`.claude/tests/test-lanhu-mcp-runtime.mjs`、`tools/lanhu-mcp/`
 
 ### P1（漂移 / 双权威 / 高维护成本）
 
@@ -214,6 +222,36 @@ date: "2026-04-02"
 - 建议：把“不确定性如何暴露”收口到单一角色（建议继续由 Reviewer / 评审报告独占）；Writer reference 改为输出摘要或跳过原因，而不是在用户可见用例正文里夹带 `[待核实]` 注释。
 - 涉及文件：`.claude/skills/test-case-generator/prompts/writer-subagent-reference.md`、`.claude/skills/test-case-generator/prompts/writer-subagent.md`、`.claude/skills/test-case-generator/prompts/reviewer-subagent.md`、`.claude/skills/test-case-generator/references/intermediate-format.md`
 
+#### source-of-truth 漂移
+
+## P1-config-paths-not-fully-consumed：`config.json` 已配置化的非 cases 路径仍由 wizard / docs / prompts 各写一份
+
+- 问题：`.claude/config.json` 已集中声明 `assets.images`、`reports.bugs`、`reports.conflicts` 与 `branchMapping`；但 `init-wizard.mjs` 仍在 `buildConfigObject()` 中手写同一组默认值，`code-analysis-report` 的 `SKILL.md` / `code-analyzer.md` / references 多处手写 `reports/bugs/`、`reports/conflicts/`，`prd-enhancer` 的 `SKILL.md` / rules / `migrate_images.py` 多处手写 `assets/images/`，`config-questionnaire.md` 也继续把 `config/repo-branch-mapping.yaml` 写成问卷默认路径。
+- 原因：当前配置只在运行时 helper 中被读取，wizard 文本、Skill 文案和 reference 没有模板化 / 生成式收口，导致“已配置化”只停留在 config 文件层，外围契约仍是人工多点同步。
+- 影响：只要图片目录、报告目录或分支映射文件位置发生调整，维护者就必须同时改 config、向导脚本、Skill 文案与 reference；即使 config 已更新，外围文档仍可能继续提供一套过时 path contract。
+- 建议：要么让 repo-facing 文本尽量改成“读取 `.claude/config.json` 的对应字段”，不再重复字面路径；要么把这些默认值收口成模板 / helper，并增加回归检查，校验文档与 prompt 中的路径字面量始终与 config 同步。
+- 涉及文件：`.claude/config.json`、`.claude/skills/using-qa-flow/scripts/init-wizard.mjs`、`.claude/skills/using-qa-flow/references/config-questionnaire.md`、`.claude/skills/code-analysis-report/SKILL.md`、`.claude/skills/code-analysis-report/prompts/code-analyzer.md`、`.claude/skills/code-analysis-report/references/backend-analysis-flow.md`、`.claude/skills/code-analysis-report/references/frontend-analysis-flow.md`、`.claude/skills/code-analysis-report/references/conflict-analysis-flow.md`、`.claude/skills/prd-enhancer/SKILL.md`、`.claude/rules/image-conventions.md`、`.claude/skills/prd-enhancer/rules/image-conventions.md`、`.claude/skills/prd-enhancer/scripts/migrate_images.py`
+
+#### 路径引用问题
+
+## P1-cases-path-alias-not-retired：`casesRoot` / `casesTypes` 已存在，但核心脚本仍把 `requirements` 当作一等目录
+
+- 问题：`.claude/config.json` 已声明 `casesRoot` 与 `casesTypes = ["prds","archive","xmind","issues","history"]`，`load-config.mjs` 也已有 `resolveTimePeriodPath()`；但目前只有 `unify-directory-structure.mjs` 真正消费了 `casesTypes`。其余核心 helper 仍把 `requirements` 当作一等路径：`audit-md-frontmatter.mjs` 默认扫描 `archive + requirements + prds + issues`，且 `getDocType()` 只返回 `archive | requirements`；`md-content-source-resolver.mjs` 继续构造 `requirementsDir` 并用 `casesRoot + "requirements/"` 做来源识别；`front-matter-utils.mjs` 的 doc type / module key 解析也内建了 `/cases/requirements/`。更下游的 `backfill-prd-frontmatter.mjs`、`migrate_images.py` 与多份测试 fixture 仍持续写入 `cases/requirements/...`。
+- 原因：目录迁移停留在“新旧两套都兼容”阶段，但 legacy alias 没有被隔离到迁移层；resolver、审计脚本和测试 fixture 仍原生承认旧树结构。
+- 影响：`casesRoot` / `casesTypes` 目前只是半成品配置化：一旦要彻底退役 `requirements` 或调整 PRD 目录布局，仍需同时改 resolver、审计脚本、迁移脚本和大量测试夹具。旧路径也更容易在新增脚本时被重新抄回主流程。
+- 建议：把 canonical case-type 与 legacy alias map 一起下沉到 shared helper（由 config 驱动）；主流程只消费 `prds/archive/xmind/issues/history`，`requirements` 支持下放到显式迁移 / 兼容层，并逐步清理仍把旧目录当作正常输入的脚本与测试。
+- 涉及文件：`.claude/config.json`、`.claude/shared/scripts/load-config.mjs`、`.claude/shared/scripts/unify-directory-structure.mjs`、`.claude/shared/scripts/audit-md-frontmatter.mjs`、`.claude/shared/scripts/md-content-source-resolver.mjs`、`.claude/shared/scripts/front-matter-utils.mjs`、`.claude/skills/prd-enhancer/scripts/backfill-prd-frontmatter.mjs`、`.claude/skills/prd-enhancer/scripts/migrate_images.py`、`.claude/tests/test-md-content-source-resolver.mjs`、`.claude/tests/test-md-frontmatter-audit.mjs`、`.claude/tests/test-front-matter-utils.mjs`
+
+#### rules 维护面过宽
+
+## P1-rule-mirror-drift-without-guard：global rules 与 skill-local 镜像已形成事实性双权威
+
+- 问题：`.claude/skills/archive-converter/rules/archive-format.md`、`test-case-generator/rules/test-case-writing.md`、`xmind-converter/rules/xmind-output.md` 都声明“以 `.claude/rules/*.md` 全局版本为准”；但仓库没有任何自动同步或 diff 守护，且当前已出现事实性漂移。最明显的两组：全局 `test-case-writing.md` 已新增 Archive MD 层级、`【P0/P1/P2】` 优先级前缀、`> 用例步骤` 标签、正向用例合并与表单多字段合并规则，skill 镜像仍停留在旧版简化写法；全局 `xmind-output.md` 已改为 `cases/xmind/YYYYMM/` / `cases/archive/YYYYMM/` 的年月制路径与 `<中文产品名>` Root 描述，但 skill 镜像仍写成 `${module}/v${version}` 路径与 `<项目名>` Root。
+- 原因：这些“镜像规则”本质上是手工复制件，只靠文件开头的一句“以全局版本为准”提醒，没有生成链路，也没有测试比较成对文件是否一致。
+- 影响：读取全局 rules 的 agent 与只读取 skill-local rules 的 agent 会得到不同格式 / 路径 contract；一旦维护者只改了其中一份，当前这种双权威状态就会继续扩大，尤其会直接污染 XMind / 用例正文的输出结构。
+- 建议：二选一收口：1）skill-local rules 退化为薄引用文件，只保留“请读取对应全局规则”；或 2）改为生成产物，并增加 pair-wise diff 守护。只要没有自动同步，就不应在镜像文件里继续承载可漂移的正文规则。
+- 涉及文件：`.claude/rules/archive-format.md`、`.claude/skills/archive-converter/rules/archive-format.md`、`.claude/rules/test-case-writing.md`、`.claude/skills/test-case-generator/rules/test-case-writing.md`、`.claude/rules/xmind-output.md`、`.claude/skills/xmind-converter/rules/xmind-output.md`
+
 ### P2（文案 / 可读性 / 向导体验）
 
 - 暂无新增条目；本轨低确定性口径差异见“待用户确认项”。
@@ -255,6 +293,11 @@ date: "2026-04-02"
   - **排除原因**：当前主入口轨的主要问题不在 `CLAUDE.md` / `config.json` 双权威，而在 README 重新扩写并产生新的漂移。
   - **备注**：已闭环但需观察；若未来继续在 README 或 Skill 重复手写路径 contract，仍可能再次出现“主入口已对齐、导览文档又漂移”的回归。
 
+- **历史条目来源**：`load-config` 泛化迁移期间关于“顶层字段仍残留 `repoBranchMapping`”的历史问题（见 `.claude/shared/scripts/load-config.test.mjs` 与 `.claude/tests/test-load-config.mjs` 的迁移断言）。
+  - **当前证据**：当前 `.claude/config.json` 顶层字段已为 `branchMapping`；`load-config.mjs#getBranchMappingPath()` 明确读取 `config.branchMapping`；`.claude/tests/test-load-config.mjs` 也持续断言 `config.repoBranchMapping === undefined`。
+  - **排除原因**：字段名迁移本身已闭环，本轮无需再把“`repoBranchMapping` 仍是正式 schema”当作活动问题上报。
+  - **备注**：已闭环但需观察；个别测试提示词仍保留 `repoBranchMapping` 字样，属于文案残留，不再等同于 schema 仍未迁移。
+
 ## 待用户确认项
 
 - 本节只记录“需要维护者拍板的取舍项”，不记录纯事实性问题。
@@ -268,3 +311,5 @@ date: "2026-04-02"
 - **`source-analyze` 是权威输入还是性能优化层**：`P1-source-analyze-authority-blur` 已证实 `source-analyze`、Writer 主 prompt、Writer reference 对源码阅读职责存在双写；需要维护者拍板：后续是把 `source-context.md` 定义为 Writer / Reviewer 的唯一正常输入，还是允许 Writer 在常规路径继续二次 grep 源码。该项决定多 agent 设计究竟走“集中预提取”还是“预提取 + 自主回源”模型。
 - **大体量用例是否保留 Reviewer 分片模型**：`P1-reviewer-shard-global-contract-conflict` 已确认当前 >80 条时的 Reviewer 分片，与 `reviewer-subagent.md` 要求的全量查漏补缺 / 历史去重职责存在事实性冲突；需要维护者拍板是回退为单 Reviewer，还是补“局部分片 + 最终全局总审”两层模型，并同步重写 reviewer prompt / 编排 contract。
 - **`using-qa-flow` 是否允许作为例外继续承载命令级 onboarding 内容**：`P1-skill-contract-layer-break` 已确认 `using-qa-flow` 当前没有遵守其 reference 所声明的“SKILL.md 只保留入口摘要”；若维护者认为它本质上兼具菜单与 onboarding 手册双角色，应把这一例外明确写进 contract，而不是继续保持 `SKILL.md` 与 references 互相否定的状态。
+- **蓝湖接入的 canonical 方案是否彻底切到 `lanhu-mcp`**：`P0-lanhu-integration-contract-split` 已确认当前同时存在 `tools/lanhu-cli`、`tools/lanhu-mcp`、根 `.env` / `tools/lanhu-mcp/.env` 三套口径；需要维护者拍板后续是完全移除 `lanhu-cli` / `envFile` 旧模型，还是保留兼容壳并把兼容边界显式写入 config / docs / scripts。
+- **`cases/requirements/` 是否只保留为迁移兼容层**：`P1-cases-path-alias-not-retired` 已确认旧目录仍被 resolver、审计脚本和测试 fixture 原生消费；需要维护者决定后续是继续长期保留 read-only alias，还是将其下放到一次性迁移工具并把主流程 / 回归测试彻底收口到 `cases/prds/`。
