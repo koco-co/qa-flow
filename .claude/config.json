@@ -5,7 +5,12 @@
   },
   "casesRoot": "cases/",
   "casesTypes": ["prds", "archive", "xmind", "issues", "history"],
-  "modules": {},
+  "modules": {
+    "data-assets": {
+      "zh": "数据资产",
+      "trackerId": 23
+    }
+  },
   "repos": {},
   "stackTrace": {},
   "branchMapping": "config/repo-branch-mapping.yaml",

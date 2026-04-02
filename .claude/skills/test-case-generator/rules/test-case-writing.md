@@ -8,7 +8,8 @@
 
 ```
 Root (项目名)
-  └── L1: 【版本】需求名称
+  └── L1: 需求名称                     ← trackerId 模块；版本已在 Root，L1 不加前缀
+  └── L1: 【版本】需求名称             ← 无 trackerId 模块；L1 带版本前缀
        └── L2: 菜单/模块名称          ← 如「商品管理」
             └── L3: 页面名称           ← 如「列表页」「新增页」「详情页」
                  └── [L4: 功能子组]    ← 如「搜索」「字段校验」（可选）
@@ -17,6 +18,7 @@ Root (项目名)
                                 └── 预期结果
 ```
 
+- L1 格式由 config.json 中模块是否配置 `trackerId` 决定（见 xmind-structure-spec.md）
 - L2 必须对应系统中的菜单或独立功能模块名称
 - L3 按页面维度划分（列表页、新增页、编辑页、详情页等）
 - L4 为可选层级，当页面内功能较多时按功能分组（搜索、导出、字段校验等）
@@ -64,23 +66,47 @@ Root (项目名)
 | 显示正确 | 列表第一行显示：商品名称"2026春季新款运动鞋"，商品分类"运动鞋"，状态"上架"          |
 | 提交失败 | 「商品名称」输入框下方显示红色提示"请输入商品名称"，【提交】按钮保持不可点击状态 |
 
+## 前置条件数据准备规则（数据表操作场景）
+
+**当需求涉及数据表操作、数据接入、批量同步、任务调度、对账、规则配置等能力时，必须给出具体的建表和插入语句，与 config.repos 是否为空无关。**
+
+格式示例：
+
+```text
+1、环境说明：目标模块已部署，数据源连接正常
+
+2、Doris2.x SQL语句准备:
+DROP TABLE IF EXISTS qa_test.table_a;
+CREATE TABLE qa_test.table_a (
+  id INT,
+  name VARCHAR(100),
+  value DECIMAL(10,2),
+  status VARCHAR(20),
+  create_time DATETIME
+);
+INSERT INTO qa_test.table_a VALUES
+  (1, '测试数据A', 100.00, '启用', '2026-01-01 10:00:00');
+
+3、Hive2.x SQL语句准备:
+CREATE TABLE IF NOT EXISTS qa_test.table_a (
+  id INT,
+  name STRING,
+  value DECIMAL(10,2),
+  status STRING,
+  create_time TIMESTAMP
+);
+INSERT INTO qa_test.table_a VALUES (1, '测试数据A', 100.00, '启用', '2026-01-01 10:00:00');
+```
+
+- 表名和字段名必须与 PRD 业务场景一致，不得用 `test1`、`abc` 等占位符
+- 多数据源时每种数据源单独给出（Doris 用 `VARCHAR`，Hive 用 `STRING` 等）
+- 只列 PRD 中实际涉及的数据源，无需穷举
+
 ## 源码优先规则（当 config.repos 非空时启用）
 
 > 以下规则仅适用于配置了 `repos` 字段的项目。若 config.json 中 `repos` 为空对象 `{}`，跳过本节。
 
 - **源码优先**：用例编写前必须先确认 `.repos/` 中相关仓库已切到 config.json 的 `branchMapping` 字段解析出的目标分支。
-- **前置条件补全**：若需求涉及数据接入、批量同步、对账、调度、告警等能力，前置条件应尽量包含：
-  - 数据源类型（如 `${datasource_type}`）
-  - 数据库 / schema / 表名（如 `${schema}.${table}`）
-  - 关键字段
-  - 必要时补充建表或准备数据说明，格式示例：
-
-```text
-2、${datasource_type} SQL语句准备:
-DROP TABLE IF EXISTS ${schema}.${table};
-CREATE TABLE ${schema}.${table} (id INT, name VARCHAR(100));
-INSERT INTO ${schema}.${table} VALUES (1, '示例数据');
-```
 
 - **步骤格式**：表单类步骤优先写成结构化块，如：
 

@@ -2,11 +2,21 @@
 
 ## JSON 中间格式 → XMind 节点映射
 
+## L1 标题规则
+
+| 场景 | L1 格式 | 说明 |
+| --- | --- | --- |
+| 模块在 config.json 中配置了 `trackerId` | `meta.requirement_name(#requirement_ticket)` | 版本已体现在 Root，L1 不重复加版本前缀 |
+| 模块无 `trackerId` | `【meta.version】meta.requirement_name` | 无 Root 版本信息，L1 带版本前缀 |
+
+- `requirement_ticket` 可选，来自 `meta.requirement_ticket`；无则省略 `(#...)` 后缀
+- `requirement_id` 写入 L1 节点的 `labels`：`(#requirement_id)`
+
 ### 基本结构（无功能子组）
 
 ```
 Root (${项目展示名}${版本标签}迭代用例(#${trackerId}))
-  └── L1 (【meta.version】meta.requirement_name)
+  └── L1 (meta.requirement_name)                  ← trackerId 模块，无版本前缀
        └── L2 (modules[].name)                    ← 菜单/模块名
             └── L3 (pages[].name)                  ← 页面名
                  └── 用例标题 (test_cases[].title)
@@ -19,7 +29,7 @@ Root (${项目展示名}${版本标签}迭代用例(#${trackerId}))
 
 ```
 Root (${项目展示名}${版本标签}迭代用例(#${trackerId}))
-  └── L1 (【meta.version】meta.requirement_name)
+  └── L1 (meta.requirement_name)                  ← trackerId 模块，无版本前缀
        └── L2 (modules[].name)                    ← 菜单/模块名
             └── L3 (pages[].name)                  ← 页面名
                  └── L4 (sub_groups[].name)         ← 功能子组
@@ -33,7 +43,7 @@ Root (${项目展示名}${版本标签}迭代用例(#${trackerId}))
 
 ```
 Root (${项目展示名}${版本标签}迭代用例(#${trackerId}))
-  └── L1 (【meta.version】meta.requirement_name)
+  └── L1 (meta.requirement_name)                  ← trackerId 模块，无版本前缀
        └── L2 (modules[].name)
             └── [L3 (sub_groups[].name)]
                  └── 用例标题

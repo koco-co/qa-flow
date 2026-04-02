@@ -19,8 +19,9 @@
  *   如果未找到同名 L1，则追加新 L1（等同于 --append 行为）。
  *
  * XMind 层级结构:
- * Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
- *   └── L1 (【version】requirement_name)
+ * Root (${中文产品名}${版本}迭代用例(#${trackerId}))
+ *   └── L1 (requirement_name)                   -- trackerId 模块：版本已在 Root 展示，L1 不加前缀
+ *   └── L1 (【version】requirement_name)         -- 无 trackerId 模块：L1 带版本前缀
  *        └── L2 (modules[].name)           -- 菜单/模块名
  *             └── L3 (pages[].name)         -- 页面名
  *                  └── [L4 (sub_groups[].name)] -- 功能子组(可选)
@@ -59,8 +60,16 @@ function buildRootTitle(meta = {}, _config = null) {
   return displayName || meta.project_name || meta.requirement_name || ''
 }
 
-function buildL1Title(meta = {}) {
+function buildL1Title(meta = {}, _config = null) {
+  const config = _config || loadConfig()
+  const moduleKey = meta.module_key || meta.product
+  const mod = moduleKey ? config.modules?.[moduleKey] : null
+  const hasTrackerId = Boolean(mod?.trackerId)
   const ticketSuffix = meta.requirement_ticket ? `(#${meta.requirement_ticket})` : ''
+  // trackerId 驱动模式：版本已在根节点展示，L1 不重复加版本前缀
+  if (hasTrackerId) {
+    return `${meta.requirement_name || ''}${ticketSuffix}`
+  }
   const versionPrefix = meta.version ? `【${meta.version}】` : ''
   return `${versionPrefix}${meta.requirement_name || ''}${ticketSuffix}`
 }
