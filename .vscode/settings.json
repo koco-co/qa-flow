@@ -21,6 +21,7 @@
     "reqs",
     "SMALLINT",
     "sparkthrift",
+    "STRU",
     "TINYINT",
     "varchar",
     "venv",

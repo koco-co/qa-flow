@@ -300,7 +300,7 @@ console.log('\n=== Test: scanProject — PRD version patterns ===');
 {
   const tempDir = createTempDir();
   try {
-    const versionDir = join(tempDir, 'cases', 'requirements', 'data-assets', 'v1.2.3');
+    const versionDir = join(tempDir, 'cases', 'prds', 'data-assets', 'v1.2.3');
     mkdirSync(versionDir, { recursive: true });
     writeFileSync(join(versionDir, 'prd-v1.2.3.md'), '# PRD v1.2.3');
 
