@@ -1,0 +1,16 @@
+# Branch Mapping Configuration
+# This file maps development versions to source repo branches.
+# Configure this for your project if you use source code repositories.
+#
+# Example:
+# profiles:
+#   default:
+#     repos:
+#       my-backend-repo:
+#         branch: main
+#       my-frontend-repo:
+#         branch: develop
+#
+# versions:
+#   v1.0:
+#     profile: default

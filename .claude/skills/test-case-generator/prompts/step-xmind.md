@@ -3,7 +3,6 @@
 
 > 前置条件: `last_completed_step` == `"reviewer"`
 > 快速模式: 执行
-> DTStack 专属: 否
 
 ## 执行方式
 
@@ -15,10 +14,6 @@
 - 文件不存在 → 新建
 - 文件已存在，本次 requirement_name 不同 → `--append` 追加模式
 - 文件已存在，requirement_name 相同 → 询问用户覆盖还是跳过
-
-## 快捷链接刷新
-
-XMind 生成成功后，脚本会自动在根目录创建或刷新固定快捷链接 `latest-output.xmind`（已内置于 `json-to-xmind.mjs`）。
 
 ## 错误处理
 

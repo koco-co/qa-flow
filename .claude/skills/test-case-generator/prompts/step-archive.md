@@ -3,23 +3,20 @@
 
 > 前置条件: `last_completed_step` == `"xmind"`
 > 快速模式: 执行
-> DTStack 专属: 否
-
 ## 9.1 生成归档 MD
 
 调用 `json-to-archive-md.mjs` 将 Reviewer 输出的 final JSON 转换为 `cases/archive` 下的 Markdown 归档文件：
 
 ```bash
 node .claude/skills/archive-converter/scripts/json-to-archive-md.mjs \
-  <cases/requirements/<requirements-root>/Story-20260322/temp/final-reviewed.json> \
+  <cases/prds/YYYYMM/temp/final-reviewed.json> \
   [output-dir]
 ```
 
 输出路径自动推断（根据 meta.project_name 和 meta.version），也可手动指定。
 
 目录路由规则：
-- **DTStack 模块**：`meta.prd_version`（如 `v6.4.10`）存在时落到 `cases/archive/<module>/v6.4.10/`；不存在时落到 `cases/archive/<module>/`
-- **XYZH/定制模块**：始终落到 `cases/archive/custom/xyzh/`（无版本子目录）
+- 归档目录统一为 `cases/archive/YYYYMM/`（YYYYMM 为产物生成年月）
 - 文件名：如存在 `archive_file_name` / `requirement_title`，优先使用具体需求标题
 
 ## 9.1.5 重建归档索引
@@ -36,9 +33,9 @@ node .claude/shared/scripts/build-archive-index.mjs
 ✅ XMind 文件已生成：<xmind-path>
 📄 归档用例 MD 已同步：<archive-md-path>
 
-请先从以下快捷入口验收：
-- 主验收：latest-output.xmind
-- 辅助回看：latest-prd-enhanced.md（仅用于核对上游 PRD 增强内容，不替代 XMind 验收）
+请通过以下路径进行验收（路径已在终端输出）：
+- 主验收：XMind 文件（路径见上方终端输出）
+- 辅助回看：增强版 PRD 文件（仅用于核对上游 PRD 增强内容，不替代 XMind 验收）
 
 检查完毕后，请直接回复：
 - 「确认通过」— 保持当前 XMind / Archive，直接完成流程

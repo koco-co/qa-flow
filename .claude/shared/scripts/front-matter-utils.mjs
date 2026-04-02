@@ -303,8 +303,11 @@ export function parseFrontMatter(mdContent) {
 // ─── validateFrontMatter ──────────────────────────────────────────────────────
 
 // 新格式（suite_name/prd_name/product）
-const REQUIRED_ARCHIVE_NEW = ["suite_name", "description", "product", "prd_path", "create_at", "tags"];
+// Archive 文档可独立存在（如 hotfix / online-cases）；关联 PRD 字段按来源可选。
+const REQUIRED_ARCHIVE_NEW = ["suite_name", "description", "product", "create_at", "tags"];
 const REQUIRED_PRD_NEW = ["prd_name", "description", "product", "prd_source", "create_at"];
+const ARCHIVE_PRD_LINK_REQUIRED_GROUP = ["prd_id", "prd_version", "prd_path"];
+const ARCHIVE_PRD_LINK_SIGNALS = [...ARCHIVE_PRD_LINK_REQUIRED_GROUP, "prd_url"];
 
 // 旧格式（name/module/source/created_at）— 向后兼容
 const REQUIRED_COMMON_LEGACY = ["name", "description", "module", "source", "created_at"];
@@ -342,10 +345,24 @@ export function validateFrontMatter(fields, docType) {
       ...(docType === "archive" ? REQUIRED_ARCHIVE_LEGACY : REQUIRED_PRD_LEGACY),
     ];
   }
-  const missing = required.filter(
-    (k) => fields[k] === null || fields[k] === undefined || fields[k] === "",
-  );
+  const missing = required.filter((k) => !hasPresentValue(fields[k]));
+  if (version === "new" && docType === "archive") {
+    const hasPrdAssociation = ARCHIVE_PRD_LINK_SIGNALS.some((k) => hasPresentValue(fields[k]));
+    if (hasPrdAssociation) {
+      for (const field of ARCHIVE_PRD_LINK_REQUIRED_GROUP) {
+        if (!hasPresentValue(fields[field]) && !missing.includes(field)) {
+          missing.push(field);
+        }
+      }
+    }
+  }
   return { valid: missing.length === 0, missing, schemaVersion: version };
+}
+
+function hasPresentValue(value) {
+  if (value === null || value === undefined) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  return String(value).trim() !== "";
 }
 
 /** 去掉 YAML 字符串值的引号 */
@@ -368,7 +385,15 @@ export function getDocTypeFromPath(filePath) {
   if (normalized.includes("/cases/archive/") || normalized.startsWith("cases/archive/")) {
     return "archive";
   }
+  // cases/issues/ = online issue cases, stored in archive format
+  if (normalized.includes("/cases/issues/") || normalized.startsWith("cases/issues/")) {
+    return "archive";
+  }
   if (normalized.includes("/cases/requirements/") || normalized.startsWith("cases/requirements/")) {
+    return "requirements";
+  }
+  // cases/prds/ = new name for requirements (PRD documents)
+  if (normalized.includes("/cases/prds/") || normalized.startsWith("cases/prds/")) {
     return "requirements";
   }
   return null;
@@ -411,15 +436,19 @@ function extractModuleKeyFromPath(p) {
   if (!p) return null;
   const s = p.replace(/\\/g, "/");
 
-  // custom/xyzh pattern
-  const customM = s.match(/(?:archive|xmind|requirements)\/custom\/([^/]+)/);
+  // custom/xyzh pattern (legacy)
+  const customM = s.match(/(?:archive|xmind|requirements|prds|issues)\/custom\/([^/]+)/);
   if (customM) return customM[1];
 
-  // archive/<key>  /  xmind/<key>  /  requirements/<key>  /  history/<key>
+  // archive/<key>  /  xmind/<key>  /  requirements/<key>  /  history/<key>  /  prds/<key>  /  issues/<key>
   const stdM = s.match(
-    /(?:archive|xmind|requirements|history)\/([^/]+)/,
+    /(?:archive|xmind|requirements|history|prds|issues)\/([^/]+)/,
   );
-  if (stdM && stdM[1] !== "custom") return stdM[1];
+  if (stdM && stdM[1] !== "custom") {
+    // Skip YYYYMM time-period directories (6-digit numbers)
+    if (/^\d{6}$/.test(stdM[1])) return null;
+    return stdM[1];
+  }
 
   return null;
 }

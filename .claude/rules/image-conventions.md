@@ -24,19 +24,18 @@
 
 根据 md 文件所在深度，计算到 `assets/images/` 的相对路径：
 
-| 文件位置示例                                         | 相对路径前缀                 |
-| ---------------------------------------------------- | ---------------------------- |
-| `cases/requirements/custom/xyzh/*.md`                | `../../../../assets/images/` |
-| `cases/requirements/data-assets/v{version}/*.md`     | `../../../../assets/images/` |
-| `cases/archive/batch-works/v{version}/*.md`          | `../../../../assets/images/` |
-| `cases/archive/batch-works/*.md`                     | `../../../assets/images/`    |
-| 根目录 `*.md`                                        | `assets/images/`             |
+| 文件位置示例                     | 相对路径前缀                 |
+| -------------------------------- | ---------------------------- |
+| `cases/prds/YYYYMM/*.md`         | `../../../assets/images/`    |
+| `cases/archive/YYYYMM/*.md`      | `../../../assets/images/`    |
+| `cases/issues/*.md`              | `../../assets/images/`       |
+| 根目录 `*.md`                    | `assets/images/`             |
 
 ## 文件命名规则
 
-- 使用中文语义化名称，反映图片实际内容（如 `质量问题台账列表页.png`）
+- 使用中文语义化名称，反映图片实际内容（如 `商品管理列表页.png`）
 - 禁止使用时间戳、UUID、MD5 哈希等无意义名称
-- 同功能多页面用 `-` 分隔：`质量问题台账-新增表单页.png`
+- 同功能多页面用 `-` 分隔：`商品管理-新增表单页.png`
 - 同名文件追加 `-2`、`-3` 等后缀
 
 ## 图片预处理

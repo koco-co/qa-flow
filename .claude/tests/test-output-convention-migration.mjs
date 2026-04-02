@@ -4,7 +4,7 @@
  *
  * 运行: node test-output-convention-migration.mjs
  */
-import { existsSync, lstatSync, readFileSync, readlinkSync, readdirSync, statSync } from "fs";
+import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from "fs";
 import { resolve, dirname, relative, basename } from "path";
 import { fileURLToPath } from "url";
 
@@ -91,20 +91,14 @@ assert(
   [relative(repoRoot, legacyOutputPath)],
 );
 
-console.log("\n=== Test: latest-output.xmind 指向真实无前缀 xmind ===");
+console.log("\n=== Test: latest-output.xmind 快捷链接已从仓库根目录移除 ===");
 const latestOutputPath = resolve(repoRoot, "latest-output.xmind");
-assert(pathEntryExists(latestOutputPath), "latest-output.xmind 存在");
-if (pathEntryExists(latestOutputPath)) {
-  const latestStat = lstatSync(latestOutputPath);
-  assert(latestStat.isSymbolicLink(), "latest-output.xmind 是符号链接");
-  assert(existsSync(latestOutputPath), "latest-output.xmind 指向的目标真实存在");
-  const latestLinkTarget = readlinkSync(latestOutputPath);
-  assert(
-    !/20\d{4}-.+\.xmind$/.test(latestLinkTarget),
-    "latest-output.xmind 不再指向带日期前缀的 xmind",
-    [latestLinkTarget],
-  );
-}
+// 快捷链接机制已废弃，latest-output.xmind 不应存在于仓库根目录
+assert(
+  !pathEntryExists(latestOutputPath),
+  "latest-output.xmind 快捷链接已从仓库根目录移除",
+  [relative(repoRoot, latestOutputPath)],
+);
 
 console.log("\n=== Test: 全量活跃 state 的 output_xmind 已切到无日期前缀 ===");
 const targetStatePaths = walkFiles(

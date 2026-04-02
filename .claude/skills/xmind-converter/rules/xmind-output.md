@@ -14,16 +14,14 @@
 
 参考 `.claude/config.json` 中的 `modules[].xmind` 与 `modules[].archive` 字段确定输出目录。
 
-| 模块 key | XMind 路径                       | Archive 路径                         |
-| -------- | -------------------------------- | ------------------------------------ |
-| batch-works | `cases/xmind/batch-works/`     | `cases/archive/batch-works/`         |
-| data-assets | `cases/xmind/data-assets/`     | `cases/archive/data-assets/`         |
-| data-query | `cases/xmind/data-query/`      | `cases/archive/data-query/`          |
-| variable-center | `cases/xmind/variable-center/` | `cases/archive/variable-center/` |
-| public-service | `cases/xmind/public-service/` | `cases/archive/public-service/` |
-| xyzh | `cases/xmind/custom/xyzh/` | `cases/archive/custom/xyzh/` |
+输出路径由 `.claude/config.json` 中各模块的 `xmind` 和 `archive` 字段决定。以下是通用路径模式：
 
-> 注意：`xyzh` 是模块 key，`custom/xyzh` 是文件系统路径别名，不要在配置或脚本参数中混用。
+| 模块 key | XMind 路径                           | Archive 路径                            |
+| -------- | ------------------------------------ | --------------------------------------- |
+| `${module}` | `cases/xmind/${module}/`          | `cases/archive/${module}/`              |
+| `${module}` (含版本) | `cases/xmind/${module}/v${version}/` | `cases/archive/${module}/v${version}/` |
+
+> 实际模块 key 和路径从 `.claude/config.json` 的 `modules` 字段读取。模块 key 与文件系统路径别名不同时，以 config.json 的配置为准。
 
 ## 层级结构
 
@@ -52,22 +50,16 @@ XMind L1 对应 Archive MD 的 `suite_name` frontmatter 字段：
 - XMind [L4] → Archive `#### 功能子组`
 - 用例标题 → Archive `##### 【P0】验证xxx`（优先级前缀格式）
 
-## DTStack 样例驱动规则
+## Issue Tracker 标注规则（当 config.modules[].trackerId 非空时启用）
 
-DTStack（尤其 `data-assets`）输出优先对齐 `cases/xmind/data-assets/数据资产v6.4.9.xmind`：
+> 以下规则仅在 config.json 中对应模块的 `trackerId` 字段为非空值时适用。若 `trackerId` 未配置，省略括号标注。
 
-- Root：`<中文产品名><版本>迭代用例(#<禅道产品ID>)`（禅道产品ID 来自 `config.json` 的 `modules[].zentaoId`，无 zentaoId 时省略该后缀）
+- Root：`<项目名><版本>迭代用例(#<trackerId>)`（trackerId 来自 `config.json` 的 `modules[].trackerId`，无 trackerId 时省略该后缀）
 - L1 title：`<需求标题>(#<requirement_ticket>)`
 - L1 labels：`(#<requirement_id>)`（对应 Archive frontmatter `prd_id`，来源为 `meta.requirement_id`）
 - L1 默认 `folded`
 - 其余层级继续沿用 `模块/菜单 → 页面 → [子组] → 用例 → 步骤 → 预期`
 
-## XMind 快捷访问
+## XMind 输出路径
 
-生成、追加或替换成功后，脚本会在仓库根目录创建或刷新符号链接：
-
-```bash
-ln -sf <实际XMind路径> ./latest-output.xmind
-```
-
-该链接始终指向本次实际生成或更新的 XMind 文件。
+生成、追加或替换成功后，脚本在终端输出真实 XMind 文件的绝对路径，供用户直接访问。

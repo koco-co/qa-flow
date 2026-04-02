@@ -47,21 +47,18 @@
 **权重**: 1x | **必须**: 是
 
 **评分规则**:
-- 100%: `dev_version` 字段已填，且能通过 `.claude/config.json` 的 `repoBranchMapping` 字段解析到具体分支
+- 100%: `dev_version` 字段已填，且能通过 `.claude/config.json` 的 `branchMapping` 字段解析到具体分支
 - 70%: `dev_version` 已填但无法匹配映射（需用户确认）
-- 30%: 未填 `dev_version` 但从 PRD 内容（如「岚图定制化」「袋鼠云标品」等关键词）可推断
+- 30%: 未填 `dev_version` 但从 PRD 内容可推断目标版本或分支
 - 0%: 无任何客户/版本信息
 
-**分支推断规则**（从 PRD 内容关键词匹配）:
-- 包含「岚图」「ltqc」→ 推断 `release_6.3.x_ltqc` 分支，`ltqc-custom` profile
-- 包含「袋鼠云」「标品」「release_6.」→ 推断 `dtstack-default` profile
-- xyzh/信永中和 → 无源码，无需分支
+**分支推断规则**（从 PRD 内容关键词匹配）: 从 PRD frontmatter `dev_version` 结合 `.claude/config.json` 的 `branchMapping` 字段所指向的映射文件进行匹配。
 
-**自动推断来源**: PRD frontmatter `dev_version` + `.claude/config.json` 的 `repoBranchMapping` 字段关键词匹配
+**自动推断来源**: PRD frontmatter `dev_version` + `.claude/config.json` 的 `branchMapping` 字段关键词匹配
 
 **问题模板**:
-- Q-TU1: 这个需求是针对哪个客户或产品版本？（标品/岚图定制/其他客户）
-- Q-TU2: 对应的开发版本是什么？（如「6.3岚图定制化分支」「v6.4.10」）
+- Q-TU1: 这个需求是针对哪个产品线、模块或发布版本？（如订单中心 v2.0 / 商品管理 / 企业定制）
+- Q-TU2: 对应的开发版本或分支是什么？（如「release/v2.0」「feature/orders-refund」）
 
 ---
 
@@ -70,17 +67,17 @@
 **权重**: 1x | **必须**: 是
 
 **评分规则**:
-- 100%: 明确说明了数据源类型（Doris/Hive/SparkThrift/etc）、测试表结构或数据准备要求
-- 60%: 有部分前置条件但数据源类型模糊（如只说「数据质量任务」）
+- 100%: 明确说明了数据源类型（${datasource_type}）、测试表结构或数据准备要求
+- 60%: 有部分前置条件但数据源类型模糊
 - 30%: 有功能场景描述但无任何测试数据或环境要求
 - 0%: 无使用场景描述
 
-**自动推断**: 从 PRD 中的「前置条件」「测试环境」「依赖」章节提取；从功能关键词推断（如含「数据质量」→ 需要 Doris/Hive 数据源）
+**自动推断**: 从 PRD 中的「前置条件」「测试环境」「依赖」章节提取；从功能关键词推断所需数据源类型
 
 **问题模板**:
-- Q-US1: 测试这个功能需要准备哪种数据源？（Doris/Hive/SparkThrift/其他）
+- Q-US1: 测试这个功能需要准备哪种数据源？（${datasource_type} 或无数据库依赖）
 - Q-US2: 测试数据有特殊结构要求吗？（如 json 字段、特殊字符、大数据量等）
-- Q-US3: 是否有依赖的前置功能或配置？（如需要先创建规则集、数据源连接等）
+- Q-US3: 是否有依赖的前置功能或配置？（如需要先维护商品分类、仓库配置、数据源连接等）
 
 ---
 
@@ -113,7 +110,7 @@
 - 20%: 有截图但无文字描述字段
 - 0%: 完全无字段信息
 
-**自动推断来源（DTStack）**:
+**自动推断来源（当 config.repos 非空时）**:
 - DTO/VO 类中的 `@NotNull` `@NotBlank` `@Length` `@Size` `@Min` `@Max` `@Pattern` 注解 → 必填和校验规则
 - enum 类定义 → 枚举值
 - 前端 `FormItem` 的 `label` 属性 → 字段中文名
@@ -189,12 +186,12 @@
 **启用条件**: PRD 中包含以下关键词之一：「API」「接口」「兼容」「升级」「迁移」「版本」「限制」「不支持」「只支持」
 
 **评分规则**:
-- 100%: 明确说明了技术限制（如「仅支持 Doris 2.x」「不兼容旧版配置」）
+- 100%: 明确说明了技术限制（如「仅支持 ${datasource_type} 2.x+」「不兼容旧版配置」）
 - 50%: 提到了技术相关信息但约束不清晰
 - 0%: 未说明
 
 **问题模板**:
-- Q-TC1: 「{feature}」对数据库版本有要求吗？（如：仅支持 Doris 2.x+）
+- Q-TC1: 「{feature}」对数据库版本有要求吗？（如：仅支持 ${datasource_type} 2.x+）
 - Q-TC2: 这个变更是否影响现有功能的行为？（向后兼容性问题）
 
 ---
@@ -209,7 +206,7 @@
 - 30%: 有截图中可见一些边界信息（如 placeholder 文本）
 - 0%: 无任何边界或风险说明
 
-**自动推断（DTStack）**: 从 `@Length` `@Size` `@Min` `@Max` 注解推断边界值；从 git diff 推断历史功能变更范围
+**自动推断（当 config.repos 非空时）**: 从 `@Length` `@Size` `@Min` `@Max` 注解推断边界值；从 git diff 推断历史功能变更范围
 
 **问题模板**:
 - Q-RB1: 「{field_name}」字段的最大值/最大长度是多少？
@@ -271,7 +268,7 @@
 
 | 维度 | 自动推断条件 | 跳过条件 |
 |------|------------|---------|
-| `target_user` | `dev_version` 字段已填且能匹配 repo-branch-mapping.yaml | 跳过，显示「已推断」 |
+| `target_user` | `dev_version` 字段已填且能匹配 branchMapping 映射文件 | 跳过，显示「已推断」 |
 | `field_definition` (必填列) | DTO 中找到 `@NotNull` / `@NotBlank` 注解 | 对应字段跳过必填问题 |
 | `field_definition` (枚举值) | enum 类找到完整枚举 | 对应字段跳过枚举问题 |
 | `field_definition` (长度) | `@Length` / `@Size` / `@Max` 注解找到 | 对应字段跳过长度问题 |

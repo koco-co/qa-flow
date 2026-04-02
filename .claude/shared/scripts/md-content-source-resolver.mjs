@@ -14,7 +14,7 @@ import {
   relative,
   resolve,
 } from "path";
-import { loadConfig, getWorkspaceRoot } from "./load-config.mjs";
+import { loadConfig, getWorkspaceRoot, resolveModulePath } from "./load-config.mjs";
 import {
   asTrimmedString,
   extractModuleKey,
@@ -31,14 +31,10 @@ export const CONTENT_SOURCE_RESOLUTION_STATUS = Object.freeze({
   MARKDOWN_ONLY: "markdown-only",
 });
 
-const DEFAULT_REPO_HINT_KEYS_BY_PRODUCT = Object.freeze({
-  "batch-works": ["dt-insight-studio-front", "dt-center-ide", "DAGScheduleX", "datasourcex"],
-  "data-assets": ["dt-center-assets", "dt-insight-studio-front"],
-  "data-query": ["dt-insight-studio-front", "dt-center-ide"],
-  "variable-center": ["dt-insight-studio-front", "dt-center-ide"],
-  "public-service": ["dt-public-service", "dt-insight-studio-front"],
-  "xyzh": ["dt-insight-studio-custom", "dt-center-assets-custom"],
-});
+// Load casesRoot once at module level for path pattern matching
+const _casesRoot = (() => {
+  try { return loadConfig().casesRoot ?? 'cases/'; } catch { return 'cases/'; }
+})();
 
 export function resolveMdContentSource(markdownPath, options = {}) {
   const rootDir = resolve(options.rootDir || getWorkspaceRoot());
@@ -183,6 +179,7 @@ function buildPrdCandidates({
     .map((value) => normalizeRelativePath(value));
 
   if (docType === "requirements") {
+    // Both cases/requirements/ and cases/prds/ are "requirements" doc type
     candidates.add(markdownRelPath);
     explicitMarkdownCandidates.forEach((value) => candidates.add(value));
     return candidates.values();
@@ -284,7 +281,9 @@ function buildRepoCandidates({ explicitRepos, product, config }) {
     .filter(Boolean)
     .forEach((value) => candidates.add(value));
 
-  for (const repoKey of DEFAULT_REPO_HINT_KEYS_BY_PRODUCT[product] || []) {
+  const moduleConfig = product ? config?.modules?.[product] : null;
+  const repoHints = moduleConfig?.repoHints || [];
+  for (const repoKey of repoHints) {
     const repoPath = normalizeDirectoryPath(config?.repos?.[repoKey]);
     if (repoPath) candidates.add(repoPath);
   }
@@ -293,16 +292,38 @@ function buildRepoCandidates({ explicitRepos, product, config }) {
 }
 
 function resolveModulePaths(product, config) {
-  const moduleConfig = product ? config?.modules?.[product] : null;
-  const xmindDir = moduleConfig?.xmind || (product ? `cases/xmind/${product}/` : "");
-  const requirementsDir = moduleConfig?.requirements || (product ? `cases/requirements/${product}/` : "");
-  const historyDir = moduleConfig?.history || (product ? `cases/history/${product}/` : "");
-
-  return {
-    xmindDir: normalizeDirectoryPath(xmindDir),
-    requirementsDir: normalizeDirectoryPath(requirementsDir),
-    historyDir: normalizeDirectoryPath(historyDir),
-  };
+  if (!product) {
+    return {
+      xmindDir: "",
+      requirementsDir: "",
+      historyDir: "",
+    };
+  }
+  const mod = config?.modules?.[product];
+  if (!mod) {
+    // Unknown product: fall back to convention using casesRoot
+    const casesRoot = config?.casesRoot ?? 'cases/';
+    return {
+      xmindDir: normalizeDirectoryPath(`${casesRoot}xmind/${product}/`),
+      requirementsDir: normalizeDirectoryPath(`${casesRoot}requirements/${product}/`),
+      historyDir: normalizeDirectoryPath(`${casesRoot}history/${product}/`),
+    };
+  }
+  // Use resolveModulePath for known modules
+  try {
+    return {
+      xmindDir: normalizeDirectoryPath(resolveModulePath(product, 'xmind', config)),
+      requirementsDir: normalizeDirectoryPath(resolveModulePath(product, 'requirements', config)),
+      historyDir: normalizeDirectoryPath(resolveModulePath(product, 'history', config)),
+    };
+  } catch {
+    const casesRoot = config?.casesRoot ?? 'cases/';
+    return {
+      xmindDir: normalizeDirectoryPath(`${casesRoot}xmind/${product}/`),
+      requirementsDir: normalizeDirectoryPath(`${casesRoot}requirements/${product}/`),
+      historyDir: normalizeDirectoryPath(`${casesRoot}history/${product}/`),
+    };
+  }
 }
 
 function inferSourceOrigin({
@@ -315,10 +336,14 @@ function inferSourceOrigin({
   if (declaredOrigin) return declaredOrigin;
 
   const combined = [legacySource, prdPath, prdSource].filter(Boolean).join(" ");
-  if (/cases\/xmind\/|\.xmind\b/i.test(combined)) return "xmind";
-  if (/cases\/history\/|\.csv\b/i.test(combined)) return "csv";
+  const escapedRoot = _casesRoot.replace(/[/]/g, '\\/');
+  const xmindPattern = new RegExp(`${escapedRoot}xmind\\/|\\.xmind\\b`, 'i');
+  const historyPattern = new RegExp(`${escapedRoot}history\\/|\\.csv\\b`, 'i');
+  const requirementsPattern = new RegExp(`${escapedRoot}requirements\\/|\\.md\\b`, 'i');
+  if (xmindPattern.test(combined)) return "xmind";
+  if (historyPattern.test(combined)) return "csv";
   if (/\.json\b/i.test(combined)) return "json";
-  if (/cases\/requirements\/|\.md\b/i.test(combined)) return "markdown";
+  if (requirementsPattern.test(combined)) return "markdown";
   if (docType === "requirements") return "markdown";
   return "";
 }
@@ -508,11 +533,13 @@ function isMarkdownPath(value) {
 }
 
 function isXmindPath(value) {
-  return /\.xmind\b/i.test(asTrimmedString(value)) || /cases\/xmind\//i.test(asTrimmedString(value));
+  const str = asTrimmedString(value);
+  return /\.xmind\b/i.test(str) || str.includes(`${_casesRoot}xmind/`);
 }
 
 function isHistoryPath(value) {
-  return /\.csv\b/i.test(asTrimmedString(value)) || /cases\/history\//i.test(asTrimmedString(value));
+  const str = asTrimmedString(value);
+  return /\.csv\b/i.test(str) || str.includes(`${_casesRoot}history/`);
 }
 
 function joinNormalized(...parts) {

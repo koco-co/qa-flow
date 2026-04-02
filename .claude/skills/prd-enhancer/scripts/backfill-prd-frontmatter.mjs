@@ -24,10 +24,15 @@ import {
   extractModuleKey,
   extractVersionFromPath,
 } from "../../../shared/scripts/front-matter-utils.mjs";
+import { toRequirementDocumentStatus } from "../../../shared/scripts/frontmatter-status-utils.mjs";
+import { getWorkspaceRoot } from "../../../shared/scripts/load-config.mjs";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, "../..");
-const REQ_DIR = join(ROOT, "cases/requirements");
+const ROOT = getWorkspaceRoot();
+// Scan both new cases/prds/ and legacy cases/requirements/ directories
+const REQ_DIRS = [
+  join(ROOT, "cases/prds"),
+  join(ROOT, "cases/requirements"),
+];
 
 // ─── CLI 参数 ─────────────────────────────────────────────────────────────────
 
@@ -185,7 +190,8 @@ function processFile(filePath) {
   } = parsePrdHeader(rawBody);
 
   const fileName = basename(filePath);
-  const status = inferStatus(fileName);
+  const canonicalStatus = inferStatus(fileName);
+  const documentStatus = toRequirementDocumentStatus(canonicalStatus);
 
   // 从路径推断模块 key 和版本
   const moduleKey = extractModuleKey(filePath);
@@ -253,9 +259,9 @@ function processFile(filePath) {
       dev_version: devVersion || undefined,
       story: story || undefined,
       created_at: createdAt,
-      status,
+      status: documentStatus,
     };
-    if (status === "enhanced" && enhancedAt) {
+    if (canonicalStatus === "enhanced" && enhancedAt) {
       fields.enhanced_at = enhancedAt;
       if (imagesProcessed) fields.images_processed = imagesProcessed;
       if (healthWarnings !== null) fields.health_warnings = healthWarnings;
@@ -274,8 +280,8 @@ function processFile(filePath) {
       dev_version: devVersion || undefined,
       tags: [],
       create_at: createdAt,
-      update_at: status === "enhanced" && enhancedAt ? enhancedAt.slice(0, 10) : today,
-      status,
+      update_at: canonicalStatus === "enhanced" && enhancedAt ? enhancedAt.slice(0, 10) : today,
+      status: documentStatus,
       health_warnings: [],
       repos: [],
       case_path: "",
@@ -301,7 +307,9 @@ function processFile(filePath) {
 // ─── 主流程 ───────────────────────────────────────────────────────────────────
 
 function main() {
-  const files = PATH_ARG ? [resolve(PATH_ARG)] : collectMdFiles(REQ_DIR);
+  const files = PATH_ARG
+    ? [resolve(PATH_ARG)]
+    : REQ_DIRS.flatMap((dir) => collectMdFiles(dir));
 
   const stats = { ok: 0, skip: 0, error: 0, dryRun: 0 };
 

@@ -3,7 +3,7 @@
 
 > 前置条件: `last_completed_step` == `0`
 > 快速模式: 执行
-> DTStack 专属: 否
+> 业务专属: 否
 
 ## 1.0 蓝湖 URL 检测（前置，优先级最高）
 
@@ -54,10 +54,10 @@
      ```
      蓝湖文档「xxx」包含以下页面：
 
-     [1] ✅ 列表页-质量问题台账
-     [2] ✅ 新增质量问题
-     [3] ✅ 问题详情
-     [4] ✅ 规则集管理
+     [1] ✅ 商品列表
+     [2] ✅ 新增商品
+     [3] ✅ 订单详情
+     [4] ✅ 用户资料
 
      默认导入全部页面。
      - 输入编号排除（如「排除 4」或「只要 1,2,3」）
@@ -79,27 +79,21 @@
    从文档标题和内容中推断最可能的模块 key，然后向用户展示确认菜单：
 
    ```
-   从蓝湖文档标题推断模块为: data-assets (数据资产)
+   从蓝湖文档标题推断模块为: orders (订单中心)
 
-   请确认或选择正确的模块:
-   [1] data-assets (数据资产) ← 推荐
-   [2] batch-works (离线开发)
-   [3] data-query (统一查询)
-   [4] variable-center (变量中心)
-   [5] public-service (公共组件)
-   [6] xyzh (信永中和/定制)
+   请确认或选择正确的模块（候选项优先来自 config.modules）:
+   [1] orders (订单中心) ← 推荐
+   [2] products (商品管理)
+   [3] users (用户中心)
+   [4] inventory (库存管理)
+   [5] 手动输入其他 module_key
    ```
 
    - 用户回复数字或模块名 → 使用对应模块
    - **不得跳过此确认步骤**，即使推断置信度很高
-   - 用户确认后，根据模块 key 决定文件保存路径：
-     - DTStack 模块 → `cases/requirements/<module>/v{version}/PRD-<docId>-<docName>.md`
-     - xyzh 定制 → `cases/requirements/custom/xyzh/<功能名>.md`
-
-   - 保存至（按模块类型区分）：
-     - **DTStack 模块**（如 `data-assets`）：`cases/requirements/<module>/v{version}/PRD-<docName>.md`（版本从文档标题提取，如「数据资产V6.4.10」→ `v6.4.10`；无法推断时询问用户）
-     - **XYZH 定制模块**：`cases/requirements/custom/xyzh/<功能名>.md`（扁平存放）
-     - `<docName>` 使用蓝湖文档名（空格替换为 `-`，DTStack 用）
+   - 用户确认后，根据当前年月决定文件保存路径：
+     - 统一使用：`cases/prds/YYYYMM/PRD-<docName>.md`（YYYYMM 为当前年月）
+   - `<docName>` 使用蓝湖文档名（空格替换为 `-`），版本号无法推断时询问用户
    - 向用户展示保存路径
 
    **PRD front-matter Schema（蓝湖导入时填写）：**
@@ -112,12 +106,12 @@
    prd_version: <vX.Y.Z>              # 从文档名或内容推断，如 v6.4.10
    prd_source: "<保存后的 PRD 文件相对路径>"
    prd_url: "<用户发送的完整蓝湖 URL>"  # 必填，用于追溯来源
-   product: <module-key>              # data-assets / xyzh 等
-   dev_version: "<开发版本字段>"      # 如 6.3岚图定制化分支，无则留空
+   product: <module-key>              # 如 orders / products 等
+   dev_version: "<开发版本字段>"      # 如 release/v2.0，无则留空
    tags: []
    create_at: "<YYYY-MM-DD>"
    update_at: "<YYYY-MM-DD>"
-   status: raw
+   status: 未开始
    health_warnings: []
    repos: []
    case_path: ""
@@ -127,7 +121,7 @@
    字段说明：
    - `prd_url`：**必填**，保存用户发送的原始蓝湖 URL（完整带参数），用于追溯来源
    - `prd_id`：从 URL 参数 `docId` 提取（取数字部分）
-   - `prd_version`：从文档标题（如「数据资产V6.4.10」）推断，格式为 `vX.Y.Z`
+   - `prd_version`：从文档标题（如「订单中心V2.0」）推断，格式为 `vX.Y.Z`
    - `dev_version`：从蓝湖页面内容中的「开发版本」字段提取，无则留空
 
 6. **将生成的 PRD 文件路径注入工作目录**，继续正常 1.1 流程（此时 PRD 文件已存在）
@@ -140,24 +134,24 @@
 
 | 信息            | 来源                 | 示例                                                                                                                          |
 | --------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 工作目录路径    | 用户指令             | `cases/requirements/custom/xyzh/`（XYZH）/ `cases/requirements/data-assets/v6.4.10/`（DTStack）                               |
+| 工作目录路径    | 用户指令             | `cases/prds/YYYYMM/`                                                                                                          |
 | PRD 文件列表    | 扫描工作目录         | `PRD-26-xxx.md`, `PRD-27-xxx.md`                                                                                              |
-| 项目名称        | 目录路径推断         | `信永中和` / `DTStack`                                                                                                        |
-| 源码仓库路径    | CLAUDE.md 路径映射表 | 信永中和无源码                                                                                                                |
-| 输出 XMind 路径 | CLAUDE.md 输出规范   | `cases/xmind/custom/xyzh/`                                                                                                    |
-| 历史用例        | 自动查找             | - DTStack 平台模块：`cases/archive/<module>/` 目录下的 .md 文件<br>- 信永中和：`cases/archive/custom/xyzh/` 目录下的 .md 文件 |
+| 项目名称        | 目录路径推断         | `订单中心` / `用户中心`                                                                                                        |
+| 源码仓库路径    | `.claude/config.json` 的 `repos` 字段 | 未配置源码仓库时记为「无源码参考」                                                                                             |
+| 输出 XMind 路径 | 配置解析结果         | `cases/xmind/YYYYMM/`                                                                                                         |
+| 历史用例        | 自动查找             | `cases/archive/YYYYMM/` 目录下的 .md 文件                                                                                     |
 | 运行模式        | 用户指令关键词       | `--quick` / 普通                                                                                                              |
 
-**工作目录解析规则（DTStack）：**
-- `继续 data-assets v6.4.10 的用例生成` → `cases/requirements/data-assets/v6.4.10/`
-- `为 data-assets v6.4.10 生成测试用例` → `cases/requirements/data-assets/v6.4.10/`
+**工作目录解析规则：**
+- `继续 202604 的用例生成` → `cases/prds/202604/`
+- `为 202604 生成测试用例` → `cases/prds/202604/`
 - 路径中包含 `Story-YYYYMMDD` 的旧格式指令（向后兼容）→ 直接使用该路径
 
 如果同一工作目录下有多个 PRD，询问用户要生成哪些（默认全部）。
 
 **路径验证：**
 
-- 如果工作目录不存在：向用户提示目录不存在，并列出 `cases/requirements/<module>/` 下可用的版本目录
+- 如果工作目录不存在：向用户提示目录不存在，并列出 `cases/prds/` 下可用的年月目录
 - 如果工作目录下无 PRD 文件：向用户提示目录下未找到 PRD 文件，请先添加 PRD 文档
 
 ---
@@ -168,12 +162,12 @@
 
 | 本次生成范围 | 状态文件名 | 示例 |
 |-------------|-----------|------|
-| **单 PRD**（用户指定了一个具体 PRD 文件） | `.qa-state-{prd-slug}.json` | `cases/requirements/data-assets/v6.4.10/.qa-state-【通用配置】json格式配置.json` |
-| **批量**（用户未指定，生成目录下全部 PRD） | `.qa-state.json` | `cases/requirements/data-assets/v6.4.10/.qa-state.json` |
+| **单 PRD**（用户指定了一个具体 PRD 文件） | `.qa-state-{prd-slug}.json` | `cases/prds/202604/.qa-state-商品列表.json` |
+| **批量**（用户未指定，生成目录下全部 PRD） | `.qa-state.json` | `cases/prds/202604/.qa-state.json` |
 
 **prd-slug 生成规则：**
 - 取目标 PRD 文件的 basename，去掉 `.md` 后缀
-- 示例：`【通用配置】json格式配置.md` → `.qa-state-【通用配置】json格式配置.json`
+- 示例：`商品列表.md` → `.qa-state-商品列表.json`
 
 > 这样同一版本目录下，每个 PRD 的生成进度互相独立，不会因为启动新需求而覆盖旧状态。
 
@@ -184,10 +178,10 @@
 ```
 检测到以下需求正在进行中（未验收）：
 
-[1] 【通用配置】json格式配置（进度：archive，等待验收）
-[2] 【数据地图】表详情展示（进度：writer，生成中断）
+[1] 商品列表（进度：archive，等待验收）
+[2] 退款审批（进度：writer，生成中断）
 
-本次将开始生成：【数据质量】内置规则丰富
+本次将开始生成：【订单中心】退款审批
 
 直接回复「继续」开始新流程，或输入编号查看/续传已有流程。
 ```
@@ -202,7 +196,7 @@
 
 读取状态文件，向用户展示上次进度（中断步骤、已完成/未完成项），询问是否继续。
 
-这一步只用于判断**是否进入续传模式**；如果用户明确要"只重跑某个模块"，应走后文的模块级重跑流程；如果用户要"从头重来"，应先删除对应状态文件和已增强的 PRD 文件（`status: enhanced`）后再重新发起完整流程或快速模式。
+这一步只用于判断**是否进入续传模式**；如果用户明确要"只重跑某个模块"，应走后文的模块级重跑流程；如果用户要"从头重来"，应先删除对应状态文件和已增强的 PRD 文件（`status: 已增强`）后再重新发起完整流程或快速模式。
 
 - 选「是」→ 按以下逻辑恢复：
   - `awaiting_verification: true`：说明流程已停在 Step `archive` 的用户验证阶段。保持 `last_completed_step: "archive"` 不变，重新展示验证提示（XMind 路径来自 `output_xmind`，归档 MD 来自 `archive_md_path`），等待用户回复后执行 `notify`
@@ -237,7 +231,7 @@
 
 - 全部存在 → 记录到状态文件，Writer 深度阅读 Controller/Service/DAO 代码分析核心逻辑，Reviewer 基于源码验证覆盖率
 - 部分不存在 → 提示用户提供路径或继续无源码模式
-- 项目标记为「无源码」（如信永中和）→ 跳过验证，标注「无源码参考」
+- 未配置源码仓库 → 跳过验证，标注「无源码参考」
 
 **源码只读规则**：.repos/ 下仅允许 grep、find、cat、git log/diff/blame 操作，严禁 push/commit/修改文件。
 
@@ -267,7 +261,7 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --detect
 ## 错误处理
 
 - **蓝湖 URL 检测失败**：提示用户检查 URL 格式和网络连接
-- **路径不存在**：向用户列出 `cases/requirements/<module>/` 下可用的版本目录供选择
+- **路径不存在**：向用户列出 `cases/prds/` 下可用的年月目录供选择
 - **PRD 文件不存在**：提示用户先添加 PRD 文档
 - **状态文件损坏**：询问用户是否重新开始流程
 

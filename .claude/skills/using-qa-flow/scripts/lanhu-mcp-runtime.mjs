@@ -6,11 +6,31 @@
  *   node lanhu-mcp-runtime.mjs paths
  *   node lanhu-mcp-runtime.mjs status
  *   node lanhu-mcp-runtime.mjs start
+ *
+ * LANHU_COOKIE 读取顺序：process.env → 根目录 .env → tools/lanhu-mcp/.env
  */
-import { existsSync, mkdirSync, openSync } from "fs";
+import { existsSync, mkdirSync, openSync, readFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { spawn } from "child_process";
-import { getIntegrationConfig, resolveWorkspacePath } from "../../../shared/scripts/load-config.mjs";
+import { getIntegrationConfig, resolveWorkspacePath, getWorkspaceRoot } from "../../../shared/scripts/load-config.mjs";
+
+/** 从 .env 文件中解析 LANHU_COOKIE（不覆盖已设置的 process.env） */
+function loadLanhuCookieFromEnv() {
+  if (process.env.LANHU_COOKIE) return process.env.LANHU_COOKIE;
+
+  const tryFiles = [
+    resolve(getWorkspaceRoot(), ".env"),
+    resolve(getWorkspaceRoot(), "tools/lanhu-mcp/.env"),
+  ];
+  for (const f of tryFiles) {
+    if (!existsSync(f)) continue;
+    for (const line of readFileSync(f, "utf8").split("\n")) {
+      const m = line.match(/^LANHU_COOKIE\s*=\s*(.+)$/);
+      if (m) return m[1].replace(/^["']|["']$/g, "").trim();
+    }
+  }
+  return null;
+}
 
 export function getLanhuRuntimeConfig() {
   const config = getIntegrationConfig("lanhuMcp");
@@ -20,7 +40,7 @@ export function getLanhuRuntimeConfig() {
 
   return {
     runtimePath: resolveWorkspacePath(config.runtimePath),
-    envFile: resolveWorkspacePath(config.envFile),
+    // envFile 已迁移到根目录 .env，此处不再解析
     setupScript: resolveWorkspacePath(config.setupScript),
     quickstartScript: resolveWorkspacePath(config.quickstartScript),
     entryScript: resolveWorkspacePath(config.entryScript),
@@ -83,8 +103,10 @@ export async function startLanhuMcp() {
   if (!existsSync(config.entryScript)) {
     throw new Error(`未找到启动入口：${config.entryScript}`);
   }
-  if (!existsSync(config.envFile)) {
-    throw new Error(`未找到 .env 配置：${config.envFile}`);
+  // 从根 .env 或本地 .env 读取 LANHU_COOKIE 并注入到子进程
+  const lanhuCookie = loadLanhuCookieFromEnv();
+  if (!lanhuCookie) {
+    throw new Error("未找到 LANHU_COOKIE。请在根目录 .env 中配置 LANHU_COOKIE=你的蓝湖Cookie");
   }
 
   mkdirSync(dirname(config.logFile), { recursive: true });
@@ -93,6 +115,7 @@ export async function startLanhuMcp() {
     cwd: config.runtimePath,
     detached: true,
     stdio: ["ignore", logFd, logFd],
+    env: { ...process.env, LANHU_COOKIE: lanhuCookie },
   });
   child.unref();
 

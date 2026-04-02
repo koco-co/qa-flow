@@ -27,25 +27,18 @@
 3. 执行 `git -C <仓库路径> fetch origin && git -C <仓库路径> checkout <分支> && git -C <仓库路径> pull origin <分支>`
 4. 确认分支和最新 commit 后，才开始分析
 
-## DTStack 用例生成的额外要求
+## 用例生成的源码同步要求（当 config.repos 非空时启用）
 
-当执行 DTStack 测试用例生成时，同样必须先完成源码分支同步：
+> 以下规则仅在 config.json 中 `repos` 字段为非空对象时适用。若 `repos: {}` 则跳过本节。
 
-1. 从蓝湖原文 / PRD 原文中提取 `开发版本`
-2. 读取 `.claude/config.json` 的 `repoBranchMapping` 字段所指向的映射文件
-3. 使用 `sync-source-repos.mjs` 解析 repo profile 与 backend/frontend 目标分支
+当执行测试用例生成时，同样必须先完成源码分支同步：
+
+1. 从需求原文中提取目标版本或分支信息
+2. 读取 `.claude/config.json` 的 `branchMapping` 字段所指向的映射文件
+3. 使用 `sync-source-repos.mjs` 解析 repo profile 与目标分支
 4. 执行 `git fetch && git checkout && git pull`
-5. 将分支上下文写入 `.qa-state.json.source_context` 后，再进入 formalizer / Writer / Reviewer
+5. 将分支上下文写入 `.qa-state.json.source_context` 后，再进入 Writer / Reviewer
 
-## 报错堆栈 → 仓库快速定位
+## 堆栈定位
 
-| Java 包名 / 关键词            | 目标仓库           |
-| ----------------------------- | ------------------ |
-| `com.dtstack.center.assets`   | dt-center-assets   |
-| `com.dtstack.center.metadata` | dt-center-metadata |
-| `com.dtstack.dagschedulex`    | DAGScheduleX       |
-| `com.dtstack.datasource`      | datasourcex        |
-| `com.dtstack.ide`             | dt-center-ide      |
-| `com.dtstack.public.service`  | dt-public-service  |
-| `com.dtstack.sql.parser`      | SQLParser          |
-| `com.dtstack.engine`          | engine-plugins     |
+报错堆栈中的包名/关键词与仓库的映射关系，参考 config.json 的 `config.stackTrace` 字段。

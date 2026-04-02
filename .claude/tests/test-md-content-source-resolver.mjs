@@ -6,6 +6,7 @@
  */
 import {
   mkdirSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from "fs";
@@ -41,8 +42,16 @@ function cleanup() {
   rmSync(escapedRoot, { recursive: true, force: true });
 }
 
+function cleanupStale() {
+  for (const entry of readdirSync(__dirname)) {
+    if (entry.startsWith("__test_md_content_source_resolver_")) {
+      rmSync(resolve(__dirname, entry), { recursive: true, force: true });
+    }
+  }
+}
+
 process.on("exit", cleanup);
-cleanup();
+cleanupStale();
 
 function writeFixture(relativePath, content = "") {
   const fullPath = resolve(tempRoot, relativePath);
@@ -68,6 +77,7 @@ const archiveResolvedPath = writeFixture(
     "product: data-assets",
     "prd_version: v6.4.10",
     "origin: xmind",
+    "status: 已归档",
     "repos:",
     "  - .repos/dt-insight-web/dt-center-assets/",
     "---",
@@ -75,7 +85,7 @@ const archiveResolvedPath = writeFixture(
     "",
   ].join("\n"),
 );
-writeFixture("cases/requirements/data-assets/v6.4.10/quality-ledger.md", "---\nprd_name: 质量问题台账\nproduct: data-assets\ncreate_at: 2026-03-30\nstatus: raw\n---\n");
+writeFixture("cases/requirements/data-assets/v6.4.10/quality-ledger.md", "---\nprd_name: 质量问题台账\nproduct: data-assets\ncreate_at: 2026-03-30\nstatus: 未开始\n---\n");
 writeFixture("cases/xmind/data-assets/v6.4.10/quality-ledger.xmind");
 writeFixture(".repos/dt-insight-web/dt-center-assets/README.md", "# repo\n");
 
@@ -106,7 +116,7 @@ const requirementMarkdownOnlyPath = writeFixture(
     "prd_source: 内部需求文档",
     "product: xyzh",
     "create_at: 2026-03-26",
-    "status: enhanced",
+    "status: 已增强",
     "---",
     "# PRD-26 数据质量-质量问题台账",
     "",
@@ -130,7 +140,7 @@ const traversalRequirementPath = writeFixture(
     "repos:",
     `  - ${escapedRepoRelativePath}`,
     "create_at: 2026-03-30",
-    "status: enhanced",
+    "status: 已增强",
     "---",
     "# 安全测试-路径穿越",
     "",
@@ -147,16 +157,68 @@ const archiveHistoryPath = writeFixture(
     "product: xyzh",
     "prd_version: v1.0.0",
     "origin: csv",
+    "status: 已归档",
     "---",
     "## 信永中和",
     "",
   ].join("\n"),
 );
-writeFixture("cases/requirements/custom/xyzh/数据目录.md", "---\nprd_name: 数据目录\nproduct: xyzh\ncreate_at: 2026-03-20\nstatus: raw\n---\n");
+writeFixture("cases/requirements/custom/xyzh/数据目录.md", "---\nprd_name: 数据目录\nproduct: xyzh\ncreate_at: 2026-03-20\nstatus: 未开始\n---\n");
 writeFixture("cases/history/xyzh/v1.0.0/数据目录台账.csv", "标题,步骤,预期\n");
 
+// Config with module-specific repoHints (replacing the former hardcoded DEFAULT_REPO_HINT_KEYS_BY_PRODUCT mapping)
+const testConfig = {
+  project: { name: "test" },
+  casesRoot: "cases/",
+  modules: {
+    "data-assets": {
+      zh: "数据资产",
+      versioned: true,
+      repoHints: ["dt-center-assets", "dt-insight-studio"],
+    },
+    "data-query": {
+      zh: "数据查询",
+      versioned: true,
+    },
+    "xyzh": {
+      zh: "信阳中行",
+      xmind: "cases/xmind/custom/xyzh/",
+      archive: "cases/archive/custom/xyzh/",
+      requirements: "cases/requirements/custom/xyzh/",
+      history: "cases/history/xyzh/",
+      repoHints: ["dt-insight-studio", "dt-center-assets"],
+    },
+  },
+  repos: {
+    "dt-center-assets": ".repos/dt-insight-web/dt-center-assets/",
+    "dt-insight-studio": ".repos/dt-insight-front/dt-insight-studio/",
+    "dt-insight-studio-custom": ".repos/CustomItem/dt-insight-studio/",
+    "dt-center-assets-custom": ".repos/CustomItem/dt-center-assets/",
+  },
+};
+
+// xyzh-specific config with CustomItem repo paths
+const testConfigXyzh = {
+  project: { name: "test" },
+  casesRoot: "cases/",
+  modules: {
+    "xyzh": {
+      zh: "信阳中行",
+      xmind: "cases/xmind/custom/xyzh/",
+      archive: "cases/archive/custom/xyzh/",
+      requirements: "cases/requirements/custom/xyzh/",
+      history: "cases/history/xyzh/",
+      repoHints: ["dt-insight-studio-custom", "dt-center-assets-custom"],
+    },
+  },
+  repos: {
+    "dt-insight-studio-custom": ".repos/CustomItem/dt-insight-studio/",
+    "dt-center-assets-custom": ".repos/CustomItem/dt-center-assets/",
+  },
+};
+
 console.log("\n=== Test: archive resolves explicit XMind + PRD + repo candidates ===");
-const resolvedArchive = resolveMdContentSource(archiveResolvedPath, { rootDir: tempRoot });
+const resolvedArchive = resolveMdContentSource(archiveResolvedPath, { rootDir: tempRoot, config: testConfig });
 assert(resolvedArchive.docType === "archive", "archive 文档类型识别正确", [
   `actual: ${resolvedArchive.docType}`,
 ]);
@@ -216,7 +278,7 @@ assert(
 );
 
 console.log("\n=== Test: requirements can fall back to markdown-only source ===");
-const markdownOnlyRequirement = resolveMdContentSource(requirementMarkdownOnlyPath, { rootDir: tempRoot });
+const markdownOnlyRequirement = resolveMdContentSource(requirementMarkdownOnlyPath, { rootDir: tempRoot, config: testConfigXyzh });
 assert(markdownOnlyRequirement.docType === "requirements", "requirements 文档类型识别正确", [
   `actual: ${markdownOnlyRequirement.docType}`,
 ]);
@@ -271,7 +333,7 @@ assert(
 );
 
 console.log("\n=== Test: archive infers history CSV candidates from module + version + filename ===");
-const historyArchive = resolveMdContentSource(archiveHistoryPath, { rootDir: tempRoot });
+const historyArchive = resolveMdContentSource(archiveHistoryPath, { rootDir: tempRoot, config: testConfigXyzh });
 assert(
   JSON.stringify(historyArchive.candidateHistoryPaths) === JSON.stringify([
     "cases/history/xyzh/v1.0.0/数据目录台账.csv",

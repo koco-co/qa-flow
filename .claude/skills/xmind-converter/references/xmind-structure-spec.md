@@ -5,7 +5,7 @@
 ### 基本结构（无功能子组）
 
 ```
-Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
+Root (${项目展示名}${版本标签}迭代用例(#${trackerId}))
   └── L1 (【meta.version】meta.requirement_name)
        └── L2 (modules[].name)                    ← 菜单/模块名
             └── L3 (pages[].name)                  ← 页面名
@@ -18,7 +18,7 @@ Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
 ### 含功能子组结构
 
 ```
-Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
+Root (${项目展示名}${版本标签}迭代用例(#${trackerId}))
   └── L1 (【meta.version】meta.requirement_name)
        └── L2 (modules[].name)                    ← 菜单/模块名
             └── L3 (pages[].name)                  ← 页面名
@@ -32,7 +32,7 @@ Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
 ### 向后兼容（旧格式，无 pages 层级）
 
 ```
-Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
+Root (${项目展示名}${版本标签}迭代用例(#${trackerId}))
   └── L1 (【meta.version】meta.requirement_name)
        └── L2 (modules[].name)
             └── [L3 (sub_groups[].name)]
@@ -41,11 +41,11 @@ Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
 
 ## Priority 映射规则
 
-| JSON priority | XMind marker | 含义 |
-|---------------|--------------|------|
-| P0 | `priority-1` | 冒烟测试 |
-| P1 | `priority-2` | 核心功能 |
-| P2 | `priority-3` | 扩展场景 |
+| JSON priority | XMind marker | 含义     |
+| ------------- | ------------ | -------- |
+| P0            | `priority-1` | 冒烟测试 |
+| P1            | `priority-2` | 核心功能 |
+| P2            | `priority-3` | 扩展场景 |
 
 ## 前置条件处理
 
@@ -58,7 +58,7 @@ Root (${中文产品名}${版本}迭代用例(#${禅道产品ID}))
 <功能名>.xmind
 ```
 
-示例：`数据质量-质量问题台账.xmind`
+示例：`订单中心-异常订单处理.xmind`
 
 Story 聚合输出：
 
@@ -69,12 +69,11 @@ Story-YYYYMMDD.xmind
 ## 输出目录规则
 
 ```
-cases/xmind/<项目名>/
+cases/xmind/<module_key>/
 ```
 
 示例：
-- 信永中和：`cases/xmind/custom/xyzh/`
-- DTStack 数据资产：`cases/xmind/data-assets/`
-- DTStack 离线开发：`cases/xmind/batch-works/`
-- DTStack 统一查询：`cases/xmind/data-query/`
-- DTStack 变量中心：`cases/xmind/variable-center/`
+
+- 订单中心：`cases/xmind/orders/`
+- 商品管理：`cases/xmind/products/`
+- 库存中心：`cases/xmind/inventory/`

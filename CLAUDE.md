@@ -1,5 +1,6 @@
 # qa-flow Workflow Handbook
 
+使用中文回复, 不要使用英文或其它语言回复。
 本文件是 qa-flow 的权威工作流手册。细化规则以 `.claude/rules/*.md` 为准，路径映射以 `.claude/config.json` 为准。
 
 > 不知道从哪开始？输入 `/using-qa-flow` 查看功能菜单；首次使用输入 `/using-qa-flow init` 初始化环境。
@@ -24,6 +25,9 @@
 帮我增强这个 PRD：<PRD文件路径>
 帮我分析这个报错
 转化所有历史用例
+
+# 线上问题转化（直接发禅道链接）
+http://zenpms.dtstack.cn/zentao/bug-view-138845.html
 ```
 
 ---
@@ -32,14 +36,15 @@
 
 ```text
 qa-flow/
-├── config/repo-branch-mapping.yaml   # DTStack repo/branch 映射
+├── config/                            # 项目级配置文件（如分支映射）
 ├── CLAUDE.md                          # 本文件
 ├── cases/
 │   ├── xmind/                         # XMind 输出
 │   ├── archive/                       # 归档 Markdown
-│   ├── requirements/                  # PRD / Story 文档
+│   ├── issues/                        # 线上问题用例（原 archive/online-cases/）
+│   ├── prds/                          # PRD / Story 文档（原 requirements/）
 │   └── history/                       # 历史 CSV 原始资料
-├── .repos/                            # 源码仓库（只读）
+├── .repos/                            # 源码仓库（只读，当 config.repos 非空时使用）
 ├── reports/                           # 代码分析报告
 ├── assets/images/                     # 全局图片
 ├── tools/                             # 内置第三方工具
@@ -54,52 +59,47 @@ qa-flow/
 
 ## Skill 索引
 
-| Skill | 描述 | 触发词 |
-| ----- | ---- | ------ |
-| `using-qa-flow` | 功能菜单 + 环境初始化 | `/using-qa-flow` |
-| `test-case-generator` | 完整用例生成流程 | `生成测试用例` / `为 Story-xxx` |
-| `prd-enhancer` | PRD 图片描述 + 增强 + 健康度预检 | `帮我增强这个 PRD` |
-| `xmind-converter` | JSON → XMind 转换 | `转换为 XMind` |
-| `archive-converter` | CSV/XMind → 归档 Markdown | `转化历史用例` |
-| `code-analysis-report` | 报错日志 → HTML 分析报告 | `帮我分析这个报错` |
+| Skill                  | 描述                                               | 触发词                          |
+| ---------------------- | -------------------------------------------------- | ------------------------------- |
+| `using-qa-flow`        | 功能菜单 + 环境初始化                              | `/using-qa-flow`                |
+| `test-case-generator`  | 完整用例生成流程                                   | `生成测试用例` / `为 Story-xxx` |
+| `prd-enhancer`         | PRD 图片描述 + 增强 + 健康度预检                   | `帮我增强这个 PRD`              |
+| `xmind-converter`      | JSON → XMind 转换                                  | `转换为 XMind`                  |
+| `archive-converter`    | CSV/XMind → 归档 Markdown                          | `转化历史用例`                  |
+| `code-analysis-report` | 报错日志 → HTML 分析报告（支持前端/后端/冲突分析）；禅道 Bug 链接 → 自动提取修复分支 → 线上问题转化测试用例 | `帮我分析这个报错` / `http://zenpms.dtstack.cn/zentao/bug-view-{bugId}.html` |
 
 ---
 
-## DTStack 与 XYZH 分流规则
+## 源码仓库项目规则（当 config.repos 非空时启用）
 
-### DTStack
+> 以下规则仅在 config.json 中 `repos` 字段为非空对象时适用。若 `repos: {}` 则跳过本节。
 
-- **PRD 只是线索，不是权威**。必须以 `.repos/` 目标分支源码为准。
+- PRD 只是线索，必须以 `.repos/` 目标分支源码为准。
 - 蓝湖导入后强制执行：`req-elicit` → `source-sync` → `prd-formalize` → `prd-enhancer` → Writer → Reviewer。
-- Archive 按版本目录落盘：`cases/archive/<module>/v{version}/`。
-
-### XYZH / 定制
-
-- 沿用现有定制规范，不强制引入 DTStack 的源码分支同步与版本目录归档。
+- Archive 按年月目录落盘：`cases/archive/YYYYMM/`。
 
 ---
 
 ## 编排说明
 
 - 断点状态：
-  - 单 PRD：`<requirements目录>/.qa-state-{prd文件名}.json`
-  - 批量：`<requirements目录>/.qa-state.json`
+  - 单 PRD：`<prds目录>/.qa-state-{prd文件名}.json`
+  - 批量：`<prds目录>/.qa-state.json`
 - 质量阈值：`< 15%` 自动修正；`15-40%` 自动修正+警告；`> 40%` 阻断
 - 源码仓库清单：见 `.claude/config.json` 的 `repos` 字段
-- 前端报错优先查 `dt-insight-studio-front`；定制需求优先查 `.repos/CustomItem/`
-- 快捷链接：`latest-output.xmind` 指向最新生成的 XMind 文件，`latest-prd-enhanced.md` 指向最新增强 PRD
+- 报错定位：优先参考 config.json 的 `repos` 和 `stackTrace` 字段定位目标仓库
 
 ---
 
 ## 规范索引
 
-| 文件 | 内容 |
-| ---- | ---- |
-| `.claude/rules/directory-naming.md` | 模块 key、路径别名、命名规则 |
-| `.claude/rules/repo-safety.md` | 源码仓库只读规则 |
-| `.claude/rules/archive-format.md` | Archive Markdown 模板与层级映射 |
-| `.claude/rules/xmind-output.md` | XMind 命名、层级、输出路径 |
-| `.claude/rules/test-case-writing.md` | 用例编写硬性规则 |
-| `.claude/rules/image-conventions.md` | 图片引用、路径、压缩规则 |
-| `.claude/shared/schemas/front-matter-schema.md` | PRD/Archive 统一 front-matter Schema |
-| `.claude/config.json` | 模块、仓库、报告目录的 source of truth |
+| 文件                                            | 内容                                   |
+| ----------------------------------------------- | -------------------------------------- |
+| `.claude/rules/directory-naming.md`             | 模块 key、路径别名、命名规则           |
+| `.claude/rules/repo-safety.md`                  | 源码仓库只读规则                       |
+| `.claude/rules/archive-format.md`               | Archive Markdown 模板与层级映射        |
+| `.claude/rules/xmind-output.md`                 | XMind 命名、层级、输出路径             |
+| `.claude/rules/test-case-writing.md`            | 用例编写硬性规则                       |
+| `.claude/rules/image-conventions.md`            | 图片引用、路径、压缩规则               |
+| `.claude/shared/schemas/front-matter-schema.md` | PRD/Archive 统一 front-matter Schema   |
+| `.claude/config.json`                           | 模块、仓库、报告目录的 source of truth |

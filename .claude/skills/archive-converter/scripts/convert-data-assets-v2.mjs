@@ -344,7 +344,8 @@ async function main() {
 
   const configPath = join(BASE, ".claude/config.json");
   const config = JSON.parse(readFileSync(configPath, "utf8"));
-  const xmindVersionMap = config.dataAssetsVersionMap || {};
+  // NOTE: This script is DTStack-specific. It will be moved to dtstack-data branch in GEN-06.
+  const xmindVersionMap = config.versionMap || {};
 
   const xmindFiles = readdirSync(XMIND_DIR).filter((f) => f.endsWith(".xmind"));
 

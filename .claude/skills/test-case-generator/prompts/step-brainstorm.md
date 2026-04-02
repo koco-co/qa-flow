@@ -3,13 +3,11 @@
 
 > 前置条件: `last_completed_step` == `"prd-enhancer"`
 > 快速模式: **部分执行**（仅执行 3.1 历史用例检索，跳过 3.2 需求解耦分析和 Brainstorming 讨论）
-> DTStack 专属: 否
-
 ## 3.1 历史用例检索（快速模式也执行）
 
 基于当前需求内容，通过**归档索引**检索相关历史用例：
 
-1. 从增强后 PRD 提取 3-5 个核心关键词（如：数据质量、质量规则、质量问题台账）
+1. 从增强后 PRD 提取 3-5 个核心关键词（如：商品管理、订单处理、用户中心）
 2. 使用索引脚本按模块 + tags 检索：
    ```bash
    node .claude/shared/scripts/build-archive-index.mjs --query <module-key> --tags 关键词1,关键词2

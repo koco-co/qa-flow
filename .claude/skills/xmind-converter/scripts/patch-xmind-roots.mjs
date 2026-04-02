@@ -1,14 +1,14 @@
 /**
  * patch-xmind-roots.mjs
  * 将现有 xmind 文件的根节点名称更新为新格式:
- *   ${中文产品名}${版本}迭代用例(#${禅道产品ID})
+ *   ${中文产品名}${版本}迭代用例(#${trackerId})
  *
  * 用法:
  *   node patch-xmind-roots.mjs [--dry-run]
  *
  * 仅处理满足以下条件的文件:
  *   1. 位于版本化目录 (v\d+) 下
- *   2. 所属模块在 config.json 中配置了 zentaoId
+ *   2. 所属模块在 config.json 中配置了 trackerId
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs'
@@ -27,7 +27,7 @@ function loadConfig() {
 function findVersionedXmindFiles(config) {
   const results = []
   for (const [moduleKey, mod] of Object.entries(config.modules)) {
-    if (!mod.zentaoId) continue
+    if (!mod.trackerId) continue
     const xmindBase = resolve(REPO_ROOT, mod.xmind)
     let entries
     try {
@@ -61,7 +61,7 @@ function findVersionedXmindFiles(config) {
 }
 
 function buildExpectedRoot(mod, version) {
-  const idSuffix = mod.zentaoId ? `(#${mod.zentaoId})` : ''
+  const idSuffix = mod.trackerId ? `(#${mod.trackerId})` : ''
   return `${mod.zh}${version}迭代用例${idSuffix}`
 }
 

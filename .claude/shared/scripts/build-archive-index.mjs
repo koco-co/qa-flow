@@ -2,8 +2,8 @@
 /**
  * build-archive-index.mjs
  *
- * 扫描 cases/archive/ 下所有 .md 文件，提取 YAML front-matter 元数据，
- * 生成轻量索引文件 cases/archive/INDEX.json。
+ * 扫描 {casesRoot}/archive/ 下所有 .md 文件，提取 YAML front-matter 元数据，
+ * 生成轻量索引文件 {casesRoot}/archive/INDEX.json（路径从 config.json 读取）。
  *
  * Agent 读取 INDEX.json 即可知道全部归档用例的元数据，
  * 无需 Grep 扫描 300+ 文件。按 tags 匹配后再精确读取相关文件。
@@ -16,11 +16,16 @@
  */
 import { readdirSync, readFileSync, writeFileSync } from "fs";
 import { join, relative } from "path";
-import { getWorkspaceRoot } from "./load-config.mjs";
+import { getWorkspaceRoot, loadConfig } from "./load-config.mjs";
 import { parseFrontMatter, extractModuleKey, extractVersionFromPath } from "./front-matter-utils.mjs";
+import {
+  normalizeArchiveStatus,
+  toArchiveDocumentStatus,
+} from "./frontmatter-status-utils.mjs";
 
 const ROOT = getWorkspaceRoot();
-const ARCHIVE_DIR = join(ROOT, "cases/archive");
+const config = loadConfig();
+const ARCHIVE_DIR = join(ROOT, config.casesRoot ?? 'cases/', 'archive');
 const INDEX_PATH = join(ARCHIVE_DIR, "INDEX.json");
 
 // ─── 递归收集 .md 文件 ──────────────────────────────────────────────────────
@@ -64,7 +69,10 @@ function extractEntry(absPath) {
   const tags = Array.isArray(frontMatter?.tags) ? frontMatter.tags : [];
   const caseCount = frontMatter?.case_count ?? countCases(content);
   const createAt = frontMatter?.create_at ?? frontMatter?.created_at ?? "";
-  const status = frontMatter?.status ?? "";
+  const normalizedStatus = normalizeArchiveStatus(frontMatter?.status);
+  const status = normalizedStatus
+    ? toArchiveDocumentStatus(normalizedStatus)
+    : String(frontMatter?.status ?? "");
   const prdId = frontMatter?.prd_id ?? null;
   const origin = frontMatter?.origin ?? "";
 
@@ -173,6 +181,7 @@ function queryIndex(index, moduleFilter, tagFilters) {
     v: e.prd_version,
     t: e.tags,
     c: e.case_count,
+    s: e.status,
   }));
 
   return { matched: compact.length, total: index.total_files, results: compact };
@@ -202,7 +211,7 @@ if (statsOnly) {
     generated_at: index.generated_at,
     total_files: index.total_files,
     total_cases: index.total_cases,
-    // 紧凑条目：p=path, n=suite_name, m=product, v=version, t=tags, c=case_count
+    // 紧凑条目：p=path, n=suite_name, m=product, v=version, t=tags, c=case_count, s=status
     entries: index.entries.map(e => ({
       p: e.path,
       n: e.suite_name,
@@ -210,6 +219,7 @@ if (statsOnly) {
       v: e.prd_version,
       t: e.tags,
       c: e.case_count,
+      s: e.status,
     })),
   };
   writeFileSync(INDEX_PATH, JSON.stringify(compact) + "\n", "utf8");

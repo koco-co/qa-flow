@@ -28,7 +28,8 @@ console.log("\n=== Test: getLanhuRuntimeConfig ===");
 const config = getLanhuRuntimeConfig();
 assert(config.runtimePath.endsWith("tools/lanhu-mcp"), "runtimePath 指向 tools/lanhu-mcp");
 assert(existsSync(config.runtimePath), "runtimePath 在仓库中存在");
-assert(config.envFile.endsWith("tools/lanhu-mcp/.env"), "envFile 指向 tools/lanhu-mcp/.env");
+// envFile 已迁移到根 .env，getLanhuRuntimeConfig() 不再返回 envFile
+assert(config.envFile === undefined, "envFile 已迁移到根 .env，不再通过 config 传递");
 assert(config.entryScript.endsWith("tools/lanhu-mcp/lanhu_mcp_server.py"), "entryScript 指向 lanhu_mcp_server.py");
 assert(existsSync(config.entryScript), "tools/lanhu-mcp 下存在 lanhu_mcp_server.py");
 assert(existsSync(config.setupScript), "tools/lanhu-mcp 下存在 setup-env.sh");

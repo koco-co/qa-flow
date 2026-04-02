@@ -97,11 +97,7 @@ export function stripKnownOutputSuffixes(baseName) {
   return (baseName || "").replace(/(?:-(?:enhanced|final|reviewed|cases|output))+$/i, "");
 }
 
-function getDtstackPreferredArchiveBaseName(meta = {}) {
-  if (meta.source_standard !== "dtstack") {
-    return null;
-  }
-
+export function getPreferredArchiveBaseName(meta = {}) {
   const preferredTitle = meta.archive_file_name || meta.requirement_title || meta.page_title || "";
   if (!preferredTitle.trim()) {
     return null;
@@ -163,7 +159,7 @@ export function assertNewOutputPathMatchesContract(
   if (effectiveReservedBasenames.includes(normalizedFileName)) {
     throw new Error(
       reservedMessage ??
-        `${normalizedFileName} 是保留输出文件名，仅供仓库根目录的最近输出快捷链接使用`,
+        `${normalizedFileName} 是保留输出文件名，不允许作为真实产物输出路径使用`,
     );
   }
 
@@ -184,9 +180,9 @@ export function assertNewOutputPathMatchesContract(
 
 export function deriveArchiveBaseName(inputPath, meta = {}) {
   const inputBaseName = basename(inputPath, extname(inputPath));
-  const dtstackPreferredArchiveBaseName = getDtstackPreferredArchiveBaseName(meta);
-  if (dtstackPreferredArchiveBaseName) {
-    return dtstackPreferredArchiveBaseName;
+  const preferredBaseName = getPreferredArchiveBaseName(meta);
+  if (preferredBaseName) {
+    return preferredBaseName;
   }
 
   const inputPrdBaseName = getPrdLikeBaseName(inputBaseName);

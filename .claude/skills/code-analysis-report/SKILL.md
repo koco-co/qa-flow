@@ -1,269 +1,127 @@
 ---
 name: code-analysis-report
-description: 测试工程师专用的代码分析报告工作流 Skill。当用户粘贴后端报错日志、curl 请求信息、Jenkins 合并冲突信息，或提到「帮我分析这个报错」「生成 bug 报告」「分析一下这个错误」「分析一下冲突」「看看这个异常」时，必须触发此 Skill。支持两种模式：(1) Bug 分析 → 生成 HTML 格式报告存入 reports/bugs/ 目录；(2) Jenkins 合并冲突分析 → 生成 HTML 报告存入 reports/conflicts/ 目录。所有模式在开始分析前必须确认代码分支并自动拉取。输出精美 HTML 格式，专为禅道富文本编辑器粘贴使用。
+description: 测试工程师专用的代码分析报告工作流 Skill。当用户粘贴前端或后端报错日志、curl 请求信息、Jenkins 合并冲突信息，或提到「帮我分析这个报错」「生成 bug 报告」「分析一下这个错误」「分析一下冲突」「看看这个异常」时，必须触发此 Skill。还支持 Hotfix 分支用例生成：当用户发送禅道 Bug 链接（如 http://zenpms.dtstack.cn/zentao/bug-view-145513.html）时，自动从禅道页面提取修复分支信息、拉取代码、分析变更、生成一条线上问题转化测试用例。支持四种模式：(1) 后端 Bug 分析 → 生成 HTML 格式报告存入 reports/bugs/ 目录；(2) Jenkins 合并冲突分析 → 生成 HTML 报告存入 reports/conflicts/ 目录；(3) 前端报错分析 → 生成 HTML 报告存入 reports/bugs/ 目录；(4) Hotfix 用例生成 → 转化线上 Bug 为测试用例存入 cases/issues/ 目录。所有模式在开始分析前必须确认代码分支并自动拉取。
 ---
 
 # Code Analysis Report Skill
 
-本 Skill 面向**测试工程师**，将后端报错信息与 curl 请求快速转化为开发可直接阅读的精美 HTML 分析报告，同时支持 Jenkins 合并冲突分析。
+## 用途与触发词
 
-> **与 test-case-generator 完全解耦**：本 Skill 是独立工具，不属于用例生成工作流的任何步骤。
+- **用途**：将后端 / 前端报错、Jenkins 合并冲突与 Hotfix 线上问题线索，转化为可直接交付给开发或测试使用的 HTML 报告 / Markdown 测试用例。
+- **触发词**：`帮我分析这个报错`、`生成 bug 报告`、`分析一下这个错误`、`分析一下冲突`、`看看这个异常`、禅道 Bug 链接、`应用: {org}/{repo}, 版本: hotfix_{version}_{bugId}`
+- **调用关系**：本 Skill 独立执行，不属于 `test-case-generator` 的任何步骤。
+
+---
 
 ## 使用口径速查
 
-- 本 Skill 只有 **Bug 分析** 与 **合并冲突分析** 两种模式；不使用测试用例流程里的“快速模式 / 续传 / 模块级重跑”口令。
-- 需要重新分析时，直接补充新的日志、curl、冲突片段或分支信息即可；每次运行都会生成新的 HTML，并刷新对应的 `latest-*` 快捷链接。
-- Bug 分析的主验收入口是 `latest-bug-report.html`；合并冲突分析的主验收入口是 `latest-conflict-report.html`。
+- 本 Skill 有 **后端 Bug 分析**、**合并冲突分析**、**前端报错分析** 与 **Hotfix 用例生成** 四种执行模式，以及 **信息不足补料** 门禁；不使用测试用例流程里的"快速模式 / 续传 / 模块级重跑"口令。
+- **Hotfix 用例生成（模式E）**：发送禅道 Bug 链接（如 `http://zenpms.dtstack.cn/zentao/bug-view-138845.html`）即可**直接触发**，无需选择菜单，自动从禅道页面提取修复分支、拉代码、分析变更、生成单条用例。通过报告文件路径直接访问。
+- Bug 分析产物通过 `reports/bugs/{yyyy-MM-dd}/` 目录下的文件路径访问；合并冲突分析产物通过 `reports/conflicts/{yyyy-MM-dd}/` 目录下的文件路径访问。
 - `确认通过` / `已修改，请同步` 仅用于测试用例生成流程，不用于本 Skill；若报告信息不足，应继续补充日志、curl、仓库或分支信息。
 
 ---
 
-## 一、模式识别（收到输入后首先执行）
+## 模式识别（收到输入后首先执行）
 
-| 模式                | 触发信号                                                              | 执行路径               |
-| ------------------- | --------------------------------------------------------------------- | ---------------------- |
-| **模式A：Bug 分析** | 包含报错日志（Exception / Error / stacktrace）或 curl 信息            | → 执行第二章           |
-| **模式B：合并冲突** | 包含 `<<<<<<< HEAD` / `=======` / `>>>>>>>` 标记，或提到 Jenkins 冲突 | → 执行第三章           |
-| **模式C：信息不足** | 描述模糊，缺少日志或冲突内容                                          | → 告知用户需补充的材料 |
+### ⚡ 最高优先级识别规则
+
+> 若用户输入匹配以下任意一种格式，**立即跳转 Mode E，禁止展示模式选择菜单，禁止向用户提问**：
+>
+> - **格式1（推荐）**：`http://zenpms.dtstack.cn/zentao/bug-view-{bugId}.html`
+> - **格式2（兼容）**：`应用: {org}/{repo}, 版本: hotfix_{version}_{bugId}`
+
+---
+
+| 模式 | 触发信号 | 执行路径 |
+| --- | --- | --- |
+| **模式A：后端 Bug 分析** | 含 `Exception`/`Caused by`/`at com.`/`java.lang` 等 Java 堆栈特征，或后端 curl 报错 | `references/backend-analysis-flow.md` |
+| **模式B：合并冲突** | 含 `<<<<<<< HEAD`/`=======`/`>>>>>>>` 标记，或提到 Jenkins 冲突 | `references/conflict-analysis-flow.md` |
+| **模式C：前端报错分析** | 含 `TypeError`/`ReferenceError`/`[Vue warn]`/`React`/`Uncaught Error`/`error TS`/`Hydration failed` 等前端错误关键词 | `references/frontend-analysis-flow.md` |
+| **模式E：Hotfix 用例生成** | 禅道 Bug 链接，或旧格式 `应用: {org}/{repo}, 版本: hotfix_...` | `references/hotfix-case-flow.md` |
+| **模式D：信息不足** | 描述模糊，缺少日志或冲突内容 | 告知用户需补充的材料，不生成占位产物 |
 
 **推荐最小输入包：**
 
-- Bug 分析：`报错日志 + curl`（若知道分支，也建议一并提供）
-- 冲突分析：`冲突日志 / 冲突代码 + 当前分支信息`（若已知）
-- 无 curl 也可分析，但环境、租户、请求参数等字段可能缺失
+- 模式 A：`报错日志 + curl`（若知道分支，也建议一并提供）
+- 模式 B：`冲突日志 / 冲突代码 + 当前分支信息`
+- 模式 C：`前端错误堆栈 / 控制台报错 + 页面或组件线索`
+- 模式 E：禅道 Bug 链接；若无法自动访问禅道，不阻塞先拉代码、看变更、出用例
 
 ---
 
-## 二、Bug 分析模式（模式A）完整流程
+## 输入 / 输出契约
 
-### Step 1：从 curl 信息中提取上下文（优先执行）
+### 输入
 
-**在确认分支之前**，先从用户提供的 curl 信息中提取以下字段，这些信息将直接写入报告头部：
+| 模式 | 最小输入 | 可选补充 |
+| --- | --- | --- |
+| 模式A | 后端报错日志；建议附 curl | 分支名、仓库名、环境信息、租户信息 |
+| 模式B | 冲突片段或 Jenkins 冲突日志 | 仓库路径、当前分支、来源分支 |
+| 模式C | 前端错误堆栈、控制台日志或框架报错 | 组件路径、页面入口、浏览器 / Node 版本 |
+| 模式D | 任意不完整描述 | 补齐对应模式缺失材料后重新执行 |
+| 模式E | 禅道 Bug 链接 或 `应用: {org}/{repo}, 版本: hotfix_{version}_{bugId}` | 禅道截图 / 文本、前端仓库信息、历史用例线索 |
 
-| 提取目标     | 来源                                          | 说明                                                                            |
-| ------------ | --------------------------------------------- | ------------------------------------------------------------------------------- |
-| 接口路径     | curl URL                                      | 提取 path 部分，去除域名和查询参数                                              |
-| HTTP Method  | curl -X 参数                                  | GET / POST / PUT 等                                                             |
-| **环境信息** | curl URL 中的完整 baseurl（包括主机名和协议） | 如 `http://shuzhan63-dfsyc-dev.k8s.dtstack.cn`，**不是** test/dev/prod 文本标签 |
-| **租户信息** | Header（tenantId / X-Tenant-Id 等）或请求体   | 提取租户 ID 或租户名称                                                          |
-| **项目信息** | URL 路径前缀 / Header（X-Project 等）或请求体 | 若无法识别则标注「未识别，请补充」                                              |
-| 请求体       | curl -d / --data                              | 脱敏后保留结构                                                                  |
+### 输出
 
-> **环境信息和租户信息是必填字段**，若 curl 中无法提取，必须在报告对应位置标注 `[未提供，请补充]` 并在分析完成后提示用户补充。
->
-> **环境信息提取规则**（优先级从高到低）：
->
-> 1. 从 curl URL 中提取完整的 baseurl（包括协议和主机名）
-> 2. 若 curl 中有 `-H 'Host: xxx'` 则优先使用
-> 3. 不得简化为 dev/test/prod 等别名，必须使用完整的环境地址
-
----
-
-### Step 2：定位仓库 + 确认分支 + 自动拉取（不可跳过）
-
-#### 2a. 自动定位仓库
-
-根据报错堆栈中的 Java 包名或接口路径，自动定位对应的源码仓库：
-
-| 报错特征                                             | 目标仓库                                    |
-| ---------------------------------------------------- | ------------------------------------------- |
-| `com.dtstack.center.assets` / `dt-center-assets`     | `.repos/dt-insight-web/dt-center-assets/`    |
-| `com.dtstack.center.metadata` / `dt-center-metadata` | `.repos/dt-insight-web/dt-center-metadata/`  |
-| `com.dtstack.dagschedulex` / `DAGScheduleX`          | `.repos/dt-insight-plat/DAGScheduleX/`       |
-| `com.dtstack.datasource` / `datasourcex`             | `.repos/dt-insight-plat/datasourcex/`        |
-| `com.dtstack.ide` / `dt-center-ide`                  | `.repos/dt-insight-plat/dt-center-ide/`      |
-| `com.dtstack.public.service` / `dt-public-service`   | `.repos/dt-insight-plat/dt-public-service/`  |
-| `com.dtstack.sql.parser` / `SQLParser`               | `.repos/dt-insight-plat/SQLParser/`          |
-| `com.dtstack.engine` / `engine-plugins`              | `.repos/dt-insight-engine/engine-plugins/`   |
-| 前端报错 / `dt-insight-studio`                       | `.repos/dt-insight-front/dt-insight-studio/` |
-| 定制项目（信永中和等）                               | `.repos/CustomItem/<对应仓库>/`              |
-
-> 若无法自动定位，向用户展示仓库列表，请求确认。
-
-#### 2b. 确认分支并拉取
-
-**情况1：用户已提供分支名**
-
-```bash
-cd <仓库绝对路径>
-git fetch origin
-git checkout <分支名>
-git pull origin <分支名>
-```
-
-执行后输出：
-
-```
-[v] 仓库：<仓库路径>
-[v] 已切换并更新至分支：<分支名>
-    最新 commit：<hash> <message>
-```
-
-**情况2：用户未提供分支名**
-
-```bash
-cd <仓库绝对路径>
-git remote -v
-git branch --show-current
-git log --oneline -1
-```
-
-输出确认信息：
-
-```
-[!] 开始分析前请确认代码分支：
-
-  仓库路径：<path>
-  仓库地址：<remote url>
-  当前分支：<branch name>
-  最新 commit：<hash> <message>
-
-以上信息是否正确？如需切换分支请告知分支名称。
-```
-
-**等待用户明确确认后，才进入 Step 3。**
-
-> **安全规则**：对 .repos/ 下的仓库，只允许 `fetch`、`pull`、`checkout` 操作。严禁 `push`、`commit`、修改任何源码文件。详见 `.claude/rules/repo-safety.md`。
+| 模式 | 产物 | 存储位置 | 访问方式 |
+| --- | --- | --- | --- |
+| 模式A | `<Bug标题>.json` + `<Bug标题>.html` | `reports/bugs/{yyyy-MM-dd}/` | 直接通过报告文件路径访问 |
+| 模式B | `<冲突描述>.json` + `<冲突描述>.html` | `reports/conflicts/{yyyy-MM-dd}/` | 直接通过报告文件路径访问 |
+| 模式C | `<Bug标题>.json` + `<Bug标题>.html` | `reports/bugs/{yyyy-MM-dd}/` | 直接通过报告文件路径访问 |
+| 模式D | 补料清单 | 终端输出 | 补齐后重试 |
+| 模式E | `hotfix_{version}_{bugId}-{功能简述}.md` | `cases/issues/{yyyy-MM-dd}/` | 直接通过报告文件路径访问 |
 
 ---
 
-### Step 3：判断问题类型（环境问题 vs 代码问题）
+## Canonical 步骤总表
 
-快速扫描报错特征，详细判断规则见 → `references/env-vs-code-checklist.md`
-
-**快速过滤（命中任意一条 → 优先判定为环境问题）：**
-
-| 报错特征                                         | 可能原因                     |
-| ------------------------------------------------ | ---------------------------- |
-| `Connection refused` / `Connection timed out`    | DB / 中间件未启动或网络不通  |
-| `Unable to acquire JDBC Connection`              | 连接池耗尽或数据库宕机       |
-| `Could not resolve placeholder '${xxx}'`         | 配置文件缺失或环境变量未注入 |
-| `SSL handshake failed` / `certificate expired`   | 证书过期或配置错误           |
-| `Address already in use`                         | 端口冲突                     |
-| `OutOfMemoryError: Java heap space`（偶发/规律） | JVM 内存不足                 |
-
-- **判定为环境问题** → 报告「根本原因」标注「环境配置问题（非代码缺陷）」，提供运维排查步骤
-- **两种特征都有** → 报告中并列两种可能，各给出验证方法
+| 模式 | Canonical 步骤 | 细则引用 |
+| --- | --- | --- |
+| 模式A | 1) 提取 curl 上下文 → 2) 定位仓库 + 确认分支 + 自动拉取 → 3) 判断环境问题 / 代码问题 → 4) 深度代码分析 → 5) 生成 JSON / HTML → 6) IM 通知 | `references/backend-analysis-flow.md` |
+| 模式B | 1) 归一化冲突材料 → 2) 确认仓库 / 分支上下文（可定位时必须拉取）→ 3) 解析冲突块并分类 → 4) 形成合并建议 / 人工决策项 → 5) 生成 JSON / HTML → 6) IM 通知 | `references/conflict-analysis-flow.md` |
+| 模式C | 1) 识别报错类型 → 2) 定位前端仓库 / 组件与分支 → 3) 从组件 / 数据 / 环境 / 框架四层做根因分析 → 4) 生成 JSON / HTML → 5) IM 通知 | `references/frontend-analysis-flow.md` |
+| 模式D | 1) 罗列缺失材料 → 2) 明确补充格式 → 3) 暂不生成产物，等待补料 | — |
+| 模式E | 1) 获取禅道 Bug + 提取修复分支 → 2) 拉取后端 hotfix 分支 → 3) 分析 hotfix 代码变更 → 4) 确定前端仓库和分支 → 5) 注入禅道信息 → 6) 参考历史用例 → 7) 生成测试用例 → 8) 输出文件 → 9) 完成报告 → 10) 自审清单 → 11) IM 通知 | `references/hotfix-case-flow.md` |
 
 ---
 
-### Step 4：代码深度分析
+## 执行约束
 
-1. **解析错误日志**：找到 `Caused by:` 链末端定位根本异常；提取第一个出现业务包名的堆栈帧
-2. **定位源码**：根据堆栈帧找到文件和行号，阅读出错行前后 20 行，理解业务含义
-3. **识别根本原因**：什么条件触发了异常？哪个假设被违反了？
-4. **构造修复方案**：带行号的问题代码片段 + 可直接替换的修复代码片段 + 修改说明
-
----
-
-### Step 5：生成 HTML 报告文件
-
-报告样式规范见 → `references/bug-report-template.md`
-
-**[强制要求] HTML 输出必须严格遵循报告模板：**
-
-- 页面布局、颜色主题、字段命名、HTML 标签和内联样式 — 一律不可修改
-- "测试环境"字段改名为"环境信息"，值必须使用 curl 中提取的完整 baseurl
-- 全部使用内联 style，禁止 `<style>` 块和外部 CSS 类名
-- 代码块使用 `<pre>` 标签，禁止 Markdown 代码围栏
-- **严禁 Emoji 表情符号**（4 字节 Unicode），改用 `[BUG]`、`[!]`、`[v]`、`[x]`、`⚠️`、`×`、`✓`
-
-**代码分支信息明确化：**
-
-- 报告生成前必须在 Step 2 确认当前分支
-- 在"相关 Commit"字段中完整填写：分支名、最新 commit hash 和 message
-
-**文件存储：**
-
-```bash
-TODAY=$(date +%Y-%m-%d)
-REPORT_DIR="<项目根>/reports/bugs/$TODAY"
-mkdir -p "$REPORT_DIR"
-# 文件名：Bug标题（去除特殊字符，空格转下划线）.html
-```
-
-**写入后必须刷新根目录快捷链接：**
-
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs "<项目根>/reports/bugs/$TODAY/<文件名>.html" latest-bug-report.html
-```
-
-`latest-bug-report.html` 是 Bug 分析流程的主验收入口；不要误用 `latest-output.xmind` 或 `latest-prd-enhanced.md`。
-
-**写入完成后输出：**
-
-```
-[v] Bug 报告已生成：reports/bugs/{日期}/{文件名}.html
-[v] 根目录快捷链接已刷新：latest-bug-report.html
-
-使用方式：在禅道中打开 Bug 编辑页面，点击富文本编辑器工具栏中的「HTML 代码」按钮，
-将文件内容粘贴进去，点击确认后保存即可看到格式化报告。
-
-[!] 若保存后内容丢失：用文本编辑器打开 HTML 文件，搜索并删除所有 Emoji 表情符号，再重新粘贴。
-```
+- 执行前必须阅读：本文件，以及当前模式对应的 references/ 流程文档。
+- 生成 HTML 报告时，还必须阅读 `references/bug-report-template.md`、`references/env-vs-code-checklist.md`、`references/conflict-resolution.md`。
+- 对 `.repos/` 下的仓库，只允许 `fetch`、`pull`、`checkout` 等只读同步操作；严禁 `push`、`commit`、修改任何源码文件。
+- 模式 A / C 需要读源码时，必须先确认仓库和分支；若用户未给分支，则先输出当前仓库 / remote / branch / latest commit，等待确认后再继续。
+- 模式 E 一旦命中触发信号，必须直接进入流程，不展示模式选择菜单、不向用户提问。
+- 模式 E 的固定顺序：先拉取后端 hotfix 分支 → 分析代码变更 → 确定前端仓库和分支 → 非阻塞尝试获取禅道 Bug。
+- 模式 E 生成用例的标题必须使用 `【{zentao_bug_id}】验证xxx`，禁止使用 `【P0/P1/P2】`。
+- 模式 D 只负责补料门禁，不生成占位 HTML 或占位 Markdown。
+- IM 通知强制执行，见 `.claude/rules/notification-hook.md`；失败时仅 console.error，不阻断交付物。
 
 ---
 
-## 三、合并冲突模式（模式B）
+## 完成定义
 
-详细分析逻辑与 HTML 输出格式见 → `references/conflict-resolution.md`
+满足以下条件，才算本 Skill 完成：
 
-**快速流程：**
-
-1. 解析冲突标记，识别当前分支与来源分支各自的代码意图
-2. 判断冲突类型：安全合并型 / 逻辑互斥型 / 重复修改型 / 依赖版本冲突 / 格式注释冲突
-3. 输出 HTML 冲突报告，逻辑互斥型必须注明「需开发人工确认」
-
-**存储路径：**`reports/conflicts/${yyyy-MM-dd}/<冲突描述>.html`
-
-**写入后必须刷新根目录快捷链接：**
-
-```bash
-node .claude/shared/scripts/refresh-latest-link.mjs "<项目根>/reports/conflicts/${yyyy-MM-dd}/<文件名>.html" latest-conflict-report.html
-```
-
-`latest-conflict-report.html` 是合并冲突分析流程的主验收入口。
+1. 已完成模式识别，且 A / B / C / D / E 的路由结果与输入信号一致。
+2. 需要读取源码的模式已完成仓库定位、分支确认与自动拉取，且报告中记录了实际分支 / commit 信息。
+3. 模式 A / B / C 已输出结构完整的 JSON 与 HTML 产物，并报告文件路径。
+4. 模式 E 已输出 `cases/issues/` 下的 Hotfix 用例，并报告文件路径。
+5. 模式 D 已明确列出缺失材料，未误生成任何伪产物。
+6. 各模式均已发送 IM 通知（或记录失败原因）。
 
 ---
 
-## 四、输出汇总
+## 引用索引
 
-| 模式     | 文件格式          | 存储位置                          |
-| -------- | ----------------- | --------------------------------- |
-| Bug 分析 | `<Bug标题>.html`  | `reports/bugs/{yyyy-MM-dd}/`      |
-| 合并冲突 | `<冲突描述>.html` | `reports/conflicts/{yyyy-MM-dd}/` |
-
----
-
-## 五、参考文件
-
-| 文件                                  | 说明                                 |
-| ------------------------------------- | ------------------------------------ |
-| `references/bug-report-template.md`   | Bug 报告完整 HTML 模板（含样式规范） |
-| `references/env-vs-code-checklist.md` | 环境问题 vs 代码问题判断清单         |
-| `references/conflict-resolution.md`   | 合并冲突分析与 HTML 输出格式规范     |
-
----
-
-## 六、模板遵循检查清单（生成报告前必须核对）
-
-| 检查项     | 要求                                                                                           |
-| ---------- | ---------------------------------------------------------------------------------------------- |
-| HTML 结构  | 严格按 `bug-report-template.md` 模板生成，不得修改任何 section 或字段                          |
-| 环境信息   | 使用 curl baseurl（如 `http://shuzhan63-dfsyc-dev.k8s.dtstack.cn`），不能是 dev/test/prod 简称 |
-| 分支信息   | 在 Step 2 确认分支，在页脚和"相关 Commit"字段明确填写分支名 + commit hash                      |
-| 代码分支   | 报告中"代码分支"字段值 = Step 2 确认的分支名                                                   |
-| Emoji 检查 | 确保不存在 4 字节 Emoji，只用 `[x]` `[v]` `⚠️` `×` `✓`                                         |
-| 内联 style | 所有样式使用内联 style，不得出现 `<style>` 块或 CSS 类名                                       |
-| 代码块格式 | 所有代码使用 `<pre>` 标签，不得用 Markdown 代码围栏                                            |
-| 自定义修改 | 严禁对模板做创意性修改或调整                                                                   |
-
----
-
-## 七、关联说明
-
-| 项目       | 说明                                                           |
-| ---------- | -------------------------------------------------------------- |
-| 工作流关系 | **完全独立**，不属于 test-case-generator 的任何步骤            |
-| 代码仓库   | 使用 `.repos/` 下的源码仓库，详见 CLAUDE.md「编排说明」 |
-| 安全规则   | 只读访问，禁止 push/commit，详见 CLAUDE.md「规范索引」 |
+| 文件 | 说明 |
+| --- | --- |
+| `.claude/skills/code-analysis-report/references/backend-analysis-flow.md` | 模式 A 后端 Bug 分析完整流程 |
+| `.claude/skills/code-analysis-report/references/conflict-analysis-flow.md` | 模式 B 合并冲突分析完整流程 |
+| `.claude/skills/code-analysis-report/references/frontend-analysis-flow.md` | 模式 C 前端报错分析完整流程 |
+| `.claude/skills/code-analysis-report/references/hotfix-case-flow.md` | 模式 E Hotfix 用例生成完整流程 |
+| `.claude/skills/code-analysis-report/references/hotfix-case-writing.md` | 模式 E 用例编写规范（标题、frontmatter、预期结果、自审清单） |
+| `.claude/skills/code-analysis-report/references/bug-report-template.md` | 后端 / 前端 Bug HTML 报告 JSON Schema 与模板 |
+| `.claude/skills/code-analysis-report/references/env-vs-code-checklist.md` | 环境问题 vs 代码问题判断清单 |
+| `.claude/skills/code-analysis-report/references/conflict-resolution.md` | 合并冲突分类与 HTML 输出规范 |

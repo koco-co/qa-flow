@@ -123,3 +123,20 @@
 3. **昨天还好，今天突然报错（代码没改）** → 证书过期、配置被改、数据异常，非代码 Bug
 4. **堆栈中全是框架代码，没有业务代码** → 通常是框架配置问题，如 Spring 容器初始化失败
 5. **`DataIntegrityViolationException` unique constraint violated** → 可能是测试数据脏数据，建议先清理数据再复现
+
+---
+
+## 五、前端报错判断规则
+
+适用于模式 C（前端报错分析）的环境问题 vs 代码问题判断。
+
+| 现象 | 环境问题 | 代码问题 |
+|------|---------|---------|
+| `Cannot find module` | Node 版本或依赖未安装（`npm install` 未执行） | import 路径错误或模块名拼写错误 |
+| `Hydration failed` | SSR/CSR 环境不一致（服务端与客户端渲染结果不同） | 组件中使用了 browser-only API（如 `window`、`document`） |
+| `TypeError: X is not a function` | 依赖版本不兼容（API 已废弃或签名变更） | API 调用方式错误（如误用对象而非函数） |
+| 仅特定浏览器报错 | 浏览器兼容性（CSS 特性、ES 语法支持差异） | 使用了非标准 API（需 polyfill 或换写法） |
+| 构建成功但运行报错 | 环境变量缺失（`REACT_APP_*` / `VITE_*` 等未注入） | 运行时类型错误（数据结构与预期不符） |
+| `[Vue warn]: Missing required prop` | — | 父组件调用时未传必填 prop |
+| `React: Each child in a list should have a unique "key"` | — | 列表渲染缺少 `key` 属性 |
+| `Maximum update depth exceeded` | — | 组件 useEffect/watch 产生循环更新 |

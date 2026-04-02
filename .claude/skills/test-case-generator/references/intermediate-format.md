@@ -9,21 +9,21 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 ```json
 {
   "meta": {
-    "project_name": "string  // 项目名称，如「信永中和」「DTStack」",
-    "product": "string       // 产品名称，如「数据运营门户」",
-    "version": "string       // 版本标识：DTStack 模块用语义版本如「v6.4.10」；非 DTStack 用日期格式如「0322版本」「202603版本」",
-    "prd_version": "string   // 迭代版本号，格式 vX.Y.Z（如「v6.4.10」）。DTStack 模块必填，从 PRD frontmatter prd_version 字段获取；驱动 archive/xmind 输出子目录",
-    "requirement_name": "string  // 需求名称，如「数据质量-质量问题台账」",
+    "project_name": "string  // 项目名称，如「电商平台」「XXX 系统」",
+    "product": "string       // 产品名称，如「商品管理」",
+    "version": "string       // 版本标识：语义版本如「v1.0.0」，或日期格式如「0322版本」「202603版本」",
+    "prd_version": "string   // 迭代版本号，格式 vX.Y.Z（如「v1.0.0」）。有版本子目录时必填，从 PRD frontmatter prd_version 字段获取；驱动 archive/xmind 输出子目录",
+    "requirement_name": "string  // 需求名称，如「商品管理-商品列表」",
     "requirement_id": "string    // 需求ID，如「PRD-26」（可选）",
     "prd_path": "string          // PRD 文件相对路径（可选）",
     "generated_at": "string      // ISO8601 时间戳",
     "agent_id": "string          // Subagent 标识（可选）",
     "tags": "string[]            // 领域关键词列表（可选，供归档 MD front-matter 使用）",
-    "module_key": "string        // 模块 key，如 data-assets / xyzh（可选）"
+    "module_key": "string        // 模块 key，如 orders / products（可选）"
   },
   "modules": [
     {
-      "name": "string  // L2: 菜单/模块名称，如「质量问题台账」",
+      "name": "string  // L2: 菜单/模块名称，如「商品管理」",
       "pages": [
         {
           "name": "string  // L3: 页面名称，如「列表页」「新增页」",
@@ -71,17 +71,17 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 
 ```json
 {
-  "name": "质量问题台账",
+  "name": "商品管理",
   "pages": [
     {
       "name": "列表页",
       "sub_groups": [
         { "name": "搜索", "test_cases": [...] },
-        { "name": "导出", "test_cases": [...] }
+        { "name": "批量导出", "test_cases": [...] }
       ]
     },
     {
-      "name": "新增页",
+      "name": "新增商品页",
       "sub_groups": [
         { "name": "表单填写", "test_cases": [...] },
         { "name": "字段校验", "test_cases": [...] }
@@ -95,7 +95,7 @@ Writer Subagent 输出的 JSON 文件必须严格符合本 Schema。
 
 ```json
 {
-  "name": "质量问题台账",
+  "name": "商品管理",
   "pages": [
     {
       "name": "权限验证",
@@ -132,8 +132,8 @@ Writer Subagent 输出时可包含以下可选字段（提升 frontmatter 填充
 {
   "meta": {
     "prd_url": "https://lanhuapp.com/...",
-    "dev_version": "6.3岚图定制化分支",
-    "repos": [".repos/DTStack/dt-center-assets"]
+    "dev_version": "v1.0.0",
+    "repos": [".repos/${org}/${repo}"]
   }
 }
 ```
@@ -145,11 +145,11 @@ Writer Subagent 输出时可包含以下可选字段（提升 frontmatter 填充
 | 字段 | 约束 |
 |------|------|
 | `meta.project_name` | 必须与 XMind 输出目录对应 |
-| `meta.prd_version` | **DTStack 模块必填**；格式 `vX.Y.Z`（如 `v6.4.10`）；从 PRD frontmatter `prd_version` 字段获取；驱动 archive 和 xmind 输出的版本子目录（如 `data-assets/v6.4.10/`） |
-| `meta.version` | DTStack 模块与 `prd_version` 保持一致（如 `v6.4.10`）；非 DTStack 用日期格式（如 `202603版本`）供 XMind L1 标题显示 |
+| `meta.prd_version` | 格式 `vX.Y.Z`（如 `v1.0.0`）；从 PRD frontmatter `prd_version` 字段获取；驱动 archive 和 xmind 输出的版本子目录（如 `product-mgmt/v1.0.0/`）。无版本子目录时可省略 |
+| `meta.version` | 有版本时与 `prd_version` 保持一致（如 `v1.0.0`）；无版本时用日期格式（如 `202603版本`）供 XMind L1 标题显示 |
 | `meta.tags` | 可选；3-8 个领域关键词；产品/功能域名词、业务实体名词、客户标识（不含页面级通用词） |
-| `meta.module_key` | 可选；模块 key（如 `data-assets`、`xyzh`），用于 archive 目录路由 |
-| `modules[].name` | L2: 菜单/模块名称（如「质量问题台账」）|
+| `meta.module_key` | 可选；模块 key（如 `product-mgmt`、`order-center`），用于 archive 目录路由 |
+| `modules[].name` | L2: 菜单/模块名称（如「商品管理」）|
 | `pages[].name` | L3: 页面名称（如「列表页」「新增页」「详情页」）|
 | `sub_groups[].name` | L4: 功能子组（如「搜索」「字段校验」，可选）|
 | `test_cases[].title` | 必须以「验证」二字开头 |
@@ -169,12 +169,11 @@ Writer Subagent 输出时可包含以下可选字段（提升 frontmatter 填充
 Writer Subagent 输出的临时 JSON 文件命名（按工作目录隔离）：
 
 ```
-cases/requirements/<project>/<working-dir>/temp/<模块简称>.json
+cases/prds/YYYYMM/temp/<模块简称>.json
 ```
 
 示例：
-- `cases/requirements/data-assets/v6.4.10/temp/list.json`（DTStack）
-- `cases/requirements/custom/xyzh/temp/list.json`（XYZH）
+- `cases/prds/202604/temp/list.json`
 
 ---
 
@@ -184,15 +183,15 @@ Writer 在生成完整用例前，先输出轻量级 Checklist（供用户审阅
 
 ```json
 {
-  "module": "质量问题台账列表",
+  "module": "商品管理列表",
   "writer": "Writer A",
   "items": [
     { "point": "列表默认加载显示", "priority": "P0", "type": "正常用例", "include": true },
-    { "point": "按行动编号单条件搜索", "priority": "P1", "type": "正常用例", "include": true },
-    { "point": "按问题分类下拉搜索", "priority": "P1", "type": "正常用例", "include": true },
+    { "point": "按商品名称单条件搜索", "priority": "P1", "type": "正常用例", "include": true },
+    { "point": "按商品分类下拉搜索", "priority": "P1", "type": "正常用例", "include": true },
     { "point": "搜索无结果边界（暂无数据提示）", "priority": "P2", "type": "边界用例", "include": true },
     { "point": "重置搜索条件", "priority": "P2", "type": "正常用例", "include": true },
-    { "point": "导出 Excel 功能", "priority": "P2", "type": "正常用例", "include": true }
+    { "point": "批量导出 Excel 功能", "priority": "P2", "type": "正常用例", "include": true }
   ]
 }
 ```
@@ -219,20 +218,20 @@ Checklist 字段说明：
 
 | 生成范围 | 状态文件名 | 示例 |
 |---------|-----------|------|
-| **单 PRD**（指定了一个具体 PRD 文件） | `.qa-state-{prd-slug}.json` | `cases/requirements/data-assets/v6.4.10/.qa-state-【通用配置】json格式配置.json` |
-| **批量**（未指定，生成目录下全部 PRD） | `.qa-state.json` | `cases/requirements/data-assets/v6.4.10/.qa-state.json` |
+| **单 PRD**（指定了一个具体 PRD 文件） | `.qa-state-{prd-slug}.json` | `cases/prds/202604/.qa-state-商品列表.json` |
+| **批量**（未指定，生成目录下全部 PRD） | `.qa-state.json` | `cases/prds/202604/.qa-state.json` |
 
-示例（同版本目录下多 PRD 并行进行，互不干扰）：
-- `cases/requirements/data-assets/v6.4.10/.qa-state-【通用配置】json格式配置.json`（json格式配置，等待验收中）
-- `cases/requirements/data-assets/v6.4.10/.qa-state-【数据地图】表详情展示.json`（表详情展示，生成中）
+示例（同年月目录下多 PRD 并行进行，互不干扰）：
+- `cases/prds/202604/.qa-state-商品列表.json`（商品列表，等待验收中）
+- `cases/prds/202604/.qa-state-退款审批.json`（退款审批，生成中）
 
 **prd-slug**：取目标 PRD 文件的 basename 去掉 `.md` 后缀。
 
 ```json
 {
-  "working_dir": "cases/requirements/data-assets/v6.4.10",
-  "project_name": "信永中和",
-  "prd_files": ["PRD-26-xxx.md", "PRD-27-xxx.md"],
+  "working_dir": "cases/prds/202604",
+  "project_name": "电商平台",
+  "prd_files": ["PRD-01-商品管理.md", "PRD-02-订单处理.md"],
   "last_completed_step": "prd-enhancer",
   "elicitation": {
     "status": "completed",
@@ -257,7 +256,7 @@ Checklist 字段说明：
   },
   "prd_enhanced_at": "2026-03-25T10:00:00Z",
   "enhanced_files": [
-    "数据质量-质量问题台账.md"
+    "PRD-01-商品管理-enhanced.md"
   ],
   "checklist_confirmed": true,
   "formalize_warnings": ["字段信息不足", "源码补充章节为空"],

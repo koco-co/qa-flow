@@ -9,6 +9,7 @@
 ```yaml
 suite_name: "需求名称（与蓝湖/PRD 一致）"
 description: "一句话描述（≤60字）"
+# 若已关联 PRD，再填写以下字段；若暂无 PRD，请整段省略，不写空字符串占位
 prd_id: 10287                          # 需求 ID（数字）
 prd_version: v6.4.10                   # 迭代版本
 prd_path: "关联 PRD 文档相对路径"
@@ -20,7 +21,7 @@ tags:
   - 关键词2
 create_at: "YYYY-MM-DD"
 update_at: "YYYY-MM-DD"
-status: ""                             # draft / reviewed / archived
+status: ""                             # 草稿 / 已评审 / 已归档（脚本内部 canonical 归一化为 draft / reviewed / archived）
 health_warnings:
   - "W001: ..."
 repos:
@@ -44,7 +45,7 @@ tags:
   - 关键词1
 create_at: "YYYY-MM-DD"
 update_at: "YYYY-MM-DD"
-status: raw                            # raw / elicited / formalized / enhanced
+status: ""                             # 未开始 / 已澄清 / 已形式化 / 已增强（脚本内部 canonical 归一化为 raw / elicited / formalized / enhanced）
 health_warnings: []                    # 增强后填入，如 ["W001: 缺少字段定义表"]
 repos:
   - ".repos/DTStack/dt-center-assets"
@@ -58,17 +59,17 @@ case_path: ""                          # 关联的用例文件路径
 | `suite_name` | string | 必填 | — | 需求名称（用例侧） |
 | `prd_name` | string | — | 必填 | 需求名称（PRD 侧） |
 | `description` | string | 必填 | 必填 | 一句话描述（≤60字） |
-| `prd_id` | number | 必填 | 必填 | 需求 ID |
-| `prd_version` | string | 必填 | 必填 | 迭代版本号，如 v6.4.10 |
-| `prd_path` | string | 必填 | — | 关联 PRD 文档相对路径 |
+| `prd_id` | number | 有关联 PRD 时填写 | 必填 | 需求 ID |
+| `prd_version` | string | 有关联 PRD 时填写 | 必填 | 迭代版本号，如 v6.4.10 |
+| `prd_path` | string | 有关联 PRD 时填写 | — | 关联 PRD 文档相对路径 |
 | `prd_source` | string | — | 必填 | PRD 来源路径或描述 |
-| `prd_url` | string | 可选 | 可选 | 蓝湖 URL |
+| `prd_url` | string | 有关联 PRD 时可选 | 可选 | 蓝湖 URL |
 | `product` | string | 必填 | 必填 | 模块 key（同原 module 字段值） |
 | `dev_version` | string | 可选 | 可选 | 开发版本 / 分支描述 |
 | `tags` | string[] | 必填 | 可选 | 领域关键词（检索核心，3-10个） |
 | `create_at` | string | 必填 | 必填 | 创建日期（YYYY-MM-DD） |
 | `update_at` | string | 可选 | 可选 | 最后更新日期 |
-| `status` | string | 可选 | 可选 | 文档状态 |
+| `status` | string | 可选 | 可选 | Archive 写回：`草稿 / 已评审 / 已归档`；PRD 写回：`未开始 / 已澄清 / 已形式化 / 已增强` |
 | `health_warnings` | string[] | 可选 | 可选 | 健康检查警告列表 |
 | `repos` | string[] | 可选 | 可选 | 参考仓库相对路径列表 |
 | `case_path` | string | — | 可选 | 关联用例文件路径 |
@@ -82,5 +83,5 @@ case_path: ""                          # 关联的用例文件路径
 grep -rl "数据质量\|质量规则" cases/archive/ --include="*.md"
 
 # 读取匹配文件的 front-matter 概览（前 20 行）
-head -20 cases/archive/data-assets/v6.4.10/PRD-xx-xxx.md
+head -20 cases/archive/YYYYMM/PRD-xx-xxx.md
 ```

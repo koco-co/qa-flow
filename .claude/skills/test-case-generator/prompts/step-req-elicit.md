@@ -3,9 +3,8 @@
 
 > 前置条件: `last_completed_step` == `"parse-input"`
 > 快速模式: **简化执行**（最多 3 个问题，仅 Tier 1 维度，1 轮 Q&A）
-> DTStack 专属: 否
 
-本步骤在进入流水线执行之前，先评估需求的可测试性，识别关键缺失信息，通过 3-7 个有针对性的问题补全，最终将澄清结果追加到 raw PRD 中。
+本步骤在进入流水线执行之前，先评估需求的可测试性，识别关键缺失信息，通过 3-7 个有针对性的问题补全，最终将澄清结果追加到原始 PRD 中。
 
 **执行前必须阅读 `references/elicitation-dimensions.md`（维度定义、评分规则、问题模板）。**
 
@@ -13,7 +12,7 @@
 
 ## Phase 1: 可测试性评估（自动，无需等待用户）
 
-读取工作目录下所有 raw PRD 文件内容，按 `elicitation-dimensions.md` 中定义的 10 个维度评分：
+读取工作目录下所有原始 PRD 文件内容，按 `elicitation-dimensions.md` 中定义的 10 个维度评分：
 
 1. 对每个维度，根据评分规则计算 0-100% 的得分
 2. 可选维度（`time_limits`、`tech_constraints`）：检测 PRD 中是否含对应关键词，有则启用，否则标记 `N/A`
@@ -38,9 +37,9 @@
 
 ---
 
-## Phase 2: 源码预扫描（DTStack only，轻量）
+## Phase 2: 源码预扫描（当 config.repos 非空时，轻量）
 
-**触发条件**: 模块类型为 DTStack，且 `.repos/` 目录下存在已 checkout 的仓库（即使分支可能不是最新的）。
+**触发条件**: config.json 中 `repos` 字段为非空对象，且 `.repos/` 目录下存在已 checkout 的仓库（即使分支可能不是最新的）。
 
 **目的**: 减少需要用户回答的问题数量（源码能回答的，不问用户）。
 
@@ -48,27 +47,27 @@
 
 ```bash
 # 1. 推断目标分支
-cat "<repoBranchMapping-from-.claude/config.json>"  # 结合 PRD 中的 dev_version 推断
+cat "<branchMapping-from-.claude/config.json>"  # 结合 PRD 中的 dev_version 推断
 
 # 2. 查找 DTO/VO 类（按 PRD 中的功能名/模块名关键词）
 grep -r "class.*{keyword}.*DTO\|class.*{keyword}.*VO\|class.*{keyword}.*Param" \
-  .repos/DTStack/dt-center-assets/src --include="*.java" -l | head -5
+  .repos/{backend_repo}/src --include="*.java" -l | head -5
 
 # 3. 提取字段和注解
 grep -r "@NotNull\|@NotBlank\|@Length\|@Size\|@Min\|@Max\|@Pattern" \
-  .repos/DTStack/dt-center-assets/src/{found_dto_path} | head -30
+  .repos/{backend_repo}/src/{found_dto_path} | head -30
 
 # 4. 查找枚举定义
-grep -r "enum.*{keyword}" .repos/DTStack/dt-center-assets/src --include="*.java" -l | head -5
+grep -r "enum.*{keyword}" .repos/{backend_repo}/src --include="*.java" -l | head -5
 
 # 5. 前端字段标签（如 frontend 仓库存在）
 grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
-  .repos/DTStack/dt-insight-studio-front/src -r --include="*.tsx" -l | head -5
+  .repos/{frontend_repo}/src -r --include="*.tsx" -l | head -5
 ```
 
 将找到的信息整理为「已自动推断」列表，供 Phase 3 使用。
 
-**非 DTStack 模块（如 xyzh）**: 跳过此 Phase，所有字段级问题均需询问用户。
+**config.repos 为空时（无源码仓库配置）**: 跳过此 Phase，所有字段级问题均需询问用户。
 
 ---
 
@@ -274,27 +273,29 @@ grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
 
 ## Phase 6: 输出澄清结果
 
-将澄清结果追加到 raw PRD 文件末尾（**不修改 PRD 原有内容，仅追加新章节**）：
+将澄清结果追加到原始 PRD 文件末尾（**不修改 PRD 原有内容，仅追加新章节**）：
 
 ```markdown
 
 ---
 
-## 需求澄清结果（AI 生成，基于用户回答和源码分析）
+## 需求澄清结果
+
+> 以下内容基于用户回答和源码分析整理。
 
 <!-- elicitation-status: completed | round: {N} | questions: {asked}/{answered} | auto-inferred: {count} -->
 
 ### 目标与背景
 
 - **业务目标**: {用户确认/推断的目标描述}
-- **目标用户**: {标品/岚图定制/信永中和/等}
+- **目标用户**: {标品/定制版/等}
 - **目标分支**: {branch_name}（来源: {PRD字段/用户确认/AI推断}）
 
 ### 使用场景与前置条件
 
-- **数据源类型**: {Doris 3.x / Hive 2.x / SparkThrift 2.x / 无数据库依赖}
+- **数据源类型**: {${datasource_type} / 无数据库依赖}
 - **测试数据准备**: {具体说明，或「无特殊要求」}
-- **其他前置条件**: {如需先创建规则集、数据源连接等}
+- **其他前置条件**: {如需先维护商品分类、仓库配置、数据源连接等}
 
 ### 字段定义补充
 
@@ -323,7 +324,7 @@ grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
 - **仍待确认**: {remaining_gaps，或「无」}
 ```
 
-**更新 PRD frontmatter**：将 `status` 从 `raw` 更新为 `elicited`。
+**更新 PRD frontmatter**：将 `status` 从 `未开始` 更新为 `已澄清`。
 
 ---
 
@@ -332,7 +333,7 @@ grep -r "label.*[\u4e00-\u9fa5]\|FormItem\|Form.Item" \
 - **PRD 文件不存在或无法读取**: 提示用户检查文件路径，不继续
 - **多个 PRD 文件**: 合并分析所有 PRD，生成统一的澄清问题（而不是分别澄清）
 - **源码预扫描失败（grep 报错/仓库不存在）**: 跳过 Phase 2，不提示用户，继续生成问题
-- **PRD 已有 `status: elicited` 或 `status: enhanced`**: 跳过澄清步骤，说明「需求已澄清，直接继续」
+- **PRD 已有 `status: 已澄清` 或 `status: 已增强`**: 跳过澄清步骤，说明「需求已澄清，直接继续」
 
 ---
 

@@ -1,11 +1,14 @@
 <!-- step-id: prd-formalize | delegate: testCaseOrchestrator -->
-# Step prd-formalize：DTStack 正式需求文档整理
+# Step prd-formalize：正式需求文档整理
 
 > 前置条件: `last_completed_step` == `"source-sync"`
 > 快速模式: 执行
-> DTStack 专属: 是
 
-> 本步骤仅在模块类型为 DTStack 时执行。将蓝湖原始文本 / raw PRD 结合源码上下文整理为正式需求文档。
+> 本步骤仅在 config.json 中 `repos` 字段为非空对象时执行。将原始 PRD 文本结合源码上下文整理为正式需求文档。
+> **若 `repos: {}` 则跳过**：
+> 1. 向 execution_log 追加 `{"step": "prd-formalize", "status": "skipped", "reason": "config.repos is empty"}`
+> 2. 更新 `last_completed_step` 为 `"prd-formalize"`
+> 3. 继续下一步（prd-enhancer）
 
 ## 触发时机
 
@@ -32,8 +35,8 @@
    - 前置条件（数据源/环境依赖）
 5. 输出正式需求整理结果：
    - 产物形态：临时整理结果 / formalize 摘要
-   - 持久化策略：**不在 `cases/requirements` 下持久化 formalized.md**
-   - 如需短暂落盘，仅允许写入当前会话目录或 requirements 目录下的 `.trash/` 临时区，并在增强完成后清理
+   - 持久化策略：**不在 `cases/prds` 下持久化 formalized.md**
+   - 如需短暂落盘，仅允许写入当前会话目录或 prds 目录下的 `.trash/` 临时区，并在增强完成后清理
    - 后续 prd-enhancer 直接消费上述临时整理结果或摘要，不再依赖稳定的 `PRD-*-formalized.md` 文件
 
 ## 质量要求
@@ -51,7 +54,7 @@
 | 页面级标题 | 正文包含至少 1 个 `####` 级标题（对应页面设计） | 阻断 |
 | 字段信息 | 正文包含至少 1 处字段名称描述（中文名或 DTO 字段名） | 警告 |
 | 按钮/操作 | 正文包含至少 1 处【xxx】格式的按钮引用 | 警告 |
-| 源码补充 | 「源码补充事实」章节不为空（仅 DTStack） | 警告 |
+| 源码补充 | 「源码补充事实」章节不为空（仅当 config.repos 非空） | 警告 |
 | 推断标注 | `[基于源码推断]` / `[PRD 未说明]` 标注数不超过总字段数的 60% | 警告 |
 
 **阻断处理**（任一阻断项未通过）：

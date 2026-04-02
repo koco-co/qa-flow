@@ -29,16 +29,14 @@
  *                                 └── 预期结果
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync, symlinkSync } from 'fs'
-import { resolve, dirname, relative } from 'path'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { Topic, RootTopic, Marker, Workbook, writeLocalFile } from 'xmind-generator'
 import { assertNewOutputPathMatchesContract } from '../../../shared/scripts/output-naming-contracts.mjs'
-import { getDtstackModules, loadConfig } from '../../../shared/scripts/load-config.mjs'
+import { loadConfig } from '../../../shared/scripts/load-config.mjs'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
-const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..', '..', '..')
-const { zh: DTSTACK_ZH_MODULES, en: DTSTACK_EN_MODULES } = getDtstackModules()
 const RESERVED_OUTPUT_NAME = 'latest-output.xmind'
 
 const PRIORITY_MAP = {
@@ -47,37 +45,24 @@ const PRIORITY_MAP = {
   P2: Marker.Priority.p3,
 }
 
-function isDtstackMeta(meta = {}) {
-  if (meta.source_standard === 'dtstack') {
-    return true
+function buildRootTitle(meta = {}, _config = null) {
+  const config = _config || loadConfig()
+  const moduleKey = meta.module_key || meta.product
+  const mod = moduleKey ? config.modules?.[moduleKey] : null
+  const displayName = mod?.zh || config.project?.displayName || meta.project_name || ''
+  const trackerId = mod?.trackerId
+  const versionPart = meta.version || ''
+  const idSuffix = trackerId ? `(#${trackerId})` : ''
+  if (versionPart || trackerId) {
+    return `${displayName}${versionPart}迭代用例${idSuffix}`
   }
-  if (meta.module_key && DTSTACK_EN_MODULES.includes(meta.module_key)) {
-    return true
-  }
-  return DTSTACK_ZH_MODULES.some((name) => `${meta.project_name || ''}`.includes(name))
-}
-
-function buildRootTitle(meta = {}) {
-  if (isDtstackMeta(meta) && meta.version) {
-    const config = loadConfig()
-    const moduleKey = meta.module_key || meta.product
-    const mod = moduleKey ? config.modules?.[moduleKey] : null
-    const zhName = mod?.zh || meta.project_name || ''
-    const zentaoId = mod?.zentaoId
-    const idSuffix = zentaoId ? `(#${zentaoId})` : ''
-    return `${zhName}${meta.version}迭代用例${idSuffix}`
-  }
-  return meta.project_name
+  return displayName || meta.project_name || meta.requirement_name || ''
 }
 
 function buildL1Title(meta = {}) {
-  if (isDtstackMeta(meta)) {
-    const ticketSuffix = meta.requirement_ticket ? `(#${meta.requirement_ticket})` : ''
-    return `${meta.requirement_name}${ticketSuffix}`
-  }
-  return meta.version
-    ? `【${meta.version}】${meta.requirement_name}`
-    : meta.requirement_name
+  const ticketSuffix = meta.requirement_ticket ? `(#${meta.requirement_ticket})` : ''
+  const versionPrefix = meta.version ? `【${meta.version}】` : ''
+  return `${versionPrefix}${meta.requirement_name || ''}${ticketSuffix}`
 }
 
 function validateJson(data) {
@@ -222,7 +207,7 @@ function buildXmind(data) {
     const l1Topics = requirements.map((req) => {
       const moduleTopics = (req.modules ?? []).map(buildModuleTopic)
       const l1Topic = Topic(buildL1Title(req.meta)).children(moduleTopics)
-      if (isDtstackMeta(req.meta) && req.meta.requirement_id) {
+      if (req.meta?.requirement_id) {
         l1Topic.labels([`(#${req.meta.requirement_id})`])
       }
       return l1Topic
@@ -233,7 +218,7 @@ function buildXmind(data) {
   const moduleTopics = (modules ?? []).map(buildModuleTopic)
   const l1Topic = Topic(buildL1Title(meta)).children(moduleTopics)
 
-  if (isDtstackMeta(meta) && meta.requirement_id) {
+  if (meta?.requirement_id) {
     l1Topic.labels([`(#${meta.requirement_id})`])
   }
 
@@ -248,7 +233,13 @@ async function buildWorkbookBuffer(data) {
   const wb = buildXmind(data)
   const rawBuffer = Buffer.from(await wb.archive())
 
-  if (!isDtstackMeta(data.meta)) {
+  // Determine if the module has a trackerId (config-driven folding behavior)
+  const config = loadConfig()
+  const moduleKey = data.meta?.module_key || data.meta?.product
+  const mod = moduleKey ? config.modules?.[moduleKey] : null
+  const hasTrackerId = Boolean(mod?.trackerId)
+
+  if (!hasTrackerId) {
     return rawBuffer
   }
 
@@ -298,23 +289,6 @@ function validateOutputPath(outputPath) {
   })
 }
 
-function refreshLatestOutput(outputPath) {
-  const resolvedOutputPath = resolve(outputPath)
-  const linkTarget = relative(REPO_ROOT, resolvedOutputPath)
-  const linkPaths = [resolve(REPO_ROOT, RESERVED_OUTPUT_NAME)]
-
-  for (const linkPath of linkPaths) {
-    try {
-      unlinkSync(linkPath)
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        throw err
-      }
-    }
-
-    symlinkSync(linkTarget, linkPath)
-  }
-}
 
 async function appendToExisting(data, outputPath) {
   const { default: JSZip } = await import('jszip')
@@ -413,52 +387,60 @@ async function replaceInExisting(data, outputPath) {
   writeFileSync(resolve(outputPath), buffer)
 }
 
-// --- Main ---
-const args = process.argv.slice(2)
-const appendMode = args.includes('--append')
-const replaceMode = args.includes('--replace')
-const filteredArgs = args.filter((a) => a !== '--append' && a !== '--replace')
+// --- Exports (for unit testing) ---
+export { buildRootTitle, buildL1Title }
 
-if (filteredArgs.length < 2) {
-  console.error('Usage:')
-  console.error('  node json-to-xmind.mjs <input.json> <output.xmind>')
-  console.error('  node json-to-xmind.mjs <input1.json> <input2.json> <output.xmind>')
-  console.error('  node json-to-xmind.mjs --append <input.json> <existing.xmind>')
-  console.error('  node json-to-xmind.mjs --replace <input.json> <existing.xmind>')
-  process.exit(1)
+// --- CLI Entry Guard ---
+function isDirectExecution() {
+  if (!process.argv[1]) return false
+  return resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 }
 
-const outputPath = filteredArgs[filteredArgs.length - 1]
-const inputPaths = filteredArgs.slice(0, filteredArgs.length - 1)
+// --- Main ---
+if (isDirectExecution()) {
+  const args = process.argv.slice(2)
+  const appendMode = args.includes('--append')
+  const replaceMode = args.includes('--replace')
+  const filteredArgs = args.filter((a) => a !== '--append' && a !== '--replace')
 
-try {
-  validateOutputPath(outputPath)
-  const data = mergeJsonFiles(inputPaths)
-
-  const structErrors = validateStructure(data)
-  if (structErrors.length > 0) {
-    console.error('❌ JSON 结构校验失败：')
-    structErrors.forEach(e => console.error(`  - ${e}`))
+  if (filteredArgs.length < 2) {
+    console.error('Usage:')
+    console.error('  node json-to-xmind.mjs <input.json> <output.xmind>')
+    console.error('  node json-to-xmind.mjs <input1.json> <input2.json> <output.xmind>')
+    console.error('  node json-to-xmind.mjs --append <input.json> <existing.xmind>')
+    console.error('  node json-to-xmind.mjs --replace <input.json> <existing.xmind>')
     process.exit(1)
   }
 
-  const validation = validateJson(data)
+  const outputPath = filteredArgs[filteredArgs.length - 1]
+  const inputPaths = filteredArgs.slice(0, filteredArgs.length - 1)
 
-  if (replaceMode && existsSync(resolve(outputPath))) {
-    await replaceInExisting(data, outputPath)
-    refreshLatestOutput(outputPath)
-    console.log(`XMind 文件已更新（替换模式）: ${resolve(outputPath)}`)
-  } else if (appendMode && existsSync(resolve(outputPath))) {
-    await appendToExisting(data, outputPath)
-    refreshLatestOutput(outputPath)
-    console.log(`XMind 文件已更新（追加模式）: ${resolve(outputPath)}`)
-  } else {
-    const buf = await buildWorkbookBuffer(data)
-    writeFileSync(resolve(outputPath), Buffer.from(buf))
-    refreshLatestOutput(outputPath)
-    console.log(`XMind 文件已生成: ${resolve(outputPath)}`)
+  try {
+    validateOutputPath(outputPath)
+    const data = mergeJsonFiles(inputPaths)
+
+    const structErrors = validateStructure(data)
+    if (structErrors.length > 0) {
+      console.error('❌ JSON 结构校验失败：')
+      structErrors.forEach(e => console.error(`  - ${e}`))
+      process.exit(1)
+    }
+
+    const validation = validateJson(data)
+
+    if (replaceMode && existsSync(resolve(outputPath))) {
+      await replaceInExisting(data, outputPath)
+      console.log(`XMind 文件已更新（替换模式）: ${resolve(outputPath)}`)
+    } else if (appendMode && existsSync(resolve(outputPath))) {
+      await appendToExisting(data, outputPath)
+      console.log(`XMind 文件已更新（追加模式）: ${resolve(outputPath)}`)
+    } else {
+      const buf = await buildWorkbookBuffer(data)
+      writeFileSync(resolve(outputPath), Buffer.from(buf))
+      console.log(`XMind 文件已生成: ${resolve(outputPath)}`)
+    }
+  } catch (err) {
+    console.error('Error generating XMind file:', err.message)
+    process.exit(1)
   }
-} catch (err) {
-  console.error('Error generating XMind file:', err.message)
-  process.exit(1)
 }

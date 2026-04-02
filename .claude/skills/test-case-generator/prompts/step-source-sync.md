@@ -1,18 +1,21 @@
 <!-- step-id: source-sync | delegate: testCaseOrchestrator -->
-# Step source-sync：DTStack 源码分支同步
+# Step source-sync：源码分支同步
 
 > 前置条件: `last_completed_step` == `"req-elicit"`
 > 快速模式: 执行
-> DTStack 专属: 是
 
-> 本步骤仅在模块类型为 DTStack 时执行。如为 xyzh/自定义模块，此步骤应已被 workflow 条件跳过。
+> 本步骤仅在 config.json 中 `repos` 字段为非空对象时执行。
+> **若 `repos: {}` 则跳过**：
+> 1. 向 execution_log 追加 `{"step": "source-sync", "status": "skipped", "reason": "config.repos is empty"}`
+> 2. 更新 `last_completed_step` 为 `"source-sync"`
+> 3. 继续下一步（prd-formalize）
 
 ## 执行流程
 
 1. **优先读取 `elicitation.target_branch_override`**：若 `.qa-state.json` 中 `elicitation.target_branch_override` 非空，直接使用该值作为目标分支（用户在需求澄清时已确认），跳过第 1 步的 PRD 文本解析
 2. 从蓝湖原文 / PRD 原文（或 `## 需求澄清结果` 章节）中提取 `开发版本`（若 step 1 未命中）
-3. 读取 `.claude/config.json` 的 `repoBranchMapping` 字段所指向的映射文件
-4. 调用 `sync-source-repos.mjs`，根据 `repoBranchMapping` 指向的映射文件解析 repo profile 与 backend/frontend 目标分支：
+3. 读取 `.claude/config.json` 的 `branchMapping` 字段所指向的映射文件
+4. 调用 `sync-source-repos.mjs`，根据 `branchMapping` 指向的映射文件解析 repo profile 与 backend/frontend 目标分支：
    ```bash
    node .claude/skills/using-qa-flow/scripts/sync-source-repos.mjs \
      --version "<开发版本>" \
@@ -28,13 +31,13 @@
 
 ## 映射无法解析时
 
-如果 `repoBranchMapping` 指向的映射文件中无对应版本映射，询问用户：
+如果 `branchMapping` 指向的映射文件中无对应版本映射，询问用户：
 
 ```
 未找到版本 <version> 的分支映射。
 请提供以下信息：
-- backend 目标分支（例如：release/6.4.10）
-- frontend 目标分支（例如：release/6.4.10）
+- backend 目标分支（例如：release/v2.0）
+- frontend 目标分支（例如：release/v2.0-web）
 ```
 
 用户提供后，临时写入 source_context，继续流程。
@@ -53,13 +56,13 @@
    ```json
    {
      "source_context": {
-       "backend": [
-         {"repoKey": "dt-center-assets", "branch": "release/6.4.10", "status": "synced", "commit": "abc123"},
-         {"repoKey": "DAGScheduleX", "branch": "release/6.4.10", "status": "failed", "error": "branch not found"}
-       ],
-       "frontend": [
-         {"repoKey": "dt-insight-studio-front", "branch": "release/6.4.10", "status": "synced", "commit": "def456"}
-       ]
+        "backend": [
+          {"repoKey": "orders-service", "branch": "release/v2.0", "status": "synced", "commit": "abc123"},
+          {"repoKey": "inventory-worker", "branch": "release/v2.0", "status": "failed", "error": "branch not found"}
+        ],
+        "frontend": [
+          {"repoKey": "commerce-web", "branch": "release/v2.0-web", "status": "synced", "commit": "def456"}
+        ]
      }
    }
    ```
@@ -67,9 +70,9 @@
 3. 向用户展示同步结果摘要：
    ```
    源码分支同步结果：
-   [v] dt-center-assets → release/6.4.10 (commit: abc123)
-   [x] DAGScheduleX → release/6.4.10 (失败: branch not found)
-   [v] dt-insight-studio-front → release/6.4.10 (commit: def456)
+   [v] orders-service → release/v2.0 (commit: abc123)
+   [x] inventory-worker → release/v2.0 (失败: branch not found)
+   [v] commerce-web → release/v2.0-web (commit: def456)
 
    1 个仓库同步失败。
    - 「继续」→ 后续 Writer 不参考失败仓库的源码
