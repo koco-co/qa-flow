@@ -1,15 +1,14 @@
 ---
-suite_name: __qa-prd-prefix-26277-1775140679473
-description: __qa-prd-prefix-26277-1775140679473
-product: data-assets
+suite_name: __qa-routing-data-assets-semver-33906-1775149602102
+description: __qa-routing-data-assets-semver-33906-1775149602102
 dev_version: ""
 tags:
-  - 数据资产
   - __qa
-  - prd
-  - prefix
+  - routing
+  - data
+  - assets
+  - semver
   - 质量问题台账
-  - vtest
 create_at: 2026-04-02
 update_at: 2026-04-02
 status: 已归档

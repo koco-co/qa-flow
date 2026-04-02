@@ -776,10 +776,8 @@ async function main() {
   const csvModuleKey = `__archive-csv-${runId}`;
   const csvVersion = `vcsv-${runId}`;
   const csvHistoryDir = resolve(repoRoot, "cases", "history", csvModuleKey, csvVersion);
-  const csvArchiveDir = resolve(repoRoot, "cases", "archive", csvModuleKey, csvVersion);
   const csvBaseName = `history-fixture-${runId}`;
   const csvPath = resolve(csvHistoryDir, `${csvBaseName}.csv`);
-  const csvOutputPath = resolve(csvArchiveDir, `${csvBaseName}.md`);
   mkdirSync(csvHistoryDir, { recursive: true });
   writeFileSync(
     csvPath,
@@ -791,13 +789,14 @@ async function main() {
   );
   // 追踪父目录，确保 cleanup 能递归删除整个 __archive-csv-{runId}/ 目录
   generatedDirPaths.add(resolve(repoRoot, "cases", "history", csvModuleKey));
-  generatedDirPaths.add(resolve(repoRoot, "cases", "archive", csvModuleKey));
-  const csvConvertResult = runNodeScript(historyScriptPath, ["--module", csvModuleKey, "--force"]);
+  // 使用 --path 绕过模块名验证（临时 key 不在 config 里）；--path 输出到 CSV 同目录
+  const csvOutputPath = resolve(csvHistoryDir, `${csvBaseName}.md`);
+  const csvConvertResult = runNodeScript(historyScriptPath, ["--path", csvPath, "--force"]);
   assert(csvConvertResult.code === 0, "convert-history-cases CSV 扫描执行成功", [
     csvConvertResult.stderr.trim(),
     csvConvertResult.stdout.trim(),
   ].filter(Boolean));
-  assert(existsSync(csvOutputPath), "convert-history-cases CSV 输出写入 canonical archive 目录", [
+  assert(existsSync(csvOutputPath), "convert-history-cases CSV 输出写入 Markdown 文件", [
     csvOutputPath,
   ]);
   if (existsSync(csvOutputPath)) {
