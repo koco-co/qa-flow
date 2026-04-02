@@ -27,36 +27,30 @@ origin: zentao
 ##### 【141713】验证底层库为 DmMySQL 时元数据同步周期同步任务列表正常加载
 
 > 前置条件
+```
+1、环境说明：dt-center-metadata 已部署 hotfix_6.3.x_141713 版本，底层数据库（metadata 存储库）为 DmMySQL
 
-1. 当前部署环境底层数据库（metadata 存储库）为 **DmMySQL**
-2. 已登录系统，当前账号具有「元数据同步」模块操作权限
-3. 平台已配置至少一个可用数据源，命名示例：`test_mysql_source`（MySQL 类型）
+2、DmMySQL SQL语句准备（dt_metadata schema）:
+-- 插入测试数据源记录
+INSERT INTO dt_metadata.metadata_data_source_center
+  (tenant_id, data_source_name, data_source_type, link_status, sync_status, is_deleted)
+VALUES
+  (1, 'qa_mysql_source', 1, 1, 1, 0);
+
+-- 插入测试周期同步任务（关联上方数据源）
+INSERT INTO dt_metadata.metadata_sync_task
+  (data_source_id, schedule_conf, period_type, task_type, tenant_id, is_deleted)
+SELECT id,
+       '{"periodType":2,"beginDate":"2026-04-02","endDate":"2026-12-31","hour":2,"minute":0}',
+       2, 1, 1, 0
+FROM dt_metadata.metadata_data_source_center
+WHERE data_source_name = 'qa_mysql_source'
+  AND is_deleted = 0
+LIMIT 1;
+```
 
 > 用例步骤
 
 | 编号 | 步骤 | 预期 |
 | --- | --- | --- |
-| 1 | 进入【元数据 → 元数据同步】页面，点击【新增周期同步任务】按钮 | 弹出【新增周期同步任务】弹窗，进入第一步「同步规则」配置 |
-| 2 | 在「同步规则」步骤中配置如下，点击【下一步】：<br>- 数据源：`test_mysql_source`<br>- 同步数据库：全部数据库 | 进入第二步「调度配置」 |
-| 3 | 在「调度配置」步骤中保持默认配置，点击【确定】 | 提示「新增周期同步任务成功」，弹窗关闭，任务列表新增一条记录 |
-| 4 | 刷新页面，重新进入【元数据 → 元数据同步】页面，查看【周期同步】列表 | 周期同步任务列表正常加载，步骤 3 新增的任务记录显示完整（含数据源名称、同步状态、最近同步时间等字段），页面无报错弹窗 |
-
-**预期结果：**
-
-修复前：进入周期同步任务列表时，DmMySQL 底层库执行 `pageTask` 查询报 SQL 语法错误，列表区域加载失败或显示为空
-修复后：周期同步任务列表正常加载，任务记录完整展示，数据源名称、同步状态等字段显示正确，无报错弹窗（修复后）
-
-
-
-
-
-1、再优化, 前置条件应该包含在```代码块中 
-
-2、前置条件一定要详细, 包含建表语句等
-
-3、修复前和修复后的预期结果是放在表格中的预期中的, 不是单独列出来的
-
-具体提示词和规则可以通过git历史查看, 之前的效果很好
-
-
-
+| 1 | 进入【元数据 → 元数据同步】页面，点击【周期同步】Tab | 修复前：底层 DmMySQL 执行 `pageTask` 查询时报 SQL 语法错误（`dataSource.data_source_name` 后缺少逗号），任务列表加载失败，页面显示空数据或报错<br>修复后：周期同步任务列表正常加载，前置条件中准备的 `qa_mysql_source` 任务记录完整展示，数据源名称、同步状态、最近同步时间字段均正常显示，无报错弹窗 |
