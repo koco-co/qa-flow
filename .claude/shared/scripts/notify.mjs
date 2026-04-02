@@ -177,58 +177,144 @@ export function buildMessage(event, data) {
 
   const timestamp = new Date().toLocaleString("zh-CN", { hour12: false });
 
-  const labelMap = {
-    "case-generated":         "用例生成完成",
-    "bug-report":             "Bug 报告生成",
-    "workflow-failed":        "工作流失败",
-    "archive-converted":      "归档转化完成",
-    "hotfix-case-generated":  "线上问题用例转化",
-    "conflict-analyzed":      "合并冲突分析完成",
+  // Helper: extract filename from path
+  const fileName = (p) => p ? p.split("/").pop() : "";
+
+  // Helper: only include a line when value is meaningful
+  const line = (label, value) =>
+    (value && value !== "N/A" && value !== "0" && value !== 0)
+      ? `> **${label}**：${value}`
+      : null;
+
+  const emojiMap = {
+    "case-generated":        "✅",
+    "bug-report":            "🐛",
+    "workflow-failed":       "❌",
+    "archive-converted":     "📦",
+    "hotfix-case-generated": "🚑",
+    "conflict-analyzed":     "⚠️",
   };
+  const labelMap = {
+    "case-generated":        "用例生成完成",
+    "bug-report":            "Bug 报告已生成",
+    "workflow-failed":       "工作流异常中断",
+    "archive-converted":     "归档转化完成",
+    "hotfix-case-generated": "线上问题用例转化完成",
+    "conflict-analyzed":     "合并冲突分析完成",
+  };
+  const emoji = emojiMap[event] ?? "📌";
   const label = labelMap[event] ?? event;
 
-  const title = `[${projectName}] ${label}`;
-  const header = `**${title}** | ${timestamp}`;
+  // Push title: short, contains keyword for DingTalk security filter
+  const title = `[${projectName}] ${emoji} ${label}`;
 
-  let body;
+  // Build body per event
+  const gitRemoteUrl = process.env.GIT_REMOTE_URL;
+  const serverWorkspacePath = process.env.SERVER_WORKSPACE_PATH;
+
+  let bodyLines;
   switch (event) {
-    case "case-generated":
-      body = `- 用例数：${data.count} 条\n- 输出文件：${data.file}\n- 耗时：${data.duration ?? "N/A"}`;
+    case "case-generated": {
+      const xmindName = fileName(data.file);
+      const absPath = (serverWorkspacePath && data.file)
+        ? serverWorkspacePath.replace(/\/$/, "") + "/" + data.file.replace(/^\//, "")
+        : null;
+      bodyLines = [
+        `## ${emoji} ${label}`,
+        "",
+        line("需求", xmindName.replace(/\.xmind$/, "")),
+        line("用例数", data.count ? `${data.count} 条` : null),
+        line("耗时", data.duration),
+        line("完整路径", absPath),
+        "",
+        `> 完成时间：${timestamp}`,
+      ];
       break;
-    case "bug-report":
-      body = `- 报告文件：${data.reportFile}\n- 摘要：${data.summary ?? "N/A"}`;
+    }
+    case "bug-report": {
+      const absPath = (serverWorkspacePath && data.reportFile)
+        ? serverWorkspacePath.replace(/\/$/, "") + "/" + data.reportFile.replace(/^\//, "")
+        : null;
+      bodyLines = [
+        `## ${emoji} ${label}`,
+        "",
+        line("报告", fileName(data.reportFile)),
+        line("摘要", data.summary),
+        line("完整路径", absPath),
+        "",
+        `> 完成时间：${timestamp}`,
+      ];
       break;
+    }
     case "workflow-failed":
-      body = `- 失败步骤：${data.step}\n- 错误原因：${data.reason}`;
+      bodyLines = [
+        `## ${emoji} ${label}`,
+        "",
+        `> **失败步骤**：${data.step}`,
+        `> **错误原因**：${data.reason}`,
+        "",
+        `> 发生时间：${timestamp}`,
+      ];
       break;
     case "archive-converted":
-      body = `- 文件数：${data.fileCount}\n- 用例数：${data.caseCount}`;
+      bodyLines = [
+        `## ${emoji} ${label}`,
+        "",
+        line("文件数", data.fileCount ? `${data.fileCount} 个` : null),
+        line("用例数", data.caseCount ? `${data.caseCount} 条` : null),
+        "",
+        `> 完成时间：${timestamp}`,
+      ];
       break;
-    case "hotfix-case-generated":
-      body = `- Bug ID：${data.bugId ?? "N/A"}\n- 修复分支：${data.branch ?? "N/A"}\n- 用例文件：${data.file ?? "N/A"}\n- 变更文件数：${data.changedFiles ?? "N/A"}`;
+    case "hotfix-case-generated": {
+      const absPath = (serverWorkspacePath && data.file)
+        ? serverWorkspacePath.replace(/\/$/, "") + "/" + data.file.replace(/^\//, "")
+        : null;
+      bodyLines = [
+        `## ${emoji} ${label}`,
+        "",
+        line("Bug ID", data.bugId),
+        line("修复分支", data.branch),
+        line("用例文件", fileName(data.file)),
+        line("变更文件数", data.changedFiles ? `${data.changedFiles} 个` : null),
+        line("完整路径", absPath),
+        "",
+        `> 完成时间：${timestamp}`,
+      ];
       break;
-    case "conflict-analyzed":
-      body = `- 报告文件：${data.reportFile ?? "N/A"}\n- 冲突文件数：${data.conflictCount ?? "N/A"}\n- 涉及分支：${data.branches ?? "N/A"}`;
+    }
+    case "conflict-analyzed": {
+      const absPath = (serverWorkspacePath && data.reportFile)
+        ? serverWorkspacePath.replace(/\/$/, "") + "/" + data.reportFile.replace(/^\//, "")
+        : null;
+      bodyLines = [
+        `## ${emoji} ${label}`,
+        "",
+        line("报告", fileName(data.reportFile)),
+        line("冲突文件数", data.conflictCount ? `${data.conflictCount} 个` : null),
+        line("涉及分支", data.branches),
+        line("完整路径", absPath),
+        "",
+        `> 完成时间：${timestamp}`,
+      ];
       break;
+    }
     default:
-      body = JSON.stringify(data, null, 2);
+      bodyLines = [
+        `## ${emoji} ${event}`,
+        "",
+        `\`\`\`\n${JSON.stringify(data, null, 2)}\n\`\`\``,
+        "",
+        `> ${timestamp}`,
+      ];
   }
 
-  // 追加远程仓库链接和服务器绝对路径（若已配置）
-  const footerParts = [];
-  const gitRemoteUrl = process.env.GIT_REMOTE_URL;
+  // Append repo link in footer if configured
   if (gitRemoteUrl) {
-    footerParts.push(`- 仓库：${gitRemoteUrl}`);
+    bodyLines.push("", `---`, `[${projectName}](${gitRemoteUrl})`);
   }
-  const serverWorkspacePath = process.env.SERVER_WORKSPACE_PATH;
-  const filePath = data.file ?? data.reportFile;
-  if (serverWorkspacePath && filePath) {
-    const absPath = serverWorkspacePath.replace(/\/$/, "") + "/" + filePath.replace(/^\//, "");
-    footerParts.push(`- 服务器路径：${absPath}`);
-  }
-  const footer = footerParts.length > 0 ? `\n\n${footerParts.join("\n")}` : "";
 
-  const markdown = `${header}\n\n${body}${footer}`;
+  const markdown = bodyLines.filter((l) => l !== null).join("\n");
   return { title, markdown, html: mdToHtml(markdown) };
 }
 

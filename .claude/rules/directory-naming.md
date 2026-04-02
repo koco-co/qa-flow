@@ -32,7 +32,7 @@ qa-flow/
 ├── reports/            # 代码分析报告
 ├── assets/
 │   └── images/         # 全局图片
-├── tools/              # 内置第三方工具（如 lanhu-mcp）
+├── tools/              # 内置第三方工具（如 lanhu-cli）
 └── .claude/
     ├── config.json     # 集中路径配置
     ├── rules/          # 按需加载规范

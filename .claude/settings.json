@@ -1,5 +1,18 @@
 {
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/poco/Documents/DTStack/qa-flow/.claude/shared/scripts/notify-on-xmind.sh",
+            "async": true,
+            "statusMessage": "发送 IM 通知..."
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

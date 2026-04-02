@@ -12,44 +12,27 @@
 **处理流程：**
 
 1. **提取 URL 参数**：从 URL 中解析 `tid`、`pid`、`docId`、`docType`
-2. **检查 MCP Server 状态**：
+2. **确认 lanhu-cli 可用**：
    ```bash
-   curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/
+   tools/lanhu-cli/.venv/bin/lanhu --help
    ```
-    - 返回非 000 → Server 正在运行，继续
-    - 返回 000（连接失败）→ 启动 Server：
-      ```bash
-      node .claude/skills/using-qa-flow/scripts/lanhu-mcp-runtime.mjs start
-      ```
-2.5. **Cookie 有效性预检**：
-   调用 `lanhu_get_pages` 时若返回 418（Cookie 过期），执行自动刷新（最多 3 次，每次间隔 5 秒）：
+   - 若命令不存在 → 提示用户先执行环境初始化（`/using-qa-flow init`）后重试
 
+3. **获取页面列表**：
    ```bash
-   for i in 1 2 3; do
-     echo "第 ${i} 次尝试刷新 Cookie..."
-      LANHU_LOGIN_EMAIL="$LANHU_LOGIN_EMAIL" \
-      LANHU_LOGIN_PASSWORD="$LANHU_LOGIN_PASSWORD" \
-      python3 "<cookieRefreshScript-from-.claude/config.json>" 2>&1
-     sleep 5
-     # 刷新后重新调用 lanhu_get_pages 验证
-     # 若成功 → break 并继续
-     # 若仍失败 → 继续下一次
-   done
+   tools/lanhu-cli/.venv/bin/lanhu pages list "<URL>"
    ```
+   - 若返回 418 → Cookie 已过期，向用户展示：
+     ```
+     蓝湖 Cookie 已过期，请更新 tools/lanhu-cli/.env 中的 LANHU_COOKIE 值后重试。
 
-   3 次均失败 → 向用户展示：
-   ```
-   蓝湖 Cookie 刷新失败（已重试 3 次）。
-
-   请手动执行以下命令后重试：
-    ! LANHU_LOGIN_EMAIL='<账号>' LANHU_LOGIN_PASSWORD='<密码>' python3 "<cookieRefreshScript-from-.claude/config.json>"
-
-   或手动更新 tools/lanhu-mcp/.env 中的 Cookie 值。
-   ```
-   **等待用户确认后重试，不自动继续下一步。**
-
-3. **调用 `lanhu_get_pages` 工具** 获取页面列表
-   - 若返回 418 → 走 2.5 自动刷新流程
+     操作步骤：
+     1. 在浏览器打开 lanhuapp.com 并登录
+     2. 按 F12 → Network → 任意 api/ 请求 → 复制 Request Headers 中的 Cookie 字符串
+     3. 更新 tools/lanhu-cli/.env：LANHU_COOKIE="<粘贴的完整 Cookie>"
+     4. 重新发送指令继续
+     ```
+     **等待用户确认后重试，不自动继续下一步。**
    - 成功后向用户展示页面列表：
      ```
      蓝湖文档「xxx」包含以下页面：
@@ -66,10 +49,14 @@
      ```
    - **等待用户明确回复**后才进入第 4 步
    - 不回复不继续
-4. **调用 `lanhu_get_ai_analyze_page_result` 工具**，参数：
-   - `page_names`：用户选定的页面（`'all'` 或逗号分隔的页面名列表）
-   - `mode`：`'text_only'`
-   - `analysis_mode`：`'tester'`
+4. **分析页面内容**，参数根据用户选择构建：
+   ```bash
+   # 全部页面
+   tools/lanhu-cli/.venv/bin/lanhu pages analyze "<URL>" --mode text_only --analysis-mode tester
+
+   # 指定页面（逗号分隔）
+   tools/lanhu-cli/.venv/bin/lanhu pages analyze "<URL>" --page-names "商品列表,新增商品" --mode text_only --analysis-mode tester
+   ```
 5. **整理输出为 PRD Markdown**：
    - 文件格式：**先写 YAML front-matter，再写正文**（见下方 Schema）
    - 将工具返回的文本内容按页面组织为标准 MD 格式

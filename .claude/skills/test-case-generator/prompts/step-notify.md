@@ -10,20 +10,23 @@
 
 ## 「确认通过」
 
-1. 删除临时文件：`rm -rf <working_dir>/temp/`
-2. 删除状态文件：`rm -f <working_dir>/<state_file>`（`<state_file>` 为本次流程使用的状态文件名，单 PRD 为 `.qa-state-{prd-slug}.json`，批量为 `.qa-state.json`）
-3. 向用户输出最终完成通知（见「完成通知」章节）
-4. 调用 IM 通知（见「IM 通知」章节）
+> ⚠️ **严格按以下顺序执行，每步必须实际运行，不可跳过**
+
+1. **调用 IM 通知**（见「IM 通知」章节）— 必须先于清理和输出执行，确保通知不被遗漏
+2. 删除临时文件：`rm -rf <working_dir>/temp/`
+3. 删除状态文件：`rm -f <working_dir>/<state_file>`（`<state_file>` 为本次流程使用的状态文件名，单 PRD 为 `.qa-state-{prd-slug}.json`，批量为 `.qa-state.json`）
+4. 向用户输出最终完成通知（见「完成通知」章节）
 
 ---
 
 ## 「已修改，请同步」
 
+> ⚠️ **严格按以下顺序执行，每步必须实际运行，不可跳过**
+
 1. 调用 `json-to-archive-md.mjs --from-xmind <xmind-path> <archive-dir>` 重新生成归档 MD
-2. 向用户展示变更概要（用例数变化等）
+2. **调用 IM 通知**（见「IM 通知」章节）— 必须在输出完成消息前执行
 3. 删除临时文件和状态文件
-4. 输出完成通知
-5. 调用 IM 通知（见「IM 通知」章节）
+4. 向用户展示变更概要（用例数变化等）并输出完成通知
 
 ---
 
