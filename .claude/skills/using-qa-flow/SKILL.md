@@ -13,10 +13,10 @@ argument-hint: "[init | 功能编号或关键词]"
 | 编号  | 功能             | 说明                                                                     |
 | ----- | ---------------- | ------------------------------------------------------------------------ |
 | ⚙️ **0** | **项目配置 + 环境初始化** | ⚠️ 首次使用必做：项目结构推断、config.json 生成 + 环境初始化 |
-| **1** | 生成测试用例     | 根据 PRD 文档或蓝湖 URL 自动生成 XMind 测试用例（支持普通/快速/续传模式） |
+| ⭐ **1** | 生成测试用例     | 根据 PRD 文档或蓝湖 URL 自动生成 XMind 测试用例（支持普通/快速/续传模式） |
 | **2** | 增强 PRD 文档    | 为 PRD 补充图片描述、格式规范化、健康度预检                              |
 | **3** | 分析代码报错     | 粘贴报错日志 / 禅道 Bug 链接，定位问题根因并生成 HTML 报告              |
-| **4** | 转换历史用例     | 将 CSV/XMind 历史用例转为 Markdown 归档格式                              |
+| **4** | 转化历史用例     | 将 CSV/XMind 历史用例转化为 Markdown 归档格式                            |
 
 ---
 
@@ -54,7 +54,7 @@ argument-hint: "[init | 功能编号或关键词]"
 
 - 引导用户选择：`转化所有历史用例` 或 `转化 orders 的历史用例` 或 `检查哪些历史用例还没转化`
 
-如果 `$ARGUMENTS` 包含 `5` 或 `xmind`：
+如果 `$ARGUMENTS` 包含 `5` 或 `xmind`（高级/调试用，通常由功能 1 自动调用）：
 
 - 引导用户提供 JSON 文件路径，例如：`将 cases/prds/202604/temp/cases.json 转换为 XMind`
 
@@ -124,7 +124,7 @@ node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command write \
 
 仅在 `$ARGUMENTS` 包含 `init` / `初始化` / `0` 时执行。每步均支持跳过；主文档保留最小可执行命令，细化说明继续放在 references / prompts。
 
-### 环境 1：Python 环境
+### 环境 1：Python 环境（可选）
 
 ```bash
 # 优先使用 uv
@@ -134,7 +134,7 @@ which uv && uv venv .venv && echo "✅ uv venv 创建成功" \
 
 - 目标：确保后续 Python 依赖安装有独立运行环境。
 
-### 环境 2：lanhu-mcp 安装与验证
+### 环境 2：lanhu-mcp 安装与验证（可选）
 
 ```bash
 # 进入 lanhu-mcp 目录并执行安装脚本
@@ -145,7 +145,7 @@ cd tools/lanhu-mcp && bash setup-env.sh
 - 若 `tools/lanhu-mcp/.venv/` 已存在，跳过安装步骤，直接验证可用性。
 - Cookie 配置：在项目根目录 `.env` 中填写 `LANHU_COOKIE="<从浏览器 DevTools 复制的完整 Cookie>"`（根 `.env` 优先；`tools/lanhu-mcp/.env` 作为回退）
 
-### 环境 3：脚本运行环境（Node.js）
+### 环境 3：脚本运行环境（Node.js，必需）
 
 ```bash
 cd .claude/skills/xmind-converter/scripts && npm install
@@ -154,7 +154,9 @@ node json-to-xmind.mjs --help
 
 - 安装完成后，必须通过 `--help` 验证脚本可用。
 
-### 环境 4：源码仓库配置
+### 环境 4：源码仓库配置（可选）
+
+> 如果阶段一中未配置源码仓库（`repos: {}`），显示「已跳过 — 无需源码仓库」并直接进入环境 5。
 
 ```bash
 ls -la .repos/ 2>/dev/null || echo "（.repos/ 目录为空或不存在）"

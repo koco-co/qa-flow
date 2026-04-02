@@ -3,14 +3,17 @@
 使用中文回复, 不要使用英文或其它语言回复。
 本文件是 qa-flow 的权威工作流手册。细化规则以 `.claude/rules/*.md` 为准，路径映射以 `.claude/config.json` 为准。
 
-> 不知道从哪开始？输入 `/using-qa-flow` 查看功能菜单；首次使用输入 `/using-qa-flow init` 初始化环境。
+> 不知道从哪开始？输入 `/using-qa-flow` 查看功能菜单；首次使用「生成测试用例」前需完成 `/using-qa-flow init`；「分析报错」和「转化历史用例」可直接使用。
 
 ---
+
+> **术语约定**：本项目中「PRD」「Story」「需求文档」均指同一类输入文件，统一存放于 `cases/prds/`。
+> 「转化」指内容/格式归档（CSV→MD）；「转换」指格式变换（JSON→XMind）。
 
 ## 快速开始
 
 ```bash
-# 生成测试用例（完整流程）
+# ⭐ 最常用 — 生成测试用例（完整流程）
 为 Story-20260322 生成测试用例
 为 Story-20260322 --quick 生成测试用例
 
@@ -49,7 +52,7 @@ qa-flow/
 ├── assets/images/                     # 全局图片
 ├── tools/                             # 内置第三方工具
 └── .claude/
-    ├── config.json                    # 模块/仓库/路径 source of truth
+    ├── config.json                    # 模块/仓库/路径唯一权威来源
     ├── rules/                         # 全局规则
     ├── shared/                        # 共享脚本和 Schema
     └── skills/                        # 项目 Skills
@@ -102,4 +105,4 @@ qa-flow/
 | `.claude/rules/test-case-writing.md`            | 用例编写硬性规则                       |
 | `.claude/rules/image-conventions.md`            | 图片引用、路径、压缩规则               |
 | `.claude/shared/schemas/front-matter-schema.md` | PRD/Archive 统一 front-matter Schema   |
-| `.claude/config.json`                           | 模块、仓库、报告目录的 source of truth |
+| `.claude/config.json`                           | 模块、仓库、报告目录的唯一权威来源 |

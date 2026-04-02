@@ -11,12 +11,11 @@ node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command load-existin
 ```
 
 - 询问用户：「检测到已有项目配置。请选择：(1) 完整重新配置 (2) 只更新部分配置」
-- 选择 (2) 时，展示五个功能组让用户勾选要重新配置的组（D-15）：
+- 选择 (2) 时，展示四个功能组让用户勾选要重新配置的组：
   - ① 基础信息（项目名、显示名、用例根目录）
   - ② 模块配置
-  - ③ 源码仓库
-  - ④ 集成工具
-  - ⑤ 快捷方式和目录
+  - ③ 源码仓库（可选）
+  - ④ 集成工具（可选）
 - 未勾选的组保持现有值不变
 - 如果选择 (1)，执行完整的配置 1 ~ 配置 5 流程
 - 在部分更新模式下，每个问题都应先展示当前值，允许用户直接回车接受默认值
@@ -27,7 +26,7 @@ node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command load-existin
 - 模块列表：优先使用目录扫描 + 历史文件解析后的合并结果；无结果时从空列表开始问答
 - `repos`、`branchMapping`、`stackTrace`：如用户选择不配置源码仓库，则写入 `repos = {}`、`branchMapping = null`、`stackTrace = {}`
 - `lanhuMcp`：如用户不自定义，使用默认 `tools/lanhu-mcp/` 等字段（Cookie 统一存放在根 `.env`）
-- 最终确认阶段不展示完整 JSON（D-10），只展示纯文字分组摘要
+- 最终确认阶段不展示完整 JSON，只展示纯文字分组摘要
 
 ## 五大功能组问题模板
 
@@ -79,7 +78,7 @@ node .claude/skills/using-qa-flow/scripts/init-wizard.mjs --command load-existin
 如果 n：使用默认 lanhuMcp 配置
 ```
 
-### ⑤ 最终确认写入（D-10）
+### ⑤ 最终确认写入
 
 ```text
 ### ⑤ 确认写入
