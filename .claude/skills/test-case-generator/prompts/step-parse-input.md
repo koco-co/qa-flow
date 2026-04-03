@@ -66,37 +66,39 @@
 
 5. **保存截图 + 整理输出为 PRD Markdown**：
 
-   5a. **截图持久化（按优先级尝试，取第一个成功的方式）**：
+   5a. **截图持久化 + 缩放（按优先级尝试）**：
+
+   > ⚠️ Axure 画布截图通常是「全量画布」，包含多个 UI 状态并排排列，分辨率很高（4000px+ 常见）。
+   > 截图**仅作为布局参考**，不作为细节数据源——细节依靠步骤 3/4 的文本提取保证。
 
    **方式 A（优先，lanhu-mcp 标准路径）**：
-   lanhu-mcp 在调用 `lanhu_get_ai_analyze_page_result` 后，会将截图保存到本地固定路径：
+   lanhu-mcp 在调用 `lanhu_get_ai_analyze_page_result` 后，截图自动保存到：
    ```
    tools/lanhu-mcp/data/axure_extract_{doc_id前8位}_screenshots/{页面名}.png
    ```
-   `doc_id` 从蓝湖 URL 的 `docId` 参数提取（如 URL 中 `docId=fc0fee93-...`，前8位为 `fc0fee93`）。
+   `doc_id` 从蓝湖 URL 的 `docId` 参数提取前8位（如 `docId=fc0fee93-...` → `fc0fee93`）。
 
-   执行以下命令将截图复制到 `assets/images/`：
+   复制并**缩放到 2000px 以内**：
    ```bash
    mkdir -p assets/images
    SCREENSHOT_DIR="tools/lanhu-mcp/data/axure_extract_{doc_id前8位}_screenshots"
-   cp "$SCREENSHOT_DIR/{原始页面文件名}.png" "assets/images/{文档标题}-{页面名称}.png"
+   DEST="assets/images/{文档标题简称}-{页面名称}.png"
+   cp "$SCREENSHOT_DIR/{原始文件名}.png" "$DEST"
+   # 超过 2000px 时缩放（sips -Z 保持宽高比）
+   W=$(sips -g pixelWidth "$DEST" | awk '/pixelWidth/{print $2}')
+   H=$(sips -g pixelHeight "$DEST" | awk '/pixelHeight/{print $2}')
+   if [ "$W" -gt 2000 ] || [ "$H" -gt 2000 ]; then
+     sips -Z 2000 "$DEST"
+   fi
    ```
 
    **方式 B — base64 解码保存**（方式 A 失败时）：
-   若截图目录不存在，但 MCP 响应中包含 base64 图片数据，执行：
-   ```bash
-   mkdir -p assets/images
-   echo "<base64_data>" | base64 -d > "assets/images/{文档标题}-{页面名称}.png"
-   ```
+   若截图目录不存在但 MCP 响应含 base64 数据，解码保存后同样执行上方缩放步骤。
 
-   **方式 C（兜底）— 纯文本视觉分析**：
-   若以上两种方式均不可行，则：
-   - **不插入图片引用**，在该页面正文开头写入结构化视觉分析块（见 5c 详细要求）
-   - 此兜底方案下 prd-enhancer 将处理文本，而非图片文件
+   **方式 C（兜底）— 跳过截图，纯文本**：
+   若以上均不可行，不插入图片引用，在 5c 中写入完整视觉分析文本即可。
 
-   **命名规则**（适用于方式 A / B）：`{文档标题简称}-{页面名称}.png`，中文语义化命名，例如：
-   - `JSON校验规则-通用配置页.png`、`JSON校验规则-列表页.png`
-   - 同名文件追加 `-2`、`-3` 后缀
+   **命名规则**：`{文档标题简称}-{页面名称}.png`，中文语义化，同名追加 `-2`、`-3`。
 
    5b. **在 PRD Markdown 中嵌入图片引用**（方式 A / B 成功后执行）：
    - 每个页面的文本内容**前面**（紧接二级标题之后），插入标准 Markdown 格式的截图引用：
