@@ -259,6 +259,58 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --detect
 
 ---
 
+## 1.6 需求类型识别
+
+根据 PRD 内容和源码仓库状态，自动识别本次需求的类型，并写入 `.qa-state.json`。类型决定后续步骤中各信息源的优先级。
+
+| 类型 | 含义 | 信息优先级策略 |
+|------|------|----------------|
+| `new-feature` | 全新功能/模块，系统中无对应实现 | PRD 为主；代码上下文仅作逻辑参考；历史用例辅助风格 |
+| `partial-update` | 已有功能的新增/改造/扩展 | 源码为主；PRD 为辅；冲突时（按钮名、字段名等）源码优先；历史用例参考 |
+
+**识别逻辑（按顺序执行）：**
+
+1. **PRD 关键词扫描**：
+   - 含「全新」「首次上线」「从零」→ 倾向 `new-feature`
+   - 含「优化」「改造」「扩展」「调整」「重构」「新增xxx功能到现有」→ 倾向 `partial-update`
+2. **源码仓库检测**（`config.repos` 非空时执行）：
+   - 在 `.repos/` 中搜索与 PRD 功能名对应的 Controller/Service/DTO 文件：**存在** → 倾向 `partial-update`；**不存在** → 倾向 `new-feature`
+3. **兜底规则**：
+   - `config.repos` 为空（无源码仓库配置）→ 默认 `new-feature`（无源码可对照）
+   - 关键词冲突或无法判断 → 倾向 `partial-update`，下方确认时提示用户
+
+**确认交互（非快速模式，必须展示）：**
+
+```
+识别到需求类型：{新功能 / 功能改造}
+识别依据：{PRD 关键词「全新」/ .repos/ 中存在对应模块代码 / 无源码仓库配置}
+
+信息优先级策略：
+  新功能：以 PRD 为主，代码上下文逻辑作参考，历史用例辅助风格
+  功能改造：以源码为主，PRD 为辅，冲突时源码优先
+
+[1] ✓ 确认（推荐）
+[2] 更改为「新功能」（PRD 优先）
+[3] 更改为「功能改造」（源码优先）
+```
+
+快速模式：自动使用推断结果，不展示确认菜单，仅在 execution_log 中记录识别结果。
+
+**写入 `.qa-state.json`：**
+
+```json
+{
+  "feature_type": "new-feature",
+  "feature_type_source": "auto-inferred"
+}
+```
+
+字段说明：
+- `feature_type`: `"new-feature"` | `"partial-update"`
+- `feature_type_source`: `"auto-inferred"`（关键词/源码推断）| `"user-confirmed"`（用户明确选择）
+
+---
+
 ## 错误处理
 
 - **蓝湖 URL 检测失败**：提示用户检查 URL 格式和网络连接
@@ -275,5 +327,5 @@ node .claude/skills/archive-converter/scripts/convert-history-cases.mjs --detect
 
 同时向 `execution_log` 数组追加：
 ```json
-{"step": "parse-input", "status": "completed", "at": "<ISO8601>", "duration_ms": null, "summary": "解析用户指令，发现 N 个 PRD 文件，已初始化状态文件"}
+{"step": "parse-input", "status": "completed", "at": "<ISO8601>", "duration_ms": null, "summary": "解析用户指令，发现 N 个 PRD 文件，需求类型识别为 {feature_type}，已初始化状态文件"}
 ```
