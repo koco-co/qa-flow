@@ -3,6 +3,10 @@
 
 > 前置条件: `last_completed_step` == `"xmind"`
 > 快速模式: 执行
+## 文件粒度原则（强制）
+
+**每个 PRD 生成独立的归档 MD 文件**，文件名来自当前 PRD 的 `meta.requirement_name` 或 `meta.requirement_title`，禁止多个 PRD 合并输出到 `Story-YYYYMMDD.md` 聚合文件（除非用户明确要求）。
+
 ## 9.1 生成归档 MD
 
 调用 `json-to-archive-md.mjs` 将 Reviewer 输出的 final JSON 转换为 `cases/archive` 下的 Markdown 归档文件：

@@ -4,14 +4,20 @@
   "prd_files": [
     "【内置规则丰富】完整性-json中key值范围校验.md"
   ],
-  "last_completed_step": "req-elicit",
-  "checklist_confirmed": false,
-  "reviewer_status": "pending",
-  "final_json": null,
-  "output_xmind": null,
-  "archive_md_path": null,
-  "awaiting_verification": false,
-  "writers": {},
+  "last_completed_step": "archive",
+  "checklist_confirmed": true,
+  "reviewer_status": "completed",
+  "final_json": "cases/prds/202604/temp/final-reviewed.json",
+  "output_xmind": "cases/xmind/202604/Story-20260403.xmind",
+  "archive_md_path": "cases/archive/202604/Story-20260403.md",
+  "awaiting_verification": true,
+  "writers": {
+    "list": {
+      "status": "completed",
+      "file": "temp/15693-fast.json",
+      "case_count": 12
+    }
+  },
   "source_context": {},
   "feature_type": "new-feature",
   "feature_type_source": "auto-inferred",
@@ -37,8 +43,12 @@
     },
     "target_branch_override": null
   },
+  "prd_enhanced_at": "2026-04-03T00:35:00Z",
+  "enhanced_files": [
+    "【内置规则丰富】完整性-json中key值范围校验.md"
+  ],
   "created_at": "2026-04-03T00:00:00Z",
-  "updated_at": "2026-04-03T00:25:00Z",
+  "updated_at": "2026-04-03T12:02:13.912Z",
   "execution_log": [
     {
       "step": "parse-input",
@@ -53,6 +63,41 @@
       "at": "2026-04-03T00:25:00Z",
       "duration_ms": null,
       "summary": "已确认15693需先创建规则集记录，再从数据质量 → 规则任务管理点击新建监控规则进入配置"
+    },
+    {
+      "step": "prd-enhancer",
+      "status": "completed",
+      "at": "2026-04-03T00:35:00Z",
+      "duration_ms": null,
+      "summary": "完成15693 PRD增强，补充图1页面要点与健康度预检；config.repos为空，直接使用当前PRD继续后续步骤"
+    },
+    {
+      "step": "writer",
+      "status": "completed",
+      "at": "2026-04-03T12:02:13.912Z",
+      "duration_ms": null,
+      "summary": "Writer 收敛完成，输出 temp/15693-fast.json，共 12 条用例"
+    },
+    {
+      "step": "reviewer",
+      "status": "completed",
+      "at": "2026-04-03T12:02:13.912Z",
+      "duration_ms": null,
+      "summary": "Reviewer 完成聚合评审，输出 final-reviewed.json，共 44 条用例"
+    },
+    {
+      "step": "xmind",
+      "status": "completed",
+      "at": "2026-04-03T12:02:13.912Z",
+      "duration_ms": null,
+      "summary": "生成 XMind 文件，路径: cases/xmind/202604/Story-20260403.xmind，包含 44 条用例"
+    },
+    {
+      "step": "archive",
+      "status": "completed",
+      "at": "2026-04-03T12:02:13.912Z",
+      "duration_ms": null,
+      "summary": "生成归档 MD，路径: cases/archive/202604/Story-20260403.md，等待用户验证"
     }
   ]
 }

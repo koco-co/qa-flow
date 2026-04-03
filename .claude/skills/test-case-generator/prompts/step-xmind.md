@@ -11,9 +11,14 @@
 
 ## 目标文件判断
 
-- 文件不存在 → 新建
-- 文件已存在，本次 requirement_name 不同 → `--append` 追加模式
-- 文件已存在，requirement_name 相同 → 询问用户覆盖还是跳过
+**目标文件路径规则（强制）**：每个 PRD 始终对应独立的 XMind 文件，路径为 `cases/xmind/YYYYMM/<功能名>.xmind`，其中 `<功能名>` 来自当前 PRD 的 `meta.requirement_name`（做路径安全替换）。
+
+- 目标文件不存在 → 新建
+- 目标文件已存在，requirement_name 相同 → 询问用户覆盖还是跳过
+
+> ⚠️ **严禁**：因目录下已存在**其他 PRD** 的 XMind 文件而触发 `--append` 追加模式。  
+> 多 PRD 场景（批量生成或逐个生成）下，每个 PRD 必须独立建立自己的 `.xmind` 文件，  
+> 不得合并到 `Story-YYYYMMDD.xmind` 聚合文件。`--append` 模式仅在用户**明确要求**将多需求追加到同一文件时才允许使用。
 
 ## 错误处理
 
