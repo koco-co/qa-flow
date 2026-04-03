@@ -29,6 +29,10 @@
 帮我分析这个报错
 转化所有历史用例
 
+# 局部修改/新增用例（不读 PRD，直接改 XMind）
+修改用例 "验证导出仅导出当前筛选结果且文件命名符合规则"
+新增用例 到 "规则列表页" 分组
+
 # 线上问题转化（直接发禅道链接）
 http://zenpms.dtstack.cn/zentao/bug-view-138845.html
 ```
@@ -68,6 +72,7 @@ qa-flow/
 | `test-case-generator`  | 完整用例生成流程                                   | `生成测试用例` · `为 Story-xxx` · `写用例` · `追加用例` · `从蓝湖导入` |
 | `prd-enhancer`         | PRD 图片描述 + 增强 + 健康度预检                   | `增强 PRD` · `读取 PRD 图片` · `PRD 预处理`              |
 | `xmind-converter`      | JSON → XMind 转换                                  | `转换为 XMind` · `生成 XMind 文件` · `输出 XMind`        |
+| `xmind-editor`         | 局部修改/新增/删除 XMind 用例（无需读 PRD）         | `修改用例` · `编辑用例` · `新增用例` · `更新步骤` · `删除用例` |
 | `archive-converter`    | CSV/XMind → 归档 Markdown                          | `转化历史用例` · `归档用例` · `更新归档用例`              |
 | `code-analysis-report` | 报错日志 → HTML 分析报告；禅道 Bug → 线上问题用例  | `帮我分析这个报错` · `分析一下冲突` · 禅道 Bug 链接      |
 
