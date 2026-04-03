@@ -1,0 +1,30 @@
+{
+  "working_dir": "cases/prds/202604",
+  "project_name": "数据资产V6.4.10",
+  "prd_files": [
+    "【内置规则丰富】有效性-json中key对应的value值格式校验.md"
+  ],
+  "last_completed_step": "parse-input",
+  "checklist_confirmed": false,
+  "reviewer_status": "pending",
+  "final_json": null,
+  "output_xmind": null,
+  "archive_md_path": null,
+  "awaiting_verification": false,
+  "writers": {},
+  "source_context": {},
+  "feature_type": "new-feature",
+  "feature_type_source": "auto-inferred",
+  "mode": "normal",
+  "created_at": "2026-04-03T00:00:00Z",
+  "updated_at": "2026-04-03T00:00:00Z",
+  "execution_log": [
+    {
+      "step": "parse-input",
+      "status": "completed",
+      "at": "2026-04-03T00:00:00Z",
+      "duration_ms": null,
+      "summary": "已基于蓝湖页面15694创建原始PRD并初始化状态；无源码参考，需求类型识别为新功能"
+    }
+  ]
+}
