@@ -51,10 +51,21 @@
   "formalize_warnings": ["字段信息不足", "源码补充章节为空"],
   "writers": {
     "list": { "status": "completed", "file": "temp/list.json", "case_count": 12 },
-    "create": { "status": "completed", "file": "temp/create.json", "case_count": 15 },
+    "create": {
+      "status": "blocked",
+      "file": null,
+      "case_count": 0,
+      "blocked_questions": [
+        {
+          "type": "页面名称",
+          "question": "「新增商品」按钮点击后跳转的页面名称是什么？PRD 中未明确说明。",
+          "module": "create"
+        }
+      ],
+      "confirmed_answers": []
+    },
     "detail": { "status": "pending", "file": null, "case_count": 0 }
   },
-  "source_context_file": "cases/prds/202604/temp/source-context.md",
   "reviewer_status": "pending",
   "final_json": null,
   "output_xmind": null,
@@ -82,12 +93,14 @@
 | `last_completed_step` | 已稳定完成的最后步骤，字符串 step ID（初始值为数字 0 表示未开始）。取值范围见 SKILL.md 步骤顺序定义表 |
 | `elicitation` | 需求澄清阶段的状态与结果对象（Step req-elicit 写入，下游步骤只读）。`status` 枚举：`completed` / `skipped`；`target_branch_override` 非空时 source-sync 优先采用该值作为目标分支；`dimension_scores` 记录 10 个可测试性维度得分（0-100）；`testability_score_after` 为加权总评分（权重见 elicitation-dimensions.md） |
 | `mode` | `normal` / `quick`（快速模式跳过 brainstorming 和确认） |
-| `writers.<name>.status` | `pending` / `in_progress` / `completed` / `failed` / `skipped`（`skipped` 表示用户明确跳过该模块，Reviewer 不合并其内容） |
+| `writers.<name>.status` | `pending` / `in_progress` / `completed` / `failed` / `skipped` / `blocked`。`skipped` 表示用户明确跳过该模块，Reviewer 不合并其内容；`blocked` 表示 Writer 遇到无法自行推断的关键信息，需用户确认后才能继续 |
+| `writers.<name>.blocked_questions` | 仅在 `status = "blocked"` 时存在。数组，每项含 `type`（`页面名称`/`按钮名称`/`导航路径`/`功能逻辑`/`字段定义`/`业务规则`）、`question`（具体问题描述）、`module`（模块名称） |
+| `writers.<name>.confirmed_answers` | 仅在 `status = "blocked"` 时存在。数组，每项含 `question_index`（对应 `blocked_questions` 的下标）和 `answer`（用户给出的答案）。重派时追加新答案，不清除旧答案 |
 | `reviewer_status` | `pending` / `completed` / `escalated`（`pending` 覆盖未开始和 Reviewer 执行中；`escalated` 表示 Step 7 被阻断，需人工介入） |
 | `output_xmind` | Step 9 生成并写入的 XMind 文件路径；Step 10 只读取该值用于验证提示，必须保持原值不变 |
 | `awaiting_verification` | Step 10 设置为 `true`，表示流程停在用户验证阶段；恢复时只重放验证提示，不重跑 Step 10；Step 11 消费该状态后删除状态文件 |
 | `archive_md_path` | Step 10 生成的归档 MD 文件路径 |
-| `source_context_file` | source-analyze 步骤（Step 4.5）输出的源码上下文文件路径；config.repos 为空或分析失败时为空字符串 `""`；Writer/Reviewer 通过此字段定位预提取的前端/后端信息 |
+| `source_context` | Step source-sync 写入的源码上下文对象，含各仓库路径与已切分支信息；config.repos 为空时为空对象 `{}`。Writer/Reviewer 直接读取该字段定位源码仓库路径，按需 grep，不再通过预提取的中间文件 |
 | `formalize_warnings` | prd-formalize 质量闸口产生的警告列表。非阻断警告记录于此，在后续 prd-enhancer 健康度报告中一并展示 |
 | `retry_count` | Writer 自动重试次数（由编排器在 Writer 失败后递增）。达到上限（默认 2 次）后写 `failed` 并停止重试 |
 | `execution_log` | 步骤执行记录数组（可选）。每步完成或失败时追加一条记录，包含 step/status/at/duration_ms/summary。仅用于事后排查，不影响续传逻辑 |
@@ -97,6 +110,7 @@
 - 已完成步骤直接跳过，不重新执行
 - `completed` / `skipped` 状态的 Writer 不重跑
 - `pending` / 中断的 `in_progress` 状态 Writer 在普通续传时重新启动
+- `blocked` 状态 Writer 视为等待用户输入的暂停态；续传时编排器检测到 `blocked` 状态，重新展示 `blocked_questions` 给用户，等待回复后写入 `confirmed_answers`，将状态改回 `in_progress` 并重派
 - `failed` 状态 Writer 视为终态；普通续传不自动重启，需用户/编排器显式选择重试。选择重试时，先将其状态写回 `in_progress` 再启动
 - Reviewer 状态为 `escalated` 时，流程停留在 Step 7，先提示用户处理阻断决策
 - `awaiting_verification: true` 时：向用户重新展示验证提示（XMind 路径 + 归档 MD 路径），保持 `last_completed_step: "archive"`，等待用户回复「确认通过」或「已修改，请同步」
@@ -109,7 +123,9 @@
 | Step 1：等待验证续传 | 已有状态文件，且 `awaiting_verification: true` | 保持 `last_completed_step: "archive"`、`output_xmind`、`archive_md_path` 原值 | 只能重放验证提示，不得重跑 Step 10 |
 | Step 7：Writer 启动 | 模块已拆分并准备启动 Writer | 首次启动时，对应 `writers.<name>.status` 从 `pending` 写为 `in_progress`；如用户/编排器显式选择重试 `failed` Writer，也先写回 `in_progress` | `in_progress` 为启动前/启动时写入的乐观运行态；若启动失败或执行失败，必须回写为 `failed`；中断的 `in_progress` 可在普通续传时按原输入恢复执行 |
 | Step 7：Writer 终态 | 单个 Writer 结束 | 成功写 `completed`；失败写 `failed`；用户显式跳过写 `skipped` | Reviewer 仅合并 `completed` 的 Writer 输出 |
-| Step 7：Writer 收敛完成 | 所有 Writer 都已进入终态 | 仅当全部为 `completed` / `skipped` 时，才写 `last_completed_step: "writer"` | 只要存在 `pending` / `in_progress` / `failed`，就不能进入 Step 8 |
+| Step 7：Writer 进入 blocked | Writer 输出 `## BLOCKED` 标记 | 将该模块状态写为 `blocked`，写入 `blocked_questions` 数组，等待用户回复 | `blocked` 期间不计入终态，其他 Writer 可继续并行执行 |
+| Step 7：Writer 从 blocked 恢复 | 编排器收到用户回复后 | 将答案追加到 `confirmed_answers`，将状态写回 `in_progress`，重派 Writer（prompt 末尾追加「已确认信息」节） | 已答问题不得重问；若 Writer 重派后再次 BLOCKED，必须是新问题才允许 |
+| Step 7：Writer 收敛完成 | 所有 Writer 都已进入终态 | 仅当全部为 `completed` / `skipped` 时，才写 `last_completed_step: "writer"` | 只要存在 `pending` / `in_progress` / `failed` / `blocked`，就不能进入 Step 8 |
 | Step 8：Reviewer 成功 | Step 7 已完成 | 写 `reviewer_status: "completed"`、`last_completed_step: "reviewer"`，并产出 `final_json` | `final_json` 应为非空路径 |
 | Step 8：Reviewer 阻断 | 问题率 > 40% | 写 `reviewer_status: "escalated"`，`last_completed_step` 保持 `"writer"` | 流程暂停在 Step 8，等待用户决策 |
 | Step 10：等待用户验证 | Step 9 已成功，归档 MD 已生成 | 保持 Step 9 写入的 `output_xmind` 原值不变，并写 `last_completed_step: "archive"`、`archive_md_path`、`awaiting_verification: true` | `output_xmind` 与 `archive_md_path` 都应可用，且 Step 10 不得重写 `output_xmind` |
