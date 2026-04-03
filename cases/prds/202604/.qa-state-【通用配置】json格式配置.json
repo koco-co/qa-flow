@@ -7,9 +7,9 @@
   "last_completed_step": "archive",
   "checklist_confirmed": true,
   "reviewer_status": "completed",
-  "final_json": "cases/prds/202604/temp/final-reviewed.json",
-  "output_xmind": "cases/xmind/202604/Story-20260403.xmind",
-  "archive_md_path": "cases/archive/202604/Story-20260403.md",
+  "final_json": "cases/prds/202604/temp/15696-reviewed.json",
+  "output_xmind": "cases/xmind/202604/【通用配置】json格式配置.xmind",
+  "archive_md_path": "cases/archive/202604/【通用配置】json格式配置.md",
   "awaiting_verification": true,
   "writers": {
     "list": {
@@ -48,7 +48,7 @@
     "【通用配置】json格式配置.md"
   ],
   "created_at": "2026-04-03T00:00:00Z",
-  "updated_at": "2026-04-03T12:02:13.912Z",
+  "updated_at": "2026-04-03T14:05:36.993Z",
   "execution_log": [
     {
       "step": "parse-input",
@@ -74,30 +74,30 @@
     {
       "step": "writer",
       "status": "completed",
-      "at": "2026-04-03T12:02:13.912Z",
+      "at": "2026-04-03T12:32:14.900Z",
       "duration_ms": null,
       "summary": "Writer 收敛完成，输出 temp/15696.json，共 15 条用例"
     },
     {
       "step": "reviewer",
       "status": "completed",
-      "at": "2026-04-03T12:02:13.912Z",
+      "at": "2026-04-03T14:05:36.993Z",
       "duration_ms": null,
-      "summary": "Reviewer 完成聚合评审，输出 final-reviewed.json，共 44 条用例"
+      "summary": "Reviewer 完成独立评审，输出 cases/prds/202604/temp/15696-reviewed.json，共 20 条用例"
     },
     {
       "step": "xmind",
       "status": "completed",
-      "at": "2026-04-03T12:02:13.912Z",
+      "at": "2026-04-03T14:05:36.993Z",
       "duration_ms": null,
-      "summary": "生成 XMind 文件，路径: cases/xmind/202604/Story-20260403.xmind，包含 44 条用例"
+      "summary": "生成 XMind 文件，路径: cases/xmind/202604/【通用配置】json格式配置.xmind，包含 20 条用例"
     },
     {
       "step": "archive",
       "status": "completed",
-      "at": "2026-04-03T12:02:13.912Z",
+      "at": "2026-04-03T14:05:36.993Z",
       "duration_ms": null,
-      "summary": "生成归档 MD，路径: cases/archive/202604/Story-20260403.md，等待用户验证"
+      "summary": "生成归档 MD，路径: cases/archive/202604/【通用配置】json格式配置.md，等待用户验证"
     }
   ]
 }
