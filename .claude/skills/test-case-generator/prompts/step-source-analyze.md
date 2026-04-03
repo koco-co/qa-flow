@@ -1,5 +1,6 @@
+<!-- DEPRECATED: step 4.5 source-analyze 已从工作流中移除。Writer/Reviewer 现在直接读取源码。保留此文件仅供历史参考，不再被编排器调用。 -->
 <!-- step-id: source-analyze | delegate: testCaseOrchestrator -->
-# Step source-analyze：源码上下文预提取
+# Step source-analyze：源码上下文预提取（已废弃）
 
 > 前置条件: `last_completed_step` == `"prd-enhancer"`
 > 快速模式: 执行
