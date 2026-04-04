@@ -73,6 +73,7 @@ qa-flow/
 | `prd-enhancer`         | PRD 图片描述 + 增强 + 健康度预检                   | `增强 PRD` · `读取 PRD 图片` · `PRD 预处理`              |
 | `xmind-converter`      | JSON → XMind 转换                                  | `转换为 XMind` · `生成 XMind 文件` · `输出 XMind`        |
 | `xmind-editor`         | 局部修改/新增/删除 XMind 用例（无需读 PRD）         | `修改用例` · `编辑用例` · `新增用例` · `更新步骤` · `删除用例` |
+| `ui-autotest`          | Playwright UI 自动化测试（多 Sub-Agent 并行）       | `UI自动化测试` · `自动化回归` · `执行UI测试` · `e2e回归` · `冒烟测试` |
 | `archive-converter`    | CSV/XMind → 归档 Markdown                          | `转化历史用例` · `归档用例` · `更新归档用例`              |
 | `code-analysis-report` | 报错日志 → HTML 分析报告；禅道 Bug → 线上问题用例  | `帮我分析这个报错` · `分析一下冲突` · 禅道 Bug 链接      |
 

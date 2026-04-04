@@ -11,6 +11,7 @@
 | code-analysis-report（冲突） | `conflict-analyzed` | 冲突分析报告生成完成 | `reportFile`, `conflictCount`, `branches` |
 | code-analysis-report（Hotfix） | `hotfix-case-generated` | 线上问题用例转化完成 | `bugId`, `branch`, `file`, `changedFiles` |
 | archive-converter | `archive-converted` | 批量归档完成 | `fileCount`, `caseCount` |
+| ui-autotest | `ui-test-completed` | 全部用例执行完成 | `passed`, `failed`, `specFiles`, `reportFile`, `duration` |
 | 任意 Skill 失败 | `workflow-failed` | Skill 执行异常中断 | `step`, `reason` |
 
 ## 执行方式
