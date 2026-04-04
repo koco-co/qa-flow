@@ -1,0 +1,8 @@
+{
+  "description": "禅道插件 — 从禅道 Bug 链接拉取缺陷详情并生成线上问题用例",
+  "env_required": ["ZENTAO_BASE_URL", "ZENTAO_COOKIE"],
+  "url_patterns": ["zentao", "zenpms"],
+  "commands": {
+    "fetch": "npx tsx plugins/zentao/fetch.ts --url {{url}} --output {{output}}"
+  }
+}

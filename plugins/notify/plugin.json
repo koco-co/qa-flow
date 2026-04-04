@@ -1,0 +1,7 @@
+{
+  "description": "IM 通知插件 — 支持钉钉 / 飞书 / 企微 / 邮件",
+  "env_required_any": ["DINGTALK_WEBHOOK", "FEISHU_WEBHOOK", "WECOM_WEBHOOK", "SMTP_HOST"],
+  "commands": {
+    "send": "node .claude/shared/scripts/notify.mjs --event {{event}} --data '{{json}}'"
+  }
+}
