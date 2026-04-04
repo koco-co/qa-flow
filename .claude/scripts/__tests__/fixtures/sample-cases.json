@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "project_name": "数据资产",
+    "requirement_name": "质量问题台账",
+    "version": "v6.4.10",
+    "module_key": "data-assets",
+    "requirement_id": 10287,
+    "requirement_ticket": "DTSTK-1234",
+    "description": "质量问题台账功能测试用例"
+  },
+  "modules": [
+    {
+      "name": "质量问题台账",
+      "pages": [
+        {
+          "name": "列表页",
+          "sub_groups": [
+            {
+              "name": "搜索筛选",
+              "test_cases": [
+                {
+                  "title": "验证默认加载列表页",
+                  "priority": "P0",
+                  "preconditions": "1、环境已部署\n2、已有测试数据",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 质量问题台账】页面",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "查看列表默认数据",
+                      "expected": "显示最近创建的问题记录"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证按问题类型筛选",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 质量问题台账】页面",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "在「问题类型」下拉框选择「数据缺失」",
+                      "expected": "列表仅显示问题类型为「数据缺失」的记录"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证按时间范围筛选",
+                  "priority": "P2",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 质量问题台账】页面",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "在「创建时间」选择「2026-01-01 至 2026-03-31」",
+                      "expected": "列表仅显示该时间范围内的记录"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "test_cases": [
+            {
+              "title": "验证翻页功能",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据质量 → 质量问题台账】页面",
+                  "expected": "页面正常加载"
+                },
+                {
+                  "step": "点击下一页按钮",
+                  "expected": "翻页成功，显示第二页数据"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "新增页",
+          "sub_groups": [],
+          "test_cases": [
+            {
+              "title": "验证填写完整表单后成功提交",
+              "priority": "P0",
+              "preconditions": "1、环境已部署\n2、具有新增权限",
+              "steps": [
+                {
+                  "step": "进入【数据质量 → 质量问题台账】页面",
+                  "expected": "页面正常加载"
+                },
+                {
+                  "step": "点击【新增】按钮",
+                  "expected": "打开新增表单页面"
+                },
+                {
+                  "step": "填写问题标题为「测试数据质量问题」，问题类型选择「数据缺失」",
+                  "expected": "字段填写成功"
+                },
+                {
+                  "step": "点击【提交】按钮",
+                  "expected": "提示「新增成功」，列表页新增一条记录"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
