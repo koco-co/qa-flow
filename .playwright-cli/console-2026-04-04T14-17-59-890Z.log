@@ -1,6 +1,0 @@
-[     527ms] [LOG] %cApp current version: v6.3.8-uic font-family: Cabin, Helvetica, Arial, sans-serif;text-align: left;font-size:32px;color:#B21212; @ http://shuzhan63-test-ltqc.k8s.dtstack.cn/js/main_packages_dt-c.9e2c94c4885a051dfa49.js:0
-[    1236ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://shuzhan63-test-ltqc.k8s.dtstack.cn/#/:0
-[   14855ms] [LOG] %cApp current version: v6.3.8-uic font-family: Cabin, Helvetica, Arial, sans-serif;text-align: left;font-size:32px;color:#B21212; @ http://shuzhan63-test-ltqc.k8s.dtstack.cn/js/main_packages_dt-c.9e2c94c4885a051dfa49.js:0
-[   15133ms] [LOG] browserSpec: {name: Chrome, version: 146} @ http://shuzhan63-test-ltqc.k8s.dtstack.cn/portal/:19
-[   15340ms] [LOG] %cApp current version: v6.3.1-portal-ltqc font-family: Cabin, Helvetica, Arial, sans-serif;text-align: left;font-size:32px;color:#B21212; @ http://shuzhan63-test-ltqc.k8s.dtstack.cn/portal/js/main_packages_dt-common_src_a.b0026d8301d9fa3f69a5.js:14
-[   28867ms] [LOG] %cApp current version: v6.3.20-dataAssets-ltqc font-family: Cabin, Helvetica, Arial, sans-serif;text-align: left;font-size:32px;color:#B21212; @ http://shuzhan63-test-ltqc.k8s.dtstack.cn/dataAssets/js/main_src_api.ad0b8b603aa76088dea3.js:0

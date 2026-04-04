@@ -1,18 +1,28 @@
 {
   "name": "qa-flow",
+  "version": "2.0.0",
   "type": "module",
   "private": true,
-  "description": "qa-flow QA 测试用例生成工作流",
+  "description": "AI-driven QA test case generation workflow built on Claude Code Skills",
   "scripts": {
-    "test": "node .claude/tests/run-all.mjs",
-    "install:python": "cd tools/lanhu-mcp && uv venv && uv pip install -r requirements.txt"
+    "check": "biome check .",
+    "check:fix": "biome check --fix .",
+    "test": "npx tsx --test '.claude/scripts/__tests__/**/*.test.ts'",
+    "test:watch": "npx tsx --test --watch '.claude/scripts/__tests__/**/*.test.ts'"
   },
   "dependencies": {
+    "commander": "^13.1.0",
+    "handlebars": "^4.7.8",
     "jszip": "^3.10.1",
-    "nodemailer": "^8.0.4",
     "xmind-generator": "^1.0.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1"
+    "@biomejs/biome": "^2.0.0",
+    "@playwright/test": "^1.59.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }
