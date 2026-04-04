@@ -45,3 +45,8 @@ tools/zentao/
 
 # Root-level unified env file (all credentials — do not commit)
 .env
+
+# UI 自动化
+.auth/
+tests/e2e/.tmp/
+reports/e2e/playwright-html/
