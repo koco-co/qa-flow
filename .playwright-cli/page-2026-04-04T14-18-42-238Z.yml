@@ -1,0 +1,202 @@
+- generic [ref=e3]:
+  - banner [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15] [cursor=pointer]:
+        - img [ref=e17]
+        - generic [ref=e19]:
+          - img "logo" [ref=e21]
+          - generic [ref=e23]: DataAssets
+      - menu [ref=e26]:
+        - menuitem "资产盘点" [ref=e27] [cursor=pointer]:
+          - link "资产盘点" [ref=e29]:
+            - /url: "#/assetsStatistics"
+        - menuitem "元数据" [ref=e30] [cursor=pointer]:
+          - link "元数据" [ref=e32]:
+            - /url: "#/metaDataCenter"
+        - menuitem "数据标准" [ref=e33] [cursor=pointer]:
+          - link "数据标准" [ref=e35]:
+            - /url: "#/standardStatistic"
+        - menuitem "数据模型" [ref=e36] [cursor=pointer]:
+          - link "数据模型" [ref=e38]:
+            - /url: "#/builtSpecificationTable"
+        - menuitem "数据质量" [ref=e39] [cursor=pointer]:
+          - link "数据质量" [active] [ref=e41]:
+            - /url: "#/dq/overview"
+        - menuitem "数据安全" [ref=e42] [cursor=pointer]:
+          - link "数据安全" [ref=e44]:
+            - /url: "#/dataAuth/permissionAssign"
+        - menuitem "平台管理" [ref=e45] [cursor=pointer]:
+          - link "平台管理" [ref=e47]:
+            - /url: "#/dataSourceManage"
+        - menuitem [disabled]:
+          - img:
+            - img
+    - list [ref=e49]:
+      - button [ref=e50] [cursor=pointer]:
+        - img [ref=e52]
+      - generic "帮助文档" [ref=e60] [cursor=pointer]:
+        - link "question-circle" [ref=e61]:
+          - /url: /helpSite/docs/assets/root/summary/
+          - img "question-circle" [ref=e62]:
+            - img [ref=e63]
+      - link "message" [ref=e65] [cursor=pointer]:
+        - /url: http://shuzhan63-test-ltqc.k8s.dtstack.cn/portal/#/message?app=dataAssets
+        - img "message" [ref=e67]:
+          - img [ref=e68]
+      - img "setting" [ref=e71] [cursor=pointer]:
+        - img [ref=e72]
+      - generic "admin@dtstack.com" [ref=e75] [cursor=pointer]
+  - generic [ref=e789]:
+    - complementary [ref=e790]:
+      - generic [ref=e791]:
+        - generic [ref=e793] [cursor=pointer]:
+          - generic [ref=e794]:
+            - combobox [ref=e796]
+            - generic "chaomeng" [ref=e797]
+          - generic:
+            - img:
+              - img
+        - menu [ref=e799]:
+          - menuitem "总览" [ref=e800] [cursor=pointer]:
+            - link "总览" [ref=e802]:
+              - /url: "#/dq/overview"
+              - generic [ref=e803]:
+                - img [ref=e804]
+                - generic [ref=e807]: 总览
+          - menuitem "规则库配置" [ref=e808] [cursor=pointer]:
+            - link "规则库配置" [ref=e810]:
+              - /url: "#/dq/ruleBase"
+              - generic [ref=e811]:
+                - img [ref=e812]
+                - generic [ref=e815]: 规则库配置
+          - menuitem "规则集管理" [ref=e816] [cursor=pointer]:
+            - link "规则集管理" [ref=e818]:
+              - /url: "#/dq/ruleSet"
+              - generic [ref=e819]:
+                - img [ref=e820]
+                - generic [ref=e823]: 规则集管理
+          - menuitem "规则任务管理" [ref=e824] [cursor=pointer]:
+            - link "规则任务管理" [ref=e826]:
+              - /url: "#/dq/rule"
+              - generic [ref=e827]:
+                - img [ref=e828]
+                - generic [ref=e831]: 规则任务管理
+          - menuitem "校验结果查询" [ref=e832] [cursor=pointer]:
+            - link "校验结果查询" [ref=e834]:
+              - /url: "#/dq/taskQuery"
+              - generic [ref=e835]:
+                - img [ref=e836]
+                - generic [ref=e839]: 校验结果查询
+          - menuitem "数据质量报告" [ref=e840] [cursor=pointer]:
+            - link "数据质量报告" [ref=e842]:
+              - /url: "#/dq/qualityReport"
+              - generic [ref=e843]:
+                - img [ref=e844]
+                - generic [ref=e847]: 数据质量报告
+          - menuitem "通用配置" [ref=e848] [cursor=pointer]:
+            - generic [ref=e850]:
+              - img [ref=e851]
+              - generic [ref=e854]: 通用配置
+          - menuitem "项目管理" [ref=e855] [cursor=pointer]:
+            - generic [ref=e857]:
+              - img [ref=e858]
+              - generic [ref=e861]: 项目管理
+    - main [ref=e863]:
+      - generic [ref=e866]:
+        - generic [ref=e867]:
+          - generic [ref=e868]: 数据质量概览
+          - generic [ref=e869]:
+            - textbox "开始日期" [ref=e871]: 2026-04-04
+            - generic "to" [ref=e873]:
+              - img "swap-right" [ref=e874]:
+                - img [ref=e875]
+            - textbox "结束日期" [ref=e878]: 2026-04-04
+            - generic:
+              - img "calendar":
+                - img
+        - generic [ref=e879]:
+          - generic [ref=e880]:
+            - generic [ref=e881]:
+              - generic [ref=e882]: 单表规则总数
+              - generic [ref=e883]: "0"
+            - generic [ref=e884]:
+              - generic [ref=e885]: 多表规则总数
+              - generic [ref=e886]: "0"
+          - generic [ref=e887]:
+            - generic [ref=e888]: 运维指标
+            - generic [ref=e889]:
+              - generic [ref=e890]:
+                - generic [ref=e891]:
+                  - generic [ref=e892]: 任务总数
+                  - generic [ref=e893]: "0"
+                - generic [ref=e894]:
+                  - generic [ref=e896] [cursor=pointer]: 全部任务
+                  - generic [ref=e897] [cursor=pointer]:
+                    - generic [ref=e898]: 单表任务
+                    - generic [ref=e899]: "0"
+                  - generic [ref=e900] [cursor=pointer]:
+                    - generic [ref=e901]: 多表任务
+                    - generic [ref=e902]: "0"
+              - generic [ref=e903]:
+                - generic [ref=e904]:
+                  - img [ref=e905]
+                  - generic [ref=e906]: 校验通过
+                  - generic [ref=e907]: "0"
+                - generic [ref=e908]:
+                  - img [ref=e909]
+                  - generic [ref=e911]:
+                    - text: 校验异常
+                    - img [ref=e913]
+                  - generic [ref=e915]: "0"
+                - generic [ref=e916]:
+                  - img [ref=e917]
+                  - generic [ref=e919]:
+                    - text: 其他
+                    - img [ref=e921]
+                  - generic [ref=e923]: "0"
+        - generic [ref=e924]:
+          - generic [ref=e925]:
+            - generic [ref=e926]:
+              - generic [ref=e927]:
+                - generic [ref=e928]: 告警汇总
+                - generic [ref=e930] [cursor=pointer]:
+                  - text: 查看更多
+                  - img [ref=e931]
+              - generic [ref=e932]:
+                - img [ref=e933]
+                - generic [ref=e934]:
+                  - generic [ref=e935]:
+                    - img [ref=e936]
+                    - generic [ref=e937]:
+                      - generic [ref=e938]: 告警次数
+                      - generic [ref=e939]: "0"
+                  - generic [ref=e940]:
+                    - img [ref=e941]
+                    - generic [ref=e942]:
+                      - generic [ref=e943]: 告警规则
+                      - generic [ref=e944]: "0"
+                  - generic [ref=e945]:
+                    - img [ref=e946]
+                    - generic [ref=e947]:
+                      - generic [ref=e949]:
+                        - text: 告警率
+                        - img [ref=e951]
+                      - generic [ref=e953]: "0"
+            - generic [ref=e955]: 告警趋势
+          - generic [ref=e959]:
+            - generic [ref=e960]: 告警TOP20
+            - generic [ref=e965]:
+              - table [ref=e967]:
+                - rowgroup [ref=e973]:
+                  - row "排名 类型 表名 告警数" [ref=e974]:
+                    - columnheader "排名" [ref=e975]
+                    - columnheader "类型" [ref=e976]
+                    - columnheader "表名" [ref=e977]
+                    - columnheader "告警数" [ref=e978]
+              - table [ref=e980]:
+                - rowgroup [ref=e986]:
+                  - row "暂无数据 暂无数据" [ref=e987]:
+                    - cell "暂无数据 暂无数据" [ref=e988]:
+                      - generic [ref=e990]:
+                        - img "暂无数据" [ref=e992]
+                        - generic [ref=e993]: 暂无数据
