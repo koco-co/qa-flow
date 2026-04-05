@@ -33,6 +33,7 @@ interface CsvRow {
   steps: string;
   expected: string;
   priority: string;
+  createDate: string;
 }
 
 interface XMindTopicNode {
@@ -225,6 +226,7 @@ const CSV_HEADER_MAP: Record<string, string> = {
   步骤: "steps",
   预期: "expected",
   优先级: "priority",
+  创建日期: "create_date",
 };
 
 async function parseCsvFile(filePath: string): Promise<CsvRow[]> {
@@ -255,13 +257,37 @@ async function parseCsvFile(filePath: string): Promise<CsvRow[]> {
       module: get(r, "module"),
       requirement: get(r, "requirement"),
       title,
-      preconditions: get(r, "preconditions"),
+      preconditions: cleanRichText(get(r, "preconditions")),
       steps: get(r, "steps"),
       expected: get(r, "expected"),
       priority: get(r, "priority"),
+      createDate: get(r, "create_date"),
     });
   }
   return rows;
+}
+
+/** Clean HTML entities, tags, and rich-text garbage from Zentao export */
+function cleanRichText(text: string): string {
+  if (!text) return text;
+  return (
+    text
+      // Decode common HTML entities
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+      // Strip HTML tags
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/?(p|div|span|font|b|i|u|em|strong|li|ul|ol|table|tr|td|th|thead|tbody|a|img|h[1-6])[^>]*>/gi, "\n")
+      .replace(/<[^>]+>/g, "")
+      // Collapse excessive blank lines
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
 }
 
 /** Parse module path like /版本迭代测试用例/v6.4.8/【需求名】(#10220) */
@@ -325,8 +351,76 @@ function parseNumberedLines(text: string): string[] {
 }
 
 /**
+ * Split a CSV title into heading path + case title at "验证".
+ *
+ * Pattern A: 验证「L2」-「L3」-「L4」xxx  → headings=[L2,L3,L4], caseTitle=验证xxx
+ * Pattern B: 数据质量-规则库管理 自定义SQL模版 新增 验证xxx → headings=[数据质量-规则库管理,自定义SQL模版,新增], caseTitle=验证xxx
+ * Pattern C: 验证xxx (no path prefix) → headings=[], caseTitle=验证xxx
+ */
+function splitCsvTitle(title: string): { headings: string[]; caseTitle: string } {
+  // Pattern A: 验证「X」-「Y」-「Z」rest  or  验证「X」-「Y」rest
+  const patA = title.match(
+    /^验证((?:「[^」]+」[-,\-—]+)+)(.+)$/,
+  );
+  if (patA) {
+    const pathPart = patA[1];
+    const rest = patA[2];
+    const headings = [...pathPart.matchAll(/「([^」]+)」/g)].map((m) => m[1]);
+    return { headings, caseTitle: `验证${rest}` };
+  }
+
+  // Pattern B0: "段 ❯ 段 ❯ 验证xxx" (❯ delimited, Zentao breadcrumb style)
+  // Note: ❯ may also appear inside case titles (e.g. in parentheses), so split
+  // only the prefix before "验证" by ❯, and keep everything from 验证 onward as title.
+  if (title.includes("❯")) {
+    const vIdx = title.indexOf("验证");
+    if (vIdx > 0) {
+      const prefix = title.slice(0, vIdx);
+      const caseTitle = title.slice(vIdx);
+      const headings = prefix
+        .split(/\s*❯\s*/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return { headings, caseTitle };
+    }
+    // No 验证 found — split all by ❯, last part is caseTitle
+    const parts = title.split(/\s*❯\s*/);
+    return {
+      headings: parts.slice(0, -1).filter(Boolean),
+      caseTitle: parts[parts.length - 1],
+    };
+  }
+
+  // Pattern B: "路径段 路径段 ... 验证xxx"
+  const idxVerify = title.indexOf("验证");
+  if (idxVerify > 0) {
+    const prefix = title.slice(0, idxVerify).trim();
+    const caseTitle = title.slice(idxVerify);
+    const headings = prefix
+      .split(/\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return { headings, caseTitle };
+  }
+
+  // Pattern C: no hierarchy prefix
+  return { headings: [], caseTitle: title };
+}
+
+/** Derive archive yyyyMM from create dates of rows in a group */
+function deriveArchiveYYYYMM(rows: CsvRow[]): string {
+  for (const row of rows) {
+    if (row.createDate) {
+      const m = row.createDate.match(/^(\d{4})-(\d{2})/);
+      if (m) return `${m[1]}${m[2]}`;
+    }
+  }
+  return currentYYYYMM();
+}
+
+/**
  * Group CSV rows by L1 (requirement) and convert each group to a separate archive MD.
- * Returns array of { fileName, content, caseCount, caseId, version }.
+ * Returns array of { fileName, content, caseCount, caseId, version, archiveYYYYMM }.
  */
 function csvRowsToArchives(
   rows: CsvRow[],
@@ -338,6 +432,7 @@ function csvRowsToArchives(
   version: string;
   productName: string;
   iterationId?: string;
+  archiveYYYYMM: string;
 }> {
   // Group rows by L1 requirement
   const l1Groups = new Map<
@@ -374,10 +469,12 @@ function csvRowsToArchives(
     version: string;
     productName: string;
     iterationId?: string;
+    archiveYYYYMM: string;
   }> = [];
 
   for (const [l1Name, group] of l1Groups) {
     const { caseId, version } = group;
+    const archiveYYYYMM = deriveArchiveYYYYMM(group.rows);
 
     const tags = inferTags({
       suiteName: l1Name,
@@ -398,11 +495,50 @@ function csvRowsToArchives(
     };
     if (caseId) fm.case_id = Number(caseId);
 
+    // Group cases by heading path for structured output
+    interface CaseWithPath {
+      headings: string[];
+      caseTitle: string;
+      row: CsvRow;
+    }
+    const casesWithPath: CaseWithPath[] = group.rows
+      .filter((r) => r.title)
+      .map((r) => {
+        const { headings, caseTitle } = splitCsvTitle(r.title);
+        return { headings, caseTitle, row: r };
+      });
+
     const bodyParts: string[] = [];
-    for (const row of group.rows) {
-      if (!row.title) continue;
+    let prevH2 = "";
+    let prevH3 = "";
+    let prevH4 = "";
+
+    for (const { headings, caseTitle, row } of casesWithPath) {
+      const h2 = headings[0] ?? "";
+      const h3 = headings[1] ?? "";
+      const h4 = headings[2] ?? "";
+
+      if (h2 && h2 !== prevH2) {
+        bodyParts.push(`## ${h2}`);
+        bodyParts.push("");
+        prevH2 = h2;
+        prevH3 = "";
+        prevH4 = "";
+      }
+      if (h3 && h3 !== prevH3) {
+        bodyParts.push(`### ${h3}`);
+        bodyParts.push("");
+        prevH3 = h3;
+        prevH4 = "";
+      }
+      if (h4 && h4 !== prevH4) {
+        bodyParts.push(`#### ${h4}`);
+        bodyParts.push("");
+        prevH4 = h4;
+      }
+
       const priorityTag = normalizePriority(row.priority);
-      bodyParts.push(`##### 【${priorityTag}】${row.title}`);
+      bodyParts.push(`##### 【${priorityTag}】${caseTitle}`);
       bodyParts.push("");
 
       // Preconditions
@@ -445,6 +581,7 @@ function csvRowsToArchives(
       version,
       productName,
       iterationId,
+      archiveYYYYMM,
     });
   }
 
@@ -880,7 +1017,16 @@ async function convertFile(
       const results: FileConvertResult[] = [];
 
       for (const archive of archives) {
-        const outputPath = join(outDir, archive.fileName);
+        // Use date-based directory derived from createDate
+        const archiveDir = join(
+          repoRoot(),
+          "workspace",
+          "archive",
+          archive.archiveYYYYMM,
+        );
+        mkdir(archiveDir, { recursive: true });
+
+        const outputPath = join(archiveDir, archive.fileName);
         if (existsSync(outputPath) && !force) {
           results.push({
             input: inputPath,

@@ -17,7 +17,9 @@ case_count: 14
 case_id: 10190
 ---
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.driver.maxResultSize)
+## 规则任务管理
+
+##### 【P1】验证Spark环境参数配置生效(spark.driver.maxResultSize)
 
 > 前置条件
 
@@ -35,7 +37,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 点击 Tracking UI: ApplicationMaster，在 Environment 页签确认该参数值 | 应为2g |
 
-##### 【P0】规则任务管理❯ 验证Spark环境参数配置生效(logLevel)
+##### 【P0】验证Spark环境参数配置生效(logLevel)
 
 > 前置条件
 
@@ -53,7 +55,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 点击 Tracking UI: ApplicationMaster -❯ Executors -❯ stderr/stdout | 日志不再打印 INFO 级别信息 |
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.speculation)
+##### 【P1】验证Spark环境参数配置生效(spark.speculation)
 
 > 前置条件
 
@@ -71,7 +73,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 点击 Tracking UI: ApplicationMaster，在 Environment 页签确认 spark.speculation | 应为true |
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.network.timeout)
+##### 【P1】验证Spark环境参数配置生效(spark.network.timeout)
 
 > 前置条件
 
@@ -89,7 +91,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 点击 Tracking UI: ApplicationMaster，在 Environment 页签搜索该参数 | 确认 Value 为 300s |
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.sql.shuffle.partitions)
+##### 【P1】验证Spark环境参数配置生效(spark.sql.shuffle.partitions)
 
 > 前置条件
 
@@ -107,7 +109,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 点击 Tracking UI: ApplicationMaster 进入 Spark UI，在 Stages 页签查看 Shuffle 操作的 Tasks 总数 | 应为 10 |
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.yarn.executor.memoryOverhead)
+##### 【P1】验证Spark环境参数配置生效(spark.yarn.executor.memoryOverhead)
 
 > 前置条件
 
@@ -125,7 +127,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 检查【 Allocated Memory MB】字段下, 对应任务的值 | Allocated Memory MB 总量会增加。例如 executor.memory 为 1g 时，该字段应显示约 2048MB |
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.driver.memory)
+##### 【P1】验证Spark环境参数配置生效(spark.driver.memory)
 
 > 前置条件
 
@@ -143,7 +145,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 检查【 Allocated Memory MB】字段下, 对应任务的值 | 找到 AppMaster 对应的那个 Container，其 Allocated Memory MB 应为 2048MB + Overhead |
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.driver.cores)
+##### 【P1】验证Spark环境参数配置生效(spark.driver.cores)
 
 > 前置条件
 
@@ -161,7 +163,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 检查【Allocated CPU Vcores】字段下, 对应任务的值 | Allocated CPU Vcores 的总量应在默认基础上增加 1（因为 Driver 占用了更多核） |
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.executor.memory)
+##### 【P1】验证Spark环境参数配置生效(spark.executor.memory)
 
 > 前置条件
 
@@ -179,7 +181,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 检查【Allocated Memory MB】字段下, 对应任务的值 | 单个 Container 的 Allocated Memory MB 应显著增加（通常显示为 2048MB + Overhead |
 
-##### 【P0】规则任务管理❯ 验证Spark环境参数配置生效(spark.executor.cores)
+##### 【P0】验证Spark环境参数配置生效(spark.executor.cores)
 
 > 前置条件
 
@@ -197,7 +199,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 检查【Allocated CPU Vcores】字段下, 对应任务的值 | 【Allocated CPU Vcores】 字段应显示为：3 = instances * 2 + driver.cores |
 
-##### 【P1】规则任务管理❯ 验证Spark环境参数配置生效(spark.executor.instances)
+##### 【P1】验证Spark环境参数配置生效(spark.executor.instances)
 
 > 前置条件
 
@@ -215,7 +217,7 @@ case_id: 10190
 | 4 | 运行规则任务 | 任务运行成功, 校验结果正常 |
 | 5 | 进入Apache Hadoop YARN界面, 检查【Running Containers】字段下, 对应任务的值 | 【Running Containers】 字段应显示为 4 = 3 + 1 (Driver/AM) |
 
-##### 【P0】规则任务管理❯ 验证规则任务详情-环境参数显示正常(SparkThrift2.x)
+##### 【P0】验证规则任务详情-环境参数显示正常(SparkThrift2.x)
 
 > 前置条件
 
@@ -233,7 +235,7 @@ case_id: 10190
 | 4 | 保存后, 进入规则任务详情页中, 点击【环境参数】 | 展开环境参数抽屉, 参数显示正常 |
 | 5 | 运行规则任务 | 运行成功, 校验结果正常 |
 
-##### 【P0】规则任务管理❯ 验证调度属性编辑环境参数配置(SparkThrift2.x)
+##### 【P0】验证调度属性编辑环境参数配置(SparkThrift2.x)
 
 > 前置条件
 
@@ -251,7 +253,7 @@ case_id: 10190
 | 4 | 进入规则任务详情, 点击「环境参数」 | 进入「配置环境参数」界面, 配置参数回显正确 |
 | 5 | 设置spark.executor.cores=3 后保存 | 修改成功, 配置参数回显正确 |
 
-##### 【P1】规则任务管理❯ 验证调度属性新增环境参数配置(SparkThrift2.x)
+##### 【P1】验证调度属性新增环境参数配置(SparkThrift2.x)
 
 > 前置条件
 
