@@ -17,6 +17,7 @@ import {
   createWriteStream,
   existsSync,
   mkdirSync,
+  readFileSync,
   readdirSync,
   statSync,
   writeFileSync,
@@ -277,6 +278,57 @@ function parseRequirementFromPageName(
   const requirementName = pageName.replace(/^\d+/, "");
 
   return { project, requirementId, requirementName };
+}
+
+interface ParsedTxtSections {
+  tips: string;
+  componentText: string;
+  fullText: string;
+}
+
+/**
+ * Parse structured sections from lanhu-mcp .txt files.
+ * The .txt files contain sections like:
+ *   [Important Tips/Warnings]
+ *   [Flowchart/Component Text]
+ *   [Full Page Text]
+ */
+function parseTxtSections(txtFiles: string[]): ParsedTxtSections {
+  const result: ParsedTxtSections = {
+    tips: "",
+    componentText: "",
+    fullText: "",
+  };
+
+  for (const txtPath of txtFiles) {
+    if (!existsSync(txtPath)) continue;
+    const content = readFileSync(txtPath, "utf8");
+
+    // Split by section headers
+    const tipsMatch = content.match(
+      /\[Important Tips\/Warnings\]\s*\n([\s\S]*?)(?=\n\[|$)/,
+    );
+    const componentMatch = content.match(
+      /\[Flowchart\/Component Text\]\s*\n([\s\S]*?)(?=\n\[|$)/,
+    );
+    const fullTextMatch = content.match(
+      /\[Full Page Text\]\s*\n([\s\S]*?)(?=\n\[|$)/,
+    );
+
+    if (tipsMatch?.[1]?.trim()) {
+      result.tips += (result.tips ? "\n\n" : "") + tipsMatch[1].trim();
+    }
+    if (componentMatch?.[1]?.trim()) {
+      result.componentText +=
+        (result.componentText ? "\n\n" : "") + componentMatch[1].trim();
+    }
+    if (fullTextMatch?.[1]?.trim()) {
+      result.fullText +=
+        (result.fullText ? "\n\n" : "") + fullTextMatch[1].trim();
+    }
+  }
+
+  return result;
 }
 
 // ─── Bridge Helpers ──────────────────────────────────────────────────────────
@@ -621,12 +673,23 @@ async function run(
       }
     }
 
-    // Also copy the full-page screenshot (without compression) as overview
+    // Also copy the full-page screenshot and save .txt to tmp/
     let imgIdx = collectedImages.length;
+    const txtFiles: string[] = []; // track .txt files for later parsing
     for (const bridgePage of bridgeResult.pages) {
       for (const imgSrc of bridgePage.images) {
-        // Skip non-image files (e.g. styles.json, .txt from lanhu-mcp cache)
-        if (imgSrc.endsWith(".json") || imgSrc.endsWith(".txt")) continue;
+        // Save .txt files to tmp/ for archival and later parsing
+        if (imgSrc.endsWith(".txt")) {
+          if (existsSync(imgSrc)) {
+            const txtName = basename(imgSrc);
+            const destPath = join(tmpDir, txtName);
+            copyFileSync(imgSrc, destPath);
+            txtFiles.push(destPath);
+          }
+          continue;
+        }
+        // Skip non-image files (e.g. styles.json)
+        if (imgSrc.endsWith(".json")) continue;
         imgIdx++;
         try {
           if (
@@ -664,16 +727,19 @@ async function run(
       }
     }
 
-    // Build front-matter + body
+    // Parse structured text from .txt files
+    const parsedSections = parseTxtSections(txtFiles);
+
+    // Separate element images and fullpage screenshots
+    const elementImages = collectedImages.filter(
+      (img) => !img.name.includes("fullpage-"),
+    );
+    const fullpageImages = collectedImages.filter((img) =>
+      img.name.includes("fullpage-"),
+    );
+
+    // Build well-organized markdown
     const fetchDate = new Date().toISOString().slice(0, 10);
-    const imagesMd = collectedImages
-      .map((img, idx) => {
-        const label = img.name.includes("fullpage-")
-          ? `全页截图-${idx + 1}`
-          : `页面元素-${idx + 1}`;
-        return `![${label}](images/${img.name})`;
-      })
-      .join("\n\n");
 
     const frontMatter = [
       "---",
@@ -688,25 +754,66 @@ async function run(
 
     const bodyParts: string[] = [`# ${reqInfo.requirementName}`];
 
-    // Strip useless [图片] references from Axure text extraction
-    for (const bridgePage of bridgeResult.pages) {
-      if (bridgePage.content) {
-        const cleaned = bridgePage.content
-          .replace(/\[图片\]\s*images\/[^\s]+(\s*\(\d+x\d+\))?/g, "")
-          .replace(/\n{3,}/g, "\n\n");
-        bodyParts.push(cleaned);
-      }
+    // Important tips/warnings (red text annotations from product)
+    if (parsedSections.tips) {
+      bodyParts.push(`## 重要提示\n\n${parsedSections.tips}`);
     }
 
-    if (imagesMd) {
-      bodyParts.push(imagesMd);
+    // Element images section — high-res UI components for field/control recognition
+    if (elementImages.length > 0) {
+      const elementImgMd = elementImages
+        .map(
+          (img, idx) => `![页面元素-${idx + 1}](images/${img.name})`,
+        )
+        .join("\n\n");
+      bodyParts.push(`## 页面元素截图\n\n${elementImgMd}`);
+    }
+
+    // Flowchart/Component text — UI control labels extracted from Axure
+    if (parsedSections.componentText) {
+      bodyParts.push(
+        `## 控件文本\n\n${parsedSections.componentText}`,
+      );
+    }
+
+    // Full-page screenshot — overall page layout reference
+    if (fullpageImages.length > 0) {
+      const fullpageImgMd = fullpageImages
+        .map(
+          (img, idx) => `![全页截图-${idx + 1}](images/${img.name})`,
+        )
+        .join("\n\n");
+      bodyParts.push(`## 整页截图\n\n${fullpageImgMd}`);
+    }
+
+    // Full page text — complete page text description
+    if (parsedSections.fullText) {
+      bodyParts.push(
+        `## 页面完整文本\n\n${parsedSections.fullText}`,
+      );
+    }
+
+    // Fallback: if no parsed sections, include raw bridge content
+    if (
+      !parsedSections.tips &&
+      !parsedSections.componentText &&
+      !parsedSections.fullText
+    ) {
+      for (const bridgePage of bridgeResult.pages) {
+        if (bridgePage.content) {
+          const cleaned = bridgePage.content
+            .replace(/\[图片\]\s*images\/[^\s]+(\s*\(\d+x\d+\))?/g, "")
+            .replace(/\n{3,}/g, "\n\n");
+          bodyParts.push(cleaned);
+        }
+      }
     }
 
     const prdContent = `${frontMatter}\n\n${bodyParts.join("\n\n")}\n`;
 
-    // Write raw PRD to tmp/
+    // Write assembled PRD to requirement root directory
     const prdFileName = `${reqInfo.requirementName}.md`;
-    const prdPath = join(tmpDir, prdFileName);
+    const prdPath = join(reqDir, prdFileName);
     writeFileSync(prdPath, prdContent, "utf8");
 
     requirementInfos.push({
