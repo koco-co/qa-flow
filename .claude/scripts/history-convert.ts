@@ -76,10 +76,32 @@ interface ConvertOutput {
 
 /** Stop words that should not become tags (too generic) */
 const TAG_STOP_WORDS = new Set([
-  "列表页", "新增页", "编辑页", "详情页", "设置页", "配置页",
-  "新增", "编辑", "删除", "详情", "查询", "搜索", "导入", "导出",
-  "页面", "功能", "模块", "列表", "测试", "验证", "测试用例", "用例",
-  "步骤", "预期", "前置条件", "未分类",
+  "列表页",
+  "新增页",
+  "编辑页",
+  "详情页",
+  "设置页",
+  "配置页",
+  "新增",
+  "编辑",
+  "删除",
+  "详情",
+  "查询",
+  "搜索",
+  "导入",
+  "导出",
+  "页面",
+  "功能",
+  "模块",
+  "列表",
+  "测试",
+  "验证",
+  "测试用例",
+  "用例",
+  "步骤",
+  "预期",
+  "前置条件",
+  "未分类",
 ]);
 
 /** Infer tags from module names, page names, sub-group names, and case titles */
@@ -347,7 +369,9 @@ function isCaseNode(node: XMindTopicNode): boolean {
 }
 
 /** Extract steps from a case node's children: child = step, grandchild = expected */
-function extractSteps(node: XMindTopicNode): { step: string; expected: string }[] {
+function extractSteps(
+  node: XMindTopicNode,
+): { step: string; expected: string }[] {
   const children = node.children?.attached ?? [];
   return children.map((child) => {
     const expected = child.children?.attached?.[0]?.title ?? "";
@@ -393,7 +417,9 @@ function parseL2Module(l2: XMindTopicNode): ParsedModule {
   for (const l3 of l2Children) {
     if (isCaseNode(l3)) {
       // L3 is itself a case (shallow structure: L2 → case)
-      const fallbackPage: ParsedPage = pages.find((p) => p.name === "未分类") ?? {
+      const fallbackPage: ParsedPage = pages.find(
+        (p) => p.name === "未分类",
+      ) ?? {
         name: "未分类",
         subGroups: [],
         cases: [],
@@ -459,17 +485,22 @@ function parseXmindToL1s(sheets: XMindSheet[]): ParsedL1[] {
       for (const l2Node of l1Children) {
         if (isCaseNode(l2Node)) {
           // L2 is itself a case (very shallow: L1 → case)
-          const fallbackMod: ParsedModule = modules.find((m) => m.name === "未分类") ?? {
+          const fallbackMod: ParsedModule = modules.find(
+            (m) => m.name === "未分类",
+          ) ?? {
             name: "未分类",
             pages: [],
           };
           if (!modules.includes(fallbackMod)) modules.push(fallbackMod);
-          const fallbackPage: ParsedPage = fallbackMod.pages.find((p) => p.name === "未分类") ?? {
+          const fallbackPage: ParsedPage = fallbackMod.pages.find(
+            (p) => p.name === "未分类",
+          ) ?? {
             name: "未分类",
             subGroups: [],
             cases: [],
           };
-          if (!fallbackMod.pages.includes(fallbackPage)) fallbackMod.pages.push(fallbackPage);
+          if (!fallbackMod.pages.includes(fallbackPage))
+            fallbackMod.pages.push(fallbackPage);
           fallbackPage.cases.push({
             title: stripPriorityPrefix(l2Node.title ?? ""),
             priority: extractPriority(l2Node),
@@ -559,7 +590,7 @@ function l1ToMarkdown(l1: ParsedL1): string {
 
   const { name: cleanName, caseId } = parseL1Title(l1.title);
 
-  const suiteLabel = caseId ? `${cleanName}(#${caseId})` : cleanName;
+  const suiteLabel = cleanName;
 
   const fm: Record<string, string | number | boolean | string[]> = {
     suite_name: suiteLabel,
@@ -646,12 +677,14 @@ function parseL1Title(title: string): { name: string; caseId?: string } {
 /** Sanitize L1 title for use as filename — preserve【】, remove ticket suffix, strip unsafe chars */
 function sanitizeFilename(title: string): string {
   const { name } = parseL1Title(title);
-  return name
-    .replace(/[\/\\:*?"<>|]/g, "-")
-    .replace(/\s+/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .trim() || "未命名";
+  return (
+    name
+      .replace(/[\/\\:*?"<>|]/g, "-")
+      .replace(/\s+/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .trim() || "未命名"
+  );
 }
 
 // ─── Conversion ───────────────────────────────────────────────────────────────
@@ -668,25 +701,32 @@ async function convertFile(
     mkdir(outDir, { recursive: true });
 
     if (ext === ".csv") {
-      const outputPath = join(outDir, `${basename(inputPath, extname(inputPath))}.md`);
+      const outputPath = join(
+        outDir,
+        `${basename(inputPath, extname(inputPath))}.md`,
+      );
       if (existsSync(outputPath) && !force) {
-        return [{
-          input: inputPath,
-          output: outputPath,
-          status: "skipped",
-          reason: "output exists, use --force to overwrite",
-        }];
+        return [
+          {
+            input: inputPath,
+            output: outputPath,
+            status: "skipped",
+            reason: "output exists, use --force to overwrite",
+          },
+        ];
       }
       const rows = await parseCsvFile(inputPath);
       const suiteName = basename(inputPath, extname(inputPath));
       const content = csvRowsToMarkdown(rows, suiteName);
       writeFileSync(outputPath, content, "utf8");
-      return [{
-        input: inputPath,
-        output: outputPath,
-        status: "converted",
-        caseCount: rows.filter((r) => r.title).length,
-      }];
+      return [
+        {
+          input: inputPath,
+          output: outputPath,
+          status: "converted",
+          caseCount: rows.filter((r) => r.title).length,
+        },
+      ];
     }
 
     if (ext === ".xmind") {
@@ -694,12 +734,14 @@ async function convertFile(
       const l1s = parseXmindToL1s(sheets);
 
       if (l1s.length === 0) {
-        return [{
-          input: inputPath,
-          output: outDir,
-          status: "failed",
-          reason: "no L1 nodes found in XMind file",
-        }];
+        return [
+          {
+            input: inputPath,
+            output: outDir,
+            status: "failed",
+            reason: "no L1 nodes found in XMind file",
+          },
+        ];
       }
 
       const results: FileConvertResult[] = [];
@@ -731,19 +773,23 @@ async function convertFile(
       return results;
     }
 
-    return [{
-      input: inputPath,
-      output: outDir,
-      status: "failed",
-      reason: `unsupported type: ${ext}`,
-    }];
+    return [
+      {
+        input: inputPath,
+        output: outDir,
+        status: "failed",
+        reason: `unsupported type: ${ext}`,
+      },
+    ];
   } catch (err) {
-    return [{
-      input: inputPath,
-      output: outDir,
-      status: "failed",
-      reason: err instanceof Error ? err.message : String(err),
-    }];
+    return [
+      {
+        input: inputPath,
+        output: outDir,
+        status: "failed",
+        reason: err instanceof Error ? err.message : String(err),
+      },
+    ];
   }
 }
 

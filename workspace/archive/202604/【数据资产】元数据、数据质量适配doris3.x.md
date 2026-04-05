@@ -1,6 +1,6 @@
 ---
-suite_name: "【数据资产】元数据、数据质量适配doris3.x(#10306)"
-description: "【数据资产】元数据、数据质量适配doris3.x(#10306)用例归档"
+suite_name: "【数据资产】元数据、数据质量适配doris3.x"
+description: "【数据资产】元数据、数据质量适配doris3.x用例归档"
 create_at: "2026-04-05"
 status: "归档"
 origin: "xmind"
