@@ -84,10 +84,11 @@ npx tsx .claude/scripts/history-convert.ts --path {{input_file}} --detect
 
 ### 步骤 S4: 输出
 
-> **路径规则**：标准化产物（含 `-standardized` 后缀的 MD 和 XMind）属于中间产物，必须输出到 `tmp/` 子目录，不得直接放在 archive 或 cases 根目录下。
+> **路径规则**：标准化产物（含 `-standardized` 后缀的 MD 和 XMind）属于中间产物，必须输出到 archive 下的 `tmp/` 子目录，不得直接放在 archive 或 xmind 根目录下。
 > - Archive MD → `workspace/archive/{{YYYYMM}}/tmp/{{name}}-standardized.md`
 > - XMind → `workspace/archive/{{YYYYMM}}/tmp/{{name}}-standardized.xmind`
 > - 中间 JSON 也保留在同一 `tmp/` 目录
+> - 禁止输出到 `workspace/cases/` 目录（该目录不存在且不应被创建）
 
 ```bash
 # 生成标准化 Archive MD（输出到 tmp/ 子目录）
@@ -329,16 +330,21 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data
 
 **目标**：生成 XMind + Archive MD，发送通知，清理状态。
 
+> **产物路径规则**（严格遵守）：
+> - XMind → `workspace/xmind/{{YYYYMM}}/{{需求名称}}.xmind`
+> - Archive MD → `workspace/archive/{{YYYYMM}}/{{需求名称}}.md`
+> - 禁止输出到 `workspace/cases/` 目录（该目录不存在且不应被创建）
+
 ### 6.1 生成 XMind
 
 ```bash
-npx tsx .claude/scripts/xmind-gen.ts --input {{final_json}} --output {{xmind_path}} --mode create
+npx tsx .claude/scripts/xmind-gen.ts --input {{final_json}} --output workspace/xmind/{{YYYYMM}}/{{需求名称}}.xmind --mode create
 ```
 
 ### 6.2 生成 Archive MD
 
 ```bash
-npx tsx .claude/scripts/archive-gen.ts convert --input {{final_json}} --output {{archive_path}}
+npx tsx .claude/scripts/archive-gen.ts convert --input {{final_json}} --output workspace/archive/{{YYYYMM}}/{{需求名称}}.md
 ```
 
 ### 6.3 发送通知
