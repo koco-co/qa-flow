@@ -9,5 +9,4 @@ workspace/
 .trash/
 .repos/
 
-.vscode/
-cases/
+# .vscode/

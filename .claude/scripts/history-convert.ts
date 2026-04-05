@@ -120,12 +120,16 @@ async function parseCsvFile(filePath: string): Promise<CsvRow[]> {
       }
 
       const idxModule = headers.indexOf("module");
-      const idxTitle = headers.findIndex((h) => h === "title" || h === "用例标题" || h === "标题");
+      const idxTitle = headers.findIndex(
+        (h) => h === "title" || h === "用例标题" || h === "标题",
+      );
       const idxSteps = headers.findIndex((h) => h === "steps" || h === "步骤");
       const idxExpected = headers.findIndex(
         (h) => h === "expected" || h === "预期" || h === "预期结果",
       );
-      const idxPriority = headers.findIndex((h) => h === "priority" || h === "优先级");
+      const idxPriority = headers.findIndex(
+        (h) => h === "priority" || h === "优先级",
+      );
 
       rows.push({
         module: idxModule >= 0 ? (cols[idxModule] ?? "") : "",
@@ -173,7 +177,9 @@ function csvRowsToMarkdown(rows: CsvRow[], suiteName: string): string {
         bodyParts.push("| 编号 | 步骤 | 预期 |");
         bodyParts.push("| ---- | ---- | ---- |");
         const stepLines = row.steps ? row.steps.split(/\n|；|;/) : [""];
-        const expectedLines = row.expected ? row.expected.split(/\n|；|;/) : [""];
+        const expectedLines = row.expected
+          ? row.expected.split(/\n|；|;/)
+          : [""];
         const count = Math.max(stepLines.length, expectedLines.length, 1);
         for (let i = 0; i < count; i++) {
           const step = (stepLines[i] ?? "").trim();
@@ -232,7 +238,10 @@ function walkXmindTree(
   }
 }
 
-function xmindSheetsToMarkdown(sheets: XMindSheet[], suiteName: string): string {
+function xmindSheetsToMarkdown(
+  sheets: XMindSheet[],
+  suiteName: string,
+): string {
   const cases: CaseEntry[] = [];
 
   for (const sheet of sheets) {
@@ -302,7 +311,10 @@ function computeOutputPath(inputPath: string): string {
 
 // ─── Conversion ───────────────────────────────────────────────────────────────
 
-async function convertFile(inputPath: string, force: boolean): Promise<FileConvertResult> {
+async function convertFile(
+  inputPath: string,
+  force: boolean,
+): Promise<FileConvertResult> {
   const ext = extname(inputPath).toLowerCase();
   const outputPath = computeOutputPath(inputPath);
   const suiteName = basename(inputPath, extname(inputPath));
@@ -343,7 +355,12 @@ async function convertFile(inputPath: string, force: boolean): Promise<FileConve
     mkdir(resolve(outputPath, ".."), { recursive: true });
 
     writeFileSync(outputPath, content, "utf8");
-    return { input: inputPath, output: outputPath, status: "converted", caseCount };
+    return {
+      input: inputPath,
+      output: outputPath,
+      status: "converted",
+      caseCount,
+    };
   } catch (err) {
     return {
       input: inputPath,
@@ -363,49 +380,56 @@ program
   .option("--module <key>", "Filter files by module name keyword")
   .option("--detect", "Scan only, report what would be converted (no write)")
   .option("--force", "Overwrite existing archive files")
-  .action(async (opts: { path: string; module?: string; detect?: boolean; force?: boolean }) => {
-    const inputPath = resolve(opts.path);
-    const detect = opts.detect === true;
-    const force = opts.force === true;
+  .action(
+    async (opts: {
+      path: string;
+      module?: string;
+      detect?: boolean;
+      force?: boolean;
+    }) => {
+      const inputPath = resolve(opts.path);
+      const detect = opts.detect === true;
+      const force = opts.force === true;
 
-    // Collect files to process
-    let files: string[] = [];
-    if (!existsSync(inputPath)) {
-      process.stderr.write(`Error: path not found: "${inputPath}"\n`);
-      process.exit(1);
-    }
+      // Collect files to process
+      let files: string[] = [];
+      if (!existsSync(inputPath)) {
+        process.stderr.write(`Error: path not found: "${inputPath}"\n`);
+        process.exit(1);
+      }
 
-    const stat = statSync(inputPath);
-    if (stat.isDirectory()) {
-      files = scanDirectory(inputPath, opts.module);
-    } else {
-      files = [inputPath];
-    }
+      const stat = statSync(inputPath);
+      if (stat.isDirectory()) {
+        files = scanDirectory(inputPath, opts.module);
+      } else {
+        files = [inputPath];
+      }
 
-    if (detect) {
-      const entries: DetectEntry[] = files.map((f) => ({
-        path: f,
-        type: extname(f).toLowerCase() === ".csv" ? "csv" : "xmind",
-        outputPath: computeOutputPath(f),
-      }));
-      process.stdout.write(`${JSON.stringify(entries, null, 2)}\n`);
-      return;
-    }
+      if (detect) {
+        const entries: DetectEntry[] = files.map((f) => ({
+          path: f,
+          type: extname(f).toLowerCase() === ".csv" ? "csv" : "xmind",
+          outputPath: computeOutputPath(f),
+        }));
+        process.stdout.write(`${JSON.stringify(entries, null, 2)}\n`);
+        return;
+      }
 
-    const results: FileConvertResult[] = [];
-    for (const f of files) {
-      const result = await convertFile(f, force);
-      results.push(result);
-    }
+      const results: FileConvertResult[] = [];
+      for (const f of files) {
+        const result = await convertFile(f, force);
+        results.push(result);
+      }
 
-    const out: ConvertOutput = {
-      converted: results.filter((r) => r.status === "converted").length,
-      skipped: results.filter((r) => r.status === "skipped").length,
-      failed: results.filter((r) => r.status === "failed").length,
-      files: results,
-    };
+      const out: ConvertOutput = {
+        converted: results.filter((r) => r.status === "converted").length,
+        skipped: results.filter((r) => r.status === "skipped").length,
+        failed: results.filter((r) => r.status === "failed").length,
+        files: results,
+      };
 
-    process.stdout.write(`${JSON.stringify(out, null, 2)}\n`);
-  });
+      process.stdout.write(`${JSON.stringify(out, null, 2)}\n`);
+    },
+  );
 
 program.parseAsync(process.argv);

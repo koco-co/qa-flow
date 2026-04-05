@@ -51,7 +51,11 @@ program
   .description("Clone or update a source code repository to a local directory")
   .requiredOption("--url <git-url>", "Git repository URL")
   .requiredOption("--branch <branch>", "Branch to check out")
-  .option("--base-dir <dir>", "Base directory for repositories", "workspace/.repos")
+  .option(
+    "--base-dir <dir>",
+    "Base directory for repositories",
+    "workspace/.repos",
+  )
   .action((opts: { url: string; branch: string; baseDir: string }) => {
     const { url, branch, baseDir } = opts;
 

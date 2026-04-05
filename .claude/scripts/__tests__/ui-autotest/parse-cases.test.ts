@@ -9,11 +9,17 @@ import { after, before, describe, it } from "node:test";
 // 文件位置：.claude/scripts/__tests__/ui-autotest/parse-cases.test.ts
 // REPO_ROOT 需要向上 4 层：ui-autotest/ → __tests__/ → scripts/ → .claude/ → repo root
 const REPO_ROOT = resolve(import.meta.dirname, "../../../..");
-const PARSE_CASES_PATH = resolve(REPO_ROOT, ".claude/skills/ui-autotest/scripts/parse-cases.ts");
-
-const { extractPriority, parseArchiveMd, parseStepTable, extractPreconditions } = await import(
-  `file://${PARSE_CASES_PATH}`
+const PARSE_CASES_PATH = resolve(
+  REPO_ROOT,
+  ".claude/skills/ui-autotest/scripts/parse-cases.ts",
 );
+
+const {
+  extractPriority,
+  parseArchiveMd,
+  parseStepTable,
+  extractPreconditions,
+} = await import(`file://${PARSE_CASES_PATH}`);
 const TMP_DIR = join(tmpdir(), `qa-flow-parse-cases-test-${process.pid}`);
 
 // ────────────────────────────────────────────────────────────
@@ -179,7 +185,10 @@ describe("extractPreconditions", () => {
 > 用例步骤`;
 
     const preconditions = extractPreconditions(block);
-    assert.ok(preconditions.includes("环境已部署"), `应包含前置条件内容，实际：${preconditions}`);
+    assert.ok(
+      preconditions.includes("环境已部署"),
+      `应包含前置条件内容，实际：${preconditions}`,
+    );
   });
 
   it("无前置条件时返回空字符串", () => {
@@ -213,7 +222,10 @@ describe("parseArchiveMd", () => {
     const firstTask = result.tasks[0];
     assert.ok(firstTask, "应有至少一条用例");
     assert.equal(firstTask.priority, "P0");
-    assert.ok(firstTask.title.includes("默认加载"), `标题应包含关键词，实际：${firstTask.title}`);
+    assert.ok(
+      firstTask.title.includes("默认加载"),
+      `标题应包含关键词，实际：${firstTask.title}`,
+    );
     assert.ok(Array.isArray(firstTask.steps), "steps 应为数组");
     assert.ok(firstTask.steps.length > 0, "steps 不应为空");
   });
@@ -245,7 +257,7 @@ describe("parseArchiveMd", () => {
 
   it("每个任务有唯一 id", () => {
     const result = parseArchiveMd(FIXTURE_MD, "test.md");
-    const ids = result.tasks.map((t) => t.id);
+    const ids = result.tasks.map((t: { id: string }) => t.id);
     const uniqueIds = new Set(ids);
     assert.equal(uniqueIds.size, ids.length, "所有 id 应唯一");
   });
@@ -255,7 +267,11 @@ describe("parseArchiveMd", () => {
 // CLI 集成测试
 // ────────────────────────────────────────────────────────────
 
-function runCli(args: string[]): { stdout: string; stderr: string; code: number } {
+function runCli(args: string[]): {
+  stdout: string;
+  stderr: string;
+  code: number;
+} {
   try {
     const stdout = execFileSync(
       "npx",
@@ -265,7 +281,11 @@ function runCli(args: string[]): { stdout: string; stderr: string; code: number 
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
-    return { stdout: e.stdout ?? "", stderr: e.stderr ?? "", code: e.status ?? 1 };
+    return {
+      stdout: e.stdout ?? "",
+      stderr: e.stderr ?? "",
+      code: e.status ?? 1,
+    };
   }
 }
 
@@ -298,7 +318,12 @@ describe("parse-cases CLI", () => {
     const fixturePath = join(TMP_DIR, "fixture-priority.md");
     writeFileSync(fixturePath, FIXTURE_MD, "utf-8");
 
-    const { stdout, code } = runCli(["--file", fixturePath, "--priority", "P0"]);
+    const { stdout, code } = runCli([
+      "--file",
+      fixturePath,
+      "--priority",
+      "P0",
+    ]);
     assert.equal(code, 0);
 
     const result = JSON.parse(stdout);
@@ -310,7 +335,12 @@ describe("parse-cases CLI", () => {
     const fixturePath = join(TMP_DIR, "fixture-multi.md");
     writeFileSync(fixturePath, FIXTURE_MD, "utf-8");
 
-    const { stdout, code } = runCli(["--file", fixturePath, "--priority", "P0,P1"]);
+    const { stdout, code } = runCli([
+      "--file",
+      fixturePath,
+      "--priority",
+      "P0,P1",
+    ]);
     assert.equal(code, 0);
 
     const result = JSON.parse(stdout);

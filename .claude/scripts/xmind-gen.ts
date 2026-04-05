@@ -12,7 +12,13 @@ import { resolve } from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
 import type { MarkerId, TopicBuilder } from "xmind-generator";
-import { Marker, RootTopic, Topic, Workbook, writeLocalFile } from "xmind-generator";
+import {
+  Marker,
+  RootTopic,
+  Topic,
+  Workbook,
+  writeLocalFile,
+} from "xmind-generator";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -175,9 +181,14 @@ function buildTopicTree(modules: Module[]): TopicBuilder[] {
 
 // ─── Mode: create ─────────────────────────────────────────────────────────────
 
-async function createXmind(data: IntermediateJson, outputPath: string): Promise<void> {
+async function createXmind(
+  data: IntermediateJson,
+  outputPath: string,
+): Promise<void> {
   if (existsSync(outputPath)) {
-    throw new Error(`Output file already exists (use --mode append or replace): ${outputPath}`);
+    throw new Error(
+      `Output file already exists (use --mode append or replace): ${outputPath}`,
+    );
   }
 
   const rootTitle = buildRootTitle(data.meta);
@@ -203,7 +214,9 @@ interface XMindSheet {
   [key: string]: unknown;
 }
 
-async function readXmindSheets(filePath: string): Promise<[XMindSheet[], JSZip]> {
+async function readXmindSheets(
+  filePath: string,
+): Promise<[XMindSheet[], JSZip]> {
   const buffer = readFileSync(filePath);
   const zip = await JSZip.loadAsync(buffer);
   const contentFile = zip.file("content.json");
@@ -216,7 +229,10 @@ async function readXmindSheets(filePath: string): Promise<[XMindSheet[], JSZip]>
 }
 
 async function writeXmindSheets(zip: JSZip, outputPath: string): Promise<void> {
-  const out = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+  const out = await zip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+  });
   writeFileSync(outputPath, out);
 }
 
@@ -233,7 +249,9 @@ function buildRawL1Node(data: IntermediateJson): XMindTopicNode {
 
       for (const sg of page.sub_groups ?? []) {
         if (sg.test_cases.length > 0) {
-          const sgCases: XMindTopicNode[] = sg.test_cases.map((tc) => buildRawCaseNode(tc));
+          const sgCases: XMindTopicNode[] = sg.test_cases.map((tc) =>
+            buildRawCaseNode(tc),
+          );
           pageChildren.push({
             title: sg.name,
             children: { attached: sgCases },
@@ -247,7 +265,9 @@ function buildRawL1Node(data: IntermediateJson): XMindTopicNode {
 
       return {
         title: page.name,
-        ...(pageChildren.length > 0 ? { children: { attached: pageChildren } } : {}),
+        ...(pageChildren.length > 0
+          ? { children: { attached: pageChildren } }
+          : {}),
       };
     });
 
@@ -286,7 +306,10 @@ function buildRawCaseNode(tc: TestCase): XMindTopicNode {
   return node;
 }
 
-async function appendXmind(data: IntermediateJson, outputPath: string): Promise<void> {
+async function appendXmind(
+  data: IntermediateJson,
+  outputPath: string,
+): Promise<void> {
   if (!existsSync(outputPath)) {
     // Fall back to create
     await createXmind(data, outputPath);
@@ -297,9 +320,12 @@ async function appendXmind(data: IntermediateJson, outputPath: string): Promise<
   const rootTitle = buildRootTitle(data.meta);
 
   // Find the sheet whose rootTopic title matches our project
-  const sheet = sheets.find((s) => s.rootTopic?.title === rootTitle) ?? sheets[0];
+  const sheet =
+    sheets.find((s) => s.rootTopic?.title === rootTitle) ?? sheets[0];
   if (!sheet?.rootTopic) {
-    throw new Error(`Cannot find sheet with root title "${rootTitle}" in ${outputPath}`);
+    throw new Error(
+      `Cannot find sheet with root title "${rootTitle}" in ${outputPath}`,
+    );
   }
 
   if (!sheet.rootTopic.children) {
@@ -315,7 +341,10 @@ async function appendXmind(data: IntermediateJson, outputPath: string): Promise<
   await writeXmindSheets(zip, outputPath);
 }
 
-async function replaceXmind(data: IntermediateJson, outputPath: string): Promise<void> {
+async function replaceXmind(
+  data: IntermediateJson,
+  outputPath: string,
+): Promise<void> {
   if (!existsSync(outputPath)) {
     await createXmind(data, outputPath);
     return;
@@ -325,9 +354,12 @@ async function replaceXmind(data: IntermediateJson, outputPath: string): Promise
   const rootTitle = buildRootTitle(data.meta);
   const l1Title = buildL1Title(data.meta);
 
-  const sheet = sheets.find((s) => s.rootTopic?.title === rootTitle) ?? sheets[0];
+  const sheet =
+    sheets.find((s) => s.rootTopic?.title === rootTitle) ?? sheets[0];
   if (!sheet?.rootTopic) {
-    throw new Error(`Cannot find sheet with root title "${rootTitle}" in ${outputPath}`);
+    throw new Error(
+      `Cannot find sheet with root title "${rootTitle}" in ${outputPath}`,
+    );
   }
 
   if (!sheet.rootTopic.children?.attached) {
@@ -338,7 +370,9 @@ async function replaceXmind(data: IntermediateJson, outputPath: string): Promise
     // Find existing L1 by requirement_name match (strip version prefix if present)
     const reqName = data.meta.requirement_name;
     const idx = attached.findIndex(
-      (n) => n.title === l1Title || (typeof n.title === "string" && n.title.endsWith(reqName)),
+      (n) =>
+        n.title === l1Title ||
+        (typeof n.title === "string" && n.title.endsWith(reqName)),
     );
     if (idx >= 0) {
       attached[idx] = buildRawL1Node(data);

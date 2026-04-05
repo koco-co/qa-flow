@@ -9,7 +9,14 @@
  *   npx tsx .claude/scripts/archive-gen.ts --help
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { Command } from "commander";
 import Handlebars from "handlebars";
@@ -155,7 +162,9 @@ function buildCaseBody(tc: TestCase): string {
 
   for (let i = 0; i < tc.steps.length; i++) {
     const s = tc.steps[i];
-    lines.push(`| ${i + 1} | ${escapeTableCell(s.step)} | ${escapeTableCell(s.expected)} |`);
+    lines.push(
+      `| ${i + 1} | ${escapeTableCell(s.step)} | ${escapeTableCell(s.expected)} |`,
+    );
   }
 
   return lines.join("\n");
@@ -209,7 +218,9 @@ function renderBuiltIn(data: IntermediateJson): string {
   const fm: FrontMatter = {
     suite_name: meta.requirement_name,
     description: meta.description ?? meta.requirement_name,
-    ...(meta.requirement_id !== undefined ? { prd_id: meta.requirement_id } : {}),
+    ...(meta.requirement_id !== undefined
+      ? { prd_id: meta.requirement_id }
+      : {}),
     ...(meta.version ? { prd_version: meta.version } : {}),
     product: meta.module_key ?? "",
     tags: inferTags(meta, modules),
@@ -231,13 +242,18 @@ function registerHandlebarsHelpers(): void {
 
   // Escape pipe characters and newlines in table cells
   Handlebars.registerHelper("escapeCell", (text: string) => {
-    return new Handlebars.SafeString(String(text).replace(/\|/g, "\\|").replace(/\n/g, " "));
+    return new Handlebars.SafeString(
+      String(text).replace(/\|/g, "\\|").replace(/\n/g, " "),
+    );
   });
 }
 
 // ─── Handlebars template renderer ─────────────────────────────────────────────
 
-function renderWithTemplate(data: IntermediateJson, templatePath: string): string {
+function renderWithTemplate(
+  data: IntermediateJson,
+  templatePath: string,
+): string {
   registerHandlebarsHelpers();
 
   const templateSrc = readFileSync(resolve(templatePath), "utf8");
@@ -248,7 +264,9 @@ function renderWithTemplate(data: IntermediateJson, templatePath: string): strin
   const fm: FrontMatter = {
     suite_name: meta.requirement_name,
     description: meta.description ?? meta.requirement_name,
-    ...(meta.requirement_id !== undefined ? { prd_id: meta.requirement_id } : {}),
+    ...(meta.requirement_id !== undefined
+      ? { prd_id: meta.requirement_id }
+      : {}),
     ...(meta.version ? { prd_version: meta.version } : {}),
     product: meta.module_key ?? "",
     tags: inferTags(meta, modules),
@@ -258,7 +276,12 @@ function renderWithTemplate(data: IntermediateJson, templatePath: string): strin
     origin: "xmind",
   };
 
-  return template({ meta, modules, fm, frontMatterStr: serializeFrontMatter(fm) });
+  return template({
+    meta,
+    modules,
+    fm,
+    frontMatterStr: serializeFrontMatter(fm),
+  });
 }
 
 // ─── Subcommand: convert ──────────────────────────────────────────────────────
@@ -347,7 +370,9 @@ function matchesQuery(filePath: string, query: string): SearchResult | null {
   const q = query.toLowerCase();
 
   const suiteName = String(frontMatter.suite_name ?? "");
-  const tags = Array.isArray(frontMatter.tags) ? (frontMatter.tags as string[]) : [];
+  const tags = Array.isArray(frontMatter.tags)
+    ? (frontMatter.tags as string[])
+    : [];
   const caseCount =
     typeof frontMatter.case_count === "number"
       ? frontMatter.case_count
@@ -372,7 +397,11 @@ function matchesQuery(filePath: string, query: string): SearchResult | null {
   };
 }
 
-async function runSearch(opts: { query: string; dir: string; limit: number }): Promise<void> {
+async function runSearch(opts: {
+  query: string;
+  dir: string;
+  limit: number;
+}): Promise<void> {
   const searchDir = resolve(opts.dir);
   const files = collectMdFiles(searchDir);
 
@@ -393,17 +422,24 @@ async function main(): Promise<void> {
 
   program
     .name("archive-gen")
-    .description("Convert intermediate JSON to Archive Markdown, or search existing archives");
+    .description(
+      "Convert intermediate JSON to Archive Markdown, or search existing archives",
+    );
 
   program
     .command("convert")
     .description("Convert intermediate JSON test cases to Archive Markdown")
     .requiredOption("--input <path>", "Path to input JSON file")
     .requiredOption("--output <path>", "Path to output Markdown file")
-    .option("--template <path>", "Path to Handlebars template (uses built-in if omitted)")
-    .action(async (opts: { input: string; output: string; template?: string }) => {
-      await runConvert(opts);
-    });
+    .option(
+      "--template <path>",
+      "Path to Handlebars template (uses built-in if omitted)",
+    )
+    .action(
+      async (opts: { input: string; output: string; template?: string }) => {
+        await runConvert(opts);
+      },
+    );
 
   program
     .command("search")

@@ -42,7 +42,9 @@ function isSipsAvailable(): boolean {
   }
 }
 
-function getImageDimensions(filePath: string): { width: number; height: number } | null {
+function getImageDimensions(
+  filePath: string,
+): { width: number; height: number } | null {
   try {
     const output = execSync(`sips -g pixelWidth -g pixelHeight "${filePath}"`, {
       encoding: "utf8",
@@ -84,7 +86,10 @@ function scanImageFiles(dir: string): string[] {
 const program = new Command("image-compress");
 program
   .description("Compress images larger than max size using macOS sips")
-  .requiredOption("--dir <path>", "Directory to scan for images (non-recursive)")
+  .requiredOption(
+    "--dir <path>",
+    "Directory to scan for images (non-recursive)",
+  )
   .option("--max-size <pixels>", "Maximum dimension in pixels", "2000")
   .option("--dry-run", "Only report what would be compressed, don't write")
   .action((opts: { dir: string; maxSize: string; dryRun?: boolean }) => {

@@ -10,7 +10,7 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 
 本 Skill 依赖外部 `playwright-cli` skill（单独安装）。执行前检查是否已安装：若未安装，提示用户执行 `/playwright-cli` 安装后再继续。
 
-读取项目配置：`.claude/config.json`（模块路径的唯一权威来源）。
+读取项目配置：执行 `npx tsx .claude/scripts/config.ts`（从 `.env` 读取模块路径配置）。
 
 ---
 
@@ -19,15 +19,16 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 **1.1 参数提取**
 
 从用户输入中提取：
+
 - `md_path`：Archive MD 文件路径（支持功能名模糊匹配 → 在 `workspace/archive/` 下搜索）
-- `url`：目标测试 URL（如 `https://xxx.dtstack.cn`）
+- `url`：目标测试 URL（如 `https://www.bing.com/`）
 
 若 `md_path` 为功能名而非完整路径，在 `workspace/archive/` 中递归搜索匹配的 `.md` 文件。
 
 若 `url` 未提供，向用户询问：
 
 ```
-请提供目标测试 URL（如 https://xxx.dtstack.cn）：
+请提供目标测试 URL（如 https://www.bing.com/）：
 ```
 
 **1.2 解析用例**
@@ -37,9 +38,10 @@ npx tsx .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 ```
 
 解析输出为任务队列 JSON，格式：
+
 ```json
 {
-  "source": "workspace/archive/202604/xxx.md",
+  "source": "workspace/archive/{{YYYYMM}}/xxx.md",
   "suite_name": "功能名称",
   "tasks": [
     {
@@ -47,9 +49,7 @@ npx tsx .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
       "title": "验证xxx",
       "priority": "P0",
       "page": "列表页",
-      "steps": [
-        { "step": "进入【xxx】页面", "expected": "页面正常加载" }
-      ],
+      "steps": [{ "step": "进入【xxx】页面", "expected": "页面正常加载" }],
       "preconditions": "前置条件说明"
     }
   ],
@@ -112,6 +112,7 @@ npx tsx .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --outp
 按 `selected_priorities` 过滤 `tasks`，最多 **5 个 sub-agent 并发**执行脚本生成。
 
 每个 sub-agent 接收：
+
 - 单条测试用例数据（`id`, `title`, `priority`, `page`, `steps`, `preconditions`）
 - 目标 URL
 - 提示词：读取 `${CLAUDE_SKILL_DIR}/prompts/script-writer.md`
@@ -120,14 +121,16 @@ npx tsx .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --outp
 **4.2 输出格式**
 
 每个 sub-agent 输出代码块，保存到：
+
 ```
 workspace/.temp/ui-blocks/{{id}}.ts
 ```
 
 代码块格式：
+
 ```typescript
 // META: {"id":"t1","priority":"P0","title":"验证xxx"}
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 // ... Playwright test code
 ```
 
@@ -142,14 +145,16 @@ npx tsx .claude/skills/ui-autotest/scripts/merge-specs.ts \
 ```
 
 生成：
+
 - `smoke.spec.ts`：仅含 P0 用例
 - `full.spec.ts`：含所有优先级用例
 
 输出结果：
+
 ```json
 {
-  "smoke_spec": "tests/e2e/202604/xxx/smoke.spec.ts",
-  "full_spec": "tests/e2e/202604/xxx/full.spec.ts",
+  "smoke_spec": "tests/e2e/{{YYYYMM}}/{{suite_name}}/smoke.spec.ts",
+  "full_spec": "tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts",
   "case_count": { "smoke": 5, "full": 20 }
 }
 ```
@@ -197,6 +202,7 @@ npx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
 **7.2 存在失败**
 
 为每个失败的用例触发 bug-reporter sub-agent（读取 `${CLAUDE_SKILL_DIR}/prompts/bug-reporter.md`），输入：
+
 - 失败的测试用例数据
 - Playwright 错误信息
 - 截图路径（`workspace/reports/playwright/{{YYYYMMDD}}/` 下的截图）
@@ -261,10 +267,10 @@ npx tsx .claude/scripts/plugin-loader.ts notify \
 
 ## 输出目录约定
 
-| 类型 | 路径 |
-|------|------|
-| 临时代码块 | `workspace/.temp/ui-blocks/` |
-| E2E spec 文件 | `tests/e2e/YYYYMM/{{suite_name}}/` |
+| 类型                 | 路径                                     |
+| -------------------- | ---------------------------------------- |
+| 临时代码块           | `workspace/.temp/ui-blocks/`             |
+| E2E spec 文件        | `tests/e2e/YYYYMM/{{suite_name}}/`       |
 | Playwright HTML 报告 | `workspace/reports/playwright/YYYYMMDD/` |
-| Bug 报告 | `workspace/reports/bugs/YYYYMMDD/` |
-| Session 文件 | `.auth/session.json` |
+| Bug 报告             | `workspace/reports/bugs/YYYYMMDD/`       |
+| Session 文件         | `.auth/session.json`                     |

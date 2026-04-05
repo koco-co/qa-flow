@@ -10,7 +10,13 @@
  *   npx tsx .claude/scripts/state.ts --help
  */
 
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { basename, dirname } from "node:path";
 import { Command } from "commander";
 import { initEnv } from "./lib/env.ts";
@@ -61,7 +67,9 @@ const program = new Command();
 
 program
   .name("state")
-  .description("Breakpoint resume state management for qa-flow test case generation")
+  .description(
+    "Breakpoint resume state management for qa-flow test case generation",
+  )
   .helpOption("-h, --help", "Display help information");
 
 // ── init ──────────────────────────────────────────────────────────────────────
@@ -69,7 +77,10 @@ program
 program
   .command("init")
   .description("Create a new state file for a PRD")
-  .requiredOption("--prd <path>", "PRD file path (e.g. workspace/prds/202604/xxx.md)")
+  .requiredOption(
+    "--prd <path>",
+    "PRD file path (e.g. workspace/prds/202604/xxx.md)",
+  )
   .option("--mode <mode>", "Run mode: normal | quick", "normal")
   .action((opts: { prd: string; mode: string }) => {
     initEnv();
@@ -111,7 +122,9 @@ program
 
     const state = readState(opts.prdSlug);
     if (!state) {
-      process.stderr.write(`[state:update] state file not found for slug "${opts.prdSlug}"\n`);
+      process.stderr.write(
+        `[state:update] state file not found for slug "${opts.prdSlug}"\n`,
+      );
       process.exit(1);
     }
 
@@ -119,11 +132,16 @@ program
     try {
       data = JSON.parse(opts.data) as Record<string, unknown>;
     } catch {
-      process.stderr.write(`[state:update] invalid --data JSON: ${opts.data}\n`);
+      process.stderr.write(
+        `[state:update] invalid --data JSON: ${opts.data}\n`,
+      );
       process.exit(1);
     }
 
-    const existingOutput = (state.node_outputs[opts.node] ?? {}) as Record<string, unknown>;
+    const existingOutput = (state.node_outputs[opts.node] ?? {}) as Record<
+      string,
+      unknown
+    >;
     const updated: QaState = {
       ...state,
       current_node: opts.node,
@@ -157,7 +175,9 @@ program
 
     const state = readState(opts.prdSlug);
     if (!state) {
-      process.stdout.write(`${JSON.stringify({ error: "State file not found" }, null, 2)}\n`);
+      process.stdout.write(
+        `${JSON.stringify({ error: "State file not found" }, null, 2)}\n`,
+      );
       process.exit(1);
     }
 
@@ -179,7 +199,9 @@ program
       if (existsSync(filePath)) {
         rmSync(filePath);
       }
-      process.stdout.write(`${JSON.stringify({ cleaned: true, path: filePath }, null, 2)}\n`);
+      process.stdout.write(
+        `${JSON.stringify({ cleaned: true, path: filePath }, null, 2)}\n`,
+      );
     } catch (err) {
       process.stderr.write(`[state:clean] error: ${err}\n`);
       process.exit(1);

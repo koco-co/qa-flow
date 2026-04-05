@@ -50,14 +50,14 @@ cp .env.example .env
 ### 常用命令
 
 ```bash
-# 为 Story 文档生成完整测试用例（XMind + Archive MD）
-为 Story-20260322 生成测试用例
+# 为需求文档生成完整测试用例（XMind + Archive MD）
+为 {{需求名称}} 生成测试用例
 
 # 快速模式（跳过部分交互，适合重跑）
-为 Story-20260322 --quick 生成测试用例
+为 {{需求名称}} --quick 生成测试用例
 
 # 从蓝湖 URL 直接导入需求并生成用例
-生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=xxx&docId=xxx
+生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid={{tid}}&docId={{docId}}
 
 # 直接粘贴报错日志进行 Bug 分析
 帮我分析这个报错
@@ -78,16 +78,16 @@ cp .env.example .env
 
 ```bash
 # 普通模式（全节点 + 交互确认）
-为 Story-20260322 生成测试用例
+为 {{需求名称}} 生成测试用例
 
 # 快速模式（跳过交互，1 轮 Review）
-为 Story-20260322 --quick 生成测试用例
+为 {{需求名称}} --quick 生成测试用例
 
 # 续传（自动检测断点）
-继续 Story-20260322 的用例生成
+继续 {{需求名称}} 的用例生成
 
 # 模块重跑
-重新生成 Story-20260322 的「列表页」模块用例
+重新生成 {{需求名称}} 的「列表页」模块用例
 ```
 
 ---
@@ -103,7 +103,7 @@ cp .env.example .env
 帮我分析这个报错
 
 # 禅道 Bug 链接直接触发 Hotfix 用例生成
-http://zenpms.dtstack.cn/zentao/bug-view-138845.html
+{{ZENTAO_BASE_URL}}/zentao/bug-view-{{bug_id}}.html
 ```
 
 ---
@@ -114,13 +114,13 @@ http://zenpms.dtstack.cn/zentao/bug-view-138845.html
 
 **5 种操作**：
 
-| 操作 | 示例 |
-|------|------|
-| 搜索用例 | `搜索用例 "导出"` |
-| 查看用例 | `查看用例 "验证列表页默认加载"` |
+| 操作     | 示例                                                      |
+| -------- | --------------------------------------------------------- |
+| 搜索用例 | `搜索用例 "导出"`                                         |
+| 查看用例 | `查看用例 "验证列表页默认加载"`                           |
 | 修改用例 | `修改用例 "验证导出仅导出当前筛选结果且文件命名符合规则"` |
-| 新增用例 | `新增用例 到 "规则列表页" 分组` |
-| 删除用例 | `删除用例 "验证xxx"` |
+| 新增用例 | `新增用例 到 "规则列表页" 分组`                           |
+| 删除用例 | `删除用例 "验证xxx"`                                      |
 
 ```bash
 # 修改现有用例步骤
@@ -136,17 +136,17 @@ http://zenpms.dtstack.cn/zentao/bug-view-138845.html
 
 将 Archive MD 测试用例转化为 Playwright TypeScript 脚本，按优先级并行执行，失败时自动生成 Bug 报告。
 
-**依赖**：需提前安装 `playwright-cli` skill（`npx skills add playwright-cli`）。
+**依赖**：需提前安装 `playwright-cli` skill（`npx skills add https://github.com/microsoft/playwright-cli --skill playwright-cli --target .claude/skills/playwright-cli --agent claude-code --scope project --yes`）
 
 ```bash
 # 冒烟测试（仅执行 P0 用例）
-UI自动化测试 商品管理 https://your-app.example.com
+UI自动化测试 {{需求名称}} https://your-app.example.com
 
 # 完整测试（P0+P1+P2）
-执行UI测试 cases/archive/202604/PRD-26-商品管理.md https://your-app.example.com
+执行UI测试 workspace/archive/YYYYMM/{{需求名称}}.md https://your-app.example.com
 
 # e2e 回归
-e2e回归 商品管理功能 https://staging.example.com
+e2e回归 {{需求名称}} https://staging.example.com
 ```
 
 ---
@@ -156,7 +156,7 @@ e2e回归 商品管理功能 https://staging.example.com
 ```text
 qa-flow/
 ├── .claude/
-│   ├── config.json            # 模块、仓库、路径唯一权威来源
+│   ├── config.json            # 兼容配置（v2 以 .env 为准）
 │   ├── rules/                 # 用例编写、归档格式、通知等规范
 │   ├── scripts/               # 核心 TypeScript 脚本
 │   │   ├── state.ts           # 断点续传状态管理
@@ -172,6 +172,7 @@ qa-flow/
 │       ├── code-analysis/     # 报错 / 冲突分析
 │       ├── xmind-editor/      # XMind 局部编辑
 │       └── ui-autotest/       # Playwright UI 自动化
+│       └── playwright-cli/    # Playwright CLI 集成 Skill
 ├── plugins/
 │   ├── lanhu/                 # 蓝湖 PRD 导入插件
 │   ├── zentao/                # 禅道 Bug 集成插件
@@ -198,10 +199,10 @@ qa-flow/
 
 ### 内置插件
 
-| 插件 | 功能 | 启用条件 |
-|------|------|----------|
-| `lanhu` | 从蓝湖 URL 爬取需求文档和截图 | `.env` 中配置 `LANHU_COOKIE` |
-| `zentao` | 读取禅道 Bug 详情和关联信息 | `.env` 中配置 `ZENTAO_BASE_URL` + 账号密码 |
+| 插件     | 功能                          | 启用条件                                    |
+| -------- | ----------------------------- | ------------------------------------------- |
+| `lanhu`  | 从蓝湖 URL 爬取需求文档和截图 | `.env` 中配置 `LANHU_COOKIE`                |
+| `zentao` | 读取禅道 Bug 详情和关联信息   | `.env` 中配置 `ZENTAO_BASE_URL` + 账号密码  |
 | `notify` | 钉钉 / 飞书 / 企微 / 邮件通知 | `.env` 中配置任意一个通道的 Webhook 或 SMTP |
 
 插件通过 Hook 机制接入工作流，不影响核心逻辑。
@@ -228,10 +229,10 @@ qa-flow/
 
 `hooks` 字段定义插件接入的生命周期节点：
 
-| Hook 键 | 时机 |
-|---------|------|
+| Hook 键              | 时机                           |
+| -------------------- | ------------------------------ |
 | `test-case-gen:init` | 用例生成初始化阶段（输入适配） |
-| `*:output` | 任意 Skill 产出后（如通知） |
+| `*:output`           | 任意 Skill 产出后（如通知）    |
 
 ---
 
@@ -239,15 +240,15 @@ qa-flow/
 
 所有脚本位于 `.claude/scripts/`，使用 `npx tsx` 执行：
 
-| 脚本 | 核心子命令 | 说明 |
-|------|-----------|------|
-| `state.ts` | `init` / `resume` | 断点状态初始化与续传 |
-| `xmind-gen.ts` | `--input <json> --output <dir>` | 从 JSON 生成 XMind |
-| `xmind-edit.ts` | `search` / `show` / `patch` / `delete` | XMind 用例增删改查 |
-| `image-compress.ts` | `--dir <dir>` | 图片压缩（超 2000px 自动缩放） |
-| `plugin-loader.ts` | `check` / `notify` | 插件检测与通知调度 |
-| `repo-sync.ts` | `--url <url> --branch <branch>` | 源码仓库分支同步 |
-| `archive-gen.ts` | `--input <xmind> --output <dir>` | XMind 转 Archive MD |
+| 脚本                | 核心子命令                             | 说明                           |
+| ------------------- | -------------------------------------- | ------------------------------ |
+| `state.ts`          | `init` / `resume`                      | 断点状态初始化与续传           |
+| `xmind-gen.ts`      | `--input <json> --output <dir>`        | 从 JSON 生成 XMind             |
+| `xmind-edit.ts`     | `search` / `show` / `patch` / `delete` | XMind 用例增删改查             |
+| `image-compress.ts` | `--dir <dir>`                          | 图片压缩（超 2000px 自动缩放） |
+| `plugin-loader.ts`  | `check` / `notify`                     | 插件检测与通知调度             |
+| `repo-sync.ts`      | `--url <url> --branch <branch>`        | 源码仓库分支同步               |
+| `archive-gen.ts`    | `--input <xmind> --output <dir>`       | XMind 转 Archive MD            |
 
 ---
 
@@ -255,24 +256,24 @@ qa-flow/
 
 复制 `.env.example` 为 `.env` 并填写对应值：
 
-| 变量 | 必填 | 说明 |
-|------|------|------|
-| `WORKSPACE_DIR` | 否 | 工作区目录名，默认 `workspace` |
-| `SOURCE_REPOS` | 否 | 源码仓库 Git URL（逗号分隔），留空则不启用代码分析源码定位 |
-| `LANHU_COOKIE` | 否 | 蓝湖登录 Cookie，启用蓝湖插件 |
-| `ZENTAO_BASE_URL` | 否 | 禅道系统地址（如 `http://zenpms.example.cn/zentao`） |
-| `ZENTAO_ACCOUNT` | 否 | 禅道账号 |
-| `ZENTAO_PASSWORD` | 否 | 禅道密码 |
-| `DINGTALK_WEBHOOK_URL` | 否 | 钉钉群机器人 Webhook，启用钉钉通知 |
-| `DINGTALK_KEYWORD` | 否 | 钉钉安全关键词，默认 `qa-flow` |
-| `FEISHU_WEBHOOK_URL` | 否 | 飞书群机器人 Webhook，启用飞书通知 |
-| `WECOM_WEBHOOK_URL` | 否 | 企业微信群机器人 Webhook，启用企微通知 |
-| `SMTP_HOST` | 否 | 邮件服务器地址，启用邮件通知 |
-| `SMTP_PORT` | 否 | 邮件服务器端口，默认 `587` |
-| `SMTP_USER` | 否 | 邮件账号 |
-| `SMTP_PASS` | 否 | 邮件密码 / 授权码 |
-| `SMTP_FROM` | 否 | 发件人地址 |
-| `SMTP_TO` | 否 | 收件人地址（逗号分隔多个） |
+| 变量                   | 必填 | 说明                                                       |
+| ---------------------- | ---- | ---------------------------------------------------------- |
+| `WORKSPACE_DIR`        | 否   | 工作区目录名，默认 `workspace`                             |
+| `SOURCE_REPOS`         | 否   | 源码仓库 Git URL（逗号分隔），留空则不启用代码分析源码定位 |
+| `LANHU_COOKIE`         | 否   | 蓝湖登录 Cookie，启用蓝湖插件                              |
+| `ZENTAO_BASE_URL`      | 否   | 禅道系统地址（如 `http://zenpms.example.cn/zentao`）       |
+| `ZENTAO_ACCOUNT`       | 否   | 禅道账号                                                   |
+| `ZENTAO_PASSWORD`      | 否   | 禅道密码                                                   |
+| `DINGTALK_WEBHOOK_URL` | 否   | 钉钉群机器人 Webhook，启用钉钉通知                         |
+| `DINGTALK_KEYWORD`     | 否   | 钉钉安全关键词，默认 `qa-flow`                             |
+| `FEISHU_WEBHOOK_URL`   | 否   | 飞书群机器人 Webhook，启用飞书通知                         |
+| `WECOM_WEBHOOK_URL`    | 否   | 企业微信群机器人 Webhook，启用企微通知                     |
+| `SMTP_HOST`            | 否   | 邮件服务器地址，启用邮件通知                               |
+| `SMTP_PORT`            | 否   | 邮件服务器端口，默认 `587`                                 |
+| `SMTP_USER`            | 否   | 邮件账号                                                   |
+| `SMTP_PASS`            | 否   | 邮件密码 / 授权码                                          |
+| `SMTP_FROM`            | 否   | 发件人地址                                                 |
+| `SMTP_TO`              | 否   | 收件人地址（逗号分隔多个）                                 |
 
 ---
 

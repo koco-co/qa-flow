@@ -71,7 +71,9 @@ function scanPlugins(dir: string): Record<string, PluginEntry> {
   for (const name of entries) {
     const pluginJsonPath = join(dir, name, "plugin.json");
     if (!existsSync(pluginJsonPath)) {
-      process.stderr.write(`[config] skipping plugin "${name}": no plugin.json\n`);
+      process.stderr.write(
+        `[config] skipping plugin "${name}": no plugin.json\n`,
+      );
       continue;
     }
 
@@ -79,7 +81,9 @@ function scanPlugins(dir: string): Record<string, PluginEntry> {
     try {
       plugin = JSON.parse(readFileSync(pluginJsonPath, "utf8")) as PluginJson;
     } catch (err) {
-      process.stderr.write(`[config] failed to parse plugin.json for "${name}": ${err}\n`);
+      process.stderr.write(
+        `[config] failed to parse plugin.json for "${name}": ${err}\n`,
+      );
       continue;
     }
 
@@ -116,7 +120,9 @@ const program = new Command();
 
 program
   .name("config")
-  .description("Output merged workspace config JSON (reads .env + scans plugins/)")
+  .description(
+    "Output merged workspace config JSON (reads .env + scans plugins/)",
+  )
   .helpOption("-h, --help", "Display help information")
   .action(() => {
     try {

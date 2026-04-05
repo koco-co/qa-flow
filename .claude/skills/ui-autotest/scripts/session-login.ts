@@ -82,7 +82,10 @@ export function checkSessionValid(sessionPath: string): {
       return { valid: true, expires: expiresDate };
     }
 
-    return { valid: false, expires: new Date(latestExpiry * 1000).toISOString() };
+    return {
+      valid: false,
+      expires: new Date(latestExpiry * 1000).toISOString(),
+    };
   } catch {
     return { valid: false };
   }
@@ -93,7 +96,10 @@ export function checkSessionValid(sessionPath: string): {
  */
 function waitForEnter(prompt: string): Promise<void> {
   return new Promise((resolve) => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
     rl.question(prompt, () => {
       rl.close();
       resolve();
@@ -116,21 +122,29 @@ async function guidedLogin(url: string, outputPath: string): Promise<void> {
     );
   }
 
-  const { launch } = chromium as { launch: (opts: unknown) => Promise<unknown> };
+  const { launch } = chromium as {
+    launch: (opts: unknown) => Promise<unknown>;
+  };
 
   process.stderr.write(`[session-login] 正在打开浏览器，请手动登录...\n`);
 
   const browser = await launch({ headless: false });
-  const context = await (browser as { newContext: () => Promise<unknown> }).newContext();
+  const context = await (
+    browser as { newContext: () => Promise<unknown> }
+  ).newContext();
   const page = await (context as { newPage: () => Promise<unknown> }).newPage();
 
   await (page as { goto: (url: string) => Promise<void> }).goto(url);
 
-  await waitForEnter("\n>>> 请在浏览器中完成登录，登录成功后按 Enter 继续...\n");
+  await waitForEnter(
+    "\n>>> 请在浏览器中完成登录，登录成功后按 Enter 继续...\n",
+  );
 
   // 保存 storageState
   mkdirSync(dirname(outputPath), { recursive: true });
-  await (context as { storageState: (opts: unknown) => Promise<void> }).storageState({
+  await (
+    context as { storageState: (opts: unknown) => Promise<void> }
+  ).storageState({
     path: outputPath,
   });
 
@@ -188,7 +202,9 @@ async function main(): Promise<void> {
       session_path: output,
       valid: check.valid,
       expires: check.expires,
-      message: check.valid ? "登录成功，session 已保存" : "登录完成，但 session 可能无效",
+      message: check.valid
+        ? "登录成功，session 已保存"
+        : "登录完成，但 session 可能无效",
     };
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
   } catch (err) {

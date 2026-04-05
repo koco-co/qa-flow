@@ -120,7 +120,11 @@ function scanPlugins(root: string): PluginStatus[] {
     if (plugin.env_required_any && plugin.env_required_any.length > 0) {
       const anySet = plugin.env_required_any.some((k) => !!process.env[k]);
       if (!anySet) {
-        results.push({ name, active: false, env_missing: plugin.env_required_any });
+        results.push({
+          name,
+          active: false,
+          env_missing: plugin.env_required_any,
+        });
         continue;
       }
       results.push({ name, active: true });
@@ -223,7 +227,9 @@ function runScan(): ScanResult {
     issues.push("workspace/ directory not found — run: /using-qa-flow init");
   }
   if (!envConfigured) {
-    issues.push(".env file is missing or empty — copy .env.example and fill in values");
+    issues.push(
+      ".env file is missing or empty — copy .env.example and fill in values",
+    );
   }
 
   return {
@@ -249,12 +255,16 @@ function runVerify(): VerifyResult {
     {
       name: "Node.js",
       status: scan.node_ok ? "pass" : "fail",
-      detail: scan.node_ok ? scan.node_version : `${scan.node_version}（需要 v22+）`,
+      detail: scan.node_ok
+        ? scan.node_version
+        : `${scan.node_version}（需要 v22+）`,
     },
     {
       name: "依赖安装",
       status: scan.deps_installed ? "pass" : "fail",
-      detail: scan.deps_installed ? "node_modules/ 存在" : "node_modules/ 不存在，请运行 npm install",
+      detail: scan.deps_installed
+        ? "node_modules/ 存在"
+        : "node_modules/ 不存在，请运行 npm install",
     },
     {
       name: "工作区",

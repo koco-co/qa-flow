@@ -1,8 +1,9 @@
 ---
 name: test-case-gen
-description: "QA 测试用例生成。将 PRD 需求文档转化为结构化 XMind + Markdown 测试用例。
+description:
+  "QA 测试用例生成。将 PRD 需求文档转化为结构化 XMind + Markdown 测试用例。
   6 节点工作流：init → enhance → analyze → write → review → output。
-  触发词：生成测试用例、生成用例、写用例、为 Story-xxx 生成用例、test case、
+  触发词：生成测试用例、生成用例、写用例、为 <需求名称> 生成用例、test case、
   重新生成 xxx 模块、追加用例。支持 --quick 快速模式和蓝湖 URL 输入。"
 argument-hint: "[PRD 路径或蓝湖 URL] [--quick]"
 ---
@@ -11,19 +12,19 @@ argument-hint: "[PRD 路径或蓝湖 URL] [--quick]"
 
 执行前读取 `preferences/` 目录下所有 `.md` 文件（如存在）。
 偏好优先级：用户当前指令 > preferences/ 规则 > 本 skill 内置规则（references/）。
-读取项目配置：`.claude/config.json`（模块、仓库、路径的唯一权威来源）。
+读取项目配置：执行 `npx tsx .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
 全程遵守 `.claude/rules/test-case-writing.md` 用例编写规范。
 
 ---
 
 ## 运行模式
 
-| 模式     | 触发条件                                | 行为差异                                           |
-| -------- | --------------------------------------- | -------------------------------------------------- |
-| 普通     | 默认                                    | 全 6 节点 + 全部交互点                             |
-| 快速     | `--quick`                               | 跳过交互点 B/C，analyze 简化，review 仅 1 轮       |
-| 续传     | 自动检测 `.temp/.qa-state-*.json` 存在  | 从断点节点继续                                     |
-| 模块重跑 | `重新生成 xxx 的「yyy」模块`            | 仅执行 write → review → output（replace 模式）     |
+| 模式     | 触发条件                               | 行为差异                                       |
+| -------- | -------------------------------------- | ---------------------------------------------- |
+| 普通     | 默认                                   | 全 6 节点 + 全部交互点                         |
+| 快速     | `--quick`                              | 跳过交互点 B/C，analyze 简化，review 仅 1 轮   |
+| 续传     | 自动检测 `.temp/.qa-state-*.json` 存在 | 从断点节点继续                                 |
+| 模块重跑 | `重新生成 xxx 的「yyy」模块`           | 仅执行 write → review → output（replace 模式） |
 
 ---
 
@@ -88,6 +89,7 @@ npx tsx .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 ### 2.3 PRD 增强（AI 任务）
 
 读取 `${CLAUDE_SKILL_DIR}/prompts/enhance.md`，对 PRD 执行：
+
 - 图片语义化描述
 - 页面要点提取
 - 需求歧义标注
@@ -128,6 +130,8 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node enhance --dat
 ```bash
 npx tsx .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir workspace/archive
 ```
+
+> 注：`workspace/archive` 中的 `workspace` 对应 `.env` 中 `WORKSPACE_DIR` 的值（默认 `workspace`）。
 
 ### 3.2 测试点清单生成（AI 任务）
 
@@ -170,6 +174,7 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 读取 `${CLAUDE_SKILL_DIR}/prompts/writer.md` 作为 Writer 提示词。
 
 为每个模块派发独立 Writer，输入包含：
+
 - 增强后 PRD 对应模块内容
 - 该模块已确认的测试点清单
 - preferences/ 目录下的偏好规则（若存在）
@@ -199,11 +204,11 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node write --data 
 
 质量阈值决策：
 
-| 问题率   | 行为                           |
-| -------- | ------------------------------ |
-| < 15%    | 静默修正                       |
-| 15% - 40%| 自动修正 + 质量警告            |
-| > 40%    | 阻断，输出问题报告，等用户决策 |
+| 问题率    | 行为                           |
+| --------- | ------------------------------ |
+| < 15%     | 静默修正                       |
+| 15% - 40% | 自动修正 + 质量警告            |
+| > 40%     | 阻断，输出问题报告，等用户决策 |
 
 问题率 = 含问题用例数 / 总用例数。
 
@@ -342,6 +347,7 @@ D. 自行输入
 ## 异常处理
 
 任意节点执行失败时：
+
 1. 更新状态文件记录失败节点
 2. 发送 `workflow-failed` 通知：
 

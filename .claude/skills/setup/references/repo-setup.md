@@ -16,15 +16,15 @@ git@gitlab.example.com:group/repo.git
 
 URL 自动解析为 `{group}/{repo}` 分组，clone 到工作区 `.repos/` 目录：
 
-| Git URL                                      | 本地路径                              |
-| -------------------------------------------- | ------------------------------------- |
-| `http://gitlab.xxx/frontend/app.git`         | `workspace/.repos/frontend/app/`      |
-| `https://github.com/myorg/backend.git`       | `workspace/.repos/myorg/backend/`     |
-| `git@gitlab.xxx:data/pipeline.git`           | `workspace/.repos/data/pipeline/`     |
+| Git URL                                | 本地路径                          |
+| -------------------------------------- | --------------------------------- |
+| `http://gitlab.xxx/frontend/app.git`   | `workspace/.repos/frontend/app/`  |
+| `https://github.com/myorg/backend.git` | `workspace/.repos/myorg/backend/` |
+| `git@gitlab.xxx:data/pipeline.git`     | `workspace/.repos/data/pipeline/` |
 
 ## 克隆命令
 
-通过 init-wizard.ts 克隆（推荐，自动写入 config.json）：
+通过 init-wizard.ts 克隆（推荐，自动写入 .env）：
 
 ```bash
 npx tsx .claude/skills/setup/scripts/init-wizard.ts clone \
@@ -33,7 +33,7 @@ npx tsx .claude/skills/setup/scripts/init-wizard.ts clone \
   --base-dir workspace/.repos
 ```
 
-或手动克隆（需自行更新 config.json）：
+或手动克隆（需自行更新 .env 的 SOURCE_REPOS 字段）：
 
 ```bash
 git clone <git-url> workspace/.repos/{group}/{repo}
@@ -77,8 +77,8 @@ git -C workspace/.repos/{group}/{repo} pull origin <branch>
 | `git checkout`     | ✓ 允许   |
 | `git pull`         | ✓ 允许   |
 | `git log / diff`   | ✓ 允许   |
-| `git push`         | ❌ 禁止   |
-| `git commit`       | ❌ 禁止   |
-| 修改/创建/删除文件 | ❌ 禁止   |
+| `git push`         | ❌ 禁止  |
+| `git commit`       | ❌ 禁止  |
+| 修改/创建/删除文件 | ❌ 禁止  |
 
 详细只读规则见 `.claude/rules/repo-safety.md`。

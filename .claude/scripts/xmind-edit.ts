@@ -74,7 +74,9 @@ const PRIORITY_TO_MARKER: Record<string, string> = {
 
 // ─── XMind I/O ────────────────────────────────────────────────────────────────
 
-async function readXmind(filePath: string): Promise<{ zip: JSZip; sheets: XMindSheet[] }> {
+async function readXmind(
+  filePath: string,
+): Promise<{ zip: JSZip; sheets: XMindSheet[] }> {
   const buffer = readFileSync(filePath);
   const zip = await JSZip.loadAsync(buffer);
   const contentFile = zip.file("content.json");
@@ -86,9 +88,16 @@ async function readXmind(filePath: string): Promise<{ zip: JSZip; sheets: XMindS
   return { zip, sheets };
 }
 
-async function writeXmind(filePath: string, zip: JSZip, sheets: XMindSheet[]): Promise<void> {
+async function writeXmind(
+  filePath: string,
+  zip: JSZip,
+  sheets: XMindSheet[],
+): Promise<void> {
   zip.file("content.json", JSON.stringify(sheets));
-  const out = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+  const out = await zip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+  });
   writeFileSync(filePath, out);
 }
 
@@ -113,7 +122,13 @@ function findTopics(
 
     const title = node.title ?? "";
     if (title.toLowerCase().includes(lowerQuery)) {
-      results.push({ topic: node, path: [...path, title], parent, parentChildren, file: filePath });
+      results.push({
+        topic: node,
+        path: [...path, title],
+        parent,
+        parentChildren,
+        file: filePath,
+      });
     }
 
     const children = node.children?.attached ?? [];
@@ -219,7 +234,10 @@ function caseToTopic(caseData: CaseData): XMindTopicNode {
   return node;
 }
 
-function mergeCaseIntoTopic(existing: XMindTopicNode, patch: CaseData): XMindTopicNode {
+function mergeCaseIntoTopic(
+  existing: XMindTopicNode,
+  patch: CaseData,
+): XMindTopicNode {
   const updated: XMindTopicNode = { ...existing };
 
   if (patch.title !== undefined) {
@@ -255,7 +273,10 @@ function mergeCaseIntoTopic(existing: XMindTopicNode, patch: CaseData): XMindTop
 
 // ─── Subcommands ──────────────────────────────────────────────────────────────
 
-async function cmdSearch(query: string, opts: { dir?: string; limit?: number }): Promise<void> {
+async function cmdSearch(
+  query: string,
+  opts: { dir?: string; limit?: number },
+): Promise<void> {
   const dir = resolve(opts.dir ?? "cases/xmind");
   const limit = opts.limit ?? 20;
 
@@ -266,7 +287,9 @@ async function cmdSearch(query: string, opts: { dir?: string; limit?: number }):
     if (results.length >= limit) break;
     try {
       const { sheets } = await readXmind(filePath);
-      const matches = findTopics(sheets, query, filePath, { limit: limit - results.length });
+      const matches = findTopics(sheets, query, filePath, {
+        limit: limit - results.length,
+      });
       for (const m of matches) {
         if (results.length >= limit) break;
         const caseData = topicToCase(m.topic, m.path);
@@ -291,7 +314,9 @@ async function cmdShow(opts: { file: string; title: string }): Promise<void> {
   const matches = findTopics(sheets, opts.title, filePath);
 
   if (matches.length === 0) {
-    process.stderr.write(`[xmind-edit] No topic found matching: ${opts.title}\n`);
+    process.stderr.write(
+      `[xmind-edit] No topic found matching: ${opts.title}\n`,
+    );
     process.exit(1);
   }
 
@@ -300,7 +325,11 @@ async function cmdShow(opts: { file: string; title: string }): Promise<void> {
   process.stdout.write(`${JSON.stringify(caseData, null, 2)}\n`);
 }
 
-async function cmdPatch(opts: { file: string; title: string; caseJson: string }): Promise<void> {
+async function cmdPatch(opts: {
+  file: string;
+  title: string;
+  caseJson: string;
+}): Promise<void> {
   const filePath = resolve(opts.file);
   const { zip, sheets } = await readXmind(filePath);
 
@@ -314,7 +343,9 @@ async function cmdPatch(opts: { file: string; title: string; caseJson: string })
 
   const matches = findTopics(sheets, opts.title, filePath);
   if (matches.length === 0) {
-    process.stderr.write(`[xmind-edit] No topic found matching: ${opts.title}\n`);
+    process.stderr.write(
+      `[xmind-edit] No topic found matching: ${opts.title}\n`,
+    );
     process.exit(1);
   }
 
@@ -340,16 +371,23 @@ async function cmdPatch(opts: { file: string; title: string; caseJson: string })
   }
 
   for (const sheet of sheets) {
-    if (sheet.rootTopic && replaceTopic(sheet.rootTopic, match.topic, merged)) break;
+    if (sheet.rootTopic && replaceTopic(sheet.rootTopic, match.topic, merged))
+      break;
   }
 
   await writeXmind(filePath, zip, sheets);
 
   const after = topicToCase(merged, match.path);
-  process.stdout.write(`${JSON.stringify({ before, after, file: filePath }, null, 2)}\n`);
+  process.stdout.write(
+    `${JSON.stringify({ before, after, file: filePath }, null, 2)}\n`,
+  );
 }
 
-async function cmdAdd(opts: { file: string; parent: string; caseJson: string }): Promise<void> {
+async function cmdAdd(opts: {
+  file: string;
+  parent: string;
+  caseJson: string;
+}): Promise<void> {
   const filePath = resolve(opts.file);
   const { zip, sheets } = await readXmind(filePath);
 
@@ -363,7 +401,9 @@ async function cmdAdd(opts: { file: string; parent: string; caseJson: string }):
 
   const matches = findTopics(sheets, opts.parent, filePath);
   if (matches.length === 0) {
-    process.stderr.write(`[xmind-edit] No parent topic found matching: ${opts.parent}\n`);
+    process.stderr.write(
+      `[xmind-edit] No parent topic found matching: ${opts.parent}\n`,
+    );
     process.exit(1);
   }
 
@@ -385,7 +425,10 @@ async function cmdAdd(opts: { file: string; parent: string; caseJson: string }):
   process.stdout.write(
     `${JSON.stringify(
       {
-        added: topicToCase(newTopic, [...parentMatch.path, newTopic.title ?? ""]),
+        added: topicToCase(newTopic, [
+          ...parentMatch.path,
+          newTopic.title ?? "",
+        ]),
         parent: parentMatch.path,
         file: filePath,
       },
@@ -395,13 +438,19 @@ async function cmdAdd(opts: { file: string; parent: string; caseJson: string }):
   );
 }
 
-async function cmdDelete(opts: { file: string; title: string; dryRun?: boolean }): Promise<void> {
+async function cmdDelete(opts: {
+  file: string;
+  title: string;
+  dryRun?: boolean;
+}): Promise<void> {
   const filePath = resolve(opts.file);
   const { zip, sheets } = await readXmind(filePath);
 
   const matches = findTopics(sheets, opts.title, filePath);
   if (matches.length === 0) {
-    process.stderr.write(`[xmind-edit] No topic found matching: ${opts.title}\n`);
+    process.stderr.write(
+      `[xmind-edit] No topic found matching: ${opts.title}\n`,
+    );
     process.exit(1);
   }
 
@@ -423,7 +472,9 @@ async function cmdDelete(opts: { file: string; title: string; dryRun?: boolean }
 
   await writeXmind(filePath, zip, sheets);
 
-  process.stdout.write(`${JSON.stringify({ deleted: caseData, file: filePath }, null, 2)}\n`);
+  process.stdout.write(
+    `${JSON.stringify({ deleted: caseData, file: filePath }, null, 2)}\n`,
+  );
 }
 
 // ─── CLI ──────────────────────────────────────────────────────────────────────
@@ -433,15 +484,22 @@ async function main(): Promise<void> {
 
   program
     .name("xmind-edit")
-    .description("Search, view, patch, add, and delete test cases in .xmind files");
+    .description(
+      "Search, view, patch, add, and delete test cases in .xmind files",
+    );
 
   program
     .command("search <query>")
-    .description("Search for test cases by keyword across all .xmind files in a directory")
+    .description(
+      "Search for test cases by keyword across all .xmind files in a directory",
+    )
     .option("--dir <dir>", "Directory to search in", "cases/xmind")
     .option("--limit <n>", "Maximum number of results", "20")
     .action(async (query: string, opts: { dir?: string; limit?: string }) => {
-      await cmdSearch(query, { dir: opts.dir, limit: Number(opts.limit ?? 20) });
+      await cmdSearch(query, {
+        dir: opts.dir,
+        limit: Number(opts.limit ?? 20),
+      });
     });
 
   program
@@ -469,16 +527,21 @@ async function main(): Promise<void> {
     .requiredOption("--file <path>", "Path to the .xmind file")
     .requiredOption("--parent <query>", "Title query to find the parent topic")
     .requiredOption("--case-json <json>", "JSON of the new test case")
-    .action(async (opts: { file: string; parent: string; caseJson: string }) => {
-      await cmdAdd(opts);
-    });
+    .action(
+      async (opts: { file: string; parent: string; caseJson: string }) => {
+        await cmdAdd(opts);
+      },
+    );
 
   program
     .command("delete")
     .description("Delete a test case from a .xmind file")
     .requiredOption("--file <path>", "Path to the .xmind file")
     .requiredOption("--title <query>", "Title query to find the test case")
-    .option("--dry-run", "Show what would be deleted without modifying the file")
+    .option(
+      "--dry-run",
+      "Show what would be deleted without modifying the file",
+    )
     .action(async (opts: { file: string; title: string; dryRun?: boolean }) => {
       await cmdDelete(opts);
     });
