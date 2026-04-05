@@ -223,12 +223,18 @@ function ensureLanhuMcpReady(projectRoot: string): void {
   }
 }
 
-function callBridge(
+interface BridgeCallError {
+  error: string;
+  code: string;
+  isCookieError: boolean;
+}
+
+function tryCallBridge(
   projectRoot: string,
   rawUrl: string,
   pageId: string | undefined,
   cookie: string,
-): BridgeOutput {
+): BridgeOutput | BridgeCallError {
   const bridgeScript = resolve(projectRoot, "tools/lanhu/bridge.py");
   const mcpDir = resolve(projectRoot, "tools/lanhu/lanhu-mcp");
 
@@ -248,7 +254,7 @@ function callBridge(
       },
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
-      timeout: 120_000,
+      timeout: 180_000,
     });
 
     return JSON.parse(stdout) as BridgeOutput;
@@ -259,25 +265,94 @@ function callBridge(
     // Try to parse structured error from bridge.py stderr
     try {
       const bridgeError = JSON.parse(stderrText) as ErrorOutput;
-      const errorOut: ErrorOutput = {
-        error: bridgeError.error,
-        code: bridgeError.code,
-      };
-      process.stderr.write(`${JSON.stringify(errorOut, null, 2)}\n`);
-      process.exit(1);
+      const isCookieError =
+        bridgeError.code === "COOKIE_EXPIRED" ||
+        bridgeError.code === "MISSING_COOKIE" ||
+        bridgeError.error.includes("418") ||
+        bridgeError.error.includes("permission") ||
+        bridgeError.error.includes("401") ||
+        bridgeError.error.includes("403");
+      return { ...bridgeError, isCookieError };
     } catch {
-      // stderr wasn't valid JSON; emit a generic error
-      const errorOut: ErrorOutput = {
-        error: `Bridge call failed: ${stderrText || e.message || "unknown error"}`,
+      const msg = stderrText || e.message || "unknown error";
+      const isCookieError =
+        msg.includes("418") || msg.includes("permission") || msg.includes("Cookie");
+      return {
+        error: `Bridge call failed: ${msg}`,
         code: "BRIDGE_ERROR",
+        isCookieError,
       };
-      process.stderr.write(`${JSON.stringify(errorOut, null, 2)}\n`);
-      process.exit(1);
     }
-
-    // Unreachable, but TypeScript needs it
-    throw new Error("Bridge call failed");
   }
+}
+
+// ─── Cookie Refresh ─────────────────────────────────────────────────────────
+
+function refreshCookie(projectRoot: string, targetUrl: string): string | null {
+  const refreshScript = resolve(projectRoot, "tools/lanhu/refresh-cookie.py");
+  const mcpDir = resolve(projectRoot, "tools/lanhu/lanhu-mcp");
+  const envPath = resolve(projectRoot, ".env");
+
+  const args = [
+    `uv`, `run`, `python`, refreshScript,
+    `--target-url`, targetUrl,
+    `--update-env`, envPath,
+  ];
+  const cmd = args.map((a) => `"${a}"`).join(" ");
+
+  try {
+    const newCookie = execSync(cmd, {
+      cwd: mcpDir,
+      encoding: "utf8",
+      stdio: ["inherit", "pipe", "inherit"],
+      timeout: 120_000,
+    });
+    return newCookie.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+function callBridgeWithRetry(
+  projectRoot: string,
+  rawUrl: string,
+  pageId: string | undefined,
+  cookie: string,
+): BridgeOutput {
+  const result = tryCallBridge(projectRoot, rawUrl, pageId, cookie);
+
+  // Success on first try
+  if ("pages" in result) {
+    return result;
+  }
+
+  // Not a cookie error — fail immediately
+  if (!result.isCookieError) {
+    process.stderr.write(`${JSON.stringify({ error: result.error, code: result.code }, null, 2)}\n`);
+    process.exit(1);
+  }
+
+  // Cookie error — attempt auto-refresh
+  process.stderr.write("Cookie 失效，正在自动刷新...\n");
+  const newCookie = refreshCookie(projectRoot, rawUrl);
+
+  if (!newCookie) {
+    process.stderr.write(`${JSON.stringify({
+      error: "Cookie 刷新失败。请手动更新 .env 中的 LANHU_COOKIE，或配置 LANHU_USERNAME/LANHU_PASSWORD。",
+      code: "COOKIE_REFRESH_FAILED",
+    }, null, 2)}\n`);
+    process.exit(1);
+  }
+
+  // Retry with new cookie
+  const retry = tryCallBridge(projectRoot, rawUrl, pageId, newCookie);
+  if ("pages" in retry) {
+    return retry;
+  }
+
+  process.stderr.write(`${JSON.stringify({ error: retry.error, code: retry.code }, null, 2)}\n`);
+  process.exit(1);
+  throw new Error("Unreachable");
 }
 
 // ─── Main Logic ───────────────────────────────────────────────────────────────
@@ -287,14 +362,20 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
   const projectRoot = resolve(__dirname, "../../");
   initEnv(resolve(projectRoot, ".env"));
 
-  const cookie = getEnv("LANHU_COOKIE");
+  let cookie = getEnv("LANHU_COOKIE") ?? "";
   if (!cookie) {
-    const err: ErrorOutput = {
-      error: "LANHU_COOKIE is not set. Please configure it in .env file.",
-      code: "MISSING_COOKIE",
-    };
-    process.stderr.write(`${JSON.stringify(err, null, 2)}\n`);
-    process.exit(1);
+    // No cookie at all — try to get one via auto-login
+    process.stderr.write("LANHU_COOKIE 未配置，尝试自动登录获取...\n");
+    const newCookie = refreshCookie(projectRoot, rawUrl);
+    if (!newCookie) {
+      const err: ErrorOutput = {
+        error: "LANHU_COOKIE 未配置且自动登录失败。请配置 LANHU_USERNAME/LANHU_PASSWORD 或手动设置 LANHU_COOKIE。",
+        code: "MISSING_COOKIE",
+      };
+      process.stderr.write(`${JSON.stringify(err, null, 2)}\n`);
+      process.exit(1);
+    }
+    cookie = newCookie;
   }
 
   // 2. Parse URL
@@ -317,8 +398,8 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
   const imagesDir = join(absOutput, "images");
   mkdirSync(imagesDir, { recursive: true });
 
-  // 5. Call bridge to get PRD content
-  const bridgeResult = callBridge(projectRoot, rawUrl, undefined, cookie);
+  // 5. Call bridge to get PRD content (with auto cookie refresh on failure)
+  const bridgeResult = callBridgeWithRetry(projectRoot, rawUrl, undefined, cookie);
   const title = bridgeResult.title || "蓝湖需求文档";
 
   // 6. Collect image URLs from all pages and download them
