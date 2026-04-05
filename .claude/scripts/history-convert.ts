@@ -321,6 +321,39 @@ function parseModulePath(modulePath: string): {
   return { version, l1Name: l1Name || "未命名", caseId };
 }
 
+/** Known customer prefix → dev_version mapping */
+const DEV_VERSION_MAP: Record<string, string> = {
+  岚图: "岚图汽车",
+  Gate: "Gate",
+};
+
+/**
+ * Extract dev_version(s) from requirement field prefixes.
+ * e.g. "【岚图】【规则集管理】..." → ["岚图汽车"]
+ * No known prefix → ["袋鼠云"]
+ */
+function extractDevVersions(requirements: string[]): string[] {
+  const found = new Set<string>();
+  for (const req of requirements) {
+    if (!req) continue;
+    // Match leading 【xxx】 sequences and check against known customers
+    const prefixes = [...req.matchAll(/^(?:【([^】]+)】)+/g)];
+    let matched = false;
+    for (const [, name] of req.matchAll(/【([^】]+)】/g)) {
+      const mapped = DEV_VERSION_MAP[name];
+      if (mapped) {
+        found.add(mapped);
+        matched = true;
+        break; // first customer prefix wins per requirement
+      }
+    }
+    if (!matched) {
+      found.add("袋鼠云");
+    }
+  }
+  return found.size > 0 ? [...found].sort() : ["袋鼠云"];
+}
+
 /** Parse product string like 数据资产_STD(#23) */
 function parseProduct(product: string): { productName: string; iterationId?: string } {
   const m = product.match(/^(.+?)\(#(\d+)\)\s*$/);
@@ -488,6 +521,8 @@ function csvRowsToArchives(
       suite_name: l1Name,
       description: `${l1Name}用例归档`,
       tags,
+      prd_version: version ? `v${version}` : "",
+      dev_version: extractDevVersions(group.rows.map((r) => r.requirement)),
       create_at: todayString(),
       status: "草稿",
       origin: "csv",
@@ -861,7 +896,7 @@ function renderCase(c: ParsedCase): string[] {
 }
 
 /** Render a ParsedL1 to complete Archive Markdown */
-function l1ToMarkdown(l1: ParsedL1): string {
+function l1ToMarkdown(l1: ParsedL1, prdVersion?: string): string {
   // Collect names for tag inference
   const moduleNames: string[] = [];
   const pageNames: string[] = [];
@@ -896,6 +931,8 @@ function l1ToMarkdown(l1: ParsedL1): string {
     suite_name: suiteLabel,
     description: `${suiteLabel}用例归档`,
     tags,
+    prd_version: prdVersion ?? "",
+    dev_version: extractDevVersions([l1.title]),
     create_at: todayString(),
     status: "草稿",
     origin: "xmind",
@@ -992,6 +1029,7 @@ function sanitizeFilename(title: string): string {
 async function convertFile(
   inputPath: string,
   force: boolean,
+  prdVersion?: string,
 ): Promise<FileConvertResult[]> {
   const ext = extname(inputPath).toLowerCase();
   const outDir = computeOutputDir();
@@ -1079,7 +1117,7 @@ async function convertFile(
           continue;
         }
 
-        const content = l1ToMarkdown(l1);
+        const content = l1ToMarkdown(l1, prdVersion);
         writeFileSync(outputPath, content, "utf8");
         results.push({
           input: inputPath,
@@ -1119,18 +1157,21 @@ program
   .description("Convert historical CSV/XMind files to Archive Markdown")
   .requiredOption("--path <file-or-dir>", "File or directory to convert")
   .option("--module <key>", "Filter files by module name keyword")
+  .option("--version <ver>", "PRD version (e.g. v6.4.8)")
   .option("--detect", "Scan only, report what would be converted (no write)")
   .option("--force", "Overwrite existing archive files")
   .action(
     async (opts: {
       path: string;
       module?: string;
+      version?: string;
       detect?: boolean;
       force?: boolean;
     }) => {
       const inputPath = resolve(opts.path);
       const detect = opts.detect === true;
       const force = opts.force === true;
+      const prdVersion = opts.version;
 
       // Collect files to process
       let files: string[] = [];
@@ -1158,7 +1199,7 @@ program
 
       const results: FileConvertResult[] = [];
       for (const f of files) {
-        const fileResults = await convertFile(f, force);
+        const fileResults = await convertFile(f, force, prdVersion);
         results.push(...fileResults);
       }
 

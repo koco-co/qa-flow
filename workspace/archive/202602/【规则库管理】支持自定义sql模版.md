@@ -17,6 +17,9 @@ tags:
   - "基本信息"
   - "选择枚举"
   - "为空提示"
+prd_version: "v6.4.8"
+dev_version:
+  - "袋鼠云"
 create_at: "2026-04-05"
 status: "草稿"
 origin: "csv"

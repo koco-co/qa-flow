@@ -10,6 +10,9 @@ tags:
   - "验证调度属性编辑"
   - "验证调度属性新增"
   - "【规则调度设置】spark任务调参"
+prd_version: "v6.4.8"
+dev_version:
+  - "岚图汽车"
 create_at: "2026-04-05"
 status: "草稿"
 origin: "csv"
