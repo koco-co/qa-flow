@@ -236,7 +236,7 @@ describe("CLI: missing LANHU_COOKIE", () => {
       // Run from PROJECT_ROOT so relative .env resolution works,
       // but with LANHU_COOKIE stripped from env so initEnv finds nothing
       execSync(
-        `npx tsx "${FETCH_TS}" --url "https://lanhuapp.com/web/#/item/project/product?tid=t&pid=p&docId=d" --output "${TMP_DIR}/out"`,
+        `npx tsx "${FETCH_TS}" --url "https://lanhuapp.com/web/#/item/project/product?tid=t&pid=p&docId=d" --base-dir "${TMP_DIR}/out"`,
         {
           encoding: "utf8",
           cwd: PROJECT_ROOT,
@@ -266,7 +266,7 @@ describe("CLI: invalid URL format", () => {
     let stderr = "";
     try {
       execSync(
-        `npx tsx "${FETCH_TS}" --url "https://example.com/not-lanhu" --output "${TMP_DIR}/out"`,
+        `npx tsx "${FETCH_TS}" --url "https://example.com/not-lanhu" --base-dir "${TMP_DIR}/out"`,
         {
           encoding: "utf8",
           cwd: PROJECT_ROOT,
@@ -294,7 +294,7 @@ describe("CLI: invalid URL format", () => {
     let stderr = "";
     try {
       execSync(
-        `npx tsx "${FETCH_TS}" --url "https://lanhuapp.com/web/#/item/project/product?tid=only-tid" --output "${TMP_DIR}/out"`,
+        `npx tsx "${FETCH_TS}" --url "https://lanhuapp.com/web/#/item/project/product?tid=only-tid" --base-dir "${TMP_DIR}/out"`,
         {
           encoding: "utf8",
           cwd: PROJECT_ROOT,

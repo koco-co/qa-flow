@@ -3,10 +3,11 @@
  * plugins/lanhu/fetch.ts — 蓝湖 PRD 内容 + 截图抓取器 (bridge adapter)
  *
  * Calls tools/lanhu/bridge.py via subprocess to fetch PRD content,
- * then downloads images and produces raw-prd.md output.
+ * then downloads images and produces per-requirement PRD files.
  *
  * Usage:
- *   npx tsx plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --output workspace/.temp/lanhu-import
+ *   npx tsx plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --base-dir workspace/prds
+ *   npx tsx plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --pages "15525,15529"
  *   npx tsx plugins/lanhu/fetch.ts --help
  */
 
@@ -53,21 +54,49 @@ interface BridgeOutput {
   pages: BridgePage[];
 }
 
+interface BridgeListPage {
+  name: string;
+  path: string;
+  id: string;
+  requirement_id: string | null;
+}
+
+interface BridgeListOutput {
+  title: string;
+  doc_type: string;
+  total_pages: number;
+  pages: BridgeListPage[];
+}
+
 interface ImageRef {
   url: string;
   name: string;
 }
 
-interface FetchOutput {
+interface RequirementInfo {
+  requirement_id: string;
+  requirement_name: string;
+  project: string;
+  prd_dir: string;
   prd_path: string;
-  title: string;
   images_count: number;
-  output_dir: string;
+}
+
+interface FetchOutput {
+  title: string;
+  total_requirements: number;
+  requirements: RequirementInfo[];
 }
 
 interface ErrorOutput {
   error: string;
   code: string;
+}
+
+interface ParsedRequirement {
+  project: string;
+  requirementId: string;
+  requirementName: string;
 }
 
 // ─── URL Parsing ─────────────────────────────────────────────────────────────
@@ -210,6 +239,29 @@ async function downloadImage(
   await pipeline(response.body as unknown as NodeJS.ReadableStream, dest);
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function currentYYYYMM(): string {
+  const now = new Date();
+  return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function parseRequirementFromPageName(pageName: string, pagePath: string): ParsedRequirement {
+  // pagePath format: "岚图/15525【内置规则丰富】一致性，..."
+  // pageName format: "15525【内置规则丰富】一致性，..."
+  const pathParts = pagePath.split("/");
+  const project = pathParts.length > 1 ? pathParts[0] : "";
+
+  // Extract requirement ID (leading number from name)
+  const idMatch = pageName.match(/^(\d+)/);
+  const requirementId = idMatch ? idMatch[1] : "";
+
+  // Full requirement name (including 【】 part)
+  const requirementName = pageName;
+
+  return { project, requirementId, requirementName };
+}
+
 // ─── Bridge Helpers ──────────────────────────────────────────────────────────
 
 function ensureLanhuMcpReady(projectRoot: string): void {
@@ -229,11 +281,32 @@ interface BridgeCallError {
   isCookieError: boolean;
 }
 
+function callBridgeListPages(
+  projectRoot: string,
+  rawUrl: string,
+  cookie: string,
+): BridgeListOutput {
+  const bridgeScript = resolve(projectRoot, "tools/lanhu/bridge.py");
+  const mcpDir = resolve(projectRoot, "tools/lanhu/lanhu-mcp");
+  const cmd = [`"uv"`, `"run"`, `"python"`, `"${bridgeScript}"`, `"--url"`, `"${rawUrl}"`, `"--list-pages"`].join(" ");
+
+  const stdout = execSync(cmd, {
+    cwd: mcpDir,
+    env: { ...process.env, LANHU_COOKIE: cookie },
+    encoding: "utf8",
+    stdio: ["pipe", "pipe", "pipe"],
+    timeout: 60_000,
+  });
+
+  return JSON.parse(stdout) as BridgeListOutput;
+}
+
 function tryCallBridge(
   projectRoot: string,
   rawUrl: string,
   pageId: string | undefined,
   cookie: string,
+  pageNames?: string,
 ): BridgeOutput | BridgeCallError {
   const bridgeScript = resolve(projectRoot, "tools/lanhu/bridge.py");
   const mcpDir = resolve(projectRoot, "tools/lanhu/lanhu-mcp");
@@ -241,6 +314,9 @@ function tryCallBridge(
   const args = [`uv`, `run`, `python`, bridgeScript, `--url`, rawUrl];
   if (pageId) {
     args.push(`--page-id`, pageId);
+  }
+  if (pageNames) {
+    args.push(`--page-names`, pageNames);
   }
 
   const cmd = args.map((a) => `"${a}"`).join(" ");
@@ -318,8 +394,9 @@ function callBridgeWithRetry(
   rawUrl: string,
   pageId: string | undefined,
   cookie: string,
+  pageNames?: string,
 ): BridgeOutput {
-  const result = tryCallBridge(projectRoot, rawUrl, pageId, cookie);
+  const result = tryCallBridge(projectRoot, rawUrl, pageId, cookie, pageNames);
 
   // Success on first try
   if ("pages" in result) {
@@ -345,7 +422,7 @@ function callBridgeWithRetry(
   }
 
   // Retry with new cookie
-  const retry = tryCallBridge(projectRoot, rawUrl, pageId, newCookie);
+  const retry = tryCallBridge(projectRoot, rawUrl, pageId, newCookie, pageNames);
   if ("pages" in retry) {
     return retry;
   }
@@ -357,7 +434,7 @@ function callBridgeWithRetry(
 
 // ─── Main Logic ───────────────────────────────────────────────────────────────
 
-async function run(rawUrl: string, outputDir: string): Promise<void> {
+async function run(rawUrl: string, baseDir: string, pagesFilter?: string): Promise<void> {
   // 1. Load .env from project root (two levels up from plugins/lanhu/)
   const projectRoot = resolve(__dirname, "../../");
   initEnv(resolve(projectRoot, ".env"));
@@ -393,107 +470,154 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
   // 3. Ensure bridge dependencies are ready
   ensureLanhuMcpReady(projectRoot);
 
-  // 4. Setup output directory
-  const absOutput = resolve(outputDir);
-  const imagesDir = join(absOutput, "images");
-  mkdirSync(imagesDir, { recursive: true });
+  // 4. List all pages from document
+  const listResult = callBridgeListPages(projectRoot, rawUrl, cookie);
+  const title = listResult.title || "蓝湖需求文档";
 
-  // 5. Call bridge to get PRD content (with auto cookie refresh on failure)
-  const bridgeResult = callBridgeWithRetry(projectRoot, rawUrl, undefined, cookie);
-  const title = bridgeResult.title || "蓝湖需求文档";
+  // 5. Parse page names to extract requirement info
+  const allRequirements = listResult.pages.map((page) => ({
+    page,
+    parsed: parseRequirementFromPageName(page.name, page.path),
+  }));
 
-  // 6. Collect images from all pages
-  // Bridge returns local file paths (screenshots from lanhu-mcp) or URLs
-  const collectedImages: ImageRef[] = [];
-  let imgIdx = 0;
-  for (const page of bridgeResult.pages) {
-    for (const imgSrc of page.images) {
-      imgIdx++;
-      try {
-        if (imgSrc.startsWith("http://") || imgSrc.startsWith("https://") || imgSrc.startsWith("//")) {
-          // Remote URL — download
-          const fullUrl = imgSrc.startsWith("//") ? `https:${imgSrc}` : imgSrc;
-          const urlObj = new URL(fullUrl);
-          const rawName = urlObj.pathname.split("/").pop() ?? `image-${imgIdx}`;
-          const ext = rawName.includes(".") ? rawName.split(".").pop() ?? "png" : "png";
-          const slug = slugify(rawName.replace(/\.[^.]+$/, "")) || `image-${imgIdx}`;
-          const fileName = `${imgIdx}-${slug}.${ext}`;
-          const destPath = join(imagesDir, fileName);
-          await downloadImage(fullUrl, destPath, cookie);
-          collectedImages.push({ url: fullUrl, name: fileName });
-        } else if (existsSync(imgSrc)) {
-          // Local file path (screenshot from lanhu-mcp) — copy
-          const ext = extname(imgSrc) || ".png";
-          const rawName = basename(imgSrc, ext);
-          const slug = slugify(rawName) || `screenshot-${imgIdx}`;
-          const fileName = `${imgIdx}-${slug}${ext}`;
-          const destPath = join(imagesDir, fileName);
-          copyFileSync(imgSrc, destPath);
-          collectedImages.push({ url: imgSrc, name: fileName });
+  // 6. Filter by --pages if specified
+  const filterIds = pagesFilter
+    ? new Set(pagesFilter.split(",").map((id) => id.trim()))
+    : null;
+
+  const selectedRequirements = filterIds
+    ? allRequirements.filter((r) => filterIds.has(r.parsed.requirementId))
+    : allRequirements;
+
+  if (selectedRequirements.length === 0) {
+    const err: ErrorOutput = {
+      error: `No requirements matched the filter: ${pagesFilter}`,
+      code: "NO_MATCHING_REQUIREMENTS",
+    };
+    process.stderr.write(`${JSON.stringify(err, null, 2)}\n`);
+    process.exit(1);
+  }
+
+  // 7. Process each requirement
+  const yyyymm = currentYYYYMM();
+  const absBaseDir = resolve(baseDir);
+  const requirementInfos: RequirementInfo[] = [];
+
+  for (const { page, parsed: reqInfo } of selectedRequirements) {
+    const reqDirName = reqInfo.requirementName;
+    const reqDir = join(absBaseDir, yyyymm, reqDirName);
+    const imagesDir = join(reqDir, "images");
+    const tmpDir = join(reqDir, "tmp");
+    mkdirSync(imagesDir, { recursive: true });
+    mkdirSync(tmpDir, { recursive: true });
+
+    // Fetch content for this specific requirement
+    const bridgeResult = callBridgeWithRetry(
+      projectRoot, rawUrl, undefined, cookie, page.name,
+    );
+
+    // Collect screenshots (only local file paths from Playwright, not inline [图片] refs)
+    const collectedImages: ImageRef[] = [];
+    let imgIdx = 0;
+    for (const bridgePage of bridgeResult.pages) {
+      for (const imgSrc of bridgePage.images) {
+        imgIdx++;
+        try {
+          if (imgSrc.startsWith("http://") || imgSrc.startsWith("https://") || imgSrc.startsWith("//")) {
+            // Remote URL — download (these are actual screenshots, not inline element images)
+            const fullUrl = imgSrc.startsWith("//") ? `https:${imgSrc}` : imgSrc;
+            const urlObj = new URL(fullUrl);
+            const rawName = urlObj.pathname.split("/").pop() ?? `image-${imgIdx}`;
+            const ext = rawName.includes(".") ? rawName.split(".").pop() ?? "png" : "png";
+            const slug = slugify(rawName.replace(/\.[^.]+$/, "")) || `image-${imgIdx}`;
+            const fileName = `${imgIdx}-${slug}.${ext}`;
+            const destPath = join(imagesDir, fileName);
+            await downloadImage(fullUrl, destPath, cookie);
+            collectedImages.push({ url: fullUrl, name: fileName });
+          } else if (existsSync(imgSrc)) {
+            // Local file path (screenshot from lanhu-mcp) — copy
+            const ext = extname(imgSrc) || ".png";
+            const rawName = basename(imgSrc, ext);
+            const slug = slugify(rawName) || `screenshot-${imgIdx}`;
+            const fileName = `${imgIdx}-${slug}${ext}`;
+            const destPath = join(imagesDir, fileName);
+            copyFileSync(imgSrc, destPath);
+            collectedImages.push({ url: imgSrc, name: fileName });
+          }
+        } catch {
+          // Non-fatal: skip failed images
         }
-      } catch {
-        // Non-fatal: skip failed images
       }
     }
-  }
 
-  // 7. Compress images
-  if (collectedImages.length > 0) {
-    try {
-      const compressScript = resolve(projectRoot, ".claude/scripts/image-compress.ts");
-      execSync(`npx tsx "${compressScript}" --dir "${imagesDir}"`, {
-        stdio: "pipe",
-        cwd: projectRoot,
-      });
-    } catch {
-      // Non-fatal: compression failure doesn't block output
+    // Compress images
+    if (collectedImages.length > 0) {
+      try {
+        const compressScript = resolve(projectRoot, ".claude/scripts/image-compress.ts");
+        execSync(`npx tsx "${compressScript}" --dir "${imagesDir}"`, {
+          stdio: "pipe",
+          cwd: projectRoot,
+        });
+      } catch {
+        // Non-fatal: compression failure doesn't block output
+      }
     }
-  }
 
-  // 8. Build front-matter + body
-  const fetchDate = new Date().toISOString().slice(0, 10);
-  const imagesMd = collectedImages
-    .map((img, idx) => `![页面截图-${idx + 1}](images/${img.name})`)
-    .join("\n\n");
+    // Build front-matter + body
+    const fetchDate = new Date().toISOString().slice(0, 10);
+    const imagesMd = collectedImages
+      .map((img, idx) => `![页面截图-${idx + 1}](../images/${img.name})`)
+      .join("\n\n");
 
-  const frontMatter = [
-    "---",
-    `source: "lanhu"`,
-    `source_url: "${rawUrl}"`,
-    `fetch_date: "${fetchDate}"`,
-    `status: "原始"`,
-    "---",
-  ].join("\n");
+    const frontMatter = [
+      "---",
+      `source: "lanhu"`,
+      `source_url: "${rawUrl}"`,
+      `fetch_date: "${fetchDate}"`,
+      `requirement_id: "${reqInfo.requirementId}"`,
+      `project: "${reqInfo.project}"`,
+      `status: "原始"`,
+      "---",
+    ].join("\n");
 
-  const bodyParts: string[] = [`# ${title}`];
+    const bodyParts: string[] = [`# ${reqInfo.requirementName}`];
 
-  const hasMultiplePages = bridgeResult.pages.length > 1;
-  for (const page of bridgeResult.pages) {
-    if (hasMultiplePages) {
-      const heading = page.path || page.name;
-      bodyParts.push(`## ${heading}`);
+    // Strip useless [图片] references from Axure text extraction
+    for (const bridgePage of bridgeResult.pages) {
+      if (bridgePage.content) {
+        const cleaned = bridgePage.content
+          .replace(/\[图片\]\s*images\/[^\s]+(\s*\(\d+x\d+\))?/g, "")
+          .replace(/\n{3,}/g, "\n\n");
+        bodyParts.push(cleaned);
+      }
     }
-    if (page.content) {
-      bodyParts.push(page.content);
+
+    if (imagesMd) {
+      bodyParts.push(imagesMd);
     }
+
+    const prdContent = `${frontMatter}\n\n${bodyParts.join("\n\n")}\n`;
+
+    // Write raw PRD to tmp/
+    const prdFileName = `${reqInfo.requirementName}.md`;
+    const prdPath = join(tmpDir, prdFileName);
+    writeFileSync(prdPath, prdContent, "utf8");
+
+    requirementInfos.push({
+      requirement_id: reqInfo.requirementId,
+      requirement_name: reqInfo.requirementName,
+      project: reqInfo.project,
+      prd_dir: reqDir,
+      prd_path: prdPath,
+      images_count: collectedImages.length,
+    });
   }
 
-  if (imagesMd) {
-    bodyParts.push(imagesMd);
-  }
-
-  const prdContent = `${frontMatter}\n\n${bodyParts.join("\n\n")}\n`;
-
-  // 9. Write raw-prd.md
-  const prdPath = join(absOutput, "raw-prd.md");
-  writeFileSync(prdPath, prdContent, "utf8");
-
-  // 10. Output JSON result
+  // 8. Output JSON result
   const output: FetchOutput = {
-    prd_path: prdPath,
     title,
-    images_count: collectedImages.length,
-    output_dir: absOutput,
+    total_requirements: requirementInfos.length,
+    requirements: requirementInfos,
   };
   process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
 }
@@ -506,14 +630,15 @@ const isMain = process.argv[1] === __filename || process.argv[1]?.endsWith("fetc
 if (isMain) {
   const program = new Command("lanhu-fetch");
   program
-    .description("从蓝湖 URL 抓取 PRD 内容和截图，生成原始 PRD Markdown")
+    .description("从蓝湖 URL 抓取 PRD 内容和截图，按需求生成独立 PRD 文件")
     .requiredOption(
       "--url <url>",
       '蓝湖页面 URL，例如 "https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx"',
     )
-    .requiredOption("--output <dir>", "输出目录路径，例如 workspace/.temp/lanhu-import")
-    .action(async (opts: { url: string; output: string }) => {
-      await run(opts.url, opts.output);
+    .option("--base-dir <dir>", "PRD 输出基目录", "workspace/prds")
+    .option("--pages <ids>", "要获取的需求 ID（逗号分隔），不指定则获取全部")
+    .action(async (opts: { url: string; baseDir: string; pages?: string }) => {
+      await run(opts.url, opts.baseDir, opts.pages);
     });
 
   program.parse(process.argv);
