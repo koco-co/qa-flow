@@ -229,22 +229,26 @@ async function compressImage(
   srcPath: string,
   destPath: string,
 ): Promise<void> {
-  const metadata = await sharp(srcPath).metadata();
+  const inputBuffer = readFileSync(srcPath);
+  const metadata = await sharp(inputBuffer).metadata();
   const { width, height } = metadata;
 
   if (!width || !height || (width <= MAX_IMAGE_DIMENSION && height <= MAX_IMAGE_DIMENSION)) {
-    copyFileSync(srcPath, destPath);
+    if (srcPath !== destPath) {
+      copyFileSync(srcPath, destPath);
+    }
     return;
   }
 
-  await sharp(srcPath)
+  const compressed = await sharp(inputBuffer)
     .resize({
       width: width > height ? MAX_IMAGE_DIMENSION : undefined,
       height: height >= width ? MAX_IMAGE_DIMENSION : undefined,
       fit: "inside",
       withoutEnlargement: true,
     })
-    .toFile(destPath);
+    .toBuffer();
+  writeFileSync(destPath, compressed);
 }
 
 // ─── HTTP Helpers ─────────────────────────────────────────────────────────────
@@ -695,7 +699,7 @@ async function run(
         const ext = extname(file);
         const fileName = `${idx + 1}-${basename(file, ext)}${ext}`;
         const destPath = join(imagesDir, fileName);
-        copyFileSync(srcPath, destPath);
+        await compressImage(srcPath, destPath);
         collectedImages.push({ url: srcPath, name: fileName });
       }
     }
@@ -738,6 +742,7 @@ async function run(
             const fileName = `${imgIdx}-${slug}.${ext}`;
             const destPath = join(imagesDir, fileName);
             await downloadImage(fullUrl, destPath, cookie);
+            await compressImage(destPath, destPath);
             collectedImages.push({ url: fullUrl, name: fileName });
           } else if (existsSync(imgSrc)) {
             const ext = extname(imgSrc) || ".png";
