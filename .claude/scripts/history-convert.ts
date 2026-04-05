@@ -20,6 +20,7 @@ import { createInterface } from "node:readline";
 import { Command } from "commander";
 import JSZip from "jszip";
 import { buildMarkdown, todayString } from "./lib/frontmatter.ts";
+import { getEnv } from "./lib/env.ts";
 import { currentYYYYMM, repoRoot } from "./lib/paths.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -306,7 +307,8 @@ function computeOutputPath(inputPath: string): string {
   const root = repoRoot();
   const yyyymm = currentYYYYMM();
   const base = basename(inputPath, extname(inputPath));
-  return join(root, "cases", "archive", yyyymm, `${base}.md`);
+  const wsDir = getEnv("WORKSPACE_DIR") ?? "workspace";
+  return join(root, wsDir, "archive", yyyymm, `${base}.md`);
 }
 
 // ─── Conversion ───────────────────────────────────────────────────────────────
