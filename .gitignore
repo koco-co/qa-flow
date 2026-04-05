@@ -1,5 +1,5 @@
 node_modules/
-workspace/
+workspace/.repos
 !workspace/.gitkeep
 .env
 .DS_Store
@@ -7,6 +7,3 @@ workspace/
 .temp/
 .auth/
 .trash/
-.repos/
-
-# .vscode/

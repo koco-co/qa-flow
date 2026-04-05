@@ -16,6 +16,8 @@ argument-hint: "[init | 功能编号 | 关键词]"
 - `2` 或 报错/bug 相关关键词 → 分析报错/冲突
 - `3` 或 编辑/xmind 相关关键词 → 编辑 XMind 用例
 - `4` 或 ui/autotest 相关关键词 → UI 自动化测试
+- `5` 或 标准化/归档/转化 相关关键词 → 标准化归档
+- 用户直接提供 `.xmind` 或 `.csv` 文件路径 → 自动路由到标准化归档
 
 ## 功能菜单
 
@@ -26,6 +28,7 @@ argument-hint: "[init | 功能编号 | 关键词]"
 | 2    | 分析报错/冲突   | `/qa-flow 2` 或 `帮我分析这个报错`           | 🚧 开发中 |
 | 3    | 编辑 XMind 用例 | `/qa-flow 3` 或 `修改用例 "验证xxx"`         | ✅ 可用   |
 | 4    | UI 自动化测试   | `/qa-flow 4` 或 `UI自动化测试`               | 🚧 开发中 |
+| 5    | 标准化归档      | `/qa-flow 5` 或 `标准化归档 xxx.xmind`       | ✅ 可用   |
 
 ## 快速示例
 
@@ -36,6 +39,7 @@ argument-hint: "[init | 功能编号 | 关键词]"
 修改用例 "验证导出仅导出当前筛选结果"
 帮我分析这个报错
 生成测试用例 https://lanhuapp.com/web/#/item/project/...
+标准化归档 workspace/history/旧用例.xmind
 ```
 
 更多示例见 `.claude/skills/qa-flow/references/quickstart.md`

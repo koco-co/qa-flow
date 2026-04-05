@@ -1,11 +1,13 @@
 ---
 name: test-case-gen
 description:
-  "QA 测试用例生成。将 PRD 需求文档转化为结构化 XMind + Markdown 测试用例。
+  "QA 测试用例生成与标准化归档。将 PRD 需求文档转化为结构化 XMind + Markdown 测试用例。
   6 节点工作流：init → enhance → analyze → write → review → output。
   触发词：生成测试用例、生成用例、写用例、为 <需求名称> 生成用例、test case、
-  重新生成 xxx 模块、追加用例。支持 --quick 快速模式和蓝湖 URL 输入。"
-argument-hint: "[PRD 路径或蓝湖 URL] [--quick]"
+  重新生成 xxx 模块、追加用例。支持 --quick 快速模式和蓝湖 URL 输入。
+  也支持标准化归档：当用户提供 .xmind 或 .csv 文件时，触发归档标准化流程。
+  触发词：标准化归档、归档用例、转化用例、标准化 xmind、标准化 csv。"
+argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 ---
 
 <!-- 前置加载 -->
@@ -25,6 +27,87 @@ argument-hint: "[PRD 路径或蓝湖 URL] [--quick]"
 | 快速     | `--quick`                              | 跳过交互点 B/C，analyze 简化，review 仅 1 轮   |
 | 续传     | 自动检测 `.temp/.qa-state-*.json` 存在 | 从断点节点继续                                 |
 | 模块重跑 | `重新生成 xxx 的「yyy」模块`           | 仅执行 write → review → output（replace 模式） |
+| 标准化归档 | 用户提供 `.xmind` 或 `.csv` 文件       | 走独立流程：parse → standardize → review → output |
+
+---
+
+## 标准化归档流程（XMind / CSV 输入）
+
+> 当用户提供的输入是 `.xmind` 或 `.csv` 文件（而非 PRD）时，进入此流程。
+> 此流程**不走** 6 节点工作流，而是走独立的 4 步标准化流程。
+
+### 触发条件
+
+用户输入文件扩展名为 `.xmind` 或 `.csv`，或包含触发词：标准化归档、归档用例、转化用例。
+
+### 步骤 S1: 解析源文件
+
+```bash
+npx tsx .claude/scripts/history-convert.ts --path {{input_file}} --detect
+```
+
+展示解析结果：
+
+```
+已解析源文件：{{input_file}}
+文件类型：{{xmind | csv}}
+用例数量：{{count}} 条
+模块分布：{{module_list}}
+
+选项：
+1. ✓ 标准化归档（AI 按规则重写用例，推荐）
+2. 仅格式转换（保留原始内容，直接转为 Archive MD）
+3. 查看原始用例内容
+```
+
+> **选项 1（标准化归档）**：AI 读取原始用例内容，按 `test-case-rules.md` 全部规则重写步骤、预期、前置条件，确保达到自动化可执行精度。原始 XMind/CSV 内容**不直接放入**产物中。
+> **选项 2（仅格式转换）**：调用 `history-convert.ts` 直接转换，不经过 AI 重写。
+
+### 步骤 S2: AI 标准化重写（仅选项 1）
+
+读取 `${CLAUDE_SKILL_DIR}/prompts/standardize.md`，对解析出的原始用例逐模块执行标准化重写：
+
+- 应用步骤三要素（操作位置 + 操作对象 + 操作动作）
+- 补充等待条件
+- 预期结果可断言化
+- 前置条件操作化
+- 标题格式统一为 `【P0/P1/P2】验证xxx`
+- 模糊步骤具体化、占位数据替换为真实业务数据
+- 合并符合条件的正向用例
+
+输出中间 JSON 格式（与 writer 输出一致）。
+
+### 步骤 S3: 质量审查
+
+读取 `${CLAUDE_SKILL_DIR}/prompts/reviewer.md`，对标准化后的 JSON 执行审查。
+质量门禁与普通模式一致（15% / 40%）。
+
+### 步骤 S4: 输出
+
+```bash
+# 生成标准化 Archive MD
+npx tsx .claude/scripts/archive-gen.ts convert --input {{final_json}} --output {{archive_path}}
+
+# 从标准化 JSON 生成 XMind（非源文件转换）
+npx tsx .claude/scripts/xmind-gen.ts --input {{final_json}} --output {{xmind_path}} --mode create
+
+# 通知
+npx tsx .claude/scripts/plugin-loader.ts notify --event archive-converted --data '{"fileCount":1,"caseCount":{{count}}}'
+```
+
+### 交互点 — 完成确认
+
+```
+标准化归档完成
+
+Archive MD：{{archive_path}}
+XMind：{{xmind_path}}
+共 {{n}} 条用例（标准化前 {{original_count}} 条，标准化后 {{final_count}} 条）
+
+选项：
+1. 完成
+2. 修改某条用例（→ xmind-editor skill）
+```
 
 ---
 
