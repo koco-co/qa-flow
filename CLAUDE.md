@@ -20,5 +20,5 @@
 ## 核心约束
 
 - `workspace/.repos/` 下的源码仓库为只读，禁止 push/commit
-- 用户偏好规则见 `preferences.md`，优先级高于 skill 内置规则
+- 用户偏好规则见 `preferences/` 目录，优先级高于 skill 内置规则
 - 所有输出产物写入 `workspace/` 目录，不污染框架代码
