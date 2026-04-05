@@ -1,6 +1,9 @@
 #!/usr/bin/env npx tsx
 /**
- * plugins/lanhu/fetch.ts — 蓝湖 PRD 内容 + 截图抓取器
+ * plugins/lanhu/fetch.ts — 蓝湖 PRD 内容 + 截图抓取器 (bridge adapter)
+ *
+ * Calls tools/lanhu/bridge.py via subprocess to fetch PRD content,
+ * then downloads images and produces raw-prd.md output.
  *
  * Usage:
  *   npx tsx plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --output workspace/.temp/lanhu-import
@@ -34,7 +37,20 @@ type PageType = "product-spec" | "design-image" | "unknown";
 interface ParsedLanhuUrl {
   pageType: PageType;
   params: LanhuQueryParams;
-  apiUrl: string | null;
+}
+
+interface BridgePage {
+  name: string;
+  path: string;
+  content: string;
+  images: string[];
+}
+
+interface BridgeOutput {
+  title: string;
+  doc_type: string;
+  total_pages: number;
+  pages: BridgePage[];
 }
 
 interface ImageRef {
@@ -61,11 +77,11 @@ export function parseLanhuUrl(rawUrl: string): ParsedLanhuUrl {
   try {
     url = new URL(rawUrl);
   } catch {
-    return { pageType: "unknown", params: {}, apiUrl: null };
+    return { pageType: "unknown", params: {} };
   }
 
   if (!url.hostname.includes("lanhuapp.com")) {
-    return { pageType: "unknown", params: {}, apiUrl: null };
+    return { pageType: "unknown", params: {} };
   }
 
   // Lanhu uses hash-based routing; query params are in the fragment after '?'
@@ -86,27 +102,15 @@ export function parseLanhuUrl(rawUrl: string): ParsedLanhuUrl {
   }
 
   // Determine page type
-  const hashPath = hashQueryIdx !== -1 ? hashPart.slice(0, hashQueryIdx) : hashPart;
-
   if (params.docId && params.tid && params.pid) {
-    const apiUrl =
-      `https://lanhuapp.com/api/product/spec` +
-      `?tid=${encodeURIComponent(params.tid)}` +
-      `&pid=${encodeURIComponent(params.pid)}` +
-      `&docId=${encodeURIComponent(params.docId)}` +
-      (params.versionId ? `&versionId=${encodeURIComponent(params.versionId)}` : "");
-    return { pageType: "product-spec", params, apiUrl };
+    return { pageType: "product-spec", params };
   }
 
   if (params.image && params.tid) {
-    const apiUrl =
-      `https://lanhuapp.com/api/project/image` +
-      `?tid=${encodeURIComponent(params.tid)}` +
-      `&image=${encodeURIComponent(params.image)}`;
-    return { pageType: "design-image", params, apiUrl };
+    return { pageType: "design-image", params };
   }
 
-  return { pageType: "unknown", params, apiUrl: null };
+  return { pageType: "unknown", params: {} };
 }
 
 // ─── HTML → Markdown ─────────────────────────────────────────────────────────
@@ -173,84 +177,14 @@ export function extractImageUrls(data: unknown): string[] {
   return [...new Set(urls)];
 }
 
-// ─── Text extraction ─────────────────────────────────────────────────────────
-
-export function extractTitle(data: unknown): string {
-  if (!data || typeof data !== "object") return "蓝湖需求文档";
-  const obj = data as Record<string, unknown>;
-
-  for (const key of ["title", "name", "docName", "productName"]) {
-    if (typeof obj[key] === "string" && obj[key]) return obj[key] as string;
-  }
-
-  // Recurse into common wrapper keys
-  for (const key of ["data", "result", "doc", "page"]) {
-    if (obj[key] && typeof obj[key] === "object") {
-      const found = extractTitle(obj[key]);
-      if (found !== "蓝湖需求文档") return found;
-    }
-  }
-
-  return "蓝湖需求文档";
-}
-
-export function extractTextContent(data: unknown): string {
-  if (!data || typeof data !== "object") return "";
-  const obj = data as Record<string, unknown>;
-
-  const parts: string[] = [];
-
-  function collectText(node: unknown): void {
-    if (!node || typeof node !== "object") return;
-    if (Array.isArray(node)) {
-      for (const item of node) collectText(item);
-      return;
-    }
-    const o = node as Record<string, unknown>;
-    for (const key of ["content", "description", "detail", "text", "html", "richText"]) {
-      if (typeof o[key] === "string" && o[key]) {
-        const raw = o[key] as string;
-        const converted = raw.includes("<") ? htmlToMarkdown(raw) : raw.trim();
-        if (converted) parts.push(converted);
-      }
-    }
-    for (const val of Object.values(o)) {
-      if (val && typeof val === "object") collectText(val);
-    }
-  }
-
-  collectText(data);
-  return parts.join("\n\n");
-}
-
 // ─── HTTP Helpers ─────────────────────────────────────────────────────────────
 
 const COMMON_HEADERS = {
   "User-Agent":
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  Accept: "application/json, text/plain, */*",
-  "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+  Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
   Referer: "https://lanhuapp.com/",
 };
-
-async function fetchJson(apiUrl: string, cookie: string): Promise<unknown> {
-  const response = await fetch(apiUrl, {
-    headers: {
-      ...COMMON_HEADERS,
-      Cookie: cookie,
-    },
-  });
-
-  if (response.status === 401 || response.status === 403) {
-    throw Object.assign(new Error("COOKIE_EXPIRED"), { statusCode: response.status });
-  }
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
-
-  return response.json();
-}
 
 async function downloadImage(
   imageUrl: string,
@@ -261,7 +195,6 @@ async function downloadImage(
     headers: {
       ...COMMON_HEADERS,
       Cookie: cookie,
-      Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
     },
   });
 
@@ -275,6 +208,76 @@ async function downloadImage(
 
   const dest = createWriteStream(destPath);
   await pipeline(response.body as unknown as NodeJS.ReadableStream, dest);
+}
+
+// ─── Bridge Helpers ──────────────────────────────────────────────────────────
+
+function ensureLanhuMcpReady(projectRoot: string): void {
+  const venvPath = join(projectRoot, "tools/lanhu/lanhu-mcp/.venv");
+  if (!existsSync(venvPath)) {
+    const setupScript = join(projectRoot, "tools/lanhu/setup.sh");
+    execSync(`bash "${setupScript}"`, {
+      stdio: "pipe",
+      cwd: projectRoot,
+    });
+  }
+}
+
+function callBridge(
+  projectRoot: string,
+  rawUrl: string,
+  pageId: string | undefined,
+  cookie: string,
+): BridgeOutput {
+  const bridgeScript = resolve(projectRoot, "tools/lanhu/bridge.py");
+  const mcpDir = resolve(projectRoot, "tools/lanhu/lanhu-mcp");
+
+  const args = [`uv`, `run`, `python`, bridgeScript, `--url`, rawUrl];
+  if (pageId) {
+    args.push(`--page-id`, pageId);
+  }
+
+  const cmd = args.map((a) => `"${a}"`).join(" ");
+
+  try {
+    const stdout = execSync(cmd, {
+      cwd: mcpDir,
+      env: {
+        ...process.env,
+        LANHU_COOKIE: cookie,
+      },
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+      timeout: 120_000,
+    });
+
+    return JSON.parse(stdout) as BridgeOutput;
+  } catch (err) {
+    const e = err as { stderr?: string; message?: string };
+    const stderrText = e.stderr ?? "";
+
+    // Try to parse structured error from bridge.py stderr
+    try {
+      const bridgeError = JSON.parse(stderrText) as ErrorOutput;
+      const errorOut: ErrorOutput = {
+        error: bridgeError.error,
+        code: bridgeError.code,
+      };
+      process.stderr.write(`${JSON.stringify(errorOut, null, 2)}\n`);
+      process.exit(1);
+    } catch {
+      // stderr wasn't valid JSON; emit a generic error
+      const errorOut: ErrorOutput = {
+        error: `Bridge call failed: ${stderrText || e.message || "unknown error"}`,
+        code: "BRIDGE_ERROR",
+      };
+      process.stderr.write(`${JSON.stringify(errorOut, null, 2)}\n`);
+      process.exit(1);
+    }
+
+    // Unreachable, but TypeScript needs it
+    throw new Error("Bridge call failed");
+  }
 }
 
 // ─── Main Logic ───────────────────────────────────────────────────────────────
@@ -296,7 +299,7 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
 
   // 2. Parse URL
   const parsed = parseLanhuUrl(rawUrl);
-  if (parsed.pageType === "unknown" || !parsed.apiUrl) {
+  if (parsed.pageType === "unknown") {
     const err: ErrorOutput = {
       error:
         "Invalid or unsupported Lanhu URL. Expected format: https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx",
@@ -306,42 +309,31 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
     process.exit(1);
   }
 
-  // 3. Setup output directory
+  // 3. Ensure bridge dependencies are ready
+  ensureLanhuMcpReady(projectRoot);
+
+  // 4. Setup output directory
   const absOutput = resolve(outputDir);
   const imagesDir = join(absOutput, "images");
   mkdirSync(imagesDir, { recursive: true });
 
-  // 4. Fetch API data
-  let apiData: unknown;
-  try {
-    apiData = await fetchJson(parsed.apiUrl, cookie);
-  } catch (err) {
-    const e = err as Error & { statusCode?: number };
-    if (e.message === "COOKIE_EXPIRED") {
-      const out: ErrorOutput = {
-        error: `Cookie 已过期，请更新 .env 中的 LANHU_COOKIE (HTTP ${e.statusCode ?? "401/403"})`,
-        code: "COOKIE_EXPIRED",
-      };
-      process.stderr.write(`${JSON.stringify(out, null, 2)}\n`);
-      process.exit(1);
+  // 5. Call bridge to get PRD content
+  const bridgeResult = callBridge(projectRoot, rawUrl, undefined, cookie);
+  const title = bridgeResult.title || "蓝湖需求文档";
+
+  // 6. Collect image URLs from all pages and download them
+  const allImageUrls: string[] = [];
+  for (const page of bridgeResult.pages) {
+    for (const imgUrl of page.images) {
+      if (!allImageUrls.includes(imgUrl)) {
+        allImageUrls.push(imgUrl);
+      }
     }
-    const out: ErrorOutput = {
-      error: `Network error: ${e.message}`,
-      code: "NETWORK_ERROR",
-    };
-    process.stderr.write(`${JSON.stringify(out, null, 2)}\n`);
-    process.exit(1);
   }
 
-  // 5. Extract content
-  const title = extractTitle(apiData);
-  const textContent = extractTextContent(apiData);
-  const imageUrls = extractImageUrls(apiData);
-
-  // 6. Download images
   const downloadedImages: ImageRef[] = [];
-  for (let i = 0; i < imageUrls.length; i++) {
-    const imageUrl = imageUrls[i];
+  for (let i = 0; i < allImageUrls.length; i++) {
+    const imageUrl = allImageUrls[i];
     try {
       const urlObj = new URL(imageUrl);
       const rawName = urlObj.pathname.split("/").pop() ?? `image-${i + 1}`;
@@ -385,8 +377,21 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
   ].join("\n");
 
   const bodyParts: string[] = [`# ${title}`];
-  if (textContent) bodyParts.push(textContent);
-  if (imagesMd) bodyParts.push(imagesMd);
+
+  const hasMultiplePages = bridgeResult.pages.length > 1;
+  for (const page of bridgeResult.pages) {
+    if (hasMultiplePages) {
+      const heading = page.path || page.name;
+      bodyParts.push(`## ${heading}`);
+    }
+    if (page.content) {
+      bodyParts.push(page.content);
+    }
+  }
+
+  if (imagesMd) {
+    bodyParts.push(imagesMd);
+  }
 
   const prdContent = `${frontMatter}\n\n${bodyParts.join("\n\n")}\n`;
 

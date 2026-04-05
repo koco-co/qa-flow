@@ -8,8 +8,6 @@ import { fileURLToPath } from "node:url";
 
 import {
   extractImageUrls,
-  extractTextContent,
-  extractTitle,
   htmlToMarkdown,
   parseLanhuUrl,
   slugify,
@@ -40,18 +38,14 @@ describe("parseLanhuUrl", () => {
     assert.equal(result.params.tid, "team-001");
     assert.equal(result.params.pid, "proj-001");
     assert.equal(result.params.docId, "doc-001");
-    assert.ok(result.apiUrl?.includes("lanhuapp.com/api/product/spec"));
-    assert.ok(result.apiUrl?.includes("tid=team-001"));
-    assert.ok(result.apiUrl?.includes("pid=proj-001"));
-    assert.ok(result.apiUrl?.includes("docId=doc-001"));
   });
 
-  it("includes versionId in apiUrl when present", () => {
+  it("parses product spec URL with versionId", () => {
     const url =
       "https://lanhuapp.com/web/#/item/project/product?tid=t1&pid=p1&docId=d1&versionId=v99";
     const result = parseLanhuUrl(url);
     assert.equal(result.pageType, "product-spec");
-    assert.ok(result.apiUrl?.includes("versionId=v99"));
+    assert.equal(result.params.versionId, "v99");
   });
 
   it("parses design image URL", () => {
@@ -61,32 +55,26 @@ describe("parseLanhuUrl", () => {
     assert.equal(result.pageType, "design-image");
     assert.equal(result.params.tid, "team-002");
     assert.equal(result.params.image, "img-abc");
-    assert.ok(result.apiUrl?.includes("lanhuapp.com/api/project/image"));
-    assert.ok(result.apiUrl?.includes("image=img-abc"));
   });
 
   it("returns unknown for non-lanhu domain", () => {
     const result = parseLanhuUrl("https://example.com/?docId=123");
     assert.equal(result.pageType, "unknown");
-    assert.equal(result.apiUrl, null);
   });
 
   it("returns unknown for lanhu URL without required params", () => {
     const result = parseLanhuUrl("https://lanhuapp.com/web/#/item/project/product?tid=t1");
     assert.equal(result.pageType, "unknown");
-    assert.equal(result.apiUrl, null);
   });
 
   it("returns unknown for completely invalid URL", () => {
     const result = parseLanhuUrl("not-a-url-at-all");
     assert.equal(result.pageType, "unknown");
-    assert.equal(result.apiUrl, null);
   });
 
   it("returns unknown for empty string", () => {
     const result = parseLanhuUrl("");
     assert.equal(result.pageType, "unknown");
-    assert.equal(result.apiUrl, null);
   });
 });
 
@@ -203,58 +191,6 @@ describe("extractImageUrls", () => {
 
   it("returns empty array for null input", () => {
     assert.deepEqual(extractImageUrls(null), []);
-  });
-});
-
-// ─── extractTitle ─────────────────────────────────────────────────────────────
-
-describe("extractTitle", () => {
-  it("extracts title field", () => {
-    assert.equal(extractTitle({ title: "我的需求" }), "我的需求");
-  });
-
-  it("extracts name field when no title", () => {
-    assert.equal(extractTitle({ name: "商品管理" }), "商品管理");
-  });
-
-  it("recurses into data wrapper", () => {
-    assert.equal(extractTitle({ data: { title: "嵌套标题" } }), "嵌套标题");
-  });
-
-  it("returns default string when nothing found", () => {
-    assert.equal(extractTitle({}), "蓝湖需求文档");
-  });
-
-  it("returns default string for null", () => {
-    assert.equal(extractTitle(null), "蓝湖需求文档");
-  });
-});
-
-// ─── extractTextContent ───────────────────────────────────────────────────────
-
-describe("extractTextContent", () => {
-  it("extracts content field", () => {
-    const result = extractTextContent({ content: "这是需求内容" });
-    assert.ok(result.includes("这是需求内容"));
-  });
-
-  it("converts HTML in content field", () => {
-    const result = extractTextContent({ content: "<p>需求描述</p>" });
-    assert.ok(result.includes("需求描述"));
-    assert.ok(!result.includes("<p>"));
-  });
-
-  it("extracts description field", () => {
-    const result = extractTextContent({ description: "接口描述" });
-    assert.ok(result.includes("接口描述"));
-  });
-
-  it("returns empty string for empty object", () => {
-    assert.equal(extractTextContent({}), "");
-  });
-
-  it("returns empty string for null", () => {
-    assert.equal(extractTextContent(null), "");
   });
 });
 
