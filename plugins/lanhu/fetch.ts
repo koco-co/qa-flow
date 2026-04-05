@@ -11,8 +11,8 @@
  */
 
 import { execSync } from "node:child_process";
-import { createWriteStream, existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { copyFileSync, createWriteStream, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { basename, extname, join, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 import { Command } from "commander";
@@ -402,35 +402,43 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
   const bridgeResult = callBridgeWithRetry(projectRoot, rawUrl, undefined, cookie);
   const title = bridgeResult.title || "蓝湖需求文档";
 
-  // 6. Collect image URLs from all pages and download them
-  const allImageUrls: string[] = [];
+  // 6. Collect images from all pages
+  // Bridge returns local file paths (screenshots from lanhu-mcp) or URLs
+  const collectedImages: ImageRef[] = [];
+  let imgIdx = 0;
   for (const page of bridgeResult.pages) {
-    for (const imgUrl of page.images) {
-      if (!allImageUrls.includes(imgUrl)) {
-        allImageUrls.push(imgUrl);
+    for (const imgSrc of page.images) {
+      imgIdx++;
+      try {
+        if (imgSrc.startsWith("http://") || imgSrc.startsWith("https://") || imgSrc.startsWith("//")) {
+          // Remote URL — download
+          const fullUrl = imgSrc.startsWith("//") ? `https:${imgSrc}` : imgSrc;
+          const urlObj = new URL(fullUrl);
+          const rawName = urlObj.pathname.split("/").pop() ?? `image-${imgIdx}`;
+          const ext = rawName.includes(".") ? rawName.split(".").pop() ?? "png" : "png";
+          const slug = slugify(rawName.replace(/\.[^.]+$/, "")) || `image-${imgIdx}`;
+          const fileName = `${imgIdx}-${slug}.${ext}`;
+          const destPath = join(imagesDir, fileName);
+          await downloadImage(fullUrl, destPath, cookie);
+          collectedImages.push({ url: fullUrl, name: fileName });
+        } else if (existsSync(imgSrc)) {
+          // Local file path (screenshot from lanhu-mcp) — copy
+          const ext = extname(imgSrc) || ".png";
+          const rawName = basename(imgSrc, ext);
+          const slug = slugify(rawName) || `screenshot-${imgIdx}`;
+          const fileName = `${imgIdx}-${slug}${ext}`;
+          const destPath = join(imagesDir, fileName);
+          copyFileSync(imgSrc, destPath);
+          collectedImages.push({ url: imgSrc, name: fileName });
+        }
+      } catch {
+        // Non-fatal: skip failed images
       }
     }
   }
 
-  const downloadedImages: ImageRef[] = [];
-  for (let i = 0; i < allImageUrls.length; i++) {
-    const imageUrl = allImageUrls[i];
-    try {
-      const urlObj = new URL(imageUrl);
-      const rawName = urlObj.pathname.split("/").pop() ?? `image-${i + 1}`;
-      const ext = rawName.includes(".") ? rawName.split(".").pop() ?? "png" : "png";
-      const slug = slugify(rawName.replace(/\.[^.]+$/, "")) || `image-${i + 1}`;
-      const fileName = `${i + 1}-${slug}.${ext}`;
-      const destPath = join(imagesDir, fileName);
-      await downloadImage(imageUrl, destPath, cookie);
-      downloadedImages.push({ url: imageUrl, name: fileName });
-    } catch {
-      // Non-fatal: skip failed image downloads
-    }
-  }
-
   // 7. Compress images
-  if (downloadedImages.length > 0) {
+  if (collectedImages.length > 0) {
     try {
       const compressScript = resolve(projectRoot, ".claude/scripts/image-compress.ts");
       execSync(`npx tsx "${compressScript}" --dir "${imagesDir}"`, {
@@ -444,7 +452,7 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
 
   // 8. Build front-matter + body
   const fetchDate = new Date().toISOString().slice(0, 10);
-  const imagesMd = downloadedImages
+  const imagesMd = collectedImages
     .map((img, idx) => `![页面截图-${idx + 1}](images/${img.name})`)
     .join("\n\n");
 
@@ -484,7 +492,7 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
   const output: FetchOutput = {
     prd_path: prdPath,
     title,
-    images_count: downloadedImages.length,
+    images_count: collectedImages.length,
     output_dir: absOutput,
   };
   process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);

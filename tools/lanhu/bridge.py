@@ -97,24 +97,44 @@ async def _run(url: str, page_id: str | None) -> dict:
     else:
         target_page_names = "all"
 
-    # 3. Analyze pages in text_only mode with tester perspective
+    # 3. Analyze pages in full mode with tester perspective
+    from fastmcp.utilities.types import Image
+
     raw_results = await lanhu_get_ai_analyze_page_result(
         url=url,
         page_names=target_page_names,
-        mode="text_only",
+        mode="full",
         analysis_mode="tester",
         ctx=None,
     )
 
     # raw_results is List[Union[str, Image]].
-    # In text_only mode every element should be a string.
-    text_blocks = [item for item in raw_results if isinstance(item, str)]
+    # Separate text blocks and image paths.
+    text_blocks: list[str] = []
+    image_paths: list[str] = []
+    for item in raw_results:
+        if isinstance(item, str):
+            text_blocks.append(item)
+        elif isinstance(item, Image):
+            if item.path and item.path.exists():
+                image_paths.append(str(item.path))
+
     combined_text = "\n".join(text_blocks)
 
     # 4. Build per-page output entries.
-    #    The raw text doesn't come pre-split per page in a structured way,
-    #    so we attempt to split by page markers the server inserts.
     page_entries = _split_content_by_pages(combined_text, all_pages, page_id)
+
+    # Attach image paths to pages (best-effort: distribute evenly or all to first)
+    if image_paths and page_entries:
+        if len(page_entries) == 1:
+            page_entries[0]["images"] = image_paths
+        else:
+            # Distribute images across pages proportionally
+            per_page = max(1, len(image_paths) // len(page_entries))
+            for i, entry in enumerate(page_entries):
+                start = i * per_page
+                end = start + per_page if i < len(page_entries) - 1 else len(image_paths)
+                entry["images"] = image_paths[start:end]
 
     # 5. Determine which pages are in the result set
     result_pages = (
