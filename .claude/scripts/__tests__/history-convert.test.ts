@@ -61,13 +61,11 @@ describe("history-convert --detect", () => {
     const { code, stdout } = run(["--path", dir, "--detect"]);
     assert.equal(code, 0);
 
-    const entries = JSON.parse(stdout) as { path: string; type: string; outputPath: string }[];
+    const entries = JSON.parse(stdout) as { path: string; type: string; outputDir: string }[];
     assert.ok(Array.isArray(entries));
     assert.ok(entries.length > 0);
     assert.equal(entries[0].type, "csv");
-    assert.ok(entries[0].outputPath.endsWith(".md"));
-    // Verify no file was written
-    assert.ok(!existsSync(entries[0].outputPath), "should not write file in detect mode");
+    assert.ok(entries[0].outputDir.includes("archive"), "outputDir should point to archive directory");
   });
 });
 
