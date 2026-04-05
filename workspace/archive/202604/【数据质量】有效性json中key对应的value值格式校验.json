@@ -1,0 +1,353 @@
+{
+  "meta": {
+    "project_name": "岚图（数据资产V6.4.10）",
+    "requirement_name": "【有效性】json中key对应的value值格式校验",
+    "version": "v6.4.10",
+    "requirement_id": 15694,
+    "description": "有效性校验新增格式-json格式校验规则，校验json字段中key对应value值是否符合通用配置模块维护的正则表达式要求"
+  },
+  "modules": [
+    {
+      "name": "数据质量",
+      "pages": [
+        {
+          "name": "规则任务配置页",
+          "sub_groups": [
+            {
+              "name": "格式-json格式校验规则配置",
+              "test_cases": [
+                {
+                  "title": "验证配置\"格式-json格式校验\"规则选择有value格式的key后成功保存并执行质检任务",
+                  "priority": "P0",
+                  "preconditions": "1、使用admin账号登录系统\n2、数据源中心已添加Doris3.x数据源「测试数据源_Doris3」并授权给资产平台，资产平台已引入该数据源\n3、在【数据质量 → 通用配置 → json格式校验管理】中已维护以下key及value格式:\n- key: host, value格式: ^(\\d{1,3}\\.){3}\\d{1,3}$（IP地址格式）\n- key: port, value格式: ^\\d{1,5}$（端口号格式）\n- key: database_name, value格式: ^[a-zA-Z_][a-zA-Z0-9_]{0,63}$（数据库名格式）\n- key: email, 未配置value格式\n4、Doris3.x SQL语句准备:\nDROP TABLE IF EXISTS qa_test.json_data;\nCREATE TABLE qa_test.json_data (\n  id INT COMMENT 'ID',\n  config_data STRING COMMENT '配置数据'\n) ENGINE=OLAP\nDUPLICATE KEY(id)\nDISTRIBUTED BY HASH(id) BUCKETS 1\nPROPERTIES (\"replication_num\" = \"1\");\n\nINSERT INTO qa_test.json_data VALUES\n(1, '{\"host\":\"10.0.0.1\",\"port\":\"9030\",\"database_name\":\"qa_test_db\"}'),\n(2, '{\"host\":\"192.168.1.100\",\"port\":\"3306\",\"database_name\":\"prod_db\"}'),\n(3, '{\"host\":\"invalid_host\",\"port\":\"999999\",\"database_name\":\"123start\"}');",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，等待规则任务列表加载完成",
+                      "expected": "页面正常加载，规则任务列表展示已有规则记录或空态提示"
+                    },
+                    {
+                      "step": "点击列表右上角【新建监控规则 → 单表校验规则】按钮，在配置面板中按顺序填写：\n- 「规则名称」输入框输入\"json格式校验测试规则\"\n- 「选择数据源」下拉框选择\"测试数据源_Doris3\"\n- 「选择数据库」下拉框选择\"qa_test\"\n- 「选择数据表」下拉框选择\"json_data\"\n点击【下一步】按钮",
+                      "expected": "各字段正常填入，点击下一步后成功进入「监控规则配置」页面，监控对象显示为\"测试数据源_Doris3 / qa_test / json_data\""
+                    },
+                    {
+                      "step": "在「监控规则配置」页面点击【添加规则】按钮，在规则配置表单中按顺序配置如下：\n- 规则类型: 选择\"有效性校验（字段级）\"\n- 字段: 选择\"config_data\"\n- 统计规则: 选择\"格式-json格式校验\"\n- 校验key: 勾选\"host\"、\"port\"、\"database_name\"\n- 强弱规则: 选择\"强规则\"\n- 规则描述: 输入\"校验config_data字段中host、port、database_name的value格式\"",
+                      "expected": "规则类型下拉列表包含\"有效性校验（字段级）\"选项；字段下拉列表显示\"config_data\"字段；统计规则下拉列表显示\"格式-json格式校验\"选项；校验key下拉列表显示\"host\"、\"port\"、\"database_name\"可勾选，\"email\"不在可选列表中；强弱规则默认或可选择\"强规则\""
+                    },
+                    {
+                      "step": "点击规则配置表单的【确定】按钮，等待规则添加完成，然后点击页面底部【下一步】按钮进入「调度属性配置」页面",
+                      "expected": "规则添加成功，规则列表新增一条\"格式-json格式校验\"规则记录；成功进入「调度属性配置」页面"
+                    },
+                    {
+                      "step": "在「调度属性配置」页面保持默认调度配置，点击页面底部【完成】按钮，等待规则保存完成",
+                      "expected": "页面提示\"保存成功\"；返回规则任务列表，列表新增一条记录，规则名称显示\"json格式校验测试规则\""
+                    },
+                    {
+                      "step": "在规则任务列表中找到\"json格式校验测试规则\"记录，点击操作列【运行】按钮",
+                      "expected": "页面提示\"运行成功\"或\"任务已提交\"；该规则任务状态变为\"运行中\""
+                    }
+                  ]
+                },
+                {
+                  "title": "验证统计规则下拉列表中\"格式-json格式校验\"位于自定义正则上方且字段仅展示json和string数据类型",
+                  "priority": "P1",
+                  "preconditions": "1、使用admin账号登录系统\n2、数据源中心已添加Doris3.x数据源「测试数据源_Doris3」并授权给资产平台\n3、在【数据质量 → 通用配置 → json格式校验管理】中已维护至少1条key且配置了value格式\n4、qa_test数据库中存在表json_data_types，包含以下字段：\n- id(INT), config_data(STRING), json_col(JSON), num_col(INT), date_col(DATE)\nDDL:\nDROP TABLE IF EXISTS qa_test.json_data_types;\nCREATE TABLE qa_test.json_data_types (\n  id INT,\n  config_data STRING,\n  json_col JSON,\n  num_col INT,\n  date_col DATE\n) ENGINE=OLAP\nDUPLICATE KEY(id)\nDISTRIBUTED BY HASH(id) BUCKETS 1\nPROPERTIES (\"replication_num\" = \"1\");",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，点击【新建监控规则 → 单表校验规则】按钮，配置监控对象为\"测试数据源_Doris3 / qa_test / json_data_types\"后点击【下一步】进入「监控规则配置」页面",
+                      "expected": "成功进入「监控规则配置」页面"
+                    },
+                    {
+                      "step": "点击【添加规则】按钮，在规则配置表单的「规则类型」下拉框选择\"有效性校验（字段级）\"，展开「统计规则」下拉列表，观察\"格式-json格式校验\"和\"自定义正则\"选项的位置顺序",
+                      "expected": "「统计规则」下拉列表中\"格式-json格式校验\"选项排列在\"自定义正则\"选项的上方"
+                    },
+                    {
+                      "step": "在「统计规则」下拉框选择\"格式-json格式校验\"，展开「字段」下拉列表，观察可选字段列表",
+                      "expected": "「字段」下拉列表仅显示\"config_data\"(STRING类型)和\"json_col\"(JSON类型)两个字段；\"id\"(INT类型)、\"num_col\"(INT类型)、\"date_col\"(DATE类型)字段不在可选列表中"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "校验key选择与回显",
+              "test_cases": [
+                {
+                  "title": "验证校验key列表排除未配置value格式的key且支持多选全选和关键词搜索",
+                  "priority": "P1",
+                  "preconditions": "1、使用admin账号登录系统\n2、在【数据质量 → 通用配置 → json格式校验管理】中已维护以下key信息:\n- key: host, value格式: ^(\\d{1,3}\\.){3}\\d{1,3}$\n- key: port, value格式: ^\\d{1,5}$\n- key: database_name, value格式: ^[a-zA-Z_][a-zA-Z0-9_]{0,63}$\n- key: email, 未配置value格式\n- key: hostname, value格式: ^[a-zA-Z0-9.-]+$\n3、已创建单表校验规则，监控对象为qa_test.json_data，已进入「监控规则配置」页面并选择规则类型\"有效性校验（字段级）\"、字段\"config_data\"、统计规则\"格式-json格式校验\"",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，打开已创建规则的「监控规则配置」页面，在规则配置表单中选择规则类型\"有效性校验（字段级）\"、字段\"config_data\"、统计规则\"格式-json格式校验\"后，展开「校验key」下拉列表",
+                      "expected": "「校验key」下拉列表显示\"host\"、\"port\"、\"database_name\"、\"hostname\"共4个可勾选的key；\"email\"不在下拉列表中（因未配置value格式）"
+                    },
+                    {
+                      "step": "在「校验key」下拉列表的搜索框中输入\"host\"",
+                      "expected": "下拉列表筛选后仅显示\"host\"和\"hostname\"两个key，\"port\"和\"database_name\"被过滤隐藏"
+                    },
+                    {
+                      "step": "清空搜索框内容，勾选\"host\"和\"port\"两个key",
+                      "expected": "\"host\"和\"port\"前的复选框变为选中状态；下拉列表保持展开，已勾选项显示勾选标记"
+                    },
+                    {
+                      "step": "点击「校验key」下拉列表顶部的【全选】按钮",
+                      "expected": "\"host\"、\"port\"、\"database_name\"、\"hostname\"全部变为选中状态；全选按钮变为已选中状态"
+                    },
+                    {
+                      "step": "取消勾选\"hostname\"，收起「校验key」下拉列表",
+                      "expected": "\"hostname\"取消选中；下拉列表收起后，校验key回显区域显示已选中的key信息"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证校验key选中后回显格式为分号分隔且鼠标悬浮展示全部key名",
+                  "priority": "P1",
+                  "preconditions": "1、使用admin账号登录系统\n2、在【数据质量 → 通用配置 → json格式校验管理】中已维护以下key及value格式:\n- key: host, value格式: ^(\\d{1,3}\\.){3}\\d{1,3}$\n- key: port, value格式: ^\\d{1,5}$\n- key: database_name, value格式: ^[a-zA-Z_][a-zA-Z0-9_]{0,63}$\n- key: connection-host（二级key，父级为connection）, value格式: ^[a-zA-Z0-9.-]+$\n- key: connection-port（二级key，父级为connection）, value格式: ^\\d{1,5}$\n3、已进入规则配置表单，统计规则已选择\"格式-json格式校验\"",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，在规则配置表单中统计规则已选择\"格式-json格式校验\"，在「校验key」下拉列表中勾选\"host\"、\"port\"、\"database_name\"、\"connection-host\"、\"connection-port\"共5个key后收起下拉列表",
+                      "expected": "校验key回显区域显示格式为\"host;port;database_name;connection-host;connection-port\"（各key之间以分号分隔，层级key以短横线连接）；回显区域默认仅展示前两个key（\"host;port\"），其余以省略号或截断方式展示"
+                    },
+                    {
+                      "step": "将鼠标悬浮在校验key回显区域上方",
+                      "expected": "弹出悬浮提示框，展示全部5个key的完整名称：\"host;port;database_name;connection-host;connection-port\""
+                    }
+                  ]
+                },
+                {
+                  "title": "验证校验key数据量超过200条时默认加载前200条展示",
+                  "priority": "P1",
+                  "preconditions": "1、使用admin账号登录系统\n2、在【数据质量 → 通用配置 → json格式校验管理】中已维护超过200条key且均已配置value格式（key命名为key_001至key_250，共250条）\n3、已进入规则配置表单，统计规则已选择\"格式-json格式校验\"",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，在规则配置表单中统计规则已选择\"格式-json格式校验\"，展开「校验key」下拉列表",
+                      "expected": "「校验key」下拉列表默认加载并展示前200条key（key_001至key_200）；下拉列表可滚动查看"
+                    },
+                    {
+                      "step": "在下拉列表中持续向下滚动到底部",
+                      "expected": "滚动到底部后加载更多数据，显示剩余的key_201至key_250；或底部显示\"加载更多\"按钮/提示"
+                    },
+                    {
+                      "step": "在「校验key」搜索框中输入\"key_220\"",
+                      "expected": "搜索结果显示\"key_220\"，可正常勾选该key"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "value格式预览",
+              "test_cases": [
+                {
+                  "title": "验证点击\"value格式预览\"弹窗展示已勾选key的格式信息并支持分页和悬浮提示",
+                  "priority": "P1",
+                  "preconditions": "1、使用admin账号登录系统\n2、在【数据质量 → 通用配置 → json格式校验管理】中已维护以下key及value格式:\n- key: host, value格式: ^(\\d{1,3}\\.){3}\\d{1,3}$\n- key: port, value格式: ^\\d{1,5}$\n- key: database_name, value格式: ^[a-zA-Z_][a-zA-Z0-9_]{0,63}$\n3、已进入规则配置表单，统计规则已选择\"格式-json格式校验\"，校验key已勾选\"host\"、\"port\"、\"database_name\"",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，在规则配置表单中校验key已勾选\"host\"、\"port\"、\"database_name\"，点击表单中的【value格式预览】链接或按钮，等待弹窗完全展开",
+                      "expected": "弹出\"value格式预览\"弹窗；弹窗内以表格形式展示两列：\"key\"和\"value格式\"；表格显示3条记录：\n- host: ^(\\d{1,3}\\.){3}\\d{1,3}$\n- port: ^\\d{1,5}$\n- database_name: ^[a-zA-Z_][a-zA-Z0-9_]{0,63}$\n弹窗仅展示已勾选的3个key的信息，不包含未勾选的key"
+                    },
+                    {
+                      "step": "将鼠标悬浮在弹窗标题或提示图标区域",
+                      "expected": "弹出悬浮提示文案：\"校验内容为key名对应的value格式是否符合要求，value格式需要在通用配置模块维护。\""
+                    },
+                    {
+                      "step": "关闭当前弹窗，返回规则配置表单，在「校验key」中取消勾选\"database_name\"仅保留\"host\"和\"port\"，再次点击【value格式预览】",
+                      "expected": "弹窗内表格仅显示2条记录：\"host\"和\"port\"对应的value格式信息；\"database_name\"不在预览列表中"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证value格式预览弹窗在勾选大量key时支持分页展示",
+                  "priority": "P2",
+                  "preconditions": "1、使用admin账号登录系统\n2、在【数据质量 → 通用配置 → json格式校验管理】中已维护超过20条key且均已配置value格式\n3、已进入规则配置表单，统计规则已选择\"格式-json格式校验\"，校验key已通过全选勾选全部key（超过20条）",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，在规则配置表单中校验key已全选（超过20条），点击【value格式预览】按钮，等待弹窗完全展开",
+                      "expected": "弹窗正常展开，表格第一页展示前10条（或默认分页条数）key的格式信息；弹窗底部显示分页控件，显示总条数和页码信息"
+                    },
+                    {
+                      "step": "点击弹窗底部分页控件的【下一页】按钮",
+                      "expected": "表格切换至第二页，展示下一批key的格式信息；分页控件当前页码变为\"2\""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "质量报告页",
+          "sub_groups": [
+            {
+              "name": "校验结果查看",
+              "test_cases": [
+                {
+                  "title": "验证全部数据符合json格式校验规则时质量报告显示校验通过及正确的详情说明文案",
+                  "priority": "P0",
+                  "preconditions": "1、使用admin账号登录系统\n2、在【数据质量 → 通用配置 → json格式校验管理】中已维护以下key及value格式:\n- key: host, value格式: ^(\\d{1,3}\\.){3}\\d{1,3}$\n- key: port, value格式: ^\\d{1,5}$\n- key: database_name, value格式: ^[a-zA-Z_][a-zA-Z0-9_]{0,63}$\n3、Doris3.x SQL语句准备（全部数据符合格式要求）:\nDROP TABLE IF EXISTS qa_test.json_data_valid;\nCREATE TABLE qa_test.json_data_valid (\n  id INT,\n  config_data STRING\n) ENGINE=OLAP\nDUPLICATE KEY(id)\nDISTRIBUTED BY HASH(id) BUCKETS 1\nPROPERTIES (\"replication_num\" = \"1\");\n\nINSERT INTO qa_test.json_data_valid VALUES\n(1, '{\"host\":\"10.0.0.1\",\"port\":\"9030\",\"database_name\":\"qa_test_db\"}'),\n(2, '{\"host\":\"192.168.1.100\",\"port\":\"3306\",\"database_name\":\"prod_db\"}');\n4、已在【规则任务配置】中创建规则任务\"json格式校验通过测试\"，监控对象为qa_test.json_data_valid，规则配置为：有效性校验 → 格式-json格式校验，校验key勾选host、port、database_name\n5、该规则任务已执行完成，任务状态为\"已完成\"",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 质量报告】页面，等待报告列表加载完成",
+                      "expected": "页面正常加载，质量报告列表展示已有报告记录"
+                    },
+                    {
+                      "step": "在质量报告列表中找到\"json格式校验通过测试\"对应的报告记录，查看校验结果列",
+                      "expected": "校验结果列显示\"校验通过\"；标题文案显示\"有效性校验-格式-json格式校验\""
+                    },
+                    {
+                      "step": "点击该报告记录的操作列【查看详情】按钮，等待详情页面加载完成",
+                      "expected": "详情说明显示：\"符合规则key为\\\"host;port;database_name\\\"时的value格式要求\"；无明细数据记录（校验通过不记录明细数据）"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证存在不符合json格式校验规则的数据时质量报告显示校验不通过并可查看明细数据",
+                  "priority": "P0",
+                  "preconditions": "1、使用admin账号登录系统\n2、在【数据质量 → 通用配置 → json格式校验管理】中已维护以下key及value格式:\n- key: host, value格式: ^(\\d{1,3}\\.){3}\\d{1,3}$\n- key: port, value格式: ^\\d{1,5}$\n- key: database_name, value格式: ^[a-zA-Z_][a-zA-Z0-9_]{0,63}$\n3、Doris3.x SQL语句准备（包含不符合格式的数据）:\nDROP TABLE IF EXISTS qa_test.json_data_invalid;\nCREATE TABLE qa_test.json_data_invalid (\n  id INT,\n  config_data STRING\n) ENGINE=OLAP\nDUPLICATE KEY(id)\nDISTRIBUTED BY HASH(id) BUCKETS 1\nPROPERTIES (\"replication_num\" = \"1\");\n\nINSERT INTO qa_test.json_data_invalid VALUES\n(1, '{\"host\":\"10.0.0.1\",\"port\":\"9030\",\"database_name\":\"qa_test_db\"}'),\n(2, '{\"host\":\"invalid_host\",\"port\":\"999999\",\"database_name\":\"123start\"}'),\n(3, '{\"host\":\"not.valid\",\"port\":\"abc\",\"database_name\":\"good_name\"}');\n4、已在【规则任务配置】中创建规则任务\"json格式校验不通过测试\"，监控对象为qa_test.json_data_invalid，规则配置为：有效性校验 → 格式-json格式校验，校验key勾选host、port、database_name\n5、该规则任务已执行完成，任务状态为\"已完成\"",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 质量报告】页面，等待报告列表加载完成",
+                      "expected": "页面正常加载，质量报告列表展示已有报告记录"
+                    },
+                    {
+                      "step": "在质量报告列表中找到\"json格式校验不通过测试\"对应的报告记录，查看校验结果列",
+                      "expected": "校验结果列显示\"校验不通过\"；未通过原因显示\"key对应value格式校验未通过\"；标题文案显示\"有效性校验-格式-json格式校验\""
+                    },
+                    {
+                      "step": "点击该报告记录的操作列【查看详情】按钮，等待详情页面加载完成",
+                      "expected": "详情说明显示：\"不符合规则key为\\\"host;port;database_name\\\"时的value格式要求\"；页面显示【查看详情】入口"
+                    },
+                    {
+                      "step": "点击【查看详情】按钮或链接，等待明细数据弹窗或页面加载完成",
+                      "expected": "展示不符合要求的明细数据列表；数据列表保留全部字段（id、config_data）；明细数据包含id=2（host为\"invalid_host\"、port为\"999999\"、database_name为\"123start\"）和id=3（host为\"not.valid\"、port为\"abc\"）的记录；校验字段\"config_data\"以红色标红展示"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证校验不通过的明细数据下载文件中校验字段标红展示及报告标题文案正确",
+                  "priority": "P1",
+                  "preconditions": "1、使用admin账号登录系统\n2、已完成\"json格式校验不通过测试\"规则任务的执行，质量报告中存在校验不通过的记录\n3、已进入该报告的明细数据查看页面",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 质量报告】页面，打开\"json格式校验不通过测试\"报告的明细数据页面，观察明细数据列表中校验字段的展示样式",
+                      "expected": "明细数据列表中\"config_data\"校验字段以红色标红展示，与其他未校验字段的样式明显区分"
+                    },
+                    {
+                      "step": "点击明细数据页面的【下载】按钮，等待文件下载完成后打开下载的文件",
+                      "expected": "文件下载成功；下载的明细数据文件中\"config_data\"校验字段同样以红色标红展示"
+                    },
+                    {
+                      "step": "返回质量报告列表页面，观察\"json格式校验不通过测试\"报告记录的标题列",
+                      "expected": "标题文案显示\"有效性校验-格式-json格式校验\""
+                    }
+                  ]
+                },
+                {
+                  "title": "验证规则任务校验失败时支持在质量报告中查看任务日志",
+                  "priority": "P1",
+                  "preconditions": "1、使用admin账号登录系统\n2、已在【规则任务配置】中创建规则任务\"json格式校验失败测试\"，监控对象配置的数据表已被删除或数据源连接异常，导致规则任务执行失败\n3、该规则任务已执行，任务状态为\"校验失败\"",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产 → 数据质量 → 质量报告】页面，等待报告列表加载完成",
+                      "expected": "页面正常加载，质量报告列表展示已有报告记录"
+                    },
+                    {
+                      "step": "在质量报告列表中找到\"json格式校验失败测试\"对应的报告记录，查看校验结果列",
+                      "expected": "校验结果列显示\"校验失败\""
+                    },
+                    {
+                      "step": "点击该报告记录的操作列【查看日志】按钮，等待日志弹窗或页面加载完成",
+                      "expected": "弹出日志查看弹窗或跳转至日志页面；日志内容显示任务执行失败的错误信息（包含数据表不存在或数据源连接异常的错误描述）"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "质量规则库页",
+          "test_cases": [
+            {
+              "title": "验证质量规则库中新增\"格式-json格式校验\"内置规则且规则详情信息和悬浮提示正确",
+              "priority": "P1",
+              "preconditions": "1、使用admin账号登录系统",
+              "steps": [
+                {
+                  "step": "进入【数据资产 → 数据质量 → 质量规则库】页面，等待规则列表加载完成",
+                  "expected": "页面正常加载，质量规则库列表展示所有内置规则"
+                },
+                {
+                  "step": "在规则库列表的搜索框中输入\"格式-json格式校验\"，点击搜索或等待列表刷新",
+                  "expected": "列表筛选后显示\"格式-json格式校验\"规则记录；规则分类显示\"有效性校验\"；关联范围显示\"字段\"；规则描述显示\"校验json类型的字段中key对应的value值是否符合规范要求\""
+                },
+                {
+                  "step": "将鼠标悬浮在\"格式-json格式校验\"规则记录的名称或提示图标区域",
+                  "expected": "弹出悬浮提示框，提示文案显示：\"校验内容为key名对应的value格式是否符合要求，value格式需要在通用配置模块维护。\""
+                }
+              ]
+            },
+            {
+              "title": "验证在规则库中查看已配置的\"格式-json格式校验\"规则时校验key悬浮展示完整key名",
+              "priority": "P1",
+              "preconditions": "1、使用admin账号登录系统\n2、已在【规则任务配置】中创建过使用\"格式-json格式校验\"的规则，校验key配置了host、port、database_name共3个key",
+              "steps": [
+                {
+                  "step": "进入【数据资产 → 数据质量 → 质量规则库】页面，在规则列表中找到\"格式-json格式校验\"规则，点击查看该规则的关联配置或引用详情",
+                  "expected": "展示该规则的关联配置信息；校验key回显区域默认仅展示前两个key（\"host;port\"），其余以省略号截断"
+                },
+                {
+                  "step": "将鼠标悬浮在校验key回显区域",
+                  "expected": "弹出悬浮提示框，展示全部key名信息：\"host;port;database_name\""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "数据源兼容性",
+          "test_cases": [
+            {
+              "title": "验证\"格式-json格式校验\"规则在SparkThrift2.x数据源上成功执行校验",
+              "priority": "P1",
+              "preconditions": "1、使用admin账号登录系统\n2、数据源中心已添加SparkThrift2.x数据源「测试数据源_SparkThrift」并授权给资产平台\n3、在【数据质量 → 通用配置 → json格式校验管理】中已维护key: host, value格式: ^(\\d{1,3}\\.){3}\\d{1,3}$；key: port, value格式: ^\\d{1,5}$\n4、SparkThrift2.x SQL语句准备:\nCREATE TABLE IF NOT EXISTS qa_test.json_data_spark (\n  id INT,\n  config_data STRING\n);\nINSERT INTO qa_test.json_data_spark VALUES\n(1, '{\"host\":\"10.0.0.1\",\"port\":\"9030\"}'),\n(2, '{\"host\":\"invalid\",\"port\":\"abc\"}');",
+              "steps": [
+                {
+                  "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，点击【新建监控规则 → 单表校验规则】按钮，配置监控对象为\"测试数据源_SparkThrift / qa_test / json_data_spark\"后点击【下一步】",
+                  "expected": "成功进入「监控规则配置」页面，监控对象显示为SparkThrift数据源下的表"
+                },
+                {
+                  "step": "添加规则配置：规则类型选择\"有效性校验（字段级）\"，字段选择\"config_data\"，统计规则选择\"格式-json格式校验\"，校验key勾选\"host\"和\"port\"，保存规则并执行任务，等待任务执行完成",
+                  "expected": "规则保存成功；任务执行完成后状态变为\"已完成\"，未出现数据源兼容性错误"
+                },
+                {
+                  "step": "进入【质量报告】页面查看该任务的校验结果",
+                  "expected": "校验结果显示\"校验不通过\"（因id=2的数据不符合格式要求）；详情说明文案正确；明细数据可正常查看"
+                }
+              ]
+            },
+            {
+              "title": "验证\"格式-json格式校验\"规则在Hive2.x数据源上成功执行校验",
+              "priority": "P1",
+              "preconditions": "1、使用admin账号登录系统\n2、数据源中心已添加Hive2.x数据源「测试数据源_Hive」并授权给资产平台\n3、在【数据质量 → 通用配置 → json格式校验管理】中已维护key: host, value格式: ^(\\d{1,3}\\.){3}\\d{1,3}$；key: port, value格式: ^\\d{1,5}$\n4、Hive2.x SQL语句准备:\nCREATE TABLE IF NOT EXISTS qa_test.json_data_hive (\n  id INT,\n  config_data STRING\n);\nINSERT INTO qa_test.json_data_hive VALUES\n(1, '{\"host\":\"10.0.0.1\",\"port\":\"9030\"}'),\n(2, '{\"host\":\"10.0.0.2\",\"port\":\"3306\"}');",
+              "steps": [
+                {
+                  "step": "进入【数据资产 → 数据质量 → 规则任务配置】页面，点击【新建监控规则 → 单表校验规则】按钮，配置监控对象为\"测试数据源_Hive / qa_test / json_data_hive\"后点击【下一步】",
+                  "expected": "成功进入「监控规则配置」页面，监控对象显示为Hive数据源下的表"
+                },
+                {
+                  "step": "添加规则配置：规则类型选择\"有效性校验（字段级）\"，字段选择\"config_data\"，统计规则选择\"格式-json格式校验\"，校验key勾选\"host\"和\"port\"，保存规则并执行任务，等待任务执行完成",
+                  "expected": "规则保存成功；任务执行完成后状态变为\"已完成\"，未出现数据源兼容性错误"
+                },
+                {
+                  "step": "进入【质量报告】页面查看该任务的校验结果",
+                  "expected": "校验结果显示\"校验通过\"（全部数据符合格式要求）；详情说明显示：\"符合规则key为\\\"host;port\\\"时的value格式要求\""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

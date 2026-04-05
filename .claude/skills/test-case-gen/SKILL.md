@@ -21,12 +21,12 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 
 ## 运行模式
 
-| 模式     | 触发条件                               | 行为差异                                       |
-| -------- | -------------------------------------- | ---------------------------------------------- |
-| 普通     | 默认                                   | 全 7 节点 + 全部交互点                         |
-| 快速     | `--quick`                              | 跳过交互点 B/C，analyze 简化，review 仅 1 轮   |
-| 续传     | 自动检测 `.temp/.qa-state-*.json` 存在 | 从断点节点继续                                 |
-| 模块重跑 | `重新生成 xxx 的「yyy」模块`           | 仅执行 write → review → output（replace 模式） |
+| 模式       | 触发条件                               | 行为差异                                          |
+| ---------- | -------------------------------------- | ------------------------------------------------- |
+| 普通       | 默认                                   | 全 7 节点 + 全部交互点                            |
+| 快速       | `--quick`                              | 跳过交互点 B/C，analyze 简化，review 仅 1 轮      |
+| 续传       | 自动检测 `.temp/.qa-state-*.json` 存在 | 从断点节点继续                                    |
+| 模块重跑   | `重新生成 xxx 的「yyy」模块`           | 仅执行 write → review → output（replace 模式）    |
 | 标准化归档 | 用户提供 `.xmind` 或 `.csv` 文件       | 走独立流程：parse → standardize → review → output |
 
 ---
@@ -85,6 +85,7 @@ npx tsx .claude/scripts/history-convert.ts --path {{input_file}} --detect
 ### 步骤 S4: 输出
 
 > **路径规则**：标准化产物（含 `-standardized` 后缀的 MD 和 XMind）属于中间产物，必须输出到 archive 下的 `tmp/` 子目录，不得直接放在 archive 或 xmind 根目录下。
+>
 > - Archive MD → `workspace/archive/{{YYYYMM}}/tmp/{{name}}-standardized.md`
 > - XMind → `workspace/archive/{{YYYYMM}}/tmp/{{name}}-standardized.xmind`
 > - 中间 JSON 也保留在同一 `tmp/` 目录
@@ -240,6 +241,7 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node transform --d
 ```
 
 数据结构：
+
 ```json
 {
   "confidence": 0.85,
@@ -254,21 +256,18 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node transform --d
 
 ## 节点 3: enhance — PRD 增强
 
-**目标**：图片压缩与识别、frontmatter 规范化、页面要点提取、需求澄清。
+**目标**：图片识别、frontmatter 规范化、页面要点提取、需求澄清。
 
-### 3.1 图片压缩
+> fetch 阶段已从 Axure 资源中提取独立元素图片（高清）+ 整页截图（全貌参考），
+> 无需再做图片压缩。images/ 目录中 `N-uXXX.png` 为独立元素，`N-fullpage-*.png` 为整页截图。
 
-```bash
-npx tsx .claude/scripts/image-compress.ts --dir {{prd_images_dir}}
-```
-
-### 3.2 Frontmatter 规范化
+### 3.1 Frontmatter 规范化
 
 ```bash
 npx tsx .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 ```
 
-### 3.3 PRD 增强（AI 任务）
+### 3.2 PRD 增强（AI 任务）
 
 读取 `${CLAUDE_SKILL_DIR}/prompts/enhance.md`，对 PRD 执行：
 
@@ -277,7 +276,7 @@ npx tsx .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 - 需求歧义标注
 - 健康度预检
 
-### 3.4 更新状态
+### 3.3 更新状态
 
 ```bash
 npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node enhance --data '{{json}}'
@@ -418,6 +417,7 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data
 **目标**：生成 XMind + Archive MD，发送通知，清理状态。
 
 > **产物路径规则**（严格遵守）：
+>
 > - XMind → `workspace/xmind/{{YYYYMM}}/{{需求名称}}.xmind`
 > - Archive MD → `workspace/archive/{{YYYYMM}}/{{需求名称}}.md`
 > - 禁止输出到 `workspace/cases/` 目录（该目录不存在且不应被创建）
