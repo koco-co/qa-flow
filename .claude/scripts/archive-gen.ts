@@ -231,9 +231,7 @@ function registerHandlebarsHelpers(): void {
 
   // Escape pipe characters and newlines in table cells
   Handlebars.registerHelper("escapeCell", (text: string) => {
-    return new Handlebars.SafeString(
-      String(text).replace(/\|/g, "\\|").replace(/\n/g, " ")
-    );
+    return new Handlebars.SafeString(String(text).replace(/\|/g, "\\|").replace(/\n/g, " "));
   });
 }
 

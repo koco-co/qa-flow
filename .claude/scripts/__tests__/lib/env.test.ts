@@ -1,8 +1,8 @@
-import { describe, it, afterEach, before } from "node:test";
 import assert from "node:assert/strict";
-import { writeFileSync, mkdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, before, describe, it } from "node:test";
 
 // We need to test with isolated module state, so we test the functions via fresh imports
 // env.ts uses a module-level cache, so we test behavior directly

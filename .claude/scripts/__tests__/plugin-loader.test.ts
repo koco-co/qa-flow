@@ -23,13 +23,13 @@ function runPluginLoader(
         ...process.env,
         // Ensure we start with a clean slate for plugin env vars
         LANHU_COOKIE: "",
-        DINGTALK_WEBHOOK: "",
-        FEISHU_WEBHOOK: "",
-        WECOM_WEBHOOK: "",
-        WECOM_CORPID: "",
+        DINGTALK_WEBHOOK_URL: "",
+        FEISHU_WEBHOOK_URL: "",
+        WECOM_WEBHOOK_URL: "",
         SMTP_HOST: "",
         ZENTAO_BASE_URL: "",
-        ZENTAO_COOKIE: "",
+        ZENTAO_ACCOUNT: "",
+        ZENTAO_PASSWORD: "",
         ...extraEnv,
       },
     });
@@ -113,9 +113,9 @@ describe("plugin-loader.ts list", () => {
     assert.equal(notify?.active, false);
   });
 
-  it("notify is active when DINGTALK_WEBHOOK is set", () => {
+  it("notify is active when DINGTALK_WEBHOOK_URL is set", () => {
     const { stdout } = runPluginLoader(["list"], {
-      DINGTALK_WEBHOOK: "https://oapi.dingtalk.com/robot/send?access_token=xxx",
+      DINGTALK_WEBHOOK_URL: "https://oapi.dingtalk.com/robot/send?access_token=xxx",
     });
     const plugins = JSON.parse(stdout) as Array<{ name: string; active: boolean }>;
     const notify = plugins.find((p) => p.name === "notify");
@@ -125,7 +125,7 @@ describe("plugin-loader.ts list", () => {
 
   it("notify is active when FEISHU_WEBHOOK is set (env_required_any logic)", () => {
     const { stdout } = runPluginLoader(["list"], {
-      FEISHU_WEBHOOK: "https://open.feishu.cn/open-apis/bot/v2/hook/xxx",
+      FEISHU_WEBHOOK_URL: "https://open.feishu.cn/open-apis/bot/v2/hook/xxx",
     });
     const plugins = JSON.parse(stdout) as Array<{ name: string; active: boolean }>;
     const notify = plugins.find((p) => p.name === "notify");
@@ -245,7 +245,7 @@ describe("plugin-loader.ts notify", () => {
         "--data",
         '{"count":42,"file":"test.xmind","duration":30}',
       ],
-      { DINGTALK_WEBHOOK: "https://oapi.dingtalk.com/robot/send?access_token=test" },
+      { DINGTALK_WEBHOOK_URL: "https://oapi.dingtalk.com/robot/send?access_token=test" },
     );
     assert.equal(code, 0);
     const result = JSON.parse(stdout) as {
@@ -282,7 +282,7 @@ describe("plugin-loader.ts notify", () => {
     const { code } = runPluginLoader(
       ["notify", "--event", "workflow-failed", "--data", '{"step":"write","reason":"timeout"}'],
       {
-        DINGTALK_WEBHOOK: "",
+        DINGTALK_WEBHOOK_URL: "",
         FEISHU_WEBHOOK: "",
         WECOM_WEBHOOK: "",
         SMTP_HOST: "",

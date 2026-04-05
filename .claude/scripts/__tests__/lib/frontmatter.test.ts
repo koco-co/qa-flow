@@ -1,10 +1,10 @@
-import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 import {
-  parseFrontMatter,
-  serializeFrontMatter,
   buildMarkdown,
   countCases,
+  parseFrontMatter,
+  serializeFrontMatter,
   todayString,
 } from "../../lib/frontmatter.ts";
 
@@ -173,7 +173,10 @@ describe("buildMarkdown", () => {
     const fm = { key: "val" };
     const body = "## Body";
     const result = buildMarkdown(fm, body);
-    assert.ok(result.includes("---\n\n##"), `Expected blank line between --- and body, got:\n${result}`);
+    assert.ok(
+      result.includes("---\n\n##"),
+      `Expected blank line between --- and body, got:\n${result}`,
+    );
   });
 });
 

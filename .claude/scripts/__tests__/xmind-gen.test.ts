@@ -10,18 +10,12 @@ const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 const FIXTURE = join(import.meta.dirname, "fixtures/sample-cases.json");
 const TMP_DIR = join(tmpdir(), `qa-flow-xmind-test-${process.pid}`);
 
-function run(
-  args: string[],
-): { stdout: string; stderr: string; code: number } {
+function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync(
-      "npx",
-      ["tsx", ".claude/scripts/xmind-gen.ts", ...args],
-      {
-        cwd: REPO_ROOT,
-        encoding: "utf8",
-      },
-    );
+    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/xmind-gen.ts", ...args], {
+      cwd: REPO_ROOT,
+      encoding: "utf8",
+    });
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
@@ -138,14 +132,7 @@ describe("xmind-gen.ts validation", () => {
 
   it("exits with code 1 for invalid --mode value", () => {
     const output = join(TMP_DIR, "bad-mode.xmind");
-    const { code, stderr } = run([
-      "--input",
-      FIXTURE,
-      "--output",
-      output,
-      "--mode",
-      "invalid",
-    ]);
+    const { code, stderr } = run(["--input", FIXTURE, "--output", output, "--mode", "invalid"]);
     assert.equal(code, 1);
     assert.match(stderr, /mode/i);
   });
@@ -220,20 +207,13 @@ describe("xmind-gen.ts content.json validation", () => {
     );
 
     // Precondition note present
-    assert.ok(
-      firstCase.notes?.plain?.content,
-      "precondition note missing on P0 case",
-    );
+    assert.ok(firstCase.notes?.plain?.content, "precondition note missing on P0 case");
     assert.match(firstCase.notes!.plain.content, /环境已部署/);
 
     // Step → expected hierarchy
     const stepNodes = firstCase.children?.attached ?? [];
     assert.ok(stepNodes.length > 0, "step nodes missing");
-    assert.equal(
-      stepNodes[0].title,
-      "进入【数据质量 → 质量问题台账】页面",
-      "step title mismatch",
-    );
+    assert.equal(stepNodes[0].title, "进入【数据质量 → 质量问题台账】页面", "step title mismatch");
     const expectedNodes = stepNodes[0].children?.attached ?? [];
     assert.ok(expectedNodes.length > 0, "expected result node missing");
     assert.equal(expectedNodes[0].title, "页面正常加载", "expected result mismatch");

@@ -1,7 +1,7 @@
-import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { parseGitUrl, currentYYYYMM, repoRoot, scriptsDir, skillsDir } from "../../lib/paths.ts";
+import { describe, it } from "node:test";
+import { currentYYYYMM, parseGitUrl, repoRoot, scriptsDir, skillsDir } from "../../lib/paths.ts";
 
 describe("parseGitUrl", () => {
   it("extracts group and repo from http gitlab URL with .git suffix", () => {
@@ -73,18 +73,12 @@ describe("repoRoot", () => {
 
   it("resolves to the qa-flow project root (contains package.json)", () => {
     const root = repoRoot();
-    assert.ok(
-      existsSync(`${root}/package.json`),
-      `Expected package.json in repoRoot: ${root}`,
-    );
+    assert.ok(existsSync(`${root}/package.json`), `Expected package.json in repoRoot: ${root}`);
   });
 
   it("resolves to a directory containing .claude/", () => {
     const root = repoRoot();
-    assert.ok(
-      existsSync(`${root}/.claude`),
-      `Expected .claude/ in repoRoot: ${root}`,
-    );
+    assert.ok(existsSync(`${root}/.claude`), `Expected .claude/ in repoRoot: ${root}`);
   });
 });
 
