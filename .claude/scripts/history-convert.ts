@@ -8,7 +8,6 @@
  */
 
 import {
-  createReadStream,
   existsSync,
   readdirSync,
   readFileSync,
@@ -16,7 +15,6 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
-import { createInterface } from "node:readline";
 import { Command } from "commander";
 import JSZip from "jszip";
 import { buildMarkdown, todayString } from "./lib/frontmatter.ts";
@@ -26,8 +24,12 @@ import { currentYYYYMM, repoRoot } from "./lib/paths.ts";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CsvRow {
+  id: string;
+  product: string;
   module: string;
+  requirement: string;
   title: string;
+  preconditions: string;
   steps: string;
   expected: string;
   priority: string;
@@ -158,140 +160,301 @@ function inferTags(options: {
 
 // ─── CSV Parsing ──────────────────────────────────────────────────────────────
 
-function parseCSVLine(line: string): string[] {
-  const result: string[] = [];
+/**
+ * Parse CSV with proper multi-line quoted field support.
+ * Reads the entire file and splits into records respecting quoted newlines.
+ */
+function parseCsvRecords(content: string): string[][] {
+  const records: string[][] = [];
   let current = "";
   let inQuotes = false;
+  const row: string[] = [];
 
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i++;
+  for (let i = 0; i < content.length; i++) {
+    const ch = content[i];
+
+    if (inQuotes) {
+      if (ch === '"') {
+        if (content[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
       } else {
-        inQuotes = !inQuotes;
+        current += ch;
       }
-    } else if (ch === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
     } else {
-      current += ch;
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ",") {
+        row.push(current.trim());
+        current = "";
+      } else if (ch === "\n" || (ch === "\r" && content[i + 1] === "\n")) {
+        if (ch === "\r") i++;
+        row.push(current.trim());
+        current = "";
+        if (row.length > 1 || row[0] !== "") {
+          records.push([...row]);
+        }
+        row.length = 0;
+      } else {
+        current += ch;
+      }
     }
   }
-  result.push(current.trim());
+  // Flush last row
+  if (current || row.length > 0) {
+    row.push(current.trim());
+    if (row.length > 1 || row[0] !== "") {
+      records.push([...row]);
+    }
+  }
+
+  return records;
+}
+
+/** CSV header name mappings */
+const CSV_HEADER_MAP: Record<string, string> = {
+  用例编号: "id",
+  所属产品: "product",
+  所属模块: "module",
+  相关需求: "requirement",
+  用例标题: "title",
+  前置条件: "preconditions",
+  步骤: "steps",
+  预期: "expected",
+  优先级: "priority",
+};
+
+async function parseCsvFile(filePath: string): Promise<CsvRow[]> {
+  const raw = readFileSync(filePath, "utf-8").replace(/^\uFEFF/, "");
+  const records = parseCsvRecords(raw);
+  if (records.length < 2) return [];
+
+  const headerRow = records[0];
+  const colMap = new Map<string, number>();
+  for (let i = 0; i < headerRow.length; i++) {
+    const normalized = CSV_HEADER_MAP[headerRow[i]] ?? headerRow[i].toLowerCase().replace(/\s+/g, "_");
+    colMap.set(normalized, i);
+  }
+
+  const get = (row: string[], key: string): string => {
+    const idx = colMap.get(key);
+    return idx !== undefined ? (row[idx] ?? "") : "";
+  };
+
+  const rows: CsvRow[] = [];
+  for (let i = 1; i < records.length; i++) {
+    const r = records[i];
+    const title = get(r, "title");
+    if (!title) continue;
+    rows.push({
+      id: get(r, "id"),
+      product: get(r, "product"),
+      module: get(r, "module"),
+      requirement: get(r, "requirement"),
+      title,
+      preconditions: get(r, "preconditions"),
+      steps: get(r, "steps"),
+      expected: get(r, "expected"),
+      priority: get(r, "priority"),
+    });
+  }
+  return rows;
+}
+
+/** Parse module path like /版本迭代测试用例/v6.4.8/【需求名】(#10220) */
+function parseModulePath(modulePath: string): {
+  version: string;
+  l1Name: string;
+  caseId?: string;
+} {
+  const segments = modulePath.split("/").filter(Boolean);
+  // Typical: ["版本迭代测试用例", "v6.4.8", "【需求名】(#10220)"]
+  let version = "";
+  let l1Name = "";
+  let caseId: string | undefined;
+
+  for (const seg of segments) {
+    const vMatch = seg.match(/^v(\d+\.\d+(?:\.\d+)?)$/i);
+    if (vMatch) {
+      version = vMatch[1];
+      continue;
+    }
+    // L1 requirement segment with possible (#caseId)
+    const cidMatch = seg.match(/\(#(\d+)\)\s*$/);
+    if (cidMatch) {
+      l1Name = seg.slice(0, cidMatch.index).trim();
+      caseId = cidMatch[1];
+    } else if (seg !== "版本迭代测试用例") {
+      l1Name = seg;
+    }
+  }
+
+  return { version, l1Name: l1Name || "未命名", caseId };
+}
+
+/** Parse product string like 数据资产_STD(#23) */
+function parseProduct(product: string): { productName: string; iterationId?: string } {
+  const m = product.match(/^(.+?)\(#(\d+)\)\s*$/);
+  if (m) return { productName: m[1], iterationId: m[2] };
+  return { productName: product };
+}
+
+/** Parse multi-line numbered steps into step array */
+function parseNumberedLines(text: string): string[] {
+  if (!text.trim()) return [];
+  // Split by numbered prefix: "1. xxx\n2. xxx" or "1、xxx"
+  const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
+  const result: string[] = [];
+  let current = "";
+
+  for (const line of lines) {
+    // Check if line starts with a number prefix like "1. " or "1、"
+    if (/^\d+[.、)\s]/.test(line)) {
+      if (current) result.push(current);
+      current = line.replace(/^\d+[.、)\s]+/, "").trim();
+    } else {
+      // Continuation of previous step
+      current = current ? `${current} ${line}` : line;
+    }
+  }
+  if (current) result.push(current);
   return result;
 }
 
-async function parseCsvFile(filePath: string): Promise<CsvRow[]> {
-  return new Promise((resolve, reject) => {
-    const rows: CsvRow[] = [];
-    const rl = createInterface({
-      input: createReadStream(filePath),
-      crlfDelay: Number.POSITIVE_INFINITY,
-    });
+/**
+ * Group CSV rows by L1 (requirement) and convert each group to a separate archive MD.
+ * Returns array of { fileName, content, caseCount, caseId, version }.
+ */
+function csvRowsToArchives(
+  rows: CsvRow[],
+): Array<{
+  fileName: string;
+  content: string;
+  caseCount: number;
+  caseId?: string;
+  version: string;
+  productName: string;
+  iterationId?: string;
+}> {
+  // Group rows by L1 requirement
+  const l1Groups = new Map<
+    string,
+    { rows: CsvRow[]; caseId?: string; version: string }
+  >();
 
-    let headers: string[] = [];
-    let isFirst = true;
+  let productName = "";
+  let iterationId: string | undefined;
 
-    rl.on("line", (line: string) => {
-      if (!line.trim()) return;
-      const cols = parseCSVLine(line);
-
-      if (isFirst) {
-        headers = cols.map((h) => h.toLowerCase().replace(/\s+/g, "_"));
-        isFirst = false;
-        return;
-      }
-
-      const idxModule = headers.indexOf("module");
-      const idxTitle = headers.findIndex(
-        (h) => h === "title" || h === "用例标题" || h === "标题",
-      );
-      const idxSteps = headers.findIndex((h) => h === "steps" || h === "步骤");
-      const idxExpected = headers.findIndex(
-        (h) => h === "expected" || h === "预期" || h === "预期结果",
-      );
-      const idxPriority = headers.findIndex(
-        (h) => h === "priority" || h === "优先级",
-      );
-
-      rows.push({
-        module: idxModule >= 0 ? (cols[idxModule] ?? "") : "",
-        title: idxTitle >= 0 ? (cols[idxTitle] ?? "") : (cols[1] ?? ""),
-        steps: idxSteps >= 0 ? (cols[idxSteps] ?? "") : "",
-        expected: idxExpected >= 0 ? (cols[idxExpected] ?? "") : "",
-        priority: idxPriority >= 0 ? (cols[idxPriority] ?? "P2") : "P2",
-      });
-    });
-
-    rl.on("close", () => resolve(rows));
-    rl.on("error", reject);
-  });
-}
-
-function csvRowsToMarkdown(rows: CsvRow[], suiteName: string): string {
-  const byModule = new Map<string, CsvRow[]>();
   for (const row of rows) {
-    const mod = row.module || "未分类";
-    const existing = byModule.get(mod) ?? [];
-    byModule.set(mod, [...existing, row]);
+    if (!productName && row.product) {
+      const parsed = parseProduct(row.product);
+      productName = parsed.productName;
+      iterationId = parsed.iterationId;
+    }
+    const { version, l1Name, caseId } = parseModulePath(row.module);
+    const key = l1Name;
+    const existing = l1Groups.get(key);
+    if (existing) {
+      existing.rows.push(row);
+      if (!existing.caseId && caseId) existing.caseId = caseId;
+      if (!existing.version && version) existing.version = version;
+    } else {
+      l1Groups.set(key, { rows: [row], caseId, version });
+    }
   }
 
-  const tags = inferTags({
-    suiteName,
-    modules: [...byModule.keys()],
-    pages: [],
-    subGroups: [],
-    caseTitles: rows.map((r) => r.title).filter(Boolean),
-  });
+  const results: Array<{
+    fileName: string;
+    content: string;
+    caseCount: number;
+    caseId?: string;
+    version: string;
+    productName: string;
+    iterationId?: string;
+  }> = [];
 
-  const fm = {
-    suite_name: suiteName,
-    description: `${suiteName}历史用例归档`,
-    tags,
-    create_at: todayString(),
-    status: "草稿",
-    origin: "csv",
-    case_count: rows.length,
-  };
+  for (const [l1Name, group] of l1Groups) {
+    const { caseId, version } = group;
 
-  const bodyParts: string[] = [];
-  for (const [modName, modRows] of byModule) {
-    bodyParts.push(`## ${modName}`);
-    bodyParts.push("");
-    for (const row of modRows) {
+    const tags = inferTags({
+      suiteName: l1Name,
+      modules: [],
+      pages: [],
+      subGroups: [],
+      caseTitles: group.rows.map((r) => r.title).filter(Boolean),
+    });
+
+    const fm: Record<string, string | number | boolean | string[]> = {
+      suite_name: l1Name,
+      description: `${l1Name}用例归档`,
+      tags,
+      create_at: todayString(),
+      status: "草稿",
+      origin: "csv",
+      case_count: group.rows.length,
+    };
+    if (caseId) fm.case_id = Number(caseId);
+
+    const bodyParts: string[] = [];
+    for (const row of group.rows) {
       if (!row.title) continue;
       const priorityTag = normalizePriority(row.priority);
       bodyParts.push(`##### 【${priorityTag}】${row.title}`);
       bodyParts.push("");
+
+      // Preconditions
+      if (row.preconditions && row.preconditions.trim()) {
+        bodyParts.push("> 前置条件");
+        bodyParts.push("");
+        bodyParts.push("```");
+        bodyParts.push(row.preconditions.trim());
+        bodyParts.push("```");
+        bodyParts.push("");
+      }
+
+      // Steps table
       if (row.steps || row.expected) {
         bodyParts.push("> 用例步骤");
         bodyParts.push("");
         bodyParts.push("| 编号 | 步骤 | 预期 |");
         bodyParts.push("| ---- | ---- | ---- |");
-        const stepLines = row.steps ? row.steps.split(/\n|；|;/) : [""];
-        const expectedLines = row.expected
-          ? row.expected.split(/\n|；|;/)
-          : [""];
+
+        const stepLines = parseNumberedLines(row.steps);
+        const expectedLines = parseNumberedLines(row.expected);
         const count = Math.max(stepLines.length, expectedLines.length, 1);
+
         for (let i = 0; i < count; i++) {
-          const step = (stepLines[i] ?? "").trim();
-          const exp = (expectedLines[i] ?? "").trim();
+          const step = (stepLines[i] ?? "").replace(/\|/g, "\\|");
+          const exp = (expectedLines[i] ?? "").replace(/\|/g, "\\|");
           bodyParts.push(`| ${i + 1} | ${step} | ${exp} |`);
         }
         bodyParts.push("");
       }
     }
+
+    const fileName = sanitizeFilename(l1Name);
+
+    results.push({
+      fileName: `${fileName}.md`,
+      content: buildMarkdown(fm, bodyParts.join("\n")),
+      caseCount: group.rows.length,
+      caseId,
+      version,
+      productName,
+      iterationId,
+    });
   }
 
-  return buildMarkdown(fm, bodyParts.join("\n"));
+  return results;
 }
 
 function normalizePriority(raw: string): string {
-  const upper = raw.toUpperCase().trim();
-  if (upper === "P0" || upper === "高" || upper === "HIGH") return "P0";
-  if (upper === "P1" || upper === "中" || upper === "MEDIUM") return "P1";
+  const v = raw.trim();
+  if (v === "1" || v.toUpperCase() === "P0" || v === "高" || v.toUpperCase() === "HIGH") return "P0";
+  if (v === "2" || v.toUpperCase() === "P1" || v === "中" || v.toUpperCase() === "MEDIUM") return "P1";
   return "P2";
 }
 
@@ -701,32 +864,42 @@ async function convertFile(
     mkdir(outDir, { recursive: true });
 
     if (ext === ".csv") {
-      const outputPath = join(
-        outDir,
-        `${basename(inputPath, extname(inputPath))}.md`,
-      );
-      if (existsSync(outputPath) && !force) {
+      const rows = await parseCsvFile(inputPath);
+      if (rows.length === 0) {
         return [
           {
             input: inputPath,
-            output: outputPath,
-            status: "skipped",
-            reason: "output exists, use --force to overwrite",
+            output: outDir,
+            status: "failed",
+            reason: "no valid rows found in CSV",
           },
         ];
       }
-      const rows = await parseCsvFile(inputPath);
-      const suiteName = basename(inputPath, extname(inputPath));
-      const content = csvRowsToMarkdown(rows, suiteName);
-      writeFileSync(outputPath, content, "utf8");
-      return [
-        {
+
+      const archives = csvRowsToArchives(rows);
+      const results: FileConvertResult[] = [];
+
+      for (const archive of archives) {
+        const outputPath = join(outDir, archive.fileName);
+        if (existsSync(outputPath) && !force) {
+          results.push({
+            input: inputPath,
+            output: outputPath,
+            status: "skipped",
+            reason: `output exists (${archive.fileName}), use --force to overwrite`,
+          });
+          continue;
+        }
+        writeFileSync(outputPath, archive.content, "utf8");
+        results.push({
           input: inputPath,
           output: outputPath,
           status: "converted",
-          caseCount: rows.filter((r) => r.title).length,
-        },
-      ];
+          caseCount: archive.caseCount,
+        });
+      }
+
+      return results;
     }
 
     if (ext === ".xmind") {
