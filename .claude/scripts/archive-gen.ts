@@ -141,7 +141,7 @@ function inferTags(meta: Meta, modules: Module[]): string[] {
 // ─── Body generation ─────────────────────────────────────────────────────────
 
 function escapeTableCell(text: string): string {
-  return text.replace(/\|/g, "\\|").replace(/\n/g, " ");
+  return text.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 }
 
 function buildCaseBody(tc: TestCase): string {
@@ -243,7 +243,7 @@ function registerHandlebarsHelpers(): void {
   // Escape pipe characters and newlines in table cells
   Handlebars.registerHelper("escapeCell", (text: string) => {
     return new Handlebars.SafeString(
-      String(text).replace(/\|/g, "\\|").replace(/\n/g, " "),
+      String(text).replace(/\|/g, "\\|").replace(/\n/g, "<br>"),
     );
   });
 }
