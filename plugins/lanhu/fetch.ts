@@ -26,6 +26,7 @@ import { basename, extname, join, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 import { Command } from "commander";
+import sharp from "sharp";
 import { initEnv, getEnv } from "../../.claude/scripts/lib/env.ts";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -218,6 +219,32 @@ export function extractImageUrls(data: unknown): string[] {
 
   walk(data);
   return [...new Set(urls)];
+}
+
+// ─── Image Compression ──────────────────────────────────────────────────────
+
+const MAX_IMAGE_DIMENSION = 2000;
+
+async function compressImage(
+  srcPath: string,
+  destPath: string,
+): Promise<void> {
+  const metadata = await sharp(srcPath).metadata();
+  const { width, height } = metadata;
+
+  if (!width || !height || (width <= MAX_IMAGE_DIMENSION && height <= MAX_IMAGE_DIMENSION)) {
+    copyFileSync(srcPath, destPath);
+    return;
+  }
+
+  await sharp(srcPath)
+    .resize({
+      width: width > height ? MAX_IMAGE_DIMENSION : undefined,
+      height: height >= width ? MAX_IMAGE_DIMENSION : undefined,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .toFile(destPath);
 }
 
 // ─── HTTP Helpers ─────────────────────────────────────────────────────────────
@@ -718,7 +745,7 @@ async function run(
             const slug = slugify(rawName) || `screenshot-${imgIdx}`;
             const fileName = `${imgIdx}-fullpage-${slug}${ext}`;
             const destPath = join(imagesDir, fileName);
-            copyFileSync(imgSrc, destPath);
+            await compressImage(imgSrc, destPath);
             collectedImages.push({ url: imgSrc, name: fileName });
           }
         } catch {
