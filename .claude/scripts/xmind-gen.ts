@@ -1,14 +1,24 @@
 #!/usr/bin/env npx tsx
 /**
- * xmind-gen.ts — Converts intermediate JSON test cases to .xmind files.
+ * xmind-gen.ts — Converts intermediate JSON or Archive Markdown to .xmind files.
  *
  * Usage:
- *   npx tsx .claude/scripts/xmind-gen.ts --input <json> --output <xmind> [--mode create|append|replace]
+ *   npx tsx .claude/scripts/xmind-gen.ts --input <json|md|dir> --output <xmind> [--mode create|append|replace]
+ *   npx tsx .claude/scripts/xmind-gen.ts --input <dir>           (batch convert all .md in dir)
+ *   npx tsx .claude/scripts/xmind-gen.ts --input <md> --json-only (output intermediate JSON only)
  *   npx tsx .claude/scripts/xmind-gen.ts --help
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { basename, dirname, extname, join, resolve } from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
 import type { MarkerId, TopicBuilder } from "xmind-generator";
@@ -75,6 +85,10 @@ interface OutputResult {
   case_count: number;
 }
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const UNCLASSIFIED = "未分类";
+
 // ─── Priority map ─────────────────────────────────────────────────────────────
 
 const PRIORITY_MAP: Record<string, MarkerId> = {
@@ -82,6 +96,41 @@ const PRIORITY_MAP: Record<string, MarkerId> = {
   P1: Marker.Priority.p2,
   P2: Marker.Priority.p3,
 };
+
+// ─── Preferences loader ──────────────────────────────────────────────────────
+
+interface XmindPreferences {
+  root_title_template: string;
+  iteration_id: string;
+}
+
+function loadPreferences(): XmindPreferences {
+  const defaults: XmindPreferences = {
+    root_title_template: "数据资产v{{prd_version}}迭代用例(#{{iteration_id}})",
+    iteration_id: "23",
+  };
+
+  try {
+    const prefPath = resolve(
+      dirname(new URL(import.meta.url).pathname),
+      "../../preferences/xmind-structure.md",
+    );
+    if (!existsSync(prefPath)) return defaults;
+
+    const content = readFileSync(prefPath, "utf-8");
+
+    const tmplMatch = content.match(
+      /root_title_template:\s*`([^`]+)`/,
+    );
+    if (tmplMatch) defaults.root_title_template = tmplMatch[1];
+
+    const idMatch = content.match(/iteration_id:\s*(\S+)/);
+    if (idMatch) defaults.iteration_id = idMatch[1];
+  } catch {
+    // ignore
+  }
+  return defaults;
+}
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 
@@ -108,17 +157,28 @@ function validateInput(data: unknown): asserts data is IntermediateJson {
 // ─── Title builders ──────────────────────────────────────────────────────────
 
 function buildRootTitle(meta: Meta): string {
+  if (meta.version) {
+    const prefs = loadPreferences();
+    return prefs.root_title_template
+      .replace("{{prd_version}}", meta.version)
+      .replace("{{iteration_id}}", prefs.iteration_id);
+  }
   return meta.project_name;
 }
 
 function buildL1Title(meta: Meta): string {
-  if (meta.version) {
-    return `【${meta.version}】${meta.requirement_name}`;
-  }
-  return meta.requirement_name;
+  const name = meta.requirement_name;
+  const ticket = meta.requirement_ticket;
+  return ticket ? `${name}(#${ticket})` : name;
 }
 
-// ─── Case count ───────────────────────────────────────────────────────────────
+// ─── Strip priority prefix from case title ──────────────────────────────────
+
+function stripPriorityPrefix(title: string): string {
+  return title.replace(/^【P\d】/, "");
+}
+
+// ─── Case count ──────────────────────────────────────────────────────────────
 
 function countCases(modules: Module[]): number {
   let count = 0;
@@ -133,14 +193,33 @@ function countCases(modules: Module[]): number {
   return count;
 }
 
-// ─── Topic tree builder ──────────────────────────────────────────────────────
+// ─── "未分类" flattening ─────────────────────────────────────────────────────
+
+function isUnclassified(name: string): boolean {
+  return name === UNCLASSIFIED;
+}
+
+/**
+ * Collect all cases from a page (direct + sub_groups).
+ */
+function collectPageCases(page: Page): TestCase[] {
+  const cases: TestCase[] = [];
+  for (const sg of page.sub_groups ?? []) {
+    cases.push(...sg.test_cases);
+  }
+  cases.push(...(page.test_cases ?? []));
+  return cases;
+}
+
+// ─── Topic tree builder (with 未分类 flattening + P0 stripping) ─────────────
 
 function buildCaseTopic(tc: TestCase): TopicBuilder {
   const caseChildren: TopicBuilder[] = tc.steps.map((s) =>
     Topic(s.step).children([Topic(s.expected)]),
   );
 
-  let caseTopic = Topic(tc.title).children(caseChildren);
+  const displayTitle = stripPriorityPrefix(tc.title);
+  let caseTopic = Topic(displayTitle).children(caseChildren);
 
   const marker = PRIORITY_MAP[tc.priority];
   if (marker) {
@@ -154,29 +233,75 @@ function buildCaseTopic(tc: TestCase): TopicBuilder {
   return caseTopic;
 }
 
-function buildTopicTree(modules: Module[]): TopicBuilder[] {
-  return modules.map((mod) => {
-    const pageTopics: TopicBuilder[] = mod.pages.map((page) => {
-      const pageChildren: TopicBuilder[] = [];
+function buildPageChildren(page: Page): TopicBuilder[] {
+  const children: TopicBuilder[] = [];
 
-      // Sub-groups become L4 topics
-      for (const sg of page.sub_groups ?? []) {
-        if (sg.test_cases.length > 0) {
-          const sgCases = sg.test_cases.map(buildCaseTopic);
-          pageChildren.push(Topic(sg.name).children(sgCases));
+  for (const sg of page.sub_groups ?? []) {
+    if (sg.test_cases.length > 0) {
+      const sgCases = sg.test_cases.map(buildCaseTopic);
+      children.push(Topic(sg.name).children(sgCases));
+    }
+  }
+
+  for (const tc of page.test_cases ?? []) {
+    children.push(buildCaseTopic(tc));
+  }
+
+  return children;
+}
+
+/**
+ * Build topic tree with 未分类 flattening:
+ * - L2=未分类 && L3=未分类 → cases promoted to parent (L1)
+ * - L2=real && L3=未分类 → cases promoted to L2
+ * - Otherwise → keep full hierarchy
+ *
+ * Returns [topics, promoted] where promoted = cases that should go directly under L1.
+ */
+function buildTopicTree(modules: Module[]): {
+  topics: TopicBuilder[];
+  promoted: TopicBuilder[];
+} {
+  const topics: TopicBuilder[] = [];
+  const promoted: TopicBuilder[] = [];
+
+  for (const mod of modules) {
+    if (isUnclassified(mod.name)) {
+      // L2 is 未分类 — check each page
+      for (const page of mod.pages) {
+        if (isUnclassified(page.name)) {
+          // L2=未分类, L3=未分类 → promote all cases to L1
+          for (const c of buildPageChildren(page)) {
+            promoted.push(c);
+          }
+        } else {
+          // L2=未分类, L3=real → promote page to L2 level
+          const children = buildPageChildren(page);
+          topics.push(Topic(page.name).children(children));
+        }
+      }
+    } else {
+      // L2 is real
+      const pageTopics: TopicBuilder[] = [];
+
+      for (const page of mod.pages) {
+        if (isUnclassified(page.name)) {
+          // L3=未分类 → promote cases to L2
+          for (const c of buildPageChildren(page)) {
+            pageTopics.push(c);
+          }
+        } else {
+          // L3=real → keep hierarchy
+          const children = buildPageChildren(page);
+          pageTopics.push(Topic(page.name).children(children));
         }
       }
 
-      // Direct page test_cases (no sub-group)
-      for (const tc of page.test_cases ?? []) {
-        pageChildren.push(buildCaseTopic(tc));
-      }
+      topics.push(Topic(mod.name).children(pageTopics));
+    }
+  }
 
-      return Topic(page.name).children(pageChildren);
-    });
-
-    return Topic(mod.name).children(pageTopics);
-  });
+  return { topics, promoted };
 }
 
 // ─── Mode: create ─────────────────────────────────────────────────────────────
@@ -193,19 +318,22 @@ async function createXmind(
 
   const rootTitle = buildRootTitle(data.meta);
   const l1Title = buildL1Title(data.meta);
-  const l2Topics = buildTopicTree(data.modules);
+  const { topics: l2Topics, promoted } = buildTopicTree(data.modules);
 
-  const l1 = Topic(l1Title).children(l2Topics);
+  const l1Children = [...promoted, ...l2Topics];
+  const l1 = Topic(l1Title).children(l1Children);
   const root = RootTopic(rootTitle).children([l1]);
   const wb = Workbook(root);
   await writeLocalFile(wb, outputPath);
 }
 
-// ─── Mode: append / replace ──────────────────────────────────────────────────
+// ─── Mode: append / replace (raw nodes) ─────────────────────────────────────
 
 interface XMindTopicNode {
   title?: string;
   children?: { attached?: XMindTopicNode[] };
+  markers?: { markerId: string }[];
+  notes?: { plain?: { content?: string } };
   [key: string]: unknown;
 }
 
@@ -228,59 +356,15 @@ async function readXmindSheets(
   return [sheets, zip];
 }
 
-async function writeXmindSheets(zip: JSZip, outputPath: string): Promise<void> {
+async function writeXmindSheets(
+  zip: JSZip,
+  outputPath: string,
+): Promise<void> {
   const out = await zip.generateAsync({
     type: "nodebuffer",
     compression: "DEFLATE",
   });
   writeFileSync(outputPath, out);
-}
-
-/**
- * Converts an IntermediateJson's L1/L2 structure into a raw topic node tree
- * that can be injected into an existing content.json.
- */
-function buildRawL1Node(data: IntermediateJson): XMindTopicNode {
-  const l1Title = buildL1Title(data.meta);
-
-  const l2Nodes: XMindTopicNode[] = data.modules.map((mod) => {
-    const pageNodes: XMindTopicNode[] = mod.pages.map((page) => {
-      const pageChildren: XMindTopicNode[] = [];
-
-      for (const sg of page.sub_groups ?? []) {
-        if (sg.test_cases.length > 0) {
-          const sgCases: XMindTopicNode[] = sg.test_cases.map((tc) =>
-            buildRawCaseNode(tc),
-          );
-          pageChildren.push({
-            title: sg.name,
-            children: { attached: sgCases },
-          });
-        }
-      }
-
-      for (const tc of page.test_cases ?? []) {
-        pageChildren.push(buildRawCaseNode(tc));
-      }
-
-      return {
-        title: page.name,
-        ...(pageChildren.length > 0
-          ? { children: { attached: pageChildren } }
-          : {}),
-      };
-    });
-
-    return {
-      title: mod.name,
-      ...(pageNodes.length > 0 ? { children: { attached: pageNodes } } : {}),
-    };
-  });
-
-  return {
-    title: l1Title,
-    ...(l2Nodes.length > 0 ? { children: { attached: l2Nodes } } : {}),
-  };
 }
 
 function buildRawCaseNode(tc: TestCase): XMindTopicNode {
@@ -289,8 +373,9 @@ function buildRawCaseNode(tc: TestCase): XMindTopicNode {
     children: { attached: [{ title: s.expected }] },
   }));
 
+  const displayTitle = stripPriorityPrefix(tc.title);
   const node: XMindTopicNode = {
-    title: tc.title,
+    title: displayTitle,
     ...(stepNodes.length > 0 ? { children: { attached: stepNodes } } : {}),
   };
 
@@ -306,12 +391,84 @@ function buildRawCaseNode(tc: TestCase): XMindTopicNode {
   return node;
 }
 
+function buildRawPageChildren(page: Page): XMindTopicNode[] {
+  const children: XMindTopicNode[] = [];
+
+  for (const sg of page.sub_groups ?? []) {
+    if (sg.test_cases.length > 0) {
+      const sgCases = sg.test_cases.map(buildRawCaseNode);
+      children.push({
+        title: sg.name,
+        children: { attached: sgCases },
+      });
+    }
+  }
+
+  for (const tc of page.test_cases ?? []) {
+    children.push(buildRawCaseNode(tc));
+  }
+
+  return children;
+}
+
+function buildRawL1Node(data: IntermediateJson): XMindTopicNode {
+  const l1Title = buildL1Title(data.meta);
+  const l1Children: XMindTopicNode[] = [];
+
+  for (const mod of data.modules) {
+    if (isUnclassified(mod.name)) {
+      for (const page of mod.pages) {
+        if (isUnclassified(page.name)) {
+          l1Children.push(...buildRawPageChildren(page));
+        } else {
+          const children = buildRawPageChildren(page);
+          l1Children.push({
+            title: page.name,
+            ...(children.length > 0
+              ? { children: { attached: children } }
+              : {}),
+          });
+        }
+      }
+    } else {
+      const pageNodes: XMindTopicNode[] = [];
+
+      for (const page of mod.pages) {
+        if (isUnclassified(page.name)) {
+          pageNodes.push(...buildRawPageChildren(page));
+        } else {
+          const children = buildRawPageChildren(page);
+          pageNodes.push({
+            title: page.name,
+            ...(children.length > 0
+              ? { children: { attached: children } }
+              : {}),
+          });
+        }
+      }
+
+      l1Children.push({
+        title: mod.name,
+        ...(pageNodes.length > 0
+          ? { children: { attached: pageNodes } }
+          : {}),
+      });
+    }
+  }
+
+  return {
+    title: l1Title,
+    ...(l1Children.length > 0
+      ? { children: { attached: l1Children } }
+      : {}),
+  };
+}
+
 async function appendXmind(
   data: IntermediateJson,
   outputPath: string,
 ): Promise<void> {
   if (!existsSync(outputPath)) {
-    // Fall back to create
     await createXmind(data, outputPath);
     return;
   }
@@ -319,7 +476,6 @@ async function appendXmind(
   const [sheets, zip] = await readXmindSheets(outputPath);
   const rootTitle = buildRootTitle(data.meta);
 
-  // Find the sheet whose rootTopic title matches our project
   const sheet =
     sheets.find((s) => s.rootTopic?.title === rootTitle) ?? sheets[0];
   if (!sheet?.rootTopic) {
@@ -363,11 +519,9 @@ async function replaceXmind(
   }
 
   if (!sheet.rootTopic.children?.attached) {
-    // No existing L1 to replace — just append
     sheet.rootTopic.children = { attached: [buildRawL1Node(data)] };
   } else {
     const attached = sheet.rootTopic.children.attached;
-    // Find existing L1 by requirement_name match (strip version prefix if present)
     const reqName = data.meta.requirement_name;
     const idx = attached.findIndex(
       (n) =>
@@ -385,20 +539,236 @@ async function replaceXmind(
   await writeXmindSheets(zip, outputPath);
 }
 
-// ─── CLI ──────────────────────────────────────────────────────────────────────
+// ─── Archive Markdown parser ─────────────────────────────────────────────────
+
+interface ArchiveFrontMatter {
+  suite_name?: string;
+  case_id?: number;
+  [key: string]: unknown;
+}
+
+function parseFrontMatter(
+  content: string,
+): { fm: ArchiveFrontMatter; body: string } {
+  const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+  if (!m) return { fm: {}, body: content };
+
+  const fm: ArchiveFrontMatter = {};
+  for (const line of m[1].split("\n")) {
+    const kv = line.match(/^(\w[\w_]*)\s*:\s*(.+)$/);
+    if (kv) {
+      const key = kv[1];
+      let val: string | number = kv[2].trim().replace(/^"(.*)"$/, "$1");
+      if (/^\d+$/.test(val)) val = Number(val);
+      fm[key] = val;
+    }
+  }
+  return { fm, body: m[2] };
+}
+
+function parseArchiveBody(body: string): Module[] {
+  const lines = body.split("\n");
+  const modules: Module[] = [];
+
+  let currentModule: Module | null = null;
+  let currentPage: Page | null = null;
+  let currentSubGroup: SubGroup | null = null;
+  let currentCase: TestCase | null = null;
+  let section: "none" | "precondition" | "steps" = "none";
+  let preconditionLines: string[] = [];
+  let inCodeBlock = false;
+  let stepsRows: TestStep[] = [];
+  let headerParsed = false;
+
+  function flushCase() {
+    if (!currentCase) return;
+    currentCase.steps = stepsRows;
+    if (preconditionLines.length > 0) {
+      currentCase.preconditions =
+        "前置条件\n" + preconditionLines.join("\n").trim();
+    }
+
+    if (currentSubGroup) {
+      currentSubGroup.test_cases.push(currentCase);
+    } else if (currentPage) {
+      if (!currentPage.test_cases) currentPage.test_cases = [];
+      currentPage.test_cases.push(currentCase);
+    }
+    currentCase = null;
+    stepsRows = [];
+    preconditionLines = [];
+    section = "none";
+    headerParsed = false;
+  }
+
+  for (const line of lines) {
+    // H2 → Module (L2)
+    const h2 = line.match(/^## (.+)$/);
+    if (h2) {
+      flushCase();
+      currentSubGroup = null;
+      currentPage = null;
+      currentModule = { name: h2[1].trim(), pages: [] };
+      modules.push(currentModule);
+      continue;
+    }
+
+    // H3 → Page (L3)
+    const h3 = line.match(/^### (.+)$/);
+    if (h3) {
+      flushCase();
+      currentSubGroup = null;
+      currentPage = { name: h3[1].trim() };
+      if (currentModule) {
+        currentModule.pages.push(currentPage);
+      } else {
+        currentModule = { name: UNCLASSIFIED, pages: [] };
+        modules.push(currentModule);
+        currentModule.pages.push(currentPage);
+      }
+      continue;
+    }
+
+    // H4 → SubGroup (L4)
+    const h4 = line.match(/^#### (.+)$/);
+    if (h4) {
+      flushCase();
+      currentSubGroup = { name: h4[1].trim(), test_cases: [] };
+      if (currentPage) {
+        if (!currentPage.sub_groups) currentPage.sub_groups = [];
+        currentPage.sub_groups.push(currentSubGroup);
+      }
+      continue;
+    }
+
+    // H5 → Case node
+    const h5 = line.match(/^##### (.+)$/);
+    if (h5) {
+      flushCase();
+      const caseTitle = h5[1].trim();
+      const pm = caseTitle.match(/^【(P\d)】/);
+      const priority = pm ? pm[1] : "P1";
+
+      if (!currentModule) {
+        currentModule = { name: UNCLASSIFIED, pages: [] };
+        modules.push(currentModule);
+      }
+      if (!currentPage) {
+        currentPage = { name: UNCLASSIFIED };
+        currentModule.pages.push(currentPage);
+      }
+
+      currentCase = { title: caseTitle, priority, steps: [] };
+      section = "none";
+      continue;
+    }
+
+    // Inside a case
+    if (currentCase) {
+      if (line.match(/^>\s*前置条件/)) {
+        section = "precondition";
+        inCodeBlock = false;
+        continue;
+      }
+
+      if (line.match(/^>\s*用例步骤/)) {
+        section = "steps";
+        headerParsed = false;
+        continue;
+      }
+
+      if (section === "precondition") {
+        if (line.startsWith("```")) {
+          inCodeBlock = !inCodeBlock;
+          continue;
+        }
+        if (inCodeBlock) {
+          preconditionLines.push(line);
+        }
+        continue;
+      }
+
+      if (section === "steps") {
+        if (line.trim() === "") continue;
+        if (line.match(/^\|\s*编号\s*\|/) || line.match(/^\|\s*-+\s*\|/)) {
+          headerParsed = true;
+          continue;
+        }
+        if (headerParsed && line.startsWith("|")) {
+          const cells = line
+            .split("|")
+            .map((c) => c.trim())
+            .filter((c) => c.length > 0);
+          if (cells.length >= 3) {
+            stepsRows.push({ step: cells[1], expected: cells[2] });
+          }
+          continue;
+        }
+      }
+    }
+  }
+
+  flushCase();
+  return modules;
+}
+
+function archiveToJson(
+  mdPath: string,
+  projectName: string,
+  version?: string,
+): IntermediateJson {
+  const raw = readFileSync(mdPath, "utf-8");
+  const { fm, body } = parseFrontMatter(raw);
+
+  const suiteName =
+    typeof fm.suite_name === "string" ? fm.suite_name : basename(mdPath, ".md");
+  const caseId = typeof fm.case_id === "number" ? fm.case_id : undefined;
+
+  const modules = parseArchiveBody(body);
+
+  const meta: Meta = {
+    project_name: projectName,
+    requirement_name: suiteName,
+  };
+
+  if (version) {
+    meta.version = version;
+  }
+
+  if (caseId) {
+    meta.requirement_ticket = String(caseId);
+    meta.requirement_id = caseId;
+  }
+
+  return { meta, modules };
+}
+
+// ─── CLI ─────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   const program = new Command();
 
   program
     .name("xmind-gen")
-    .description("Convert intermediate JSON test cases to .xmind files")
-    .requiredOption("--input <path>", "Path to input JSON file")
-    .requiredOption("--output <path>", "Path to output .xmind file")
+    .description(
+      "Convert intermediate JSON or Archive Markdown to .xmind files",
+    )
+    .requiredOption("--input <path>", "Path to input JSON, MD file, or directory of MD files")
+    .option("--output <path>", "Path to output .xmind file (auto-derived for MD input)")
     .option("--mode <mode>", "Write mode: create | append | replace", "create")
+    .option("--project <name>", "Project name for XMind root node", "数栈测试")
+    .option("--version <ver>", "PRD version (e.g. 6.4.9) for root title template")
+    .option("--json-only", "Only output intermediate JSON (MD input only)")
     .parse(process.argv);
 
-  const opts = program.opts<{ input: string; output: string; mode: string }>();
+  const opts = program.opts<{
+    input: string;
+    output?: string;
+    mode: string;
+    project: string;
+    version?: string;
+    jsonOnly?: boolean;
+  }>();
 
   const mode = opts.mode as WriteMode;
   if (!["create", "append", "replace"].includes(mode)) {
@@ -409,6 +779,46 @@ async function main(): Promise<void> {
   }
 
   const inputPath = resolve(opts.input);
+  const stat = statSync(inputPath);
+
+  // Directory input → batch MD conversion
+  if (stat.isDirectory()) {
+    const mdFiles = readdirSync(inputPath)
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => join(inputPath, f));
+
+    if (mdFiles.length === 0) {
+      process.stderr.write(`[xmind-gen] No .md files found in ${inputPath}\n`);
+      process.exit(1);
+    }
+
+    for (const f of mdFiles) {
+      await processMdFile(f, opts.project, opts.version, opts.jsonOnly, mode);
+    }
+    return;
+  }
+
+  const ext = extname(inputPath).toLowerCase();
+
+  // MD input
+  if (ext === ".md") {
+    await processMdFile(
+      inputPath,
+      opts.project,
+      opts.version,
+      opts.jsonOnly,
+      mode,
+      opts.output,
+    );
+    return;
+  }
+
+  // JSON input (original behavior)
+  if (!opts.output) {
+    process.stderr.write("[xmind-gen] --output is required for JSON input\n");
+    process.exit(1);
+  }
+
   const outputPath = resolve(opts.output);
 
   let raw: unknown;
@@ -450,6 +860,55 @@ async function main(): Promise<void> {
   };
 
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+}
+
+async function processMdFile(
+  mdPath: string,
+  project: string,
+  version?: string,
+  jsonOnly?: boolean,
+  mode: WriteMode = "create",
+  outputOverride?: string,
+): Promise<void> {
+  const fname = basename(mdPath, ".md");
+  const outDir = dirname(mdPath).replace(/archive/, "xmind");
+  const tmpDir = join(outDir, "tmp");
+
+  if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+  if (!existsSync(tmpDir)) mkdirSync(tmpDir, { recursive: true });
+
+  const data = archiveToJson(mdPath, project, version);
+  const caseCount = countCases(data.modules);
+
+  if (jsonOnly) {
+    const jsonPath = join(tmpDir, `${fname}.json`);
+    writeFileSync(jsonPath, JSON.stringify(data, null, 2), "utf-8");
+    process.stdout.write(`JSON: ${jsonPath} (${caseCount} cases)\n`);
+    return;
+  }
+
+  const xmindPath = outputOverride
+    ? resolve(outputOverride)
+    : join(outDir, `${fname}.xmind`);
+
+  if (existsSync(xmindPath)) unlinkSync(xmindPath);
+
+  try {
+    if (mode === "create") {
+      await createXmind(data, xmindPath);
+    } else if (mode === "append") {
+      await appendXmind(data, xmindPath);
+    } else {
+      await replaceXmind(data, xmindPath);
+    }
+  } catch (err) {
+    process.stderr.write(`[xmind-gen] Error processing ${mdPath}: ${err}\n`);
+    return;
+  }
+
+  process.stdout.write(
+    `XMind: ${resolve(xmindPath)} (${caseCount} cases)\n`,
+  );
 }
 
 main().catch((err) => {
