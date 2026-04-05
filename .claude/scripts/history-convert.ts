@@ -557,15 +557,22 @@ function l1ToMarkdown(l1: ParsedL1): string {
     caseTitles,
   });
 
-  const fm = {
-    suite_name: l1.title,
-    description: `${l1.title}用例归档`,
+  const { name: cleanName, caseId } = parseL1Title(l1.title);
+
+  const suiteLabel = caseId ? `${cleanName}(#${caseId})` : cleanName;
+
+  const fm: Record<string, string | number | boolean | string[]> = {
+    suite_name: suiteLabel,
+    description: `${suiteLabel}用例归档`,
     tags,
     create_at: todayString(),
     status: "草稿",
     origin: "xmind",
     case_count: l1.totalCases,
   };
+  if (caseId) {
+    fm.case_id = caseId;
+  }
 
   const bodyParts: string[] = [];
 
@@ -624,10 +631,22 @@ function computeOutputDir(): string {
   return join(root, wsDir, "archive", yyyymm);
 }
 
-/** Sanitize L1 title for use as filename (remove unsafe chars) */
+/** Extract case_id from L1 title like "xxx(#10305)" → "10305", and the clean name without the ticket suffix */
+function parseL1Title(title: string): { name: string; caseId?: string } {
+  const m = title.match(/\(#(\d+)\)\s*$/);
+  if (m) {
+    return {
+      name: title.slice(0, m.index).trim(),
+      caseId: m[1],
+    };
+  }
+  return { name: title };
+}
+
+/** Sanitize L1 title for use as filename — preserve【】, remove ticket suffix, strip unsafe chars */
 function sanitizeFilename(title: string): string {
-  return title
-    .replace(/[【】\[\]()（）#]/g, "")
+  const { name } = parseL1Title(title);
+  return name
     .replace(/[\/\\:*?"<>|]/g, "-")
     .replace(/\s+/g, "")
     .replace(/-+/g, "-")

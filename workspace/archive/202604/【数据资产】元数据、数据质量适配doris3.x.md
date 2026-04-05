@@ -5,6 +5,7 @@ create_at: "2026-04-05"
 status: "归档"
 origin: "xmind"
 case_count: 54
+case_id: 10306
 ---
 
 ## 资产盘点

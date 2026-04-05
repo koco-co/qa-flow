@@ -80,7 +80,23 @@ workspace/xmind/YYYYMM/<功能名>.xmind
 workspace/xmind/YYYYMM/<功能名>.xmind
 ```
 
-### 4.3 需求聚合文件
+### 4.3 归档 MD 路径
+
+XMind 归档转换（`history-convert.ts`）时，从 L1 标题提取文件名和 case_id：
+
+```
+L1 标题格式: 【数据安全】数据表权限分配支持通配符(#10305)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^
+                     文件名 (保留【】)              case_id
+
+输出路径: workspace/archive/YYYYMM/【数据安全】数据表权限分配支持通配符.md
+```
+
+- 文件名 = L1 标题去掉 `(#数字)` 后缀，**保留【】**
+- `suite_name` = 完整 L1 标题（含 `(#xxx)`）
+- `case_id` = 从 `(#数字)` 中提取的禅道需求 ID
+
+### 4.4 需求聚合文件
 
 仅在用户明确要求合并多个 PRD 时使用：
 
