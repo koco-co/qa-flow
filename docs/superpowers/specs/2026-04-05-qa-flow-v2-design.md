@@ -68,7 +68,11 @@ qa-flow/
 ├── package.json                  # 统一依赖
 ├── tsconfig.json
 ├── biome.json
-├── preferences.md                # 用户偏好规则
+├── preferences/                  # 用户偏好规则（按分类拆分）
+│   ├── case-writing.md           # 用例编写偏好
+│   ├── xmind-structure.md        # XMind 结构偏好
+│   ├── prd-recognition.md        # PRD 识别偏好
+│   └── data-preparation.md       # 数据准备偏好
 │
 ├── .claude/
 │   ├── settings.json             # hooks 配置
@@ -321,22 +325,22 @@ Writer Sub-Agent 遇到 PRD 信息不足时：
 
 ### 8.1 存储
 
-项目根目录 `preferences.md`，Markdown 格式，按功能分类。
+项目根目录 `preferences/` 目录，每个分类一个 `.md` 文件。用户可自行添加新分类文件。
 
 ### 8.2 优先级
 
-用户当前指令 > preferences.md > skill 内置规则（references/）
+用户当前指令 > preferences/ 规则 > skill 内置规则（references/）
 
 ### 8.3 加载
 
-每个 skill 执行前，SKILL.md 指令要求 AI 先读取 `preferences.md`。
+每个 skill 执行前，SKILL.md 指令要求 AI 先读取 `preferences/` 目录下所有 `.md` 文件。
 
 ### 8.4 写入流程
 
 ```
 用户反馈修改 → AI 修改完成 → 用户验收通过
 → AI 提炼反馈为偏好规则 → 向用户确认是否写入
-→ 用户确认 → 追加到 preferences.md 对应分类下
+→ 用户确认 → 追加到 preferences/ 对应分类文件中（如 case-writing.md）
 ```
 
 ---
