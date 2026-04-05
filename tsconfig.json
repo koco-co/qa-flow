@@ -12,7 +12,8 @@
     "declaration": false,
     "noEmit": true,
     "rootDir": ".",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": ["node"]
   },
   "include": [".claude/scripts/**/*.ts", "plugins/**/*.ts"],
   "exclude": ["node_modules", "workspace"]

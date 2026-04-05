@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0; cd \"$ROOT\"; git diff --quiet && git diff --cached --quiet || (git add -A && git commit -m \"chore: auto-commit session changes\") || true'"
+          }
+        ]
+      }
+    ]
+  }
+}
