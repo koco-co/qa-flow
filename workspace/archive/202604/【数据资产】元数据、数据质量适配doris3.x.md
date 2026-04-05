@@ -1375,7 +1375,7 @@ PROPERTIES (
 ```
 1、使用账号 admin / 密码 Admin@123 登录系统
 「数据资产-平台管理-数据源管理」中已存在Doris 3.x数据源并且已授权.
-数据源下存在Doirs表, 可进入离线平台中创建并执行DorisSQL任务:
+数据源下存在Doris表, 可进入离线平台中创建并执行DorisSQL任务:
 
 DROP TABLE IF EXISTS vehicle_info_part6;
 
@@ -1469,7 +1469,7 @@ insert into doris_test values (null,'zx',18),(null,'ls',19),(3,'ww',null)
 ```
 1、使用账号 admin / 密码 Admin@123 登录系统
 「数据资产-平台管理-数据源管理」中已存在Doris 3.x数据源并且已授权.
-数据源下存在Doirs表, 可进入离线平台中创建并执行DorisSQL任务:
+数据源下存在Doris表, 可进入离线平台中创建并执行DorisSQL任务:
 
 DROP TABLE IF EXISTS vehicle_info_part6;
 

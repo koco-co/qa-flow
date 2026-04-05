@@ -328,27 +328,20 @@ const DEV_VERSION_MAP: Record<string, string> = {
 };
 
 /**
- * Extract dev_version(s) from requirement field prefixes.
+ * Extract dev_version(s) from l1Name and requirement field prefixes.
  * e.g. "【岚图】【规则集管理】..." → ["岚图汽车"]
- * No known prefix → ["袋鼠云"]
+ * No known customer prefix found → ["袋鼠云"]
  */
-function extractDevVersions(requirements: string[]): string[] {
+function extractDevVersions(sources: string[]): string[] {
   const found = new Set<string>();
-  for (const req of requirements) {
-    if (!req) continue;
-    // Match leading 【xxx】 sequences and check against known customers
-    const prefixes = [...req.matchAll(/^(?:【([^】]+)】)+/g)];
-    let matched = false;
-    for (const [, name] of req.matchAll(/【([^】]+)】/g)) {
+  for (const src of sources) {
+    if (!src) continue;
+    for (const [, name] of src.matchAll(/【([^】]+)】/g)) {
       const mapped = DEV_VERSION_MAP[name];
       if (mapped) {
         found.add(mapped);
-        matched = true;
-        break; // first customer prefix wins per requirement
+        break; // first customer prefix wins per source string
       }
-    }
-    if (!matched) {
-      found.add("袋鼠云");
     }
   }
   return found.size > 0 ? [...found].sort() : ["袋鼠云"];
@@ -522,7 +515,7 @@ function csvRowsToArchives(
       description: `${l1Name}用例归档`,
       tags,
       prd_version: version ? `v${version}` : "",
-      dev_version: extractDevVersions(group.rows.map((r) => r.requirement)),
+      dev_version: extractDevVersions([l1Name, ...group.rows.map((r) => r.requirement)]),
       create_at: todayString(),
       status: "草稿",
       origin: "csv",
