@@ -32,6 +32,14 @@ export function skillsDir(): string {
   return resolve(repoRoot(), ".claude/skills");
 }
 
+export function xmindDir(): string {
+  return join(workspaceDir(), "xmind");
+}
+
+export function xmindPath(...segments: string[]): string {
+  return join(xmindDir(), ...segments);
+}
+
 export function currentYYYYMM(): string {
   const now = new Date();
   return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
