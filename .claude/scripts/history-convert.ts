@@ -519,8 +519,8 @@ function renderCase(c: ParsedCase): string[] {
     lines.push("| --- | --- | --- |");
     for (let i = 0; i < c.steps.length; i++) {
       const s = c.steps[i];
-      const step = s.step.replace(/\|/g, "\\|").replace(/\n/g, " ");
-      const exp = s.expected.replace(/\|/g, "\\|").replace(/\n/g, " ");
+      const step = s.step.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
+      const exp = s.expected.replace(/\|/g, "\\|").replace(/\n/g, "<br>");
       lines.push(`| ${i + 1} | ${step} | ${exp} |`);
     }
     lines.push("");
