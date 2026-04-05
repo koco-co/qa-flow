@@ -95,6 +95,15 @@ const normalizeCmd = program
       }
     }
 
+    // Validate confidence (must be number between 0 and 1)
+    if (fm.confidence !== undefined) {
+      const conf = Number(fm.confidence);
+      if (Number.isNaN(conf) || conf < 0 || conf > 1) {
+        changes.push(`removed invalid confidence: "${fm.confidence}"`);
+        fm.confidence = undefined;
+      }
+    }
+
     const out: NormalizeOutput = {
       path: filePath,
       changes,

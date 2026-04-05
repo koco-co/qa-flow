@@ -1,5 +1,11 @@
+export interface RepoFrontMatter {
+  path: string;
+  branch: string;
+  commit?: string;
+}
+
 export interface FrontMatter {
-  [key: string]: string | number | boolean | string[] | undefined;
+  [key: string]: string | number | boolean | string[] | RepoFrontMatter[] | undefined;
 }
 
 export interface ParsedMarkdown {
@@ -20,6 +26,22 @@ export function parseFrontMatter(content: string): ParsedMarkdown {
   for (const line of yamlBlock.split("\n")) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("#")) continue;
+
+    // Handle inline object: `  - { path: "...", branch: "..." }`
+    if (trimmed.startsWith("- {") && trimmed.endsWith("}") && currentKey && currentArray) {
+      const inner = trimmed.slice(3, -1).trim();
+      const obj: Record<string, string> = {};
+      for (const pair of inner.split(",")) {
+        const ci = pair.indexOf(":");
+        if (ci === -1) continue;
+        const k = pair.slice(0, ci).trim();
+        const v = pair.slice(ci + 1).trim().replace(/^["']|["']$/g, "");
+        obj[k] = v;
+      }
+      (currentArray as unknown[]).push(obj);
+      fm[currentKey] = currentArray;
+      continue;
+    }
 
     if (trimmed.startsWith("- ") && currentKey && currentArray) {
       currentArray.push(
@@ -66,9 +88,19 @@ export function serializeFrontMatter(fm: FrontMatter): string {
     if (Array.isArray(value)) {
       if (value.length === 0) {
         lines.push(`${key}: []`);
+      } else if (typeof value[0] === "string") {
+        lines.push(`${key}:`);
+        for (const item of value as string[]) lines.push(`  - "${item}"`);
       } else {
         lines.push(`${key}:`);
-        for (const item of value) lines.push(`  - "${item}"`);
+        for (const item of value as RepoFrontMatter[]) {
+          const obj = item as Record<string, string | undefined>;
+          const parts = Object.entries(obj)
+            .filter(([, v]) => v !== undefined)
+            .map(([k, v]) => `${k}: "${v}"`)
+            .join(", ");
+          lines.push(`  - { ${parts} }`);
+        }
       }
     } else if (typeof value === "string") {
       lines.push(`${key}: "${value}"`);
