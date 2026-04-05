@@ -223,9 +223,25 @@ function renderBuiltIn(data: IntermediateJson): string {
   return buildMarkdown(fm, body);
 }
 
+// ─── Handlebars helpers ──────────────────────────────────────────────────────
+
+function registerHandlebarsHelpers(): void {
+  // Add 1-based indexing for step tables
+  Handlebars.registerHelper("add", (a: number, b: number) => a + b);
+
+  // Escape pipe characters and newlines in table cells
+  Handlebars.registerHelper("escapeCell", (text: string) => {
+    return new Handlebars.SafeString(
+      String(text).replace(/\|/g, "\\|").replace(/\n/g, " ")
+    );
+  });
+}
+
 // ─── Handlebars template renderer ─────────────────────────────────────────────
 
 function renderWithTemplate(data: IntermediateJson, templatePath: string): string {
+  registerHandlebarsHelpers();
+
   const templateSrc = readFileSync(resolve(templatePath), "utf8");
   const template = Handlebars.compile(templateSrc);
 

@@ -1,0 +1,66 @@
+---
+suite_name: "{{fm.suite_name}}"
+description: "{{fm.description}}"
+{{#if fm.prd_id}}prd_id: {{fm.prd_id}}
+{{/if}}{{#if fm.prd_version}}prd_version: "{{fm.prd_version}}"
+{{/if}}product: "{{fm.product}}"
+tags:
+{{#each fm.tags}}  - {{this}}
+{{/each}}create_at: "{{fm.create_at}}"
+status: "{{fm.status}}"
+case_count: {{fm.case_count}}
+origin: "{{fm.origin}}"
+---
+
+{{#each modules}}
+## {{this.name}}
+
+{{#each this.pages}}
+### {{this.name}}
+
+{{#each this.sub_groups}}
+{{#if this.test_cases}}
+#### {{this.name}}
+
+{{#each this.test_cases}}
+##### 【{{this.priority}}】{{this.title}}
+
+{{#if this.preconditions}}
+> 前置条件
+```
+{{this.preconditions}}
+```
+
+{{/if}}
+> 用例步骤
+
+| 编号 | 步骤 | 预期 |
+| ---- | ------------ | ------------ |
+{{#each this.steps}}
+| {{add @index 1}} | {{escapeCell this.step}} | {{escapeCell this.expected}} |
+{{/each}}
+
+{{/each}}
+{{/if}}
+{{/each}}
+{{#each this.test_cases}}
+##### 【{{this.priority}}】{{this.title}}
+
+{{#if this.preconditions}}
+> 前置条件
+```
+{{this.preconditions}}
+```
+
+{{/if}}
+> 用例步骤
+
+| 编号 | 步骤 | 预期 |
+| ---- | ------------ | ------------ |
+{{#each this.steps}}
+| {{add @index 1}} | {{escapeCell this.step}} | {{escapeCell this.expected}} |
+{{/each}}
+
+{{/each}}
+{{/each}}
+{{/each}}

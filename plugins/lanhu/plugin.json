@@ -1,8 +1,13 @@
 {
-  "description": "蓝湖 PRD 导入插件 — 从蓝湖 URL 拉取需求页面内容",
+  "name": "lanhu",
+  "description": "蓝湖 PRD 导入插件：从蓝湖 URL 爬取需求文档内容和截图",
+  "version": "1.0.0",
   "env_required": ["LANHU_COOKIE"],
-  "url_patterns": ["lanhuapp.com"],
+  "hooks": {
+    "test-case-gen:init": "input-adapter"
+  },
   "commands": {
-    "fetch": "npx tsx plugins/lanhu/fetch.ts --url {{url}} --output {{output}}"
-  }
+    "fetch": "npx tsx plugins/lanhu/fetch.ts --url {{url}} --output {{output_dir}}"
+  },
+  "url_patterns": ["lanhuapp.com"]
 }
