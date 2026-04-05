@@ -1,0 +1,1701 @@
+{
+  "meta": {
+    "project_name": "数栈测试",
+    "requirement_name": "【数据资产】元数据、数据质量适配doris3.x",
+    "requirement_ticket": "10306",
+    "requirement_id": 10306
+  },
+  "modules": [
+    {
+      "name": "资产盘点",
+      "pages": [
+        {
+          "name": "未分类",
+          "test_cases": [
+            {
+              "title": "【P1】验证 Doris 3.x 资产盘点页面显示正常",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【资产盘点】页面，等待页面加载完成",
+                  "expected": "成功进入【资产盘点】页面，页面各区域卡片正常加载，无报错"
+                },
+                {
+                  "step": "查看页面中的「已接入数据源」区域",
+                  "expected": "区域中存在 Doris 3.x 数据源记录，数据显示正常"
+                },
+                {
+                  "step": "查看页面中的「数据地图分布」区域",
+                  "expected": "区域中可选 Doris 3.x 数据源，选择后数据显示正常"
+                },
+                {
+                  "step": "查看页面中的「数据价值排行」区域",
+                  "expected": "区域中可选 Doris 3.x 数据源，选择后数据显示正常"
+                },
+                {
+                  "step": "查看页面中的「资源存储情况」区域",
+                  "expected": "区域中可选 Doris 3.x 数据源，选择后数据显示正常"
+                },
+                {
+                  "step": "查看页面中的「元数据变化趋势」区域",
+                  "expected": "区域中可选 Doris 3.x 数据源，选择后数据显示正常"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用 admin 账号登录系统\n2、数据资产-平台管理-数据源管理中已存在 Doris 3.x 数据源，并已完成元数据同步"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "元数据",
+      "pages": [
+        {
+          "name": "数据地图",
+          "test_cases": [
+            {
+              "title": "【P0】验证 「元数据」中 Doris 3.x 数据表查询和表数量显示正常",
+              "priority": "P0",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【数据地图】页面，等待页面加载完成",
+                  "expected": "成功进入【数据地图】页面，「表来源」面板正常加载，无报错"
+                },
+                {
+                  "step": "查看页面左侧「表来源」区域中的数据源列表",
+                  "expected": "「表来源」中新增 Doris 3.x 数据源，并显示5条数据"
+                },
+                {
+                  "step": "点击「表来源」中的Doris 3.x",
+                  "expected": "1) 跳转至数据表查询列表界面 2) 自动载入Doris 3.x数据源类型的查询结果, 显示5条数据表"
+                },
+                {
+                  "step": "进入「数据地图」主页面, 输入关键词vehicle_info_part 并查询",
+                  "expected": "1) 显示5条Doris 3.x数据表 2) 表名中的关键词被标红 3) 表名右侧的icon显示Doris 3.x"
+                },
+                {
+                  "step": "选择Doris 3.x表进入表详情页面, 检查表来源显示",
+                  "expected": "表详情-基本信息-表来源中显示为Doris 3.x"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、数据资产-平台管理-数据源管理中已存在Doris3.x数据源\n3、Doris3.x数据源已授权给质量项目\n4、Doris3.x数据源已在「元数据同步」模块中自动同步或手动同步5条数据表, 建表语句如下:\n\nDROP TABLE IF EXISTS vehicle_info_part1;\n\nCREATE TABLE vehicle_info_part1 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part1 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part1;\n\n\nDROP TABLE IF EXISTS vehicle_info_part2;\n\nCREATE TABLE vehicle_info_part2 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251003 VALUES [('2025-10-03'), ('2025-10-04')),\n  PARTITION p20251004 VALUES [('2025-10-04'), ('2025-10-05'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251003 分区（2025-10-03）\nINSERT INTO vehicle_info_part2 VALUES\n('LDP91C60PE200011','知音','EREV','H60','常规','两驱','N3',0,'2025-10-03'),\n('LDP91C60PE200012','知音','EREV','H60','常规','两驱','N3',1,'2025-10-03'),\n('LDP91C60PE200013','知音','EREV','H60','长续航','四驱','N5',1,'2025-10-03'),\n('LDP91C60PE200014','知音','EREV','H60','长续航','四驱','N5',NULL,'2025-10-03'),\n('LDP91C60PE200015','知音','EREV','H60','常规','四驱','N3',1,'2025-10-03');\n\nSELECT * FROM vehicle_info_part2;\n\nDROP TABLE IF EXISTS vehicle_info_part3;\n\nCREATE TABLE vehicle_info_part3 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part3 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part3;\n\n\nDROP TABLE IF EXISTS vehicle_info_part4;\n\nCREATE TABLE vehicle_info_part4 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part4 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part4;\n\nDROP TABLE IF EXISTS vehicle_info_part5;\n\nCREATE TABLE vehicle_info_part5 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part5 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part5;"
+            },
+            {
+              "title": "【P2】验证血缘解析（INSERT INTO）",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入「离线开发-数据开发-周期任务」页面，等待任务列表加载完成",
+                  "expected": "成功进入【周期任务】页面，任务列表正常加载，无报错"
+                },
+                {
+                  "step": "新建 DorisSQL 任务, 并执行测试语句",
+                  "expected": "执行成功"
+                },
+                {
+                  "step": "执行SQL: INSERT INTO doris_table_b SELECT \\* FROM doris_table_a;",
+                  "expected": "执行成功"
+                },
+                {
+                  "step": "保存并提交",
+                  "expected": "提交成功"
+                },
+                {
+                  "step": "查看任务B调度属性-任务间依赖",
+                  "expected": "显示自动依赖于任务A"
+                },
+                {
+                  "step": "查看任务A,B的依赖视图",
+                  "expected": "显示 doris_table_a → doris_table_b 依赖箭头"
+                },
+                {
+                  "step": "进入「数据资产-元数据-数据地图」, 搜索表doris_table_b",
+                  "expected": "搜索成功"
+                },
+                {
+                  "step": "进入表详情页, 查看血缘关系和任务依赖",
+                  "expected": "显示依赖于上游任务A中的表doris_table_a"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用 admin 账号登录系统\n2、离线开发-平台管理已对接 Meta Doris 数据源，并已引入至资产平台\n\n测试语句\nDorisSQL任务A\nDROP TABLE IF EXISTS doris_table_a;\nCREATE TABLE doris_table_a (id INT, val STRING)\nENGINE=OLAP\nDISTRIBUTED BY HASH(id) BUCKETS 1\nPROPERTIES(replication_num=1);\n\nDorisSQL任务B\nDROP TABLE IF EXISTS doris_table_b;\nCREATE TABLE doris_table_b (id INT, val STRING)\nENGINE=OLAP\nDISTRIBUTED BY HASH(id) BUCKETS 1\nPROPERTIES(replication_num=1);"
+            },
+            {
+              "title": "【P2】验证血缘解析（INSERT OVERWRITE）",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入「离线开发-数据开发-周期任务」页面，等待任务列表加载完成",
+                  "expected": "成功进入【周期任务】页面，任务列表正常加载，无报错"
+                },
+                {
+                  "step": "新建 DorisSQL 任务, 并执行测试语句",
+                  "expected": "执行成功"
+                },
+                {
+                  "step": "执行SQL: INSERT OVERWRITE TABLE doris_table_b SELECT \\* FROM doris_table_a;",
+                  "expected": "执行成功"
+                },
+                {
+                  "step": "保存并提交",
+                  "expected": "提交成功"
+                },
+                {
+                  "step": "查看任务B调度属性-任务间依赖",
+                  "expected": "显示自动依赖于任务A"
+                },
+                {
+                  "step": "查看任务A,B的依赖视图",
+                  "expected": "显示 doris_table_a → doris_table_b 依赖箭头"
+                },
+                {
+                  "step": "进入「数据资产-元数据-数据地图」, 搜索表doris_table_b",
+                  "expected": "搜索成功"
+                },
+                {
+                  "step": "进入表详情页, 查看血缘关系和任务依赖",
+                  "expected": "显示依赖于上游任务A中的表doris_table_a"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n离线对接Meta Doris数据源并引入至资产平台\n\n测试语句\nDorisSQL任务A\nDROP TABLE IF EXISTS doris_table_a;\nCREATE TABLE doris_table_a (id INT, val STRING)\nENGINE=OLAP\nDISTRIBUTED BY HASH(id) BUCKETS 1\nPROPERTIES(replication_num=1);\n\nDorisSQL任务B\nDROP TABLE IF EXISTS doris_table_b;\nCREATE TABLE doris_table_b (id INT, val STRING)\nENGINE=OLAP\nDISTRIBUTED BY HASH(id) BUCKETS 1\nPROPERTIES(replication_num=1);"
+            },
+            {
+              "title": "【P2】验证血缘解析（CREATE TABLE AS SELECT）",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入「离线开发-数据开发-周期任务」页面，等待任务列表加载完成",
+                  "expected": "成功进入【周期任务】页面，任务列表正常加载，无报错"
+                },
+                {
+                  "step": "新建 DorisSQL 任务, 并执行测试语句",
+                  "expected": "执行成功"
+                },
+                {
+                  "step": "创建Doris任务B, 执行SQL: CREATE TABLE doris_table_new PROPERTIES(replication_num = 1) AS SELECT \\* FROM doris_table_src;",
+                  "expected": "执行成功"
+                },
+                {
+                  "step": "保存并提交",
+                  "expected": "提交成功"
+                },
+                {
+                  "step": "查看任务B调度属性-任务间依赖",
+                  "expected": "显示自动依赖于任务A"
+                },
+                {
+                  "step": "查看任务A,B的依赖视图",
+                  "expected": "显示 doris_table_new → doris_table_src 依赖箭头"
+                },
+                {
+                  "step": "进入「数据资产-元数据-数据地图」, 搜索表doris_table_new",
+                  "expected": "搜索成功"
+                },
+                {
+                  "step": "进入表详情页, 查看血缘关系和任务依赖",
+                  "expected": "显示依赖于上游任务A中的表doris_table_src"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n离线对接Meta Doris数据源并引入至资产平台\n\n建表语句\nDoris任务A\nCREATE TABLE if not exists doris_table_src (\n    id INT,\n    name VARCHAR(100),\n    age TINYINT,\n    salary DECIMAL(10,2),\n    hire_date DATE,\n    create_time DATETIME\n)\nENGINE=OLAP\nDUPLICATE KEY(id)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES(\n    replication_num = 1\n);"
+            },
+            {
+              "title": "【P2】验证血缘解析（CREATE TABLE LIKE）",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入「离线开发-数据开发-周期任务」页面，等待任务列表加载完成",
+                  "expected": "成功进入【周期任务】页面，任务列表正常加载，无报错"
+                },
+                {
+                  "step": "新建 DorisSQL 任务, 并执行测试语句",
+                  "expected": "执行成功"
+                },
+                {
+                  "step": "创建Doris任务B, 执行SQL: CREATE TABLE doris_table_copy LIKE doris_table_template;",
+                  "expected": "执行成功"
+                },
+                {
+                  "step": "保存并提交",
+                  "expected": "提交成功"
+                },
+                {
+                  "step": "查看任务B调度属性-任务间依赖",
+                  "expected": "显示自动依赖于任务A"
+                },
+                {
+                  "step": "查看任务A,B的依赖视图",
+                  "expected": "显示 doris_table_copy → doris_table_template 依赖箭头"
+                },
+                {
+                  "step": "进入「数据资产-元数据-数据地图」, 搜索表doris_table_copy",
+                  "expected": "搜索成功"
+                },
+                {
+                  "step": "进入表详情页, 查看血缘关系和任务依赖",
+                  "expected": "显示依赖于上游任务A中的表doris_table_template"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n离线对接Meta Doris数据源并引入至资产平台\n\n建表语句\nDoris任务A\nCREATE TABLE if not exists doris_table_template (\n    id INT,\n    name VARCHAR(100),\n    age TINYINT,\n    salary DECIMAL(10,2),\n    hire_date DATE,\n    create_time DATETIME\n)\nENGINE=OLAP\nDUPLICATE KEY(id)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES(\n    replication_num = 1\n);"
+            }
+          ]
+        },
+        {
+          "name": "订阅的数据",
+          "test_cases": [
+            {
+              "title": "【P0】验证订阅 Doris 3.x 数据表并在「订阅的数据」页面查看订阅记录",
+              "priority": "P0",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【数据地图】页面",
+                  "expected": "成功进入【数据地图】页面，页面内容正常加载，无报错"
+                },
+                {
+                  "step": "在搜索框输入关键词「vehicle_info_part1」并查询",
+                  "expected": "搜索结果中显示 vehicle_info_part1 数据表记录，表来源显示 Doris 3.x"
+                },
+                {
+                  "step": "点击「vehicle_info_part1」表名，进入表详情页面",
+                  "expected": "进入表详情页面，展示基本信息、字段信息等tab"
+                },
+                {
+                  "step": "点击「订阅」按钮",
+                  "expected": "Toast提示「订阅成功!」"
+                },
+                {
+                  "step": "进入【数据资产】-【元数据】-【订阅的数据】页面",
+                  "expected": "1) 「订阅的数据」列表中显示 vehicle_info_part1 的订阅记录 2) 记录中展示: 表名为「vehicle_info_part1」、表中文名、数据路径、提醒方式、订阅时间 3) 订阅时间为当前时间"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用 admin 账号登录系统\n2、Doris 3.x 数据源已引入资产平台，元数据同步完成\n3、存在已同步的 Doris 3.x 数据表 vehicle_info_part1，该表尚未被当前用户订阅"
+            },
+            {
+              "title": "【P1】验证取消订阅 Doris 3.x 数据表功能正常",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【订阅的数据】页面",
+                  "expected": "成功进入【订阅的数据】页面，订阅的数据表记录列表正常加载，无报错"
+                },
+                {
+                  "step": "在搜索框输入「vehicle_info_part1」进行查询",
+                  "expected": "列表筛选，仅显示表名包含 vehicle_info_part1 的记录"
+                },
+                {
+                  "step": "选择 vehicle_info_part1 记录，点击「取消订阅」按钮",
+                  "expected": "弹出确认弹窗，显示「确定取消订阅吗？」"
+                },
+                {
+                  "step": "在确认弹窗中，点击「取消订阅」按钮",
+                  "expected": "Toast提示「取消订阅成功！」，「订阅的数据」列表中 vehicle_info_part1 记录消失"
+                },
+                {
+                  "step": "进入【数据资产】-【元数据】-【数据地图】页面，搜索「vehicle_info_part1」并进入表详情",
+                  "expected": "表详情页中按钮恢复为「订阅」状态（非「取消订阅」）"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已订阅 Doris 3.x 数据表 vehicle_info_part1"
+            },
+            {
+              "title": "【P1】验证修改 Doris 3.x 已订阅数据表的提醒方式功能正常",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【订阅的数据】页面",
+                  "expected": "成功进入【订阅的数据】页面，订阅的数据表记录列表正常加载，无报错"
+                },
+                {
+                  "step": "选择 vehicle_info_part1 记录，点击「修改提醒方式」按钮",
+                  "expected": "弹出「修改提醒方式」弹窗，展示当前配置的提醒方式"
+                },
+                {
+                  "step": "修改提醒方式后，点击确定",
+                  "expected": "Toast提示「提醒方式修改成功!」，列表中该记录的「提醒方式」列更新为修改后的值"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已订阅 Doris 3.x 数据表 vehicle_info_part1"
+            },
+            {
+              "title": "【P1】验证订阅 Doris 3.x 数据表后元数据发生变更时收到变更通知",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入「离线开发-数据开发」，创建 DorisSQL 任务，执行SQL: ALTER TABLE vehicle_info_part1 ADD COLUMN test_notify_col VARCHAR(50) COMMENT '测试通知字段';",
+                  "expected": "DDL 变更执行成功"
+                },
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据同步】页面，找到包含 vehicle_info_part1 的同步任务，点击「立即同步」",
+                  "expected": "Toast提示同步成功，同步状态变为「同步中」"
+                },
+                {
+                  "step": "等待同步完成",
+                  "expected": "同步状态由「同步中」变更为「同步完成」"
+                },
+                {
+                  "step": "查看系统通知/消息中心",
+                  "expected": "1) 收到元数据变更通知 2) 通知内容包含变更的表名 vehicle_info_part1 3) 通知方式与订阅时设置的提醒方式一致"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已订阅 Doris 3.x 数据表 vehicle_info_part1，提醒方式已配置\n3、离线开发中已对接 Doris 3.x 集群"
+            }
+          ]
+        },
+        {
+          "name": "血缘分析",
+          "test_cases": [
+            {
+              "title": "【P2】验证「血缘分析」中 Doris 3.x 数据源的孤立血缘表（无血缘）统计功能正常",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【血缘分析】页面",
+                  "expected": "成功进入【血缘分析】页面，已添加监控的数据库列表正常加载，无报错"
+                },
+                {
+                  "step": "点击「添加数据库」按钮",
+                  "expected": "弹出「添加数据库」弹窗"
+                },
+                {
+                  "step": "「数据源」选择 Doris 3.x 数据源，「数据库」选择已同步的数据库，点击确定",
+                  "expected": "添加成功，列表中新增一条 Doris 3.x 数据库记录，「数据源类型」列显示 Doris 3.x"
+                },
+                {
+                  "step": "查看列表中新增的 Doris 3.x 数据库记录的「表数量（总数）」和「表数量（无血缘）」列",
+                  "expected": "1) 「表数量（总数）」列显示该数据库的总表数，与实际同步的表数一致 2) 「表数量（无血缘）」列显示无上下游血缘关系的孤立表数量 3) 「表数量（无血缘）」≤「表数量（总数）」"
+                },
+                {
+                  "step": "点击该数据库记录的「查看」按钮",
+                  "expected": "跳转至该数据库下的表列表页，可查看各表的血缘状态详情"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、Doris 3.x 数据源已引入资产平台，元数据同步完成\n3、Doris 3.x 数据库中存在多张表，部分表已通过离线任务建立血缘关系（如通过INSERT INTO/CREATE TABLE AS SELECT等SQL），部分表无任何上下游血缘关系"
+            }
+          ]
+        },
+        {
+          "name": "元数据同步",
+          "test_cases": [
+            {
+              "title": "【P1】验证 「元数据」中 Doris 3.x 元数据同步任务中过滤规则的有效性",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据同步】页面，等待页面加载完成",
+                  "expected": "成功进入【元数据同步】页面，同步任务列表正常加载，无报错"
+                },
+                {
+                  "step": "点击「自动同步」页签, 点击新增过滤规则",
+                  "expected": "1) 从周期同步页面切换到自动同步页面 2) 弹出「新增过滤规则」弹窗"
+                },
+                {
+                  "step": "1) 配置内容如下: 规则名称: test_rule 自动同步过滤维度: 数据表表名 过滤内容: vehicle_info_part\\* 数据源: 测试数据源\\_Doris 数据库: doris_quality_project 2) 配置完毕后,点击确定",
+                  "expected": "新增过滤规则成功"
+                },
+                {
+                  "step": "1) 点击「周期同步」页签, 新增周期同步任务, 配置如下: 数据源: 测试数据源\\_Doris 数据库: doris_quality_project 数据表: vehicle_info_part6~10 2) 配置完毕后, 点击「临时同步」",
+                  "expected": "1) 「新增周期同步任务」弹窗关闭, 并Toast提示: 临时同步成功 2) 同步状态为同步中, 等待一段时间后, 同步状态变更为同步完成"
+                },
+                {
+                  "step": "进入数据地图页面, 查询关键词vehicle_info_part",
+                  "expected": "过滤规则已生效, 未显示vehicle_info_part6~10这五个Doris表"
+                },
+                {
+                  "step": "点击「自动同步」页签, 点击test_rule规则记录的「是否生效」按钮",
+                  "expected": "Toast提示: 自动同步规则切换状态成功，规则已关闭！"
+                },
+                {
+                  "step": "点击「周期同步」页签, 点击Doris 3.x同步任务记录的立即同步按钮",
+                  "expected": "同步状态为同步中, 等待一段时间后, 同步状态变更为同步完成"
+                },
+                {
+                  "step": "进入数据地图页面, 查询关键词vehicle_info_part",
+                  "expected": "过滤规则已失效, 数据表成功同步至资产平台"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、资产平台已自动对接离线平台中带Meta标识的Doris 3.x数据源\n3、在离线开发平台中创建DorisSQL任务并执行, 建表语句如下:\nDROP TABLE IF EXISTS vehicle_info_part6;\n\nCREATE TABLE vehicle_info_part6 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part6 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part6;\n\n\nDROP TABLE IF EXISTS vehicle_info_part7;\n\nCREATE TABLE vehicle_info_part7 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251003 VALUES [('2025-10-03'), ('2025-10-04')),\n  PARTITION p20251004 VALUES [('2025-10-04'), ('2025-10-05'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251003 分区（2025-10-03）\nINSERT INTO vehicle_info_part7 VALUES\n('LDP91C60PE200011','知音','EREV','H60','常规','两驱','N3',0,'2025-10-03'),\n('LDP91C60PE200012','知音','EREV','H60','常规','两驱','N3',1,'2025-10-03'),\n('LDP91C60PE200013','知音','EREV','H60','长续航','四驱','N5',1,'2025-10-03'),\n('LDP91C60PE200014','知音','EREV','H60','长续航','四驱','N5',NULL,'2025-10-03'),\n('LDP91C60PE200015','知音','EREV','H60','常规','四驱','N3',1,'2025-10-03');\n\nSELECT * FROM vehicle_info_part7;\n\nDROP TABLE IF EXISTS vehicle_info_part8;\n\nCREATE TABLE vehicle_info_part8 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part8 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part8;\n\n\nDROP TABLE IF EXISTS vehicle_info_part9;\n\nCREATE TABLE vehicle_info_part9 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part9 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part9;\n\nDROP TABLE IF EXISTS vehicle_info_part10;\n\nCREATE TABLE vehicle_info_part10 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part10 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part10;"
+            },
+            {
+              "title": "【P1】验证 「元数据」中 Doris 3.x 元数据临时同步功能正常",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据同步】页面，等待页面加载完成",
+                  "expected": "成功进入【元数据同步】页面，同步任务列表正常加载，无报错"
+                },
+                {
+                  "step": "点击「新增周期同步任务」",
+                  "expected": "弹出「新增周期同步任务」弹窗"
+                },
+                {
+                  "step": "「数据源」: 测试数据源\\_Doris 「数据库」: doris_quality_db 「数据表」: vehicle_info_part1 ~3",
+                  "expected": "配置成功"
+                },
+                {
+                  "step": "点击「临时同步」按钮",
+                  "expected": "1) 「新增周期同步任务」弹窗关闭, 并Toast提示: 临时同步成功 2) 同步状态为同步中, 等待一段时间后, 同步状态变更为同步完成"
+                },
+                {
+                  "step": "进入数据地图页面, 查询关键词vehicle_info_part",
+                  "expected": "显示已同步的Doris 3.x的三张表"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、数据资产-平台管理-数据源管理中已存在Doris3.x数据源\n3、Doris3.x数据源已授权给质量项目\n4、Doris3.x底层数据源已存在数据表, 建表语句如下:\n\nDROP TABLE IF EXISTS vehicle_info_part1;\n\nCREATE TABLE vehicle_info_part1 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part1 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part1;\n\n\nDROP TABLE IF EXISTS vehicle_info_part2;\n\nCREATE TABLE vehicle_info_part2 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251003 VALUES [('2025-10-03'), ('2025-10-04')),\n  PARTITION p20251004 VALUES [('2025-10-04'), ('2025-10-05'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251003 分区（2025-10-03）\nINSERT INTO vehicle_info_part2 VALUES\n('LDP91C60PE200011','知音','EREV','H60','常规','两驱','N3',0,'2025-10-03'),\n('LDP91C60PE200012','知音','EREV','H60','常规','两驱','N3',1,'2025-10-03'),\n('LDP91C60PE200013','知音','EREV','H60','长续航','四驱','N5',1,'2025-10-03'),\n('LDP91C60PE200014','知音','EREV','H60','长续航','四驱','N5',NULL,'2025-10-03'),\n('LDP91C60PE200015','知音','EREV','H60','常规','四驱','N3',1,'2025-10-03');\n\nSELECT * FROM vehicle_info_part2;\n\nDROP TABLE IF EXISTS vehicle_info_part3;\n\nCREATE TABLE vehicle_info_part3 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part3 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part3;\n\n\nDROP TABLE IF EXISTS vehicle_info_part4;\n\nCREATE TABLE vehicle_info_part4 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part4 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part4;\n\nDROP TABLE IF EXISTS vehicle_info_part5;\n\nCREATE TABLE vehicle_info_part5 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part5 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part5;"
+            },
+            {
+              "title": "【P0】验证 「元数据」中 Doris 3.x 元数据周期同步功能正常",
+              "priority": "P0",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据同步】页面，等待页面加载完成",
+                  "expected": "成功进入【元数据同步】页面，同步任务列表正常加载，无报错"
+                },
+                {
+                  "step": "点击「新增周期同步任务」",
+                  "expected": "弹出「新增周期同步任务」弹窗"
+                },
+                {
+                  "step": "「数据源」: 测试数据源\\_Doris 「数据库」: doris_quality_db 「数据表」: vehicle_info_part4 ~5",
+                  "expected": "配置成功"
+                },
+                {
+                  "step": "点击「下一步」, 保持默认选项, 点击「新增」按钮",
+                  "expected": "1) 「新增周期同步任务」弹窗关闭, 并Toast提示: 新增周期同步任务成功 2) 同步状态为等待同步 3) 等到第二天00:00, 同步状态变更为同步中, 等待一段时间后, 状态变更为同步完成"
+                },
+                {
+                  "step": "进入数据地图页面, 查询关键词vehicle_info_part",
+                  "expected": "显示已同步的Doris 3.x的两张表"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、数据资产-平台管理-数据源管理中已存在Doris3.x数据源\n3、Doris3.x数据源已授权给质量项目\n4、Doris3.x底层数据源已存在数据表, 建表语句如下:\n\nDROP TABLE IF EXISTS vehicle_info_part1;\n\nCREATE TABLE vehicle_info_part1 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part1 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part1;\n\n\nDROP TABLE IF EXISTS vehicle_info_part2;\n\nCREATE TABLE vehicle_info_part2 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251003 VALUES [('2025-10-03'), ('2025-10-04')),\n  PARTITION p20251004 VALUES [('2025-10-04'), ('2025-10-05'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251003 分区（2025-10-03）\nINSERT INTO vehicle_info_part2 VALUES\n('LDP91C60PE200011','知音','EREV','H60','常规','两驱','N3',0,'2025-10-03'),\n('LDP91C60PE200012','知音','EREV','H60','常规','两驱','N3',1,'2025-10-03'),\n('LDP91C60PE200013','知音','EREV','H60','长续航','四驱','N5',1,'2025-10-03'),\n('LDP91C60PE200014','知音','EREV','H60','长续航','四驱','N5',NULL,'2025-10-03'),\n('LDP91C60PE200015','知音','EREV','H60','常规','四驱','N3',1,'2025-10-03');\n\nSELECT * FROM vehicle_info_part2;\n\nDROP TABLE IF EXISTS vehicle_info_part3;\n\nCREATE TABLE vehicle_info_part3 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part3 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part3;\n\n\nDROP TABLE IF EXISTS vehicle_info_part4;\n\nCREATE TABLE vehicle_info_part4 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part4 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part4;\n\nDROP TABLE IF EXISTS vehicle_info_part5;\n\nCREATE TABLE vehicle_info_part5 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part5 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part5;"
+            },
+            {
+              "title": "【P0】验证元数据同步后 Doris 3.x 表结构与字段信息采集正确性",
+              "priority": "P0",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据同步】页面，等待页面加载完成",
+                  "expected": "成功进入【元数据同步】页面，同步任务列表正常加载，无报错"
+                },
+                {
+                  "step": "新增周期同步任务，「数据源」选择 Doris 3.x 数据源，「数据库」选择建表所在的数据库，「数据表」选择 sync_verify_test",
+                  "expected": "配置成功"
+                },
+                {
+                  "step": "点击「临时同步」按钮，等待同步完成",
+                  "expected": "1) Toast提示「临时同步成功」 2) 同步状态由「同步中」变更为「同步完成」"
+                },
+                {
+                  "step": "进入【数据资产】-【元数据】-【数据地图】页面，搜索「sync_verify_test」",
+                  "expected": "搜索结果中显示 sync_verify_test 表记录，表名右侧icon显示 Doris 3.x"
+                },
+                {
+                  "step": "点击表名进入表详情页面，查看「基本信息」",
+                  "expected": "1) 「基本信息」中表名显示「sync_verify_test」 2) 所属数据源显示正确的 Doris 3.x 数据源名称 3) 所属数据库显示正确 4) 表引擎、建表时间等技术属性正确展示"
+                },
+                {
+                  "step": "查看「字段信息」tab",
+                  "expected": "1) 字段列表展示5个字段: id、name、amount、created_date、status 2) 字段类型分别为: BIGINT、VARCHAR(100)、DECIMAL(18,2)、DATE、TINYINT 3) 字段注释(COMMENT)分别为: 主键ID、名称、金额、创建日期、状态 4) 字段信息与实际 Doris 建表语句完全一致"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、Doris 3.x 数据源已引入资产平台\n3、已在 Doris 3.x 中创建测试表:\nCREATE TABLE IF NOT EXISTS sync_verify_test (\n    id BIGINT COMMENT '主键ID',\n    name VARCHAR(100) COMMENT '名称',\n    amount DECIMAL(18,2) COMMENT '金额',\n    created_date DATE COMMENT '创建日期',\n    status TINYINT COMMENT '状态'\n) ENGINE=OLAP\nDUPLICATE KEY(id)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES (replication_num = 1);"
+            },
+            {
+              "title": "【P1】验证「元数据同步」中 Doris 3.x 周期同步任务的编辑与删除功能正常",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据同步】页面",
+                  "expected": "成功进入【元数据同步】页面，同步任务列表正常加载，无报错"
+                },
+                {
+                  "step": "选择 Doris 3.x 周期同步任务记录，点击「编辑」按钮",
+                  "expected": "弹出编辑弹窗，展示当前同步任务的配置信息，数据源为 Doris 3.x"
+                },
+                {
+                  "step": "修改「数据表」选择范围为「全部」，修改「调度周期」为「天」，点击「确定」",
+                  "expected": "1) 编辑成功，Toast提示操作成功 2) 列表中该任务的配置信息更新: 「数据表」显示为「全部」，「调度周期」显示为「天」"
+                },
+                {
+                  "step": "选择该条同步任务记录，点击「删除」按钮",
+                  "expected": "弹出确认弹窗"
+                },
+                {
+                  "step": "在确认弹窗中，点击「确定」",
+                  "expected": "1) 删除成功，Toast提示删除成功 2) 列表中该条同步任务记录消失"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n已存在一条 Doris 3.x 的周期同步任务，「数据表」选择范围为指定表，「调度周期」为「周」"
+            },
+            {
+              "title": "【P2】验证 Doris 3.x 特有字段类型（JSON/ARRAY/MAP）的元数据采集正确性",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据同步】页面，等待页面加载完成",
+                  "expected": "成功进入【元数据同步】页面，同步任务列表正常加载，无报错"
+                },
+                {
+                  "step": "新增周期同步任务，「数据源」选择 Doris 3.x 数据源，「数据库」选择建表所在数据库，「数据表」选择 doris3x_type_test",
+                  "expected": "配置成功"
+                },
+                {
+                  "step": "点击「临时同步」按钮，等待同步完成",
+                  "expected": "同步状态由「同步中」变更为「同步完成」"
+                },
+                {
+                  "step": "进入【数据资产】-【元数据】-【数据地图】页面，搜索「doris3x_type_test」",
+                  "expected": "搜索结果中显示 doris3x_type_test 表记录，表来源显示 Doris 3.x"
+                },
+                {
+                  "step": "点击表名进入表详情页面，查看「字段信息」tab",
+                  "expected": "1) 字段列表展示5个字段: id、json_data、map_data、arr_data、struct_data 2) 字段类型分别正确显示为: BIGINT、JSON、MAP<STRING,INT>、ARRAY<STRING>、STRUCTname:STRING,age:INT 3) 字段注释正确显示: 主键、JSON数据、MAP类型、数组类型、结构体类型 4) 特有字段类型未被截断或显示为Unknown"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、Doris 3.x 数据源已引入资产平台\n3、已在 Doris 3.x 中创建包含特有字段类型的测试表:\nCREATE TABLE IF NOT EXISTS story_15603.doris3x_type_test (\n    id BIGINT COMMENT '主键',\n    json_data JSON COMMENT 'JSON数据',\n    map_data MAP<STRING, STRING> COMMENT 'MAP类型',\n    arr_data ARRAY<STRING> COMMENT '数组类型',\n    struct_data STRUCT<f1:STRING, f2:INT> COMMENT '结构体类型'\n)\nENGINE=OLAP\nDUPLICATE KEY(id)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES (\"replication_num\" = \"1\");"
+            }
+          ]
+        },
+        {
+          "name": "元模型管理",
+          "test_cases": [
+            {
+              "title": "【P2】验证 「元数据」中 Doris 3.x 数据表业务/个性属性维护功能",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元模型管理】页面",
+                  "expected": "成功进入【元模型管理】页面，元模型列表正常加载，无报错"
+                },
+                {
+                  "step": "下滑找到Doris 3.x元模型, 点击「编辑元模型」",
+                  "expected": "1) 展示的技术属性与Doris 2.x保持一致 2) 支持维护通用业务属性、个性业务属性 3) 通用业务属性默认存在两个字段: 表中文名和负责人"
+                },
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据管理】页面",
+                  "expected": "成功进入【元数据管理】页面，数据源列表正常加载，无报错"
+                },
+                {
+                  "step": "选择数据源类型为「Doris 3.x」的数据源, 点击进入",
+                  "expected": "成功进入 Doris 3.x 数据源详情，数据库列表正常加载，无报错"
+                },
+                {
+                  "step": "点击数据库, 进入数据表页面, 选择一条记录, 点击「编辑」按钮",
+                  "expected": "1) 弹出「表元数据」弹窗 2) 支持编辑通用业务属性中的字段值"
+                },
+                {
+                  "step": "「负责人」选择选项 「表中文名」输入测试 配置完成后, 点击保存",
+                  "expected": "返回数据表列表页面, toast提示: 业务属性保存成功, 数据表预览内容同步更新"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n「元数据管理」页面中已存在同步过来的Doris 3.x数据表记录"
+            },
+            {
+              "title": "【P2】验证 「元数据」中 Doris 3.x 元模型配置功能正常",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元模型管理】页面",
+                  "expected": "成功进入【元模型管理】页面，元模型列表正常加载，无报错"
+                },
+                {
+                  "step": "下滑找到Doris 3.x元模型",
+                  "expected": "doris3.x元模型位置在2.x的右侧"
+                },
+                {
+                  "step": "点击「编辑元模型」",
+                  "expected": "Doris 3.x支持采集的技术属性信息和Doris 2.x保持一致"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n资产平台已自动对接离线平台中带Meta标识的Doris 3.x数据源"
+            }
+          ]
+        },
+        {
+          "name": "元数据管理",
+          "test_cases": [
+            {
+              "title": "【P1】验证 「元数据」中 Doris 3.x 数据源删除表操作",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据管理】页面",
+                  "expected": "成功进入【元数据管理】页面，数据源列表正常加载，无报错"
+                },
+                {
+                  "step": "选择数据源类型为「Doris 3.x」的数据源, 点击进入",
+                  "expected": "成功进入 Doris 3.x 数据源详情，数据库列表正常加载，无报错"
+                },
+                {
+                  "step": "点击数据库, 进入数据表页面, 选择 vehicle_info_part1 记录, 点击「删除」按钮",
+                  "expected": "1) 弹出二次确认弹窗: 「确定删除表 vehicle_info_part1 吗?」 2) 删除方式支持删除元数据表和删除源表 3) 输入的表名一致后可删除表"
+                },
+                {
+                  "step": "「删除方式」选择「删除元数据表」, 输入 vehicle_info_part1 后, 点击「确定」",
+                  "expected": "1) 弹窗关闭, 该表信息从资产平台及其他子产品中删除完成 2) 可以通过元数据同步中, 重新将该表同步至资产平台"
+                },
+                {
+                  "step": "进入「离线开发-数据开发-周期任务」, 创建DorisSQL任务, 执行查询语句: SELECT \\* FROM vehicle_info_part1;",
+                  "expected": "SQL任务运行成功, 源表仍存在"
+                },
+                {
+                  "step": "返回「资产平台-元数据管理」中, 再次选择 vehicle_info_part2 记录, 点击删除按钮, 选择「删除源表」, 输入 vehicle_info_part2 后, 点击「确定」",
+                  "expected": "弹窗关闭, 该表信息从源库中删除"
+                },
+                {
+                  "step": "进入「离线开发-数据开发-周期任务」, 创建DorisSQL任务, 执行查询语句: SELECT \\* FROM vehicle_info_part2;",
+                  "expected": "SQL任务运行失败, 源表不存在"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n「元数据管理」页面中已存在从离线平台中同步过来的Doris 3.x数据源"
+            },
+            {
+              "title": "【P2】验证 「元数据」中 Doris 3.x 数据表生命周期设置功能",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据管理】页面",
+                  "expected": "成功进入【元数据管理】页面，数据源列表正常加载，无报错"
+                },
+                {
+                  "step": "选择数据源类型为「Doris 3.x」的数据源, 点击进入",
+                  "expected": "成功进入 Doris 3.x 数据源详情，数据库列表正常加载，无报错"
+                },
+                {
+                  "step": "点击数据库, 进入数据表页面, 选择一条记录, 点击「批量编辑生命周期」按钮",
+                  "expected": "1) 弹出「批量编辑生命周期」弹窗 2) 支持修改Doris 3.x数据表的生命周期 3) 生命周期支持: 3天/7天/30天/90天/365天/自定义 4) 选择「自定义」后最大输入9999天"
+                },
+                {
+                  "step": "「生命周期」选择3天, 点击「确定」",
+                  "expected": "弹窗关闭, 该表的「表生命周期」变更为3天"
+                },
+                {
+                  "step": "点击「元数据管理」, 返回到数据源列表页面",
+                  "expected": "返回成功"
+                },
+                {
+                  "step": "选择数据源类型为Doris 3.x的数据源, 点击「批量编辑生命周期」",
+                  "expected": "弹出「批量修改生命周期」弹窗"
+                },
+                {
+                  "step": "「生命周期」选择3天, 点击「确定」",
+                  "expected": "1) 弹窗关闭, 该数据源下所有的「表生命周期」变更为3天 2) 后续在该数据源内新增的数据表也会默认配置为3天"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n「元数据管理」页面中已存在同步过来的Doris 3.x数据表记录"
+            },
+            {
+              "title": "【P1】验证 「元数据」中 Doris 3.x 数据源删除库操作",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据管理】页面",
+                  "expected": "成功进入【元数据管理】页面，数据源列表正常加载，无报错"
+                },
+                {
+                  "step": "选择数据源类型为「Doris 3.x」的数据源, 点击进入",
+                  "expected": "成功进入 Doris 3.x 数据源详情，数据库列表正常加载，无报错"
+                },
+                {
+                  "step": "点击数据库, 选择一条记录, 点击「删除」按钮",
+                  "expected": "1) 弹出二次确认弹窗 2) 删除库表操作仅针对资产平台内生效，不会影响底层数据库表信息"
+                },
+                {
+                  "step": "输入「数据库名」后, 点击删除按钮",
+                  "expected": "1) 弹窗关闭, 该表信息从资产平台中删除完成 2) 可以通过元数据同步中, 重新将该库表同步至资产平台"
+                },
+                {
+                  "step": "进入「离线开发-数据开发-周期任务」, 创建DorisSQL任务, 执行查询语句: USE doris_quality_db;",
+                  "expected": "SQL任务运行成功, 源库仍存在"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n「元数据管理」页面中已存在从离线平台中同步过来的Doris 3.x数据源"
+            },
+            {
+              "title": "【P1】验证「元数据管理」中 Doris 3.x 表详情页各tab信息展示完整性",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据管理】页面",
+                  "expected": "成功进入【元数据管理】页面，数据源列表正常加载，无报错"
+                },
+                {
+                  "step": "选择数据源类型为「Doris 3.x」的数据源，点击进入",
+                  "expected": "成功进入 Doris 3.x 数据源详情，数据库列表正常加载，无报错"
+                },
+                {
+                  "step": "点击数据库，进入数据表页面，点击 vehicle_info_part1 表名进入表详情",
+                  "expected": "进入 vehicle_info_part1 表详情页面"
+                },
+                {
+                  "step": "查看「基本信息」tab中的技术属性",
+                  "expected": "技术属性正确展示: 表名、所属数据源(Doris 3.x)、所属数据库、表引擎、建表时间、最近同步时间等"
+                },
+                {
+                  "step": "查看「基本信息」tab中的业务属性",
+                  "expected": "业务属性正确展示: 表中文名、负责人等已维护的通用业务属性值与之前配置一致"
+                },
+                {
+                  "step": "点击「字段信息」tab",
+                  "expected": "1) 展示所有字段列表 2) 每个字段显示: 字段名、字段类型、字段注释等信息 3) 字段信息与实际 Doris 表结构一致"
+                },
+                {
+                  "step": "点击「变更记录」tab",
+                  "expected": "展示该表的元数据变更记录（如有），包含变更时间、变更类型、变更内容"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、Doris 3.x 数据源已引入资产平台，元数据同步完成\n3、存在已同步的 Doris 3.x 数据表 vehicle_info_part1，且已配置过业务属性"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "数据质量",
+      "pages": [
+        {
+          "name": "概览",
+          "test_cases": [
+            {
+              "title": "【P1】验证「数据质量概览」页面中 Doris 3.x 数据源的规则任务统计展示正常",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【数据质量】-【概览】页面",
+                  "expected": "成功进入【概览】页面，统计数据卡片正常加载，无报错"
+                },
+                {
+                  "step": "查看概览中的规则任务统计数据",
+                  "expected": "1) 概览中的规则任务总数统计包含 Doris 3.x 数据源的任务 2) 校验通过/校验失败/校验异常的统计数据准确反映 Doris 3.x 规则任务的执行结果"
+                },
+                {
+                  "step": "查看告警列表中的 Doris 3.x 相关记录",
+                  "expected": "如 Doris 3.x 规则任务存在告警，告警列表中正确展示告警记录，包含表名、告警次数等信息"
+                },
+                {
+                  "step": "点击告警列表中 Doris 3.x 表的表名链接",
+                  "expected": "跳转至对应的规则任务详情页面，展示该 Doris 3.x 表的规则配置和执行结果信息"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、Doris 3.x 数据源已引入资产平台并授权给质量项目\n3、已配置并执行了至少一条 Doris 3.x 数据源的规则任务，且存在校验通过和校验失败的实例记录"
+            }
+          ]
+        },
+        {
+          "name": "规则任务配置",
+          "sub_groups": [
+            {
+              "name": "单表",
+              "test_cases": [
+                {
+                  "title": "【P0】验证单表校验-【表行数-过滤条件】校验结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择doris表 规则选择表行数，过滤条件：part_date='${utc0yyyy_MM_dd_1d}'，配置固定值=5",
+                      "expected": "校验通过"
+                    },
+                    {
+                      "step": "立即运行查看结果",
+                      "expected": "校验通过"
+                    },
+                    {
+                      "step": "修改规则，配置固定值>5",
+                      "expected": "编辑成功"
+                    },
+                    {
+                      "step": "立即运行查看结果",
+                      "expected": "校验不通过，展示每天写入的5条数据"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\nDROP TABLE IF EXISTS doris_test;\nCREATE TABLE IF NOT EXISTS doris_test (\n    id INT,\n    name STRING,\n    age INT\n)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n\n该表每天固定写入5条数据"
+                },
+                {
+                  "title": "【P0】验证「规则任务配置」中 Doris 3.x 数据源 「完整性校验-字段级-单字段」功能正常",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产】-【数据质量】-【规则任务配置】页面",
+                      "expected": "成功进入【规则任务配置】页面，规则任务列表正常加载，无报错"
+                    },
+                    {
+                      "step": "点击「新建监控规则」按钮，进入监控规则配置页面",
+                      "expected": "成功进入监控规则配置页面，规则配置表单正常加载，无报错"
+                    },
+                    {
+                      "step": "配置「数据源」「数据库」「数据表」等信息，选择【完整性校验】规则",
+                      "expected": "选择成功，展示【完整性校验】规则配置项"
+                    },
+                    {
+                      "step": "「校验类型」选择「字段级」 「字段」选择「is_certific」 「统计函数」 选择「空值数」 「期望值」选择「=1」 「过滤条件」 无 「强弱规则」选择「弱规则」 「规则描述」输入「测试规则」",
+                      "expected": "配置完成"
+                    },
+                    {
+                      "step": "点击「保存」按钮",
+                      "expected": "规则配置保存正确"
+                    },
+                    {
+                      "step": "点击「下一步」，「调度属性」默认配置",
+                      "expected": "调度属性配置完成"
+                    },
+                    {
+                      "step": "点击「完成」按钮",
+                      "expected": "规则保存成功"
+                    },
+                    {
+                      "step": "立即运行",
+                      "expected": "任务实例状态由「运行中」 > 「校验通过」"
+                    },
+                    {
+                      "step": "进入「规则任务配置」页面, 重新编辑任务规则, 将「期望值」改为「=0」, 其他保持不变, 重新运行",
+                      "expected": "1) 任务实例状态由「运行中」 > 「校验异常」 2) 任务实例详情页面显示「校验未通过」标识, 可支持查看明细"
+                    },
+                    {
+                      "step": "点击「查看明细」",
+                      "expected": "展示is_certific为--的行记录"
+                    },
+                    {
+                      "step": "进入「离线开发-周期任务」页面, 执行DROP语句删除vehicle_info_part6表后, 返回资产平台重新运行规则任务",
+                      "expected": "1) 任务实例状态由「运行中」 > 「校验异常」 2) 任务实例详情页面显示「校验失败」标识, 可支持查看日志"
+                    },
+                    {
+                      "step": "点击「查看日志」",
+                      "expected": "表已删除, Unknown table 'vehicle_info_part6'"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n「数据资产-平台管理-数据源管理」中已存在Doris 3.x数据源并且已授权.\n数据源下存在Doirs表, 可进入离线平台中创建并执行DorisSQL任务:\n\nDROP TABLE IF EXISTS vehicle_info_part6;\n\nCREATE TABLE vehicle_info_part6 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part6 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part6;"
+                },
+                {
+                  "title": "【P1】验证「规则任务配置」中 Doris 3.x 数据源 「完整性校验-字段级-多字段」功能正常",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择doris表 规则选择完整性校验-字段级，选择字段id、age",
+                      "expected": "新增【字段间规则逻辑】下拉框，值为and/or"
+                    },
+                    {
+                      "step": "选择and-空值数-固定值>1,保存后立即运行",
+                      "expected": "运行不通过"
+                    },
+                    {
+                      "step": "修改规则and-空值数-固定值>=1,保存后立即运行",
+                      "expected": "运行通过"
+                    },
+                    {
+                      "step": "修改规则or-空值数-固定值>1,保存后立即运行",
+                      "expected": "运行通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\nDROP TABLE IF EXISTS doris_test;\nCREATE TABLE IF NOT EXISTS doris_test (\n    id INT,\n    name STRING,\n    age INT\n)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n\ninsert into doris_test values (null,'zx',18),(null,'ls',19),(3,'ww',null)"
+                },
+                {
+                  "title": "【P1】验证「规则任务配置」中 Doris 3.x 数据源 「完整性校验-表级」功能正常",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "进入【数据资产】-【数据质量】-【规则任务配置】页面",
+                      "expected": "成功进入【规则任务配置】页面，规则任务列表正常加载，无报错"
+                    },
+                    {
+                      "step": "点击「新建监控规则」按钮，进入监控规则配置页面",
+                      "expected": "成功进入监控规则配置页面，规则配置表单正常加载，无报错"
+                    },
+                    {
+                      "step": "配置「数据源」「数据库」「数据表」等信息，选择【完整性校验】规则",
+                      "expected": "选择成功，展示【完整性校验】规则配置项"
+                    },
+                    {
+                      "step": "「校验类型」选择「表级」 「统计函数」 选择「表行数」 「过滤条件」 无 「校验方法」选择「固定值」 「期望值」选择「>5」 「强弱规则」选择「弱规则」 「规则描述」输入「测试规则」",
+                      "expected": "配置完成"
+                    },
+                    {
+                      "step": "点击「保存」按钮",
+                      "expected": "规则配置保存正确"
+                    },
+                    {
+                      "step": "点击「下一步」，「调度属性」默认配置",
+                      "expected": "调度属性配置完成"
+                    },
+                    {
+                      "step": "点击「完成」按钮",
+                      "expected": "规则保存成功"
+                    },
+                    {
+                      "step": "立即运行、周期运行",
+                      "expected": "任务实例状态由「运行中」 > 「校验通过」"
+                    },
+                    {
+                      "step": "进入「规则任务配置」页面, 重新编辑任务规则, 将「期望值」改为「<5」, 其他保持不变, 重新运行",
+                      "expected": "任务实例详情页面显示「校验未通过」标识"
+                    },
+                    {
+                      "step": "进入「离线开发-周期任务」页面, 执行DROP语句删除vehicle_info_part6表后, 返回资产平台重新运行规则任务",
+                      "expected": "1) 任务实例状态由「运行中」 > 「校验异常」 2) 任务实例详情页面显示「校验失败」标识, 可支持查看日志"
+                    },
+                    {
+                      "step": "点击「查看日志」",
+                      "expected": "表已删除, Unknown table 'vehicle_info_part6'"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n「数据资产-平台管理-数据源管理」中已存在Doris 3.x数据源并且已授权.\n数据源下存在Doirs表, 可进入离线平台中创建并执行DorisSQL任务:\n\nDROP TABLE IF EXISTS vehicle_info_part6;\n\nCREATE TABLE vehicle_info_part6 (\n  vin           VARCHAR(64) COMMENT '车辆唯一识别码',\n  car_series    STRING COMMENT '车系',\n  car_power     STRING COMMENT '动力类型',\n  car_config    STRING COMMENT '车型配置',\n  car_endurance STRING COMMENT '续航类型',\n  drive_type    STRING COMMENT '驱动形式',\n  car_equipment STRING COMMENT '车辆配置版本',\n  is_certific   INT COMMENT '是否认证',\n  delivery_time DATE COMMENT '交付日期'\n)\nENGINE=OLAP\nDUPLICATE KEY(vin)\nPARTITION BY RANGE(delivery_time) (\n  PARTITION p20251001 VALUES [('2025-10-01'), ('2025-10-02')),\n  PARTITION p20251002 VALUES [('2025-10-02'), ('2025-10-03'))\n)\nDISTRIBUTED BY HASH(vin) BUCKETS 10\nPROPERTIES (\n  replication_num = 1\n);\n-- p20251001 分区（2025-10-01）\nINSERT INTO vehicle_info_part6 VALUES\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',0,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200004','追光','EV','H53a','常规','四驱','N3',NULL,'2025-10-01'),\n('LDP91C60PE200005','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200001','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200002','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01'),\n('LDP91C60PE200003','追光','EV','H53a','常规','四驱','N3',1,'2025-10-01');\n\nSELECT * FROM vehicle_info_part6;"
+                },
+                {
+                  "title": "【P0】验证单表校验-【准确性校验】结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择doris表 规则选择准确性校验，分别创建求和、求平均、负值比、零值比、正值比的子规则，配置使校验通过",
+                      "expected": "新建成功，规则任务列表中新增一条记录"
+                    },
+                    {
+                      "step": "点击「立即运行」按钮，等待运行结束后查看任务实例结果",
+                      "expected": "任务实例状态为「校验通过」，各子规则的实际值与期望值匹配"
+                    },
+                    {
+                      "step": "编辑该规则，修改期望值配置使各子规则校验不通过，点击「保存」",
+                      "expected": "编辑成功，规则配置信息更新"
+                    },
+                    {
+                      "step": "再次点击「立即运行」按钮，等待运行结束后查看任务实例结果",
+                      "expected": "任务实例状态为「校验未通过」，各子规则的实际值与期望值不匹配，详情中可查看具体不通过的子规则"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已在 Doris 3.x 数据源中创建测试表并写入测试数据\n3、已进入【数据资产】-【数据质量】-【规则任务配置】页面"
+                },
+                {
+                  "title": "【P0】验证单表校验-【规范性校验】结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择doris表 规则选择规范性校验，分别创建取值范围、枚举范围、枚举个数、身份证号、手机号、邮箱、最大长度、最小长度、字符串长度、数据精度、空值数、重复数、枚举值的子规则，配置使校验通过",
+                      "expected": "新建成功，规则任务列表中新增一条记录"
+                    },
+                    {
+                      "step": "点击「立即运行」按钮，等待运行结束后查看任务实例结果",
+                      "expected": "任务实例状态为「校验通过」，各子规则的实际值与期望值匹配"
+                    },
+                    {
+                      "step": "编辑该规则，修改期望值配置使各子规则校验不通过，点击「保存」",
+                      "expected": "编辑成功，规则配置信息更新"
+                    },
+                    {
+                      "step": "再次点击「立即运行」按钮，等待运行结束后查看任务实例结果",
+                      "expected": "任务实例状态为「校验未通过」，各子规则的实际值与期望值不匹配，详情中可查看具体不通过的子规则"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已在 Doris 3.x 数据源中创建测试表并写入包含各类规范性场景的测试数据\n3、已进入【数据资产】-【数据质量】-【规则任务配置】页面"
+                },
+                {
+                  "title": "【P0】验证单表校验-【唯一性校验】结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择doris表 规则选择唯一性校验，分别创建重复数、重复率、非重复个数、非重复占比的子规则，配置使校验通过",
+                      "expected": "新建成功，规则任务列表中新增一条记录"
+                    },
+                    {
+                      "step": "点击「立即运行」按钮，等待运行结束后查看任务实例结果",
+                      "expected": "任务实例状态为「校验通过」，各子规则的实际值与期望值匹配"
+                    },
+                    {
+                      "step": "编辑该规则，修改期望值配置使各子规则校验不通过，点击「保存」",
+                      "expected": "编辑成功，规则配置信息更新"
+                    },
+                    {
+                      "step": "再次点击「立即运行」按钮，等待运行结束后查看任务实例结果",
+                      "expected": "任务实例状态为「校验未通过」，各子规则的实际值与期望值不匹配，详情中可查看具体不通过的子规则"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已在 Doris 3.x 数据源中创建测试表并写入包含重复数据的测试数据\n3、已进入【数据资产】-【数据质量】-【规则任务配置】页面"
+                },
+                {
+                  "title": "【P0】验证单表校验-【自定义sql-单表逻辑】结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择前置中的doris表 规则选择自定义sql，输入样例sql，固定值<10000",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "立即运行查看结果",
+                      "expected": "结果正确"
+                    },
+                    {
+                      "step": "修改规则，配置使其校验不通过",
+                      "expected": "编辑成功"
+                    },
+                    {
+                      "step": "立即运行查看结果",
+                      "expected": "结果正确"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\ndoris数据源已存在表\nDROP TABLE IF EXISTS doris_test;\nCREATE TABLE IF NOT EXISTS doris_test (\n    id INT,\n    name STRING,\n    age INT\n)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\ninsert into doris_test values(1,'qq',11);\nselect * from doris_test;\n\n\n样例一：\nselect * from doris\n\n样例二：\nselect id,name,age from doris\n\n样例三：\nselect id,name from doris\n\n样例四：\nselect id，name,1 from doris\n\n样例五：\nselect id，name，SUM(id) from doris"
+                },
+                {
+                  "title": "【P0】验证单表校验-【自定义sql-多表逻辑】结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择前置中的doris表 规则选择自定义sql，输入sql使校验通过，如：select \\* from doris;固定值<10000",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "立即运行查看结果",
+                      "expected": "结果正确"
+                    },
+                    {
+                      "step": "修改规则，配置使其校验不通过",
+                      "expected": "编辑成功"
+                    },
+                    {
+                      "step": "立即运行查看结果",
+                      "expected": "结果正确"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n-- 创建部门表\nCREATE TABLE departments (\n    department_id INT PRIMARY KEY,\n    department_name VARCHAR(100) NOT NULL,\n    location VARCHAR(100),\n    manager_id INT,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n)DISTRIBUTED BY HASH(department_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 创建员工表\nCREATE TABLE employees (\n    employee_id INT PRIMARY KEY,\n    employee_name VARCHAR(100) NOT NULL,\n    department_id INT,\n    salary DECIMAL(10, 2),\n    hire_date DATE,\n    email VARCHAR(100),\n    FOREIGN KEY (department_id) REFERENCES departments(department_id)\n)DISTRIBUTED BY HASH(employee_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO departments (department_id, department_name, location) VALUES\n(1, '技术部', '北京'),\n(2, '销售部', '上海'),\n(3, '市场部', '广州'),\n(4, '人力资源部', '深圳'),\n(5, '财务部', '北京');\n\nINSERT INTO employees (employee_id, employee_name, department_id, salary, hire_date, email) VALUES\n(101, '张三', 1, 8000.00, '2023-01-15', 'zhangsan@example.com'),\n(102, '李四', 1, 7500.00, '2023-03-20', 'lisi@example.com'),\n(103, '王五', 2, 6000.00, '2023-02-10', 'wangwu@example.com'),\n(104, '赵六', 2, 5500.00, '2023-04-05', 'zhaoliu@example.com'),\n(105, '钱七', 3, 4800.00, '2023-05-12', 'qianqi@example.com'),\n(106, '孙八', 4, 9000.00, '2023-01-08', 'sunba@example.com'),\n(107, '周九', 1, 8500.00, '2023-06-25', 'zhoujiu@example.com'),\n(108, '吴十', 5, 7000.00, '2023-03-18', 'wushi@example.com'),\n(109, '郑十一', 3, 5200.00, '2023-07-30', 'zhengshiyi@example.com'),\n(110, '王十二', NULL, 6500.00, '2023-08-14', 'wangshier@example.com');\n\n\n\n样例一：\nSELECT\n    e.employee_id,\n    e.employee_name,\n    e.salary,\n    d.department_name,\n    d.location\nFROM\n    employees e\nINNER JOIN\n    departments d ON e.department_id = d.department_id\nWHERE\n    e.salary > 5000\nORDER BY\n    e.salary DESC;"
+                },
+                {
+                  "title": "【P1】验证【单表-数据预览】结果正确",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建单表校验，选择前置中的doris表，点击数据预览，查看结果",
+                      "expected": "数据预览展示三条数据，数据正确"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\ndoris数据源存在表：\n建表语句：\ndrop table if exists doris_demo_data_types_source;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris_demo_data_types_source VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);新建多表比对，左表选择前置中的表doris_demo_data_types_source，点击数据预览查看结果\n\t数据预览展示三条数据，数据正确"
+                },
+                {
+                  "title": "【P0】验证周期调度-【立即生成】功能正常",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择doris表 规则选择完整性校验-字段级，涵盖字段级下的所有子规则类型，配置使校验通过 调度时间为17分钟后，调度方式：立即生成",
+                      "expected": "新建成功，规则任务列表中新增一条记录"
+                    },
+                    {
+                      "step": "17分钟后，进入【质量实例】页面查看该任务的实例记录",
+                      "expected": "生成一条实例，状态为「运行中」"
+                    },
+                    {
+                      "step": "等待运行结束后查看任务实例详情",
+                      "expected": "任务实例状态为「校验通过」，各子规则的实际值与期望值匹配"
+                    },
+                    {
+                      "step": "第二天进入【质量实例】页面查看该任务",
+                      "expected": "周期时间自动生成一条新实例，运行后状态为「校验通过」"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已在 Doris 3.x 数据源中创建测试表并写入测试数据\n3、已进入【数据资产】-【数据质量】-【规则任务配置】页面"
+                },
+                {
+                  "title": "【P0】验证周期调度-【T+1】功能正常",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表规则，选择doris表 规则选择完整性校验-字段级，涵盖字段级下的所有子规则类型，配置使校验通过 调度时间为17分钟后，调度方式：T+1",
+                      "expected": "新建成功，规则任务列表中新增一条记录"
+                    },
+                    {
+                      "step": "17分钟后，进入【质量实例】页面查看该任务",
+                      "expected": "该任务无实例生成（T+1模式当天不触发）"
+                    },
+                    {
+                      "step": "第二天进入【质量实例】页面查看该任务",
+                      "expected": "周期时间自动生成一条实例，状态为「运行中」或已完成"
+                    },
+                    {
+                      "step": "等待运行结束后查看任务实例详情",
+                      "expected": "任务实例状态为「校验通过」，各子规则的实际值与期望值匹配"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已在 Doris 3.x 数据源中创建测试表并写入测试数据\n3、已进入【数据资产】-【数据质量】-【规则任务配置】页面"
+                }
+              ]
+            },
+            {
+              "name": "多表",
+              "test_cases": [
+                {
+                  "title": "【P1】验证【多表-同源比对】功能正常",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建多表比对，左表选择前置中的表doris_demo_data_types_source",
+                      "expected": "右表数据源默认回填左表选择的数据源，置灰不可修改"
+                    },
+                    {
+                      "step": "右表选择前置中的表doris_demo1_data_types_source，点击下一步",
+                      "expected": "进入选择字段步骤"
+                    },
+                    {
+                      "step": "同名映射",
+                      "expected": "1）字段类型一致的进行映射 2）不一致的不映射并提示：主表与对照表字段类型不一致，无法比对"
+                    },
+                    {
+                      "step": "勾选user_id为主键",
+                      "expected": "勾选成功"
+                    },
+                    {
+                      "step": "勾选【记录数百分比差异】-0%",
+                      "expected": "勾选成功"
+                    },
+                    {
+                      "step": "创建规则",
+                      "expected": "创建成功"
+                    },
+                    {
+                      "step": "立即运行规则，查看结果",
+                      "expected": "质量实例校验不通过"
+                    },
+                    {
+                      "step": "编辑规则，修改【记录数百分比差异】-100%",
+                      "expected": "修改成功"
+                    },
+                    {
+                      "step": "立即运行规则，查看结果",
+                      "expected": "质量实例校验通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\ndoris数据源已存在表doris_demo_data_types_source、doris_demo1_data_types_source\n\n建表语句：\ndrop table if exists doris_demo_data_types_source;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris_demo_data_types_source VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n\n\n\n\ndrop table if exists doris_demo1_data_types_source;\nCREATE TABLE IF NOT EXISTS doris_demo1_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date VARCHAR(20) COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age INT COMMENT \"年龄\",\n    status INT COMMENT \"状态码\",\n    price VARCHAR(20) COMMENT \"价格\",\n    weight VARCHAR(20) COMMENT \"重量\",\n    rating VARCHAR(20) COMMENT \"评分\",\n    description VARCHAR(500) COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time VARCHAR(30) COMMENT \"创建时间\",\n    birth_date VARCHAR(20) COMMENT \"出生日期\",\n    is_active VARCHAR(10) COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount INT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris_demo_data_types_source VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99, 65, 4,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    'true', '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199, 55, 4,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    'true', '娱乐', 2500, 8\n)"
+                },
+                {
+                  "title": "【P1】验证【多表-doris-mysql跨源比对】功能正常",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建多表比对，左表选择前置中的表doris_demo_data_types_source,过滤条件为part_date='${utc0yyyy_MM_dd_1d}'",
+                      "expected": "右表数据源不会默认回填左表选择的数据源，下拉框允许选择所有授权给质量项目的数据源"
+                    },
+                    {
+                      "step": "同名映射",
+                      "expected": "1）字段类型一致的进行映射 2）不一致的不映射并提示：主表与对照表字段类型不一致，无法比对"
+                    },
+                    {
+                      "step": "勾选user_id为主键",
+                      "expected": "勾选成功"
+                    },
+                    {
+                      "step": "勾选【记录数百分比差异】-0%",
+                      "expected": "勾选成功"
+                    },
+                    {
+                      "step": "创建规则",
+                      "expected": "创建成功"
+                    },
+                    {
+                      "step": "立即运行规则，查看结果",
+                      "expected": "质量实例校验不通过"
+                    },
+                    {
+                      "step": "编辑规则，修改【记录数百分比差异】-50%",
+                      "expected": "修改成功"
+                    },
+                    {
+                      "step": "立即运行规则，查看结果",
+                      "expected": "质量实例校验通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表\n建表语句：\ndrop table if exists doris_demo_data_types_source;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris_demo_data_types_source VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n\n3、mysql数据源已存在表：\n-- 删除已存在的表（如果存在）\nDROP TABLE IF EXISTS mysql_demo_data_types_source;\nCREATE TABLE IF NOT EXISTS mysql_demo_data_types_source (\n    user_id VARCHAR(20) COMMENT '用户ID',\n    created_date VARCHAR(20) COMMENT '创建日期',\n    name VARCHAR(50) COMMENT '姓名',\n    age VARCHAR(10) COMMENT '年龄',\n    status VARCHAR(10) COMMENT '状态码',\n    price VARCHAR(20) COMMENT '价格',\n    weight VARCHAR(20) COMMENT '重量',\n    rating VARCHAR(20) COMMENT '评分',\n    description VARCHAR(500) COMMENT '描述信息',\n    gender VARCHAR(10) COMMENT '性别',\n    department VARCHAR(20) COMMENT '部门',\n    created_time VARCHAR(30) COMMENT '创建时间',\n    birth_date VARCHAR(20) COMMENT '出生日期',\n    is_active VARCHAR(10) COMMENT '是否激活(是/否)',\n    tags VARCHAR(100) COMMENT '标签',\n    total_amount VARCHAR(20) COMMENT '总金额',\n    order_count VARCHAR(10) COMMENT '订单数量',\n    PRIMARY KEY (user_id)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MySQL数据源表';\n\nINSERT INTO mysql_demo_data_types_source VALUES\n('1001', '2024-01-15', '张三', '25', '1', '99.99', '65.5', '4.5', '技术部员工', '男', '技术部', '2024-01-15 10:30:00', '1998-05-20', '是', '科技,财经', '1500', '5'),\n('1002', '2024-01-16', '李四', '30', '2', '199.50', '55.2', '4.8', '市场部经理', '女', '市场部', '2024-01-16 14:20:00', '1993-12-10', '是', '娱乐', '2500', '8')"
+                },
+                {
+                  "title": "【P1】验证【多表-数据预览】结果正确",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建多表比对，左表选择前置中的表doris_demo_data_types_source，点击数据预览查看结果",
+                      "expected": "数据预览展示三条数据，数据正确"
+                    },
+                    {
+                      "step": "右表选择前置中的表doris_demo_data_types_source，点击数据预览查看结果",
+                      "expected": "数据预览展示三条数据，数据正确"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\ndoris数据源存在表：\n建表语句：\ndrop table if exists doris_demo_data_types_source;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris_demo_data_types_source VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);新建多表比对，左表选择前置中的表doris_demo_data_types_source，点击数据预览查看结果\n\t数据预览展示三条数据，数据正确"
+                },
+                {
+                  "title": "【P1】验证【多表-doris-doris跨源比对】功能正常",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建多表比对，选择前置中的表doris1、doris2,过滤条件都为part_date='${utc0yyyy_MM_dd_1d}'",
+                      "expected": "进入选择字段页面"
+                    },
+                    {
+                      "step": "同名映射，勾选id为主键",
+                      "expected": "勾选成功"
+                    },
+                    {
+                      "step": "勾选【记录数百分比差异】-34%",
+                      "expected": "勾选成功"
+                    },
+                    {
+                      "step": "创建规则",
+                      "expected": "创建成功"
+                    },
+                    {
+                      "step": "立即运行规则，查看结果",
+                      "expected": "质量实例校验不通过"
+                    },
+                    {
+                      "step": "编辑规则，修改【记录数百分比差异】-50%",
+                      "expected": "修改成功"
+                    },
+                    {
+                      "step": "立即运行规则，查看结果",
+                      "expected": "质量实例校验通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\nDROP TABLE IF EXISTS doris1;\nCREATE TABLE doris1 (\n    id INT,\n    dt DATE,\n    name VARCHAR(20)\n)\nENGINE=olap\nDUPLICATE KEY(id, dt)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES (\"replication_num\" = \"1\");\nINSERT INTO doris1 VALUES\n(1,'zx', DATE_SUB(CURDATE(), INTERVAL 1 DAY)),\n(3,'zx', CURDATE()),\n(4,'ls', CURDATE());\n\n\nDROP TABLE IF EXISTS doris2;\nCREATE TABLE doris2 (\n    id INT,\n    dt DATE,\n    name VARCHAR(20)\n)\nENGINE=olap\nDUPLICATE KEY(id, dt)\nDISTRIBUTED BY HASH(id) BUCKETS 10\nPROPERTIES (\"replication_num\" = \"1\");\nINSERT INTO doris2 VALUES\n(1,'zx', DATE_SUB(CURDATE(), INTERVAL 1 DAY)),\n(3,'zx', CURDATE()),\n(4,'ww', CURDATE());"
+                }
+              ]
+            },
+            {
+              "name": "规则集",
+              "test_cases": [
+                {
+                  "title": "【P1】验证【规则集】功能正常",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建规则集，选择前置的doris表，点击下一步",
+                      "expected": "进入规则配置"
+                    },
+                    {
+                      "step": "下载规则模板，填写前置中的规则sql，上传",
+                      "expected": "上传成功,规则导入正确"
+                    },
+                    {
+                      "step": "配置周期调度，点击创建",
+                      "expected": "创建成功"
+                    },
+                    {
+                      "step": "立即执行，查看运行结果",
+                      "expected": "运行结果正确"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表：\n建表语句：\ndrop table if exists doris_demo_data_types_source;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris_demo_data_types_source VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n规则集sql：\n\n1）select * from doris_demo_data_types_source；\n2）select user_id，name from doris_demo_data_types_source；\n3）select * from doris_demo_data_types_source where user_id >1005;\n5、select 1 from doris_demo_data_types_source;"
+                }
+              ]
+            },
+            {
+              "name": "联动",
+              "test_cases": [
+                {
+                  "title": "【P1】【联动】验证质量和离线绑定，单规则包-【表行数-校验通过】结果正确",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建单表校验，选择表doris2 规则：选择表行数固定值=3，弱规则 调度：自动关联离线调度周期。规则包个数1 绑定任务：前置条件doris2doris",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "等待离线实例运行，查看质量实例",
+                      "expected": "质量新增一条实例，状态为运行中"
+                    },
+                    {
+                      "step": "运行结束后，查看离线和质量实例的运行结果",
+                      "expected": "1）质量实例：校验通过 2）离线实例：运行成功"
+                    },
+                    {
+                      "step": "进入离线，对doris2doris任务补数据-当前任务及下游，查看结果",
+                      "expected": "同步骤2-3"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表\n建表语句：\ndrop table if exists doris1;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris1 VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n3、离线已存在doris2doris数据同步任务：doris1-->doris2 覆盖\n\n4、doris2为空表，doris1中有3条表数据，覆盖模式"
+                },
+                {
+                  "title": "【P1】【联动】验证质量和离线绑定，单规则包-【表行数-弱规则-校验不通过】结果正确",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "新建单表校验，选择表doris2 规则：选择表行数固定值固定值>3,弱规则 调度：自动关联离线调度周期。规则包个数1 绑定任务：前置条件doris2doris",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "等待离线实例运行，查看质量实例",
+                      "expected": "质量新增一条实例，状态为运行中"
+                    },
+                    {
+                      "step": "运行结束后，查看离线和质量实例的运行结果",
+                      "expected": "1）质量实例：校验未通过，查看明细展示doris1中的三条数据 2）离线实例：运行成功"
+                    },
+                    {
+                      "step": "进入「离线开发-运维中心-周期任务」，对doris2doris任务补当前数据及下游，查看结果",
+                      "expected": "1）补数据质量工作流中有1个规则包，任务都运行成功 2）质量生成一条实例，校验未通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表\n建表语句：\ndrop table if exists doris1;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris1 VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n3、离线已存在doris2doris数据同步任务：doris1-->doris2 覆盖\n\n4、doris2为空表，doris1中有3条表数据，覆盖模式"
+                },
+                {
+                  "title": "【P0】【联动】验证质量和离线绑定，单规则包-【表行数-强规则-校验不通过】结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "修改质量规则，固定值>3,强规则",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "等待离线实例运行，查看质量实例",
+                      "expected": "质量新增一条实例，状态为运行中"
+                    },
+                    {
+                      "step": "运行结束后，查看离线和质量实例的运行结果",
+                      "expected": "1）质量实例：校验未通过，查看明细展示doris1中的三条数据 2）离线实例：运行失败，失败原因：上游质量任务失败"
+                    },
+                    {
+                      "step": "进入「离线开发-运维中心-周期任务」，对doris2doris任务补当前数据及下游，查看结果",
+                      "expected": "1）补数据质量工作流中有1个规则包，离线任务运行失败，报错质量任务校验不通过 2）质量生成一条实例，校验不通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表\n建表语句：\ndrop table if exists doris1;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris1 VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n3、离线已存在doris2doris数据同步任务：doris1-->doris2 覆盖\n\n4、doris2为空表，doris1中有3条表数据，覆盖模式"
+                },
+                {
+                  "title": "【P0】【联动】验证质量和离线绑定，单规则包-【表行数-添加过滤条件】-校验结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "新建单表校验，选择表doris2 规则：选择表行数固定值>0，强规则 过滤条件： time >= '${utc0yyyy_MM_dd_HH_3H_00_00}' and time <  '${utc0yyyy_MM_dd_HH_00_00}' 调度：自动关联离线调度周期。规则包个数1 绑定任务：前置条件doris2doris",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "等待离线实例运行，查看质量实例",
+                      "expected": "质量新增一条实例，状态为运行中"
+                    },
+                    {
+                      "step": "运行结束后，查看离线和质量实例的运行结果",
+                      "expected": "1）质量实例：校验通过 2）离线实例：运行成功"
+                    },
+                    {
+                      "step": "进入离线，对doris2doris任务补数据-当前任务及下游，查看结果",
+                      "expected": "同步骤2-3"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表\n建表语句：\ndrop table if exists doris1;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris1 VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n3、离线已存在doris2doris数据同步任务：doris1-->doris2 覆盖\n\n4、doris2为空表，doris1中有3条表数据，覆盖模式"
+                },
+                {
+                  "title": "【P1】【联动】验证质量和离线绑定，多规则包-【表行数-校验通过】-校验结果正确",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "进入「数据资产-数据质量」，新建单表校验，选择表doris2 规则：选择表行数固定值=3，弱规则。再任意添加其他两种类型的规则，使校验通过 调度：自动关联离线调度周期。规则包个数3 绑定任务：前置条件doris2doris",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "等待离线周期实例运行，进入「数据资产-数据质量-任务实例查询」",
+                      "expected": "页面生成一条实例，校验通过"
+                    },
+                    {
+                      "step": "进入「离线开发-运维中心-周期任务实例」",
+                      "expected": "离线任务运行成功"
+                    },
+                    {
+                      "step": "进入「离线开发-运维中心-周期任务」，对doris2doris任务补当前数据及下游，查看结果",
+                      "expected": "1）补数据质量工作流中有3个规则包，任务都运行成功 2）质量生成一条实例，校验通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表\n建表语句：\ndrop table if exists doris1;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris1 VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n3、离线已存在doris2doris数据同步任务：doris1-->doris2 覆盖\n\n4、doris2为空表，doris1中有3条表数据，覆盖模式"
+                },
+                {
+                  "title": "【P1】【联动】验证质量和离线绑定，多规则包-【表行数-弱规则-校验不通过】-校验结果正确",
+                  "priority": "P1",
+                  "steps": [
+                    {
+                      "step": "进入「数据资产-数据质量」，新建单表校验，选择表doris2 规则：选择表行数，固定值>3,弱规则。再任意添加其他两种类型的规则，使校验通过 调度：自动关联离线调度周期。规则包个数3 绑定任务：前置条件doris2doris",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "等待离线周期实例运行，进入「数据资产-数据质量-任务实例查询」",
+                      "expected": "1）页面生成一条实例，校验未通过 2）查看明细展示doris1中的三条数据"
+                    },
+                    {
+                      "step": "进入「离线开发-运维中心-周期任务实例」",
+                      "expected": "离线任务运行成功"
+                    },
+                    {
+                      "step": "进入「离线开发-运维中心-周期任务」，对doris2doris任务补当前数据及下游，查看结果",
+                      "expected": "1）补数据质量工作流中有3个规则包，任务都运行成功 2）质量生成一条实例，校验未通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表\n建表语句：\ndrop table if exists doris1;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris1 VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n3、离线已存在doris2doris数据同步任务：doris1-->doris2 覆盖\n\n4、doris2为空表，doris1中有3条表数据，覆盖模式"
+                },
+                {
+                  "title": "【P0】【联动】验证质量和离线绑定，多规则包-【表行数-强规则-校验不通过】-校验结果正确",
+                  "priority": "P0",
+                  "steps": [
+                    {
+                      "step": "进入「数据资产-数据质量」，新建单表校验，选择表doris2 规则：选择表行数，固定值>3,强规则。再任意添加其他两种类型的规则，使校验通过 调度：自动关联离线调度周期。规则包个数3 绑定任务：前置条件doris2doris",
+                      "expected": "新建成功"
+                    },
+                    {
+                      "step": "等待离线周期实例运行，进入「数据资产-数据质量-任务实例查询」",
+                      "expected": "1）页面生成一条实例，校验未通过 2）查看明细展示doris1中的三条数据"
+                    },
+                    {
+                      "step": "进入「离线开发-运维中心-周期任务实例」",
+                      "expected": "离线任务运行失败"
+                    },
+                    {
+                      "step": "进入「离线开发-运维中心-周期任务」，对doris2doris任务补当前数据及下游，查看结果",
+                      "expected": "1）补数据质量工作流中有3个规则包，离线任务运行失败，报错质量任务校验不通过 2）质量生成一条实例，校验不通过"
+                    }
+                  ],
+                  "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、doris数据源已存在表\n建表语句：\ndrop table if exists doris1;\nCREATE TABLE IF NOT EXISTS doris_demo_data_types_source (\n    user_id BIGINT COMMENT \"用户ID\",\n    created_date DATE COMMENT \"创建日期\",\n    name VARCHAR(50) COMMENT \"姓名\",\n    age TINYINT COMMENT \"年龄\",\n    status SMALLINT COMMENT \"状态码\",\n    price DECIMAL(10, 2) COMMENT \"价格\",\n    weight FLOAT COMMENT \"重量\",\n    rating DOUBLE COMMENT \"评分\",\n    description STRING COMMENT \"描述信息\",\n    gender VARCHAR(10) COMMENT \"性别\",\n    department VARCHAR(20) COMMENT \"部门\",\n    created_time DATETIME COMMENT \"创建时间\",\n    birth_date DATE COMMENT \"出生日期\",\n    is_active BOOLEAN COMMENT \"是否激活\",\n    tags VARCHAR(100) COMMENT \"标签\",\n    total_amount BIGINT COMMENT \"总金额\",\n    order_count INT COMMENT \"订单数量\"\n)\nENGINE=olap\nDUPLICATE KEY(user_id, created_date, name)\nDISTRIBUTED BY HASH(user_id) BUCKETS 10\nPROPERTIES (\n    \"replication_num\" = \"1\"\n);\n\n-- 插入示例数据\nINSERT INTO doris1 VALUES\n(\n    1001, '2024-01-15', '张三', 25, 1,\n    99.99, 65.5, 4.5,\n    '技术部员工', '男', '技术部',\n    '2024-01-15 10:30:00', '1998-05-20',\n    true, '科技,财经', 1500, 5\n),\n(\n    1002, '2024-01-16', '李四', 30, 2,\n    199.50, 55.2, 4.8,\n    '市场部经理', '女', '市场部',\n    '2024-01-16 14:20:00', '1993-12-10',\n    true, '娱乐', 2500, 8\n),\n(\n    1003, '2024-01-17', '王五', 22, 0,\n    49.99, 70.1, 3.9,\n    '销售专员', '其他', '销售部',\n    '2024-01-17 16:45:00', '2001-08-25',\n    false, '科技,体育', 800, 3\n);\n\n3、离线已存在doris2doris数据同步任务：doris1-->doris2 覆盖\n\n4、doris2为空表，doris1中有3条表数据，覆盖模式"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "任务实例查询",
+          "test_cases": [
+            {
+              "title": "【P1】验证「任务实例查询」中 Doris 3.x 数据源任务实例的查询功能正常",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【数据质量】-【任务实例查询】页面，等待页面加载完成",
+                  "expected": "成功进入【任务实例查询】页面，任务实例列表正常加载，无报错"
+                },
+                {
+                  "step": "在页面顶部搜索框中输入表名/任务名称 vehicle_info，点击【查询】按钮，等待列表刷新",
+                  "expected": "查询出「表」的表名中所有包含 vehicle_info 的规则记录"
+                },
+                {
+                  "step": "清空所有查询条件，在搜索框中输入不存在的表名 nonexistent_table_xyz，点击【查询】按钮，等待列表刷新",
+                  "expected": "显示「暂无数据」"
+                },
+                {
+                  "step": "清空所有查询条件，在搜索框中输入表名 vehicle_info_part，在「修改人」下拉框中选择 admin@dtstack.com，点击【查询】按钮，等待列表刷新",
+                  "expected": "查询出表名包含 vehicle_info_part 且最近修改人为 admin@dtstack.com 的规则记录"
+                },
+                {
+                  "step": "清空所有查询条件，勾选「我收藏的表」复选框，点击【查询】按钮，等待列表刷新",
+                  "expected": "查询出操作中仅为「取消收藏」的表"
+                },
+                {
+                  "step": "清空所有查询条件，在分页组件中选择「10条/页」，等待列表刷新",
+                  "expected": "当前页面规则数量变更为10条"
+                },
+                {
+                  "step": "点击分页组件中的指定页码数字",
+                  "expected": "跳转至对应的页码页面，页面显示对应页的记录"
+                },
+                {
+                  "step": "点击分页组件中的「<」按钮",
+                  "expected": "向前翻页，显示上一页内容"
+                },
+                {
+                  "step": "点击分页组件中的「>」按钮",
+                  "expected": "向后翻页，显示下一页内容"
+                },
+                {
+                  "step": "在分页组件中切换每页展示数量",
+                  "expected": "每页展示记录数变更为切换后的数量"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用 admin 账号登录系统\n2、数据质量规则任务已运行过，存在与 Doris 3.x 数据源相关的任务实例记录，包含：\n   - 表名包含「vehicle_info」的规则任务实例\n   - 表名包含「vehicle_info_part」的规则任务实例，最近修改人为 admin@dtstack.com"
+            }
+          ]
+        },
+        {
+          "name": "质量报告",
+          "test_cases": [
+            {
+              "title": "【P1】验证「质量报告」中 Doris 3.x 数据源质量报告的查询功能正常",
+              "priority": "P1",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【数据质量】-【质量报告】页面，等待页面加载完成",
+                  "expected": "成功进入【质量报告】页面，报告列表正常加载，无报错"
+                },
+                {
+                  "step": "在页面顶部「报告名称」输入框中输入 vehicle_info，点击【查询】按钮，等待列表刷新",
+                  "expected": "查询出报告名称中所有包含 vehicle_info 的记录"
+                },
+                {
+                  "step": "清空所有查询条件，在「表名」输入框中输入 vehicle_info_part，在「修改人」下拉框中选择 admin@dtstack.com，点击【查询】按钮，等待列表刷新",
+                  "expected": "查询出表名包含 vehicle_info_part 且最近修改人为 admin@dtstack.com 的规则记录"
+                },
+                {
+                  "step": "清空所有查询条件，在分页组件中选择「10条/页」，等待列表刷新",
+                  "expected": "当前页面规则数量变更为10条"
+                },
+                {
+                  "step": "点击分页组件中的指定页码数字",
+                  "expected": "跳转至对应的页码页面，页面显示对应页的记录"
+                },
+                {
+                  "step": "点击分页组件中的「<」按钮",
+                  "expected": "向前翻页，显示上一页内容"
+                },
+                {
+                  "step": "点击分页组件中的「>」按钮",
+                  "expected": "向后翻页，显示下一页内容"
+                },
+                {
+                  "step": "在分页组件中切换每页展示数量",
+                  "expected": "每页展示记录数变更为切换后的数量"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用 admin 账号登录系统\n2、数据质量规则任务已运行过，已生成质量报告记录，包含：\n   - 报告名称包含「vehicle_info」的报告记录\n   - 表名包含「vehicle_info_part」、最近修改人为 admin@dtstack.com 的报告记录"
+            },
+            {
+              "title": "【P0】验证「质量报告」中 Doris 3.x 功能正常",
+              "priority": "P0",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【数据质量】-【规则任务配置】页面",
+                  "expected": "成功进入【规则任务配置】页面，规则任务列表正常加载，无报错"
+                },
+                {
+                  "step": "点击「新建监控规则」按钮，进入监控规则配置页面",
+                  "expected": "成功进入监控规则配置页面，规则配置表单正常加载，无报错"
+                },
+                {
+                  "step": "配置「数据源」「数据库」「数据表」等信息，选择【完整性校验】规则",
+                  "expected": "选择成功，展示【完整性校验】规则配置项"
+                },
+                {
+                  "step": "「校验类型」选择「表级」 「统计函数」 选择「表行数」 「过滤条件」 无 「校验方法」选择「固定值」 「期望值」选择「>5」 「强弱规则」选择「弱规则」 「规则描述」输入「测试规则」",
+                  "expected": "配置完成"
+                },
+                {
+                  "step": "点击「保存」按钮",
+                  "expected": "规则配置保存正确"
+                },
+                {
+                  "step": "点击「下一步」，配置「调度属性」",
+                  "expected": "调度属性配置完成"
+                },
+                {
+                  "step": "点击「完成」按钮",
+                  "expected": "规则保存成功"
+                },
+                {
+                  "step": "立即运行、周期运行",
+                  "expected": "任务实例状态由「运行中」 > 「校验通过」"
+                },
+                {
+                  "step": "进入【数据资产】-【数据质量】-【质量报告】页面",
+                  "expected": "任务运行完成后, 自动生成对应质量报告"
+                },
+                {
+                  "step": "点击查看报告",
+                  "expected": "下钻到数据表质量报告页面, 数据显示正常"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n2、已在 Doris 3.x 数据源中创建测试表并写入测试数据\n3、已进入【数据资产】-【数据质量】-【规则任务配置】页面"
+            }
+          ]
+        },
+        {
+          "name": "脏数据管理",
+          "test_cases": [
+            {
+              "title": "【P2】验证「脏数据管理」中 Doris 3.x 数据源处理脏数据功能正常",
+              "priority": "P2",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【数据质量】-【脏数据管理】页面",
+                  "expected": "成功进入【脏数据管理】页面，授权的质量项目的数据源默认开启脏数据存储，无报错"
+                },
+                {
+                  "step": "点击「编辑」按钮, 「数据存储时效」改为1天后确定",
+                  "expected": "修改成功"
+                },
+                {
+                  "step": "进入「规则任务配置」页面, 点击「新建监控规则」按钮，进入监控规则配置页面",
+                  "expected": "成功进入监控规则配置页面，规则配置表单正常加载，无报错"
+                },
+                {
+                  "step": "配置「数据源」「数据库」「数据表」等信息，选择【完整性校验】规则",
+                  "expected": "选择成功，展示【完整性校验】规则配置项"
+                },
+                {
+                  "step": "「校验类型」选择「字段级」 「字段」选择「vin」 「统计函数」 选择「空值数」 「期望值」选择「=0」 「过滤条件」 无 「强弱规则」选择「弱规则」 「规则描述」输入「测试规则」",
+                  "expected": "配置完成"
+                },
+                {
+                  "step": "保存后, 配置周期调度后完成新建监控规则",
+                  "expected": "规则添加成功"
+                },
+                {
+                  "step": "立即执行",
+                  "expected": "1) 执行成功, 任务实例的状态由运行中 > 校验失败 2) 脏数据表生成，且表数据正确"
+                },
+                {
+                  "step": "第二天查看该脏数据表",
+                  "expected": "该脏数据表被删除"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\nDoris 3.x 数据源已成功接入数据资产平台，并完成元数据同步配置；\n\n建表语句如下:\nCREATE TABLE IF NOT EXISTS vehicle_sales (\n    sale_id BIGINT COMMENT '销售记录ID',\n    vin VARCHAR(17) COMMENT '车辆VIN码',\n    model_name VARCHAR(50) COMMENT '车型名称',\n    sale_price DECIMAL(18,2) COMMENT '销售价格(万元)',\n    sale_date DATE COMMENT '销售日期',\n    dealer_name VARCHAR(100) COMMENT '经销商名称',\n    customer_name VARCHAR(50) COMMENT '客户姓名'\n)\nENGINE=OLAP\nDUPLICATE KEY(sale_id)\nDISTRIBUTED BY HASH(sale_id) BUCKETS 10\nPROPERTIES (\n    replication_num = 1);\n\nINSERT INTO vehicle_sales VALUES\n(1001, 'LFPHFDEB3R2S12345', '岚图FREE', 31.88, '2025-09-01', '武汉岚图中心', '张三'),\n(1002, 'LFPHFDEB3R2S12346', '岚图梦想家', 45.99, '2025-09-02', '北京岚图体验店', '李四');\n\nINSERT INTO vehicle_sales VALUES\n(1003, 'LFPHFDEB3R2S12347', '岚图追光', -5.00, '2025-09-03', '上海岚图空间', '王五'),  -- 价格非法\n(1004, '', '岚图FREE', 32.88, '2025-09-04', '广州岚图展厅', '赵六');               -- VIN为空"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "平台管理",
+      "pages": [
+        {
+          "name": "数据源管理",
+          "test_cases": [
+            {
+              "title": "【P0】验证 「元数据」中 Doris 3.x 从离线 Meta 到资产的自动引入与同步功能",
+              "priority": "P0",
+              "steps": [
+                {
+                  "step": "进入【离线开发】页面, 点击创建项目, 「计算引擎」中对接Doris 3.x集群, 其他必填项正常填写后, 点击「创建项目」",
+                  "expected": "离线项目创建成功"
+                },
+                {
+                  "step": "进入离线项目, 点击「数据源」",
+                  "expected": "1) 从数据开发界面切换到数据源界面, 展示已对接的数据源列表 2) 存在带Meta标识的Doris 3.x数据源记录"
+                },
+                {
+                  "step": "进入【数据资产】-【平台管理】-【数据源管理】页面，等待页面加载完成",
+                  "expected": "成功进入【数据源管理】页面，数据源列表正常加载，无报错；资产平台自动引入离线平台中的带 Meta 标识的 Doris 3.x 数据源，并且已授权给质量项目"
+                },
+                {
+                  "step": "进入【数据资产】-【元数据】-【元数据同步】页面，等待页面加载完成",
+                  "expected": "成功进入【元数据同步】页面，同步任务列表正常加载，无报错；自动为Doris 3.x数据源新增了一条周期同步任务，并且自动「立即同步」一次；周期同步任务配置为：数据库: doris_quality_project，数据表: 「全部」，调度周期为「周」"
+                }
+              ],
+              "preconditions": "前置条件\n1、使用账号 admin / 密码 Admin@123 登录系统\n控制台-多集群管理-计算组件中已配置Doris 3.x数据源"
+            },
+            {
+              "title": "【P0】验证「平台管理」中 Doris 3.x 数据源质量项目授权功能正常",
+              "priority": "P0",
+              "steps": [
+                {
+                  "step": "进入【数据资产】-【平台管理】-【数据源管理】页面，等待页面加载完成",
+                  "expected": "成功进入【数据源管理】页面，数据源列表正常加载，无报错"
+                },
+                {
+                  "step": "点击「引入数据源」",
+                  "expected": "弹出数据源选择弹窗，显示平台中所有还未被引入至资产平台的数据源列表"
+                },
+                {
+                  "step": "选择 doris_public_ds 数据源后引入",
+                  "expected": "doris_public_ds 成功引入至资产平台，数据源列表中出现该记录"
+                },
+                {
+                  "step": "点击「质量项目授权」, 选择质量项目后确定",
+                  "expected": "1) 质量项目授权成功 2) 资产平台其他模块都可以加载到该数据源"
+                },
+                {
+                  "step": "选择 doris_meta_ds 数据源后引入",
+                  "expected": "doris_meta_ds 成功引入至资产平台，数据源列表中出现该记录"
+                },
+                {
+                  "step": "点击「质量项目授权」, 选择质量项目后确定",
+                  "expected": "1) 质量项目授权成功 2) 资产平台其他模块都可以加载到该数据源"
+                }
+              ],
+              "preconditions": "前置条件\n1、「公共管理-数据源中心」已存在 Doris 3.x 数据源 doris_public_ds\n2、「离线开发」已存在 Meta 标识的 Doris 3.x 数据源 doris_meta_ds\n3、使用 admin 账号登录系统"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
