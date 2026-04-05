@@ -35,14 +35,14 @@
 
 ```typescript
 // META: {"id":"{{id}}","priority":"{{priority}}","title":"{{title}}"}
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.use({ storageState: '{{session_path}}' });
+test.use({ storageState: "{{session_path}}" });
 
-test.describe('{{suite_name}} - {{page}}', () => {
-  test('{{title}}', async ({ page }) => {
+test.describe("{{suite_name}} - {{page}}", () => {
+  test("{{title}}", async ({ page }) => {
     // 步骤1：{{steps[0].step}}
-    await page.goto('{{url}}');
+    await page.goto("{{url}}");
     await expect(page).toHaveTitle(/.+/);
 
     // 步骤N：对应步骤描述
@@ -88,58 +88,66 @@ test.describe('{{suite_name}} - {{page}}', () => {
 ### 常见 UI 模式
 
 **页面导航**：
+
 ```typescript
-await page.goto('{{url}}/path/to/page');
-await page.waitForLoadState('networkidle');
-await expect(page.getByRole('heading')).toBeVisible();
+await page.goto("{{url}}/path/to/page");
+await page.waitForLoadState("networkidle");
+await expect(page.getByRole("heading")).toBeVisible();
 ```
 
 **表单填写**：
+
 ```typescript
-await page.getByLabel('商品名称').fill('2026春季新款运动鞋');
-await page.getByLabel('商品分类').selectOption('运动鞋');
-await page.getByRole('button', { name: '提交' }).click();
+await page.getByLabel("商品名称").fill("2026春季新款运动鞋");
+await page.getByLabel("商品分类").selectOption("运动鞋");
+await page.getByRole("button", { name: "提交" }).click();
 ```
 
 **列表搜索**：
+
 ```typescript
-await page.getByPlaceholder('请输入搜索关键词').fill('测试数据');
-await page.getByRole('button', { name: '查询' }).click();
-await page.waitForLoadState('networkidle');
-await expect(page.locator('table tbody tr')).toHaveCount(1);
+await page.getByPlaceholder("请输入搜索关键词").fill("测试数据");
+await page.getByRole("button", { name: "查询" }).click();
+await page.waitForLoadState("networkidle");
+await expect(page.locator("table tbody tr")).toHaveCount(1);
 ```
 
 **弹窗确认**：
+
 ```typescript
-await page.getByRole('button', { name: '删除' }).click();
-await expect(page.getByRole('dialog')).toBeVisible();
-await page.getByRole('button', { name: '确认' }).click();
-await expect(page.getByText('删除成功')).toBeVisible();
+await page.getByRole("button", { name: "删除" }).click();
+await expect(page.getByRole("dialog")).toBeVisible();
+await page.getByRole("button", { name: "确认" }).click();
+await expect(page.getByText("删除成功")).toBeVisible();
 ```
 
 **表格数据验证**：
+
 ```typescript
-const firstRow = page.locator('table tbody tr').first();
-await expect(firstRow.locator('td').nth(0)).toContainText('期望值');
+const firstRow = page.locator("table tbody tr").first();
+await expect(firstRow.locator("td").nth(0)).toContainText("期望值");
 ```
 
 **消息提示验证**：
+
 ```typescript
-await expect(page.getByText('操作成功')).toBeVisible({ timeout: 5000 });
+await expect(page.getByText("操作成功")).toBeVisible({ timeout: 5000 });
 ```
 
 **下拉框选择**：
+
 ```typescript
 // Ant Design Select
-await page.getByText('请选择').click();
-await page.getByText('目标选项').click();
+await page.getByText("请选择").click();
+await page.getByText("目标选项").click();
 ```
 
 **日期选择**：
+
 ```typescript
-await page.getByPlaceholder('开始日期').fill('2026-01-01');
-await page.getByPlaceholder('结束日期').fill('2026-03-31');
-await page.keyboard.press('Enter');
+await page.getByPlaceholder("开始日期").fill("2026-01-01");
+await page.getByPlaceholder("结束日期").fill("2026-03-31");
+await page.keyboard.press("Enter");
 ```
 
 ### 等待策略
@@ -183,6 +191,7 @@ await page.keyboard.press('Enter');
 ## 示例输入与输出
 
 **输入**：
+
 ```json
 {
   "id": "t1",
@@ -193,7 +202,10 @@ await page.keyboard.press('Enter');
   "url": "https://test.dtstack.cn",
   "session_path": ".auth/session.json",
   "steps": [
-    { "step": "进入【数据质量 → 质量问题台账】页面", "expected": "页面正常加载" },
+    {
+      "step": "进入【数据质量 → 质量问题台账】页面",
+      "expected": "页面正常加载"
+    },
     { "step": "查看列表默认数据", "expected": "显示最近创建的问题记录" }
   ],
   "preconditions": "环境已部署，已有测试数据"
@@ -201,29 +213,32 @@ await page.keyboard.press('Enter');
 ```
 
 **输出**：
+
 ```typescript
 // META: {"id":"t1","priority":"P0","title":"【P0】验证质量问题台账列表页默认加载"}
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.use({ storageState: '.auth/session.json' });
+test.use({ storageState: ".auth/session.json" });
 
-test.describe('质量问题台账 - 列表页', () => {
-  test('【P0】验证质量问题台账列表页默认加载', async ({ page }) => {
+test.describe("质量问题台账 - 列表页", () => {
+  test("【P0】验证质量问题台账列表页默认加载", async ({ page }) => {
     // 前置：环境已部署，已有测试数据
 
     // 步骤1：进入【数据质量 → 质量问题台账】页面
-    await page.goto('https://test.dtstack.cn');
-    await page.waitForLoadState('networkidle');
+    await page.goto("https://test.dtstack.cn");
+    await page.waitForLoadState("networkidle");
     // 通过左侧菜单导航到目标页面
-    await page.getByText('数据质量').click();
-    await page.getByText('质量问题台账').click();
-    await page.waitForLoadState('networkidle');
+    await page.getByText("数据质量").click();
+    await page.getByText("质量问题台账").click();
+    await page.waitForLoadState("networkidle");
 
     // 预期：页面正常加载
-    await expect(page.getByRole('heading', { name: '质量问题台账' })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "质量问题台账" }),
+    ).toBeVisible();
 
     // 步骤2：查看列表默认数据
-    const tableRows = page.locator('table tbody tr');
+    const tableRows = page.locator("table tbody tr");
     await expect(tableRows.first()).toBeVisible();
 
     // 预期：显示最近创建的问题记录

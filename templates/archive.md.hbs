@@ -13,54 +13,62 @@ origin: "{{fm.origin}}"
 ---
 
 {{#each modules}}
-## {{this.name}}
+  ##
+  {{this.name}}
 
-{{#each this.pages}}
-### {{this.name}}
+  {{#each this.pages}}
+    ###
+    {{this.name}}
 
-{{#each this.sub_groups}}
-{{#if this.test_cases}}
-#### {{this.name}}
+    {{#each this.sub_groups}}
+      {{#if this.test_cases}}
+        ####
+        {{this.name}}
 
-{{#each this.test_cases}}
-##### 【{{this.priority}}】{{this.title}}
+        {{#each this.test_cases}}
+          ##### 【{{this.priority}}】{{this.title}}
 
-{{#if this.preconditions}}
-> 前置条件
-```
-{{this.preconditions}}
-```
+          {{#if this.preconditions}}
+            > 前置条件 ```
+            {{this.preconditions}}
+            ```
 
-{{/if}}
-> 用例步骤
+          {{/if}}
+          > 用例步骤 | 编号 | 步骤 | 预期 | | ---- | ------------ | ------------
+          |
+          {{#each this.steps}}
+            |
+            {{add @index 1}}
+            |
+            {{escapeCell this.step}}
+            |
+            {{escapeCell this.expected}}
+            |
+          {{/each}}
 
-| 编号 | 步骤 | 预期 |
-| ---- | ------------ | ------------ |
-{{#each this.steps}}
-| {{add @index 1}} | {{escapeCell this.step}} | {{escapeCell this.expected}} |
-{{/each}}
+        {{/each}}
+      {{/if}}
+    {{/each}}
+    {{#each this.test_cases}}
+      ##### 【{{this.priority}}】{{this.title}}
 
-{{/each}}
-{{/if}}
-{{/each}}
-{{#each this.test_cases}}
-##### 【{{this.priority}}】{{this.title}}
+      {{#if this.preconditions}}
+        > 前置条件 ```
+        {{this.preconditions}}
+        ```
 
-{{#if this.preconditions}}
-> 前置条件
-```
-{{this.preconditions}}
-```
+      {{/if}}
+      > 用例步骤 | 编号 | 步骤 | 预期 | | ---- | ------------ | ------------ |
+      {{#each this.steps}}
+        |
+        {{add @index 1}}
+        |
+        {{escapeCell this.step}}
+        |
+        {{escapeCell this.expected}}
+        |
+      {{/each}}
 
-{{/if}}
-> 用例步骤
-
-| 编号 | 步骤 | 预期 |
-| ---- | ------------ | ------------ |
-{{#each this.steps}}
-| {{add @index 1}} | {{escapeCell this.step}} | {{escapeCell this.expected}} |
-{{/each}}
-
-{{/each}}
-{{/each}}
+    {{/each}}
+  {{/each}}
 {{/each}}

@@ -1,12 +1,12 @@
 ---
 name: code-analysis
-description: "代码分析报告。将报错日志、合并冲突、禅道 Bug 链接转化为结构化 HTML 报告或 Hotfix 测试用例。触发词：帮我分析这个报错、分析冲突、看看这个异常、生成 bug 报告。禅道 Bug 链接（zenpms.dtstack.cn/zentao/bug-view-xxx.html）直接触发 Hotfix 用例生成。"
+description: "代码分析报告。将报错日志、合并冲突、禅道 Bug 链接转化为结构化 HTML 报告或 Hotfix 测试用例。触发词：帮我分析这个报错、分析冲突、看看这个异常、生成 bug 报告。禅道 Bug 链接（{{ZENTAO_BASE_URL}}/zentao/bug-view-{{bug_id}}.html）直接触发 Hotfix 用例生成。"
 argument-hint: "[报错日志 | 禅道链接 | 冲突代码]"
 ---
 
 ## 执行前准备
 
-读取项目配置：`.claude/config.json`（模块、仓库、路径的唯一权威来源）。
+读取项目配置：执行 `npx tsx .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
 
 ---
 
@@ -14,13 +14,13 @@ argument-hint: "[报错日志 | 禅道链接 | 冲突代码]"
 
 **优先级从高到低**，匹配到第一个即路由，不再继续检测：
 
-| 优先级 | 模式 | 信号特征 | 输出 |
-|--------|------|----------|------|
-| 1 | **E: Hotfix 用例** | URL 含 `zenpms.dtstack.cn/zentao/bug-view-` | MD 用例文件 |
-| 2 | **B: 合并冲突** | 文本含 `<<<<<<< HEAD` / `=======` / `>>>>>>>` | HTML 冲突报告 |
-| 3 | **A: 后端 Bug** | 含 `Exception`、`Caused by`、`java.lang`、堆栈行（`at xxx.xxx`） | HTML Bug 报告 |
-| 4 | **C: 前端 Bug** | 含 `TypeError`、`ReferenceError`、`ChunkLoadError`、`React error`、`Vue warn` | HTML Bug 报告 |
-| 5 | **D: 信息不足** | 描述模糊，无明确错误信号 | 补料清单 |
+| 优先级 | 模式               | 信号特征                                                                                | 输出          |
+| ------ | ------------------ | --------------------------------------------------------------------------------------- | ------------- |
+| 1      | **E: Hotfix 用例** | URL 含 `{{ZENTAO_BASE_URL}}/zentao/bug-view-`                                           | MD 用例文件   |
+| 2      | **B: 合并冲突**    | 文本含 `<<<<<<< HEAD` / `=======` / `>>>>>>>`                                           | HTML 冲突报告 |
+| 3      | **A: 后端 Bug**    | 含 `Exception`、`Caused by`、`java.lang`、堆栈行（`at {{class_name}}.{{method_name}}`） | HTML Bug 报告 |
+| 4      | **C: 前端 Bug**    | 含 `TypeError`、`ReferenceError`、`ChunkLoadError`、`React error`、`Vue warn`           | HTML Bug 报告 |
+| 5      | **D: 信息不足**    | 描述模糊，无明确错误信号                                                                | 补料清单      |
 
 ---
 
@@ -195,7 +195,7 @@ npx tsx .claude/scripts/plugin-loader.ts notify --event bug-report --data '{"rep
 **E1. 抓取禅道 Bug 信息**
 
 ```bash
-npx tsx plugins/zentao/fetch.ts --url "{{zentao_url}}" --output workspace/.temp/zentao
+npx tsx plugins/zentao/fetch.ts --url "{{ZENTAO_BASE_URL}}/zentao/bug-view-{{bug_id}}.html" --output workspace/.temp/zentao
 ```
 
 读取输出 JSON，提取：`bug_id`、`title`、`severity`、`fix_branch`、`status`。
@@ -226,6 +226,7 @@ npx tsx .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{fix_branch}}
 文件路径：`workspace/issues/{{YYYYMM}}/hotfix_{{version}}_{{bugId}}-{{summary}}.md`
 
 其中：
+
 - `{{YYYYMM}}`：当前年月，如 `202604`
 - `{{version}}`：从 fix_branch 提取版本号（如 `6.4.10`），无法提取时省略该段
 - `{{bugId}}`：Bug ID
@@ -275,9 +276,9 @@ npx tsx .claude/scripts/plugin-loader.ts notify --event workflow-failed --data '
 
 ## 报告输出目录约定
 
-| 类型 | 目录 |
-|------|------|
-| Bug 报告（后端/前端） | `workspace/reports/bugs/YYYYMMDD/` |
-| 冲突分析报告 | `workspace/reports/conflicts/YYYYMMDD/` |
-| Hotfix 用例 | `workspace/issues/YYYYMM/` |
-| 临时文件 | `workspace/.temp/` |
+| 类型                  | 目录                                    |
+| --------------------- | --------------------------------------- |
+| Bug 报告（后端/前端） | `workspace/reports/bugs/YYYYMMDD/`      |
+| 冲突分析报告          | `workspace/reports/conflicts/YYYYMMDD/` |
+| Hotfix 用例           | `workspace/issues/YYYYMM/`              |
+| 临时文件              | `workspace/.temp/`                      |

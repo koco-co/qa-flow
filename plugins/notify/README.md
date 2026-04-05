@@ -4,12 +4,12 @@
 
 ## 支持的通知渠道
 
-| 渠道   | 环境变量               | 说明                         |
-| ------ | ---------------------- | ---------------------------- |
-| 钉钉   | `DINGTALK_WEBHOOK_URL` | 钉钉机器人 WebHook 地址     |
-| 飞书   | `FEISHU_WEBHOOK_URL`   | 飞书机器人 WebHook 地址     |
-| 企微   | `WECOM_WEBHOOK_URL`    | 企业微信机器人 WebHook 地址 |
-| 邮件   | `SMTP_HOST`            | SMTP 服务器地址             |
+| 渠道 | 环境变量               | 说明                        |
+| ---- | ---------------------- | --------------------------- |
+| 钉钉 | `DINGTALK_WEBHOOK_URL` | 钉钉机器人 WebHook 地址     |
+| 飞书 | `FEISHU_WEBHOOK_URL`   | 飞书机器人 WebHook 地址     |
+| 企微 | `WECOM_WEBHOOK_URL`    | 企业微信机器人 WebHook 地址 |
+| 邮件 | `SMTP_HOST`            | SMTP 服务器地址             |
 
 ## 环境配置
 
@@ -71,10 +71,10 @@ SMTP_TO="team@example.com"
 ```
 ✅ 用例生成完成
 
-需求: Story-20260404
+需求: {{需求名称}}
 用例数: 42
 耗时: 3m 22s
-文件: cases/xmind/202604/商品管理.xmind
+文件: workspace/xmind/{{YYYYMM}}/{{需求名称}}.xmind
 ```
 
 ## 注意事项

@@ -15,7 +15,7 @@ argument-hint: "[操作] [用例标题或关键词]"
 ## 场景一：搜索用例
 
 ```bash
-npx tsx .claude/scripts/xmind-edit.ts search "{{keyword}}" --dir cases/xmind
+npx tsx .claude/scripts/xmind-edit.ts search "{{keyword}}" --dir workspace/xmind
 ```
 
 展示所有匹配的用例列表（文件名 + 用例标题），用户选择后进入查看。
@@ -107,9 +107,7 @@ AI 提炼本次修改中的可复用规则，向用户确认：
   "title": "验证xxx（可选，patch 时可省略）",
   "priority": "P0|P1|P2（可选）",
   "preconditions": "前置条件（可选）",
-  "steps": [
-    { "step": "操作描述", "expected": "预期结果" }
-  ]
+  "steps": [{ "step": "操作描述", "expected": "预期结果" }]
 }
 ```
 

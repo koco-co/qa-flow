@@ -8,17 +8,17 @@ argument-hint: "[step-number]"
 
 执行前读取 `preferences/` 目录下所有 `.md` 文件（如存在）。
 偏好优先级：用户当前指令 > preferences/ 规则 > 本 skill 内置规则。
-读取项目配置：`.claude/config.json`（模块、仓库、路径的唯一权威来源）。
+读取项目配置：执行 `npx tsx .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
 
 ---
 
 ## 运行模式
 
-| 模式     | 触发条件              | 行为差异                                |
-| -------- | --------------------- | --------------------------------------- |
-| 完整初始化 | 默认 / `init`       | 全 5 步 + 全部交互点                    |
-| 单步跳转 | `[step-number]`       | 仅执行指定步骤，如 `setup 3` 重跑步骤 3 |
-| 状态查询 | `仅查看状态`          | 执行步骤 1 扫描后直接退出               |
+| 模式       | 触发条件        | 行为差异                                |
+| ---------- | --------------- | --------------------------------------- |
+| 完整初始化 | 默认 / `init`   | 全 5 步 + 全部交互点                    |
+| 单步跳转   | `[step-number]` | 仅执行指定步骤，如 `setup 3` 重跑步骤 3 |
+| 状态查询   | `仅查看状态`    | 执行步骤 1 扫描后直接退出               |
 
 ---
 
@@ -34,13 +34,13 @@ npx tsx .claude/skills/setup/scripts/init-wizard.ts scan
 
 扫描项目包括：
 
-| 检测项          | 通过条件                          |
-| --------------- | --------------------------------- |
-| Node.js 版本    | >= 18.0.0                         |
-| 包管理器        | npm / pnpm / yarn 任意一种可用    |
-| config.json     | `.claude/config.json` 存在且合法  |
-| .env 文件       | 项目根目录存在（内容不校验）      |
-| 脚本依赖        | `tsx` 可执行                      |
+| 检测项       | 通过条件                                       |
+| ------------ | ---------------------------------------------- |
+| Node.js 版本 | >= 18.0.0                                      |
+| 包管理器     | npm / pnpm / yarn 任意一种可用                 |
+| .env         | 项目根目录存在（内容不校验，覆盖 config.json） |
+| .env 文件    | 项目根目录存在（内容不校验）                   |
+| 脚本依赖     | `tsx` 可执行                                   |
 
 ### 1.2 展示扫描结果
 
@@ -100,9 +100,9 @@ mkdir -p {{workspace_dir}}/{prds,xmind,archive,issues,history,reports,.repos,.te
 └── .temp/         # 临时状态文件
 ```
 
-### 2.3 写入工作区路径到 config.json
+### 2.3 写入工作区路径到 .env
 
-将 `workspace_dir` 写入 `.claude/config.json` 的 `workspaceDir` 字段。
+将 `WORKSPACE_DIR` 写入 `.env` 文件。
 
 ---
 
@@ -123,7 +123,7 @@ mkdir -p {{workspace_dir}}/{prds,xmind,archive,issues,history,reports,.repos,.te
 
 ### 3.1 添加仓库
 
-用户提供 Git URL → 解析 `{group}/{repo}` → clone 到 `{{workspace_dir}}/.repos/{group}/{repo}/`：
+用户提供 Git URL → 解析 `{{group_name}}/{{repo_name}}` → clone 到 `{{workspace_dir}}/.repos/{{group_name}}/{{repo_name}}/`：
 
 ```bash
 npx tsx .claude/skills/setup/scripts/init-wizard.ts clone \
@@ -132,7 +132,7 @@ npx tsx .claude/skills/setup/scripts/init-wizard.ts clone \
   --base-dir {{workspace_dir}}/.repos
 ```
 
-URL 格式示例：`http://gitlab.example.com/group/repo.git`
+URL 格式示例：`http://gitlab.example.com/{{group_name}}/{{repo_name}}.git`
 
 分支默认为 `main`，可在提示中修改。
 
@@ -148,9 +148,9 @@ URL 格式示例：`http://gitlab.example.com/group/repo.git`
 2. 完成，进入步骤 4
 ```
 
-### 3.3 更新 config.json
+### 3.3 更新 .env
 
-将成功克隆的仓库信息写入 `.claude/config.json` 的 `repos` 字段。
+将成功克隆的仓库 URL 写入 `.env` 的 `SOURCE_REPOS` 字段（逗号分隔多个仓库）。
 
 ---
 
@@ -160,7 +160,7 @@ URL 格式示例：`http://gitlab.example.com/group/repo.git`
 
 ### 4.1 读取插件清单
 
-从 `.claude/config.json` 的 `plugins` 字段读取所有已知插件。
+从 `plugins/` 目录下各子目录的 `plugin.json` 文件读取所有已知插件。
 
 ### 4.2 检查激活状态
 
@@ -193,13 +193,13 @@ npx tsx .claude/skills/setup/scripts/init-wizard.ts verify
 
 验证内容：
 
-| 验证项          | 说明                                       |
-| --------------- | ------------------------------------------ |
-| 工作区目录      | 所有子目录均存在                           |
-| config.json     | 合法 JSON，workspaceDir 字段已写入         |
-| 源码仓库        | 已配置仓库均可 git fetch（或标注为跳过）   |
-| 插件凭证        | 已配置插件的环境变量非空                   |
-| 脚本可执行      | init-wizard.ts 等核心脚本可被 tsx 调用     |
+| 验证项     | 说明                                     |
+| ---------- | ---------------------------------------- |
+| 工作区目录 | 所有子目录均存在                         |
+| .env 文件  | 存在且 WORKSPACE_DIR 字段已写入          |
+| 源码仓库   | 已配置仓库均可 git fetch（或标注为跳过） |
+| 插件凭证   | 已配置插件的环境变量非空                 |
+| 脚本可执行 | init-wizard.ts 等核心脚本可被 tsx 调用   |
 
 ### 5.2 展示汇总表
 
@@ -211,7 +211,7 @@ qa-flow v2.0 初始化完成
 ├──────────────────┼──────────┼────────────────────────────┤
 │ Node.js          │ ✓ 通过   │ v{{version}}               │
 │ 工作区目录       │ ✓ 通过   │ {{workspace_dir}}/         │
-│ config.json      │ ✓ 通过   │ .claude/config.json        │
+│ .env             │ ✓ 通过   │ WORKSPACE_DIR=workspace    │
 │ 源码仓库         │ {{status}}│ {{repo_count}} 个仓库      │
 │ 钉钉通知         │ {{status}}│ {{detail}}                 │
 │ 蓝湖插件         │ {{status}}│ {{detail}}                 │

@@ -10,7 +10,11 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { basename, extname } from "node:path";
 import { Command } from "commander";
-import { buildMarkdown, parseFrontMatter, todayString } from "./lib/frontmatter.ts";
+import {
+  buildMarkdown,
+  parseFrontMatter,
+  todayString,
+} from "./lib/frontmatter.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

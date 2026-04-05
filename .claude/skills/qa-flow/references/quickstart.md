@@ -7,18 +7,18 @@
 最常用的工作流。需要提供需求文档（PRD/Story）。
 
 ```bash
-# 为指定 Story 生成完整用例（包含 XMind 和 Archive MD）
-为 Story-20260322 生成测试用例
+# 为指定需求生成完整用例（包含 XMind 和 Archive MD）
+为 {{需求名称}} 生成测试用例
 
 # 快速模式（跳过某些检查）
-为 Story-20260322 --quick 生成测试用例
+为 {{需求名称}} --quick 生成测试用例
 
 # 从蓝湖 URL 直接导入
 生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx
 
 # 续传或模块重跑
-继续 Story-20260322 的用例生成
-重新生成 Story-20260322 的【列表页】模块用例
+继续 {{需求名称}} 的用例生成
+重新生成 {{需求名称}} 的【列表页】模块用例
 ```
 
 ### 2. 编辑 XMind 用例
@@ -46,7 +46,7 @@
 [粘贴完整错误日志]
 
 # 粘贴禅道 Bug 链接（自动转化为线上问题用例）
-http://zenpms.dtstack.cn/zentao/bug-view-138845.html
+{{ZENTAO_BASE_URL}}/zentao/bug-view-{{bug_id}}.html
 ```
 
 ### 4. 环境初始化
@@ -61,43 +61,47 @@ http://zenpms.dtstack.cn/zentao/bug-view-138845.html
 
 ## 输入格式规范
 
-| 类型 | 示例 | 说明 |
-|------|------|------|
-| Story ID | `Story-20260322` | 需要在 `cases/prds/` 中存在对应文件 |
-| 蓝湖 URL | `https://lanhuapp.com/web/#/item/...` | 自动提取设计文档信息 |
-| 禅道 Bug | `http://zenpms.dtstack.cn/zentao/bug-view-xxxxx.html` | 自动爬取 Bug 信息生成用例 |
-| 用例标题 | `验证导出仅导出当前筛选结果` | 精确匹配或模糊匹配均可 |
-| 文件路径 | `cases/prds/YYYYMM/需求标题.md` | 相对或绝对路径皆可 |
+| 类型     | 示例                                                  | 说明                                    |
+| -------- | ----------------------------------------------------- | --------------------------------------- |
+| 需求名称 | `商品管理需求`                                        | 需要在 `workspace/prds/` 中存在对应文件 |
+| 蓝湖 URL | `https://lanhuapp.com/web/#/item/...`                 | 自动提取设计文档信息                    |
+| 禅道 Bug | `{{ZENTAO_BASE_URL}}/zentao/bug-view-{{bug_id}}.html` | 自动爬取 Bug 信息生成用例               |
+| 用例标题 | `验证导出仅导出当前筛选结果`                          | 精确匹配或模糊匹配均可                  |
+| 文件路径 | `workspace/prds/YYYYMM/{{需求标题}}.md`               | 相对或绝对路径皆可                      |
 
 ## 常见问题
 
-**Q: 我没有 Story 号，应该怎样生成用例？**
-- 准备 PRD 文档（Markdown 格式）存放在 `cases/prds/YYYYMM/` 目录
+**Q: 如何指定需求文档生成用例？**
+
+- 准备 PRD 文档（Markdown 格式）存放在 `workspace/prds/YYYYMM/` 目录
 - 运行 `为 你的需求文档路径 生成测试用例`
 
 **Q: 生成过程中断了，怎样继续？**
-- 运行 `继续 Story-xxx 的用例生成`
+
+- 运行 `继续 <需求名称> 的用例生成`
 - 系统会读取 `.qa-state.json` 的断点状态自动恢复
 
 **Q: XMind 和 Archive MD 的区别？**
+
 - **XMind**：可视化思维导图格式，便于阅读和编辑
 - **Archive MD**：Markdown 格式，便于版本控制和文本搜索
 
 **Q: 怎样修改已生成的用例？**
+
 - 优先使用 `/xmind-editor`，无需读 PRD 即可修改
-- 或者直接编辑 `cases/archive/YYYYMM/` 中的 Markdown 文件
+- 或者直接编辑 `workspace/archive/YYYYMM/` 中的 Markdown 文件
 
 ## 文件位置速查
 
-| 产物类型 | 路径 | 说明 |
-|---------|------|------|
-| PRD 原始文件 | `cases/prds/YYYYMM/` | 输入：需求文档 |
-| XMind 输出 | `cases/xmind/YYYYMM/` | 输出：思维导图 |
-| Archive MD | `cases/archive/YYYYMM/` | 输出：归档 Markdown |
-| 历史原始资料 | `cases/history/` | 来自 CSV/JSON 的导入数据 |
-| 线上问题用例 | `cases/issues/` | 禅道 Bug 转化的用例 |
-| 分析报告 | `reports/` | 报错分析 HTML 报告 |
-| 图片库 | `assets/images/` | 需求文档中引用的截图 |
+| 产物类型     | 路径                        | 说明                     |
+| ------------ | --------------------------- | ------------------------ |
+| PRD 原始文件 | `workspace/prds/YYYYMM/`    | 输入：需求文档           |
+| XMind 输出   | `workspace/xmind/YYYYMM/`   | 输出：思维导图           |
+| Archive MD   | `workspace/archive/YYYYMM/` | 输出：归档 Markdown      |
+| 历史原始资料 | `workspace/history/`        | 来自 CSV/JSON 的导入数据 |
+| 线上问题用例 | `workspace/issues/`         | 禅道 Bug 转化的用例      |
+| 分析报告     | `workspace/reports/`        | 报错分析 HTML 报告       |
+| 图片库       | `workspace/images/`         | 需求文档中引用的截图     |
 
 ## 获取帮助
 

@@ -71,7 +71,9 @@ function loadAllPlugins(dir: string): LoadedPlugin[] {
     try {
       data = JSON.parse(readFileSync(pluginJsonPath, "utf8")) as PluginJson;
     } catch (err) {
-      process.stderr.write(`[plugin-loader] failed to parse plugin.json for "${name}": ${err}\n`);
+      process.stderr.write(
+        `[plugin-loader] failed to parse plugin.json for "${name}": ${err}\n`,
+      );
       continue;
     }
 
@@ -139,7 +141,9 @@ program
 
 program
   .command("resolve")
-  .description("Resolve fetch command for a URL by matching active plugin url_patterns")
+  .description(
+    "Resolve fetch command for a URL by matching active plugin url_patterns",
+  )
   .requiredOption("--url <url>", "URL to resolve")
   .action((opts: { url: string }) => {
     initEnv();
@@ -157,8 +161,11 @@ program
             `[plugin-loader] plugin "${plugin.name}" matched but has no fetch command\n`,
           );
           process.stdout.write(
-            JSON.stringify({ error: `Plugin "${plugin.name}" has no fetch command` }, null, 2) +
-              "\n",
+            JSON.stringify(
+              { error: `Plugin "${plugin.name}" has no fetch command` },
+              null,
+              2,
+            ) + "\n",
           );
           process.exit(1);
         }
@@ -167,12 +174,16 @@ program
           .replace(/\{\{url\}\}/g, opts.url)
           .replace(/\{\{output\}\}/g, `${workspaceDir}/.temp`);
 
-        process.stdout.write(`${JSON.stringify({ plugin: plugin.name, command }, null, 2)}\n`);
+        process.stdout.write(
+          `${JSON.stringify({ plugin: plugin.name, command }, null, 2)}\n`,
+        );
         return;
       }
     }
 
-    process.stdout.write(`${JSON.stringify({ error: "No matching plugin" }, null, 2)}\n`);
+    process.stdout.write(
+      `${JSON.stringify({ error: "No matching plugin" }, null, 2)}\n`,
+    );
     process.exit(1);
   });
 
@@ -199,8 +210,11 @@ program
     const sendCmd = notifyPlugin.data.commands?.send ?? "";
     if (!sendCmd) {
       process.stdout.write(
-        JSON.stringify({ skipped: true, reason: "notify plugin has no send command" }, null, 2) +
-          "\n",
+        JSON.stringify(
+          { skipped: true, reason: "notify plugin has no send command" },
+          null,
+          2,
+        ) + "\n",
       );
       return;
     }
@@ -209,7 +223,9 @@ program
       .replace(/\{\{event\}\}/g, opts.event)
       .replace(/\{\{json\}\}/g, opts.data);
 
-    process.stdout.write(`${JSON.stringify({ plugin: "notify", command }, null, 2)}\n`);
+    process.stdout.write(
+      `${JSON.stringify({ plugin: "notify", command }, null, 2)}\n`,
+    );
   });
 
 program.parse(process.argv);

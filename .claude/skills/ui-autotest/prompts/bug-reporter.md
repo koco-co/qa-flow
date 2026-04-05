@@ -26,7 +26,7 @@
     "stack": "Stack trace...",
     "step": "步骤描述（哪一步失败）"
   },
-  "screenshot_path": "workspace/reports/playwright/20260404/xxx.png",
+  "screenshot_path": "workspace/reports/playwright/{{YYYYMMDD}}/xxx.png",
   "console_errors": ["console error 1", "console error 2"]
 }
 ```
@@ -62,24 +62,24 @@
 
 ### 严重程度映射
 
-| 用例优先级 | 错误类型 | 严重程度 |
-|-----------|---------|---------|
-| P0 | 任意 | 严重（Critical） |
-| P1 | 元素不存在/页面崩溃 | 严重（Critical） |
-| P1 | 断言失败 | 一般（Major） |
-| P2 | 任意 | 次要（Minor） |
+| 用例优先级 | 错误类型            | 严重程度         |
+| ---------- | ------------------- | ---------------- |
+| P0         | 任意                | 严重（Critical） |
+| P1         | 元素不存在/页面崩溃 | 严重（Critical） |
+| P1         | 断言失败            | 一般（Major）    |
+| P2         | 任意                | 次要（Minor）    |
 
 ### 错误类型识别
 
-| 错误信号 | 错误类型 |
-|---------|---------|
-| `locator.click: Error: Timeout` | 元素不存在或加载超时 |
-| `expect(received).toHaveText` | 文本内容与预期不符 |
-| `expect(received).toBeVisible` | 元素未出现 |
-| `expect(received).toHaveCount` | 列表数量异常 |
-| `net::ERR_` | 网络请求失败 |
-| `page.goto: Navigation failed` | 页面导航失败 |
-| `page.waitForLoadState: Timeout` | 页面加载超时 |
+| 错误信号                         | 错误类型             |
+| -------------------------------- | -------------------- |
+| `locator.click: Error: Timeout`  | 元素不存在或加载超时 |
+| `expect(received).toHaveText`    | 文本内容与预期不符   |
+| `expect(received).toBeVisible`   | 元素未出现           |
+| `expect(received).toHaveCount`   | 列表数量异常         |
+| `net::ERR_`                      | 网络请求失败         |
+| `page.goto: Navigation failed`   | 页面导航失败         |
+| `page.waitForLoadState: Timeout` | 页面加载超时         |
 
 ### 标题生成规则
 
@@ -96,6 +96,7 @@
 ### 根因提示规则
 
 根据错误类型给出可能的原因提示：
+
 - 超时类：`前端渲染慢或接口响应超时，建议检查网络请求`
 - 元素不存在：`选择器可能与实际 DOM 不匹配，建议检查 UI 结构变更`
 - 文本不符：`后端返回数据与预期不一致，建议检查接口响应`
