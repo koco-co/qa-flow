@@ -84,12 +84,17 @@ npx tsx .claude/scripts/history-convert.ts --path {{input_file}} --detect
 
 ### 步骤 S4: 输出
 
-```bash
-# 生成标准化 Archive MD
-npx tsx .claude/scripts/archive-gen.ts convert --input {{final_json}} --output {{archive_path}}
+> **路径规则**：标准化产物（含 `-standardized` 后缀的 MD 和 XMind）属于中间产物，必须输出到 `tmp/` 子目录，不得直接放在 archive 或 cases 根目录下。
+> - Archive MD → `workspace/archive/{{YYYYMM}}/tmp/{{name}}-standardized.md`
+> - XMind → `workspace/archive/{{YYYYMM}}/tmp/{{name}}-standardized.xmind`
+> - 中间 JSON 也保留在同一 `tmp/` 目录
 
-# 从标准化 JSON 生成 XMind（非源文件转换）
-npx tsx .claude/scripts/xmind-gen.ts --input {{final_json}} --output {{xmind_path}} --mode create
+```bash
+# 生成标准化 Archive MD（输出到 tmp/ 子目录）
+npx tsx .claude/scripts/archive-gen.ts convert --input {{final_json}} --output {{archive_tmp_path}}
+
+# 从标准化 JSON 生成 XMind（输出到 tmp/ 子目录）
+npx tsx .claude/scripts/xmind-gen.ts --input {{final_json}} --output {{xmind_tmp_path}} --mode create
 
 # 通知
 npx tsx .claude/scripts/plugin-loader.ts notify --event archive-converted --data '{"fileCount":1,"caseCount":{{count}}}'
@@ -100,8 +105,8 @@ npx tsx .claude/scripts/plugin-loader.ts notify --event archive-converted --data
 ```
 标准化归档完成
 
-Archive MD：{{archive_path}}
-XMind：{{xmind_path}}
+Archive MD：{{archive_tmp_path}}
+XMind：{{xmind_tmp_path}}
 共 {{n}} 条用例（标准化前 {{original_count}} 条，标准化后 {{final_count}} 条）
 
 选项：
