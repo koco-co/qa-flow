@@ -10,6 +10,8 @@ Environment:
     LANHU_COOKIE must be set before invocation.
 """
 
+from __future__ import annotations
+
 import argparse
 import asyncio
 import json
@@ -200,12 +202,15 @@ def main() -> None:
     _validate_env()
     _setup_sys_path()
 
+    result: dict
     try:
         result = asyncio.run(_run(args.url, args.page_id))
     except ValueError as exc:
         _emit_error(str(exc), "INVALID_URL")
+        return
     except Exception as exc:
         _emit_error(str(exc), "FETCH_FAILED")
+        return
 
     # Output structured JSON to stdout
     sys.stdout.write(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
