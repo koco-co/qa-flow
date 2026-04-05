@@ -12,7 +12,15 @@
  */
 
 import { execSync } from "node:child_process";
-import { copyFileSync, createWriteStream, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
@@ -145,26 +153,28 @@ export function parseLanhuUrl(rawUrl: string): ParsedLanhuUrl {
 // ─── HTML → Markdown ─────────────────────────────────────────────────────────
 
 export function htmlToMarkdown(html: string): string {
-  return html
-    // Block elements → newlines
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<\/div>/gi, "\n")
-    .replace(/<\/li>/gi, "\n")
-    .replace(/<\/h[1-6]>/gi, "\n\n")
-    .replace(/<h([1-6])[^>]*>/gi, (_, n) => "#".repeat(Number(n)) + " ")
-    .replace(/<li[^>]*>/gi, "- ")
-    .replace(/<[^>]+>/g, "")
-    // Decode common HTML entities
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    // Collapse excess blank lines
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return (
+    html
+      // Block elements → newlines
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/p>/gi, "\n\n")
+      .replace(/<\/div>/gi, "\n")
+      .replace(/<\/li>/gi, "\n")
+      .replace(/<\/h[1-6]>/gi, "\n\n")
+      .replace(/<h([1-6])[^>]*>/gi, (_, n) => "#".repeat(Number(n)) + " ")
+      .replace(/<li[^>]*>/gi, "- ")
+      .replace(/<[^>]+>/g, "")
+      // Decode common HTML entities
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      // Collapse excess blank lines
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
 }
 
 // ─── Slug ─────────────────────────────────────────────────────────────────────
@@ -192,7 +202,10 @@ export function extractImageUrls(data: unknown): string[] {
     for (const [key, value] of Object.entries(obj)) {
       if (
         typeof value === "string" &&
-        (key === "url" || key === "src" || key === "imageUrl" || key === "cover") &&
+        (key === "url" ||
+          key === "src" ||
+          key === "imageUrl" ||
+          key === "cover") &&
         (value.startsWith("http") || value.startsWith("//"))
       ) {
         urls.push(value.startsWith("//") ? `https:${value}` : value);
@@ -246,7 +259,10 @@ function currentYYYYMM(): string {
   return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function parseRequirementFromPageName(pageName: string, pagePath: string): ParsedRequirement {
+function parseRequirementFromPageName(
+  pageName: string,
+  pagePath: string,
+): ParsedRequirement {
   // pagePath format: "岚图/15525【内置规则丰富】一致性，..."
   // pageName format: "15525【内置规则丰富】一致性，..."
   const pathParts = pagePath.split("/");
@@ -256,8 +272,9 @@ function parseRequirementFromPageName(pageName: string, pagePath: string): Parse
   const idMatch = pageName.match(/^(\d+)/);
   const requirementId = idMatch ? idMatch[1] : "";
 
-  // Full requirement name (including 【】 part)
-  const requirementName = pageName;
+  // Requirement name without the leading ID prefix
+  // "15525【内置规则丰富】一致性，..." → "【内置规则丰富】一致性，..."
+  const requirementName = pageName.replace(/^\d+/, "");
 
   return { project, requirementId, requirementName };
 }
@@ -288,7 +305,15 @@ function callBridgeListPages(
 ): BridgeListOutput {
   const bridgeScript = resolve(projectRoot, "tools/lanhu/bridge.py");
   const mcpDir = resolve(projectRoot, "tools/lanhu/lanhu-mcp");
-  const cmd = [`"uv"`, `"run"`, `"python"`, `"${bridgeScript}"`, `"--url"`, `"${rawUrl}"`, `"--list-pages"`].join(" ");
+  const cmd = [
+    `"uv"`,
+    `"run"`,
+    `"python"`,
+    `"${bridgeScript}"`,
+    `"--url"`,
+    `"${rawUrl}"`,
+    `"--list-pages"`,
+  ].join(" ");
 
   const stdout = execSync(cmd, {
     cwd: mcpDir,
@@ -352,7 +377,9 @@ function tryCallBridge(
     } catch {
       const msg = stderrText || e.message || "unknown error";
       const isCookieError =
-        msg.includes("418") || msg.includes("permission") || msg.includes("Cookie");
+        msg.includes("418") ||
+        msg.includes("permission") ||
+        msg.includes("Cookie");
       return {
         error: `Bridge call failed: ${msg}`,
         code: "BRIDGE_ERROR",
@@ -370,9 +397,14 @@ function refreshCookie(projectRoot: string, targetUrl: string): string | null {
   const envPath = resolve(projectRoot, ".env");
 
   const args = [
-    `uv`, `run`, `python`, refreshScript,
-    `--target-url`, targetUrl,
-    `--update-env`, envPath,
+    `uv`,
+    `run`,
+    `python`,
+    refreshScript,
+    `--target-url`,
+    targetUrl,
+    `--update-env`,
+    envPath,
   ];
   const cmd = args.map((a) => `"${a}"`).join(" ");
 
@@ -405,7 +437,9 @@ function callBridgeWithRetry(
 
   // Not a cookie error — fail immediately
   if (!result.isCookieError) {
-    process.stderr.write(`${JSON.stringify({ error: result.error, code: result.code }, null, 2)}\n`);
+    process.stderr.write(
+      `${JSON.stringify({ error: result.error, code: result.code }, null, 2)}\n`,
+    );
     process.exit(1);
   }
 
@@ -414,27 +448,46 @@ function callBridgeWithRetry(
   const newCookie = refreshCookie(projectRoot, rawUrl);
 
   if (!newCookie) {
-    process.stderr.write(`${JSON.stringify({
-      error: "Cookie 刷新失败。请手动更新 .env 中的 LANHU_COOKIE，或配置 LANHU_USERNAME/LANHU_PASSWORD。",
-      code: "COOKIE_REFRESH_FAILED",
-    }, null, 2)}\n`);
+    process.stderr.write(
+      `${JSON.stringify(
+        {
+          error:
+            "Cookie 刷新失败。请手动更新 .env 中的 LANHU_COOKIE，或配置 LANHU_USERNAME/LANHU_PASSWORD。",
+          code: "COOKIE_REFRESH_FAILED",
+        },
+        null,
+        2,
+      )}\n`,
+    );
     process.exit(1);
   }
 
   // Retry with new cookie
-  const retry = tryCallBridge(projectRoot, rawUrl, pageId, newCookie, pageNames);
+  const retry = tryCallBridge(
+    projectRoot,
+    rawUrl,
+    pageId,
+    newCookie,
+    pageNames,
+  );
   if ("pages" in retry) {
     return retry;
   }
 
-  process.stderr.write(`${JSON.stringify({ error: retry.error, code: retry.code }, null, 2)}\n`);
+  process.stderr.write(
+    `${JSON.stringify({ error: retry.error, code: retry.code }, null, 2)}\n`,
+  );
   process.exit(1);
   throw new Error("Unreachable");
 }
 
 // ─── Main Logic ───────────────────────────────────────────────────────────────
 
-async function run(rawUrl: string, baseDir: string, pagesFilter?: string): Promise<void> {
+async function run(
+  rawUrl: string,
+  baseDir: string,
+  pagesFilter?: string,
+): Promise<void> {
   // 1. Load .env from project root (two levels up from plugins/lanhu/)
   const projectRoot = resolve(__dirname, "../../");
   initEnv(resolve(projectRoot, ".env"));
@@ -446,7 +499,8 @@ async function run(rawUrl: string, baseDir: string, pagesFilter?: string): Promi
     const newCookie = refreshCookie(projectRoot, rawUrl);
     if (!newCookie) {
       const err: ErrorOutput = {
-        error: "LANHU_COOKIE 未配置且自动登录失败。请配置 LANHU_USERNAME/LANHU_PASSWORD 或手动设置 LANHU_COOKIE。",
+        error:
+          "LANHU_COOKIE 未配置且自动登录失败。请配置 LANHU_USERNAME/LANHU_PASSWORD 或手动设置 LANHU_COOKIE。",
         code: "MISSING_COOKIE",
       };
       process.stderr.write(`${JSON.stringify(err, null, 2)}\n`);
@@ -513,33 +567,93 @@ async function run(rawUrl: string, baseDir: string, pagesFilter?: string): Promi
 
     // Fetch content for this specific requirement
     const bridgeResult = callBridgeWithRetry(
-      projectRoot, rawUrl, undefined, cookie, page.name,
+      projectRoot,
+      rawUrl,
+      undefined,
+      cookie,
+      page.name,
     );
 
-    // Collect screenshots (only local file paths from Playwright, not inline [图片] refs)
+    // Collect images: prefer per-element images from Axure resource dir over full-page screenshot
     const collectedImages: ImageRef[] = [];
-    let imgIdx = 0;
+
+    // Try to find Axure resource images for this page
+    const docId = parsed.params.docId ?? "";
+    const mcpDir = resolve(projectRoot, "tools/lanhu/lanhu-mcp");
+    const axureImagesBase = join(
+      mcpDir,
+      "data",
+      `axure_extract_${docId.slice(0, 8)}`,
+      "images",
+    );
+    // The page folder name in Axure resources uses the original page name (with ID prefix)
+    const axurePageDir = existsSync(axureImagesBase)
+      ? readdirSync(axureImagesBase).find((dir) =>
+          dir.startsWith(reqInfo.requirementId),
+        )
+      : undefined;
+    const axurePageImagesDir = axurePageDir
+      ? join(axureImagesBase, axurePageDir)
+      : undefined;
+
+    if (
+      axurePageImagesDir &&
+      existsSync(axurePageImagesDir) &&
+      statSync(axurePageImagesDir).isDirectory()
+    ) {
+      // Copy meaningful images from Axure resource dir (skip tiny icons)
+      const MIN_IMAGE_SIZE = 2048; // 2KB minimum to skip tiny SVG icons
+      const imageFiles = readdirSync(axurePageImagesDir).filter((f) => {
+        const ext = extname(f).toLowerCase();
+        if (![".png", ".jpg", ".jpeg", ".svg", ".webp"].includes(ext))
+          return false;
+        const filePath = join(axurePageImagesDir, f);
+        return statSync(filePath).size >= MIN_IMAGE_SIZE;
+      });
+
+      for (const [idx, file] of imageFiles.entries()) {
+        const srcPath = join(axurePageImagesDir, file);
+        const ext = extname(file);
+        const fileName = `${idx + 1}-${basename(file, ext)}${ext}`;
+        const destPath = join(imagesDir, fileName);
+        copyFileSync(srcPath, destPath);
+        collectedImages.push({ url: srcPath, name: fileName });
+      }
+    }
+
+    // Also copy the full-page screenshot (without compression) as overview
+    let imgIdx = collectedImages.length;
     for (const bridgePage of bridgeResult.pages) {
       for (const imgSrc of bridgePage.images) {
+        // Skip non-image files (e.g. styles.json, .txt from lanhu-mcp cache)
+        if (imgSrc.endsWith(".json") || imgSrc.endsWith(".txt")) continue;
         imgIdx++;
         try {
-          if (imgSrc.startsWith("http://") || imgSrc.startsWith("https://") || imgSrc.startsWith("//")) {
-            // Remote URL — download (these are actual screenshots, not inline element images)
-            const fullUrl = imgSrc.startsWith("//") ? `https:${imgSrc}` : imgSrc;
+          if (
+            imgSrc.startsWith("http://") ||
+            imgSrc.startsWith("https://") ||
+            imgSrc.startsWith("//")
+          ) {
+            const fullUrl = imgSrc.startsWith("//")
+              ? `https:${imgSrc}`
+              : imgSrc;
             const urlObj = new URL(fullUrl);
-            const rawName = urlObj.pathname.split("/").pop() ?? `image-${imgIdx}`;
-            const ext = rawName.includes(".") ? rawName.split(".").pop() ?? "png" : "png";
-            const slug = slugify(rawName.replace(/\.[^.]+$/, "")) || `image-${imgIdx}`;
+            const rawName =
+              urlObj.pathname.split("/").pop() ?? `image-${imgIdx}`;
+            const ext = rawName.includes(".")
+              ? (rawName.split(".").pop() ?? "png")
+              : "png";
+            const slug =
+              slugify(rawName.replace(/\.[^.]+$/, "")) || `image-${imgIdx}`;
             const fileName = `${imgIdx}-${slug}.${ext}`;
             const destPath = join(imagesDir, fileName);
             await downloadImage(fullUrl, destPath, cookie);
             collectedImages.push({ url: fullUrl, name: fileName });
           } else if (existsSync(imgSrc)) {
-            // Local file path (screenshot from lanhu-mcp) — copy
             const ext = extname(imgSrc) || ".png";
             const rawName = basename(imgSrc, ext);
             const slug = slugify(rawName) || `screenshot-${imgIdx}`;
-            const fileName = `${imgIdx}-${slug}${ext}`;
+            const fileName = `${imgIdx}-fullpage-${slug}${ext}`;
             const destPath = join(imagesDir, fileName);
             copyFileSync(imgSrc, destPath);
             collectedImages.push({ url: imgSrc, name: fileName });
@@ -550,23 +664,15 @@ async function run(rawUrl: string, baseDir: string, pagesFilter?: string): Promi
       }
     }
 
-    // Compress images
-    if (collectedImages.length > 0) {
-      try {
-        const compressScript = resolve(projectRoot, ".claude/scripts/image-compress.ts");
-        execSync(`npx tsx "${compressScript}" --dir "${imagesDir}"`, {
-          stdio: "pipe",
-          cwd: projectRoot,
-        });
-      } catch {
-        // Non-fatal: compression failure doesn't block output
-      }
-    }
-
     // Build front-matter + body
     const fetchDate = new Date().toISOString().slice(0, 10);
     const imagesMd = collectedImages
-      .map((img, idx) => `![页面截图-${idx + 1}](../images/${img.name})`)
+      .map((img, idx) => {
+        const label = img.name.includes("fullpage-")
+          ? `全页截图-${idx + 1}`
+          : `页面元素-${idx + 1}`;
+        return `![${label}](images/${img.name})`;
+      })
       .join("\n\n");
 
     const frontMatter = [
@@ -625,7 +731,8 @@ async function run(rawUrl: string, baseDir: string, pagesFilter?: string): Promi
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 
 // Only run CLI when executed directly (not when imported by tests)
-const isMain = process.argv[1] === __filename || process.argv[1]?.endsWith("fetch.ts");
+const isMain =
+  process.argv[1] === __filename || process.argv[1]?.endsWith("fetch.ts");
 
 if (isMain) {
   const program = new Command("lanhu-fetch");
