@@ -21,5 +21,6 @@
     "xmind",
     "zenpms",
     "ZENTAO"
-  ]
+  ],
+  "python.analysis.extraPaths": ["./tools/lanhu/lanhu-mcp"]
 }
