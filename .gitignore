@@ -7,3 +7,4 @@ workspace/.repos
 .temp/
 .auth/
 .trash/
+tools/lanhu/__pycache__/
