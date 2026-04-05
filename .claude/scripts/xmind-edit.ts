@@ -277,7 +277,7 @@ async function cmdSearch(
   query: string,
   opts: { dir?: string; limit?: number },
 ): Promise<void> {
-  const dir = resolve(opts.dir ?? "cases/xmind");
+  const dir = resolve(opts.dir ?? "workspace/xmind");
   const limit = opts.limit ?? 20;
 
   const xmindFiles = collectXmindFiles(dir);
@@ -493,7 +493,7 @@ async function main(): Promise<void> {
     .description(
       "Search for test cases by keyword across all .xmind files in a directory",
     )
-    .option("--dir <dir>", "Directory to search in", "cases/xmind")
+    .option("--dir <dir>", "Directory to search in", "workspace/xmind")
     .option("--limit <n>", "Maximum number of results", "20")
     .action(async (query: string, opts: { dir?: string; limit?: string }) => {
       await cmdSearch(query, {

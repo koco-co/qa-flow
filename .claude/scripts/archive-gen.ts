@@ -445,7 +445,7 @@ async function main(): Promise<void> {
     .command("search")
     .description("Search archive Markdown files by keyword")
     .requiredOption("--query <keywords>", "Search keyword(s)")
-    .option("--dir <path>", "Archive directory to search", "cases/archive")
+    .option("--dir <path>", "Archive directory to search", "workspace/archive")
     .option("--limit <n>", "Maximum results to return", "20")
     .action(async (opts: { query: string; dir: string; limit: string }) => {
       await runSearch({
