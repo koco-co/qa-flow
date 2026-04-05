@@ -1,0 +1,528 @@
+{
+  "meta": {
+    "project_name": "数据资产平台",
+    "requirement_name": "【通用配置】json格式配置",
+    "version": "v6.3",
+    "requirement_id": 15696,
+    "description": "json格式校验管理，支持key的CRUD、层级管理、导入导出、正则测试",
+    "prd_path": "workspace/prds/202604/【通用配置】json格式配置/【通用配置】json格式配置.md"
+  },
+  "modules": [
+    {
+      "name": "通用配置",
+      "pages": [
+        {
+          "name": "json格式校验管理-列表页",
+          "sub_groups": [
+            {
+              "name": "新增key",
+              "test_cases": [
+                {
+                  "title": "验证新增key完整正向流程（含正则测试）",
+                  "priority": "P0",
+                  "preconditions": "使用有权限账号登录系统，当前数据质量模块通用配置下json格式校验管理列表已存在至少1条数据",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面标题显示「json格式校验管理」，列表正常展示，包含key、中文名称、value格式、数据源类型、创建人、创建时间、更新人、更新时间、操作等列"
+                    },
+                    {
+                      "step": "点击列表右上角【新增】按钮",
+                      "expected": "弹出弹窗，标题为「新增」，包含key（必填）、中文名称（非必填）、value格式（非必填）、数据源类型（必选）四个字段，数据源类型默认选中「sparkthrift2.x」，且暂不显示「测试数据」输入框及「正则匹配测试」按钮"
+                    },
+                    {
+                      "step": "在新增弹窗中依次填写：key输入框填写 userInfo，中文名称输入框填写「用户信息」，value格式输入框填写 ^[a-zA-Z]+$，数据源类型选择「hive2.x」",
+                      "expected": "各字段输入内容显示正确；value格式填写内容后，弹窗内动态显示「测试数据」输入框和「正则匹配测试」按钮"
+                    },
+                    {
+                      "step": "在「测试数据」输入框中填写 testValue，点击【正则匹配测试】按钮",
+                      "expected": "正则匹配测试执行，显示匹配结果为「匹配成功」（或等价的通过提示）"
+                    },
+                    {
+                      "step": "点击弹窗【确定】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表自动刷新，新增的key userInfo 出现在列表中，数据源类型显示为「hive2.x」，中文名称显示「用户信息」，value格式显示正则信息 ^[a-zA-Z]+$，创建人为当前登录用户"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证新增key时key字段为空不可提交",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，进入json格式校验管理页面",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【新增】按钮，弹窗出现后，key字段保持为空，数据源类型保持默认「sparkthrift2.x」，直接点击【确定】按钮",
+                      "expected": "表单校验触发，key输入框下方显示「请输入key」或等价必填提示，弹窗不关闭，数据未提交"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证新增key时key字段输入超255字符不可提交",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，进入json格式校验管理页面",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【新增】按钮，在key输入框中输入256个字符（例如256个字母 a 重复），点击【确定】按钮",
+                      "expected": "表单校验触发，key输入框显示「长度不能超过255字符」或等价提示，弹窗不关闭，数据未提交"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证新增key时key字段输入恰好255字符边界值可成功提交",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，进入json格式校验管理页面",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【新增】按钮，在key输入框中输入恰好255个字符（字母 a 重复255次），数据源类型保持默认「sparkthrift2.x」，点击【确定】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表刷新，包含255字符key的记录成功出现在列表中，无报错"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证新增key时数据源类型三种选项可正常切换",
+                  "priority": "P2",
+                  "preconditions": "使用有权限账号登录系统，进入json格式校验管理页面",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【新增】按钮，查看数据源类型下拉框的默认值及可选项",
+                      "expected": "数据源类型默认值为「sparkthrift2.x」，下拉可选项包含且仅包含「sparkthrift2.x」、「hive2.x」、「doris3.x」三个选项"
+                    },
+                    {
+                      "step": "依次点击选择「hive2.x」，再选择「doris3.x」，再选回「sparkthrift2.x」",
+                      "expected": "每次选择后下拉框显示值与所选一致，选项切换无异常"
+                    },
+                    {
+                      "step": "key输入框填写 typeTestKey，保持数据源类型选中「doris3.x」，点击【确定】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表中新增记录数据源类型列显示「doris3.x」"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "编辑key",
+              "test_cases": [
+                {
+                  "title": "验证编辑key名称、value格式、数据源类型并保存生效",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在key为 editTarget、数据源类型为「sparkthrift2.x」的记录",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载，列表显示key editTarget 的记录"
+                    },
+                    {
+                      "step": "在key为 editTarget 的行，点击操作列的【编辑】按钮",
+                      "expected": "弹出编辑弹窗，key输入框显示当前值「editTarget」，value格式、数据源类型显示当前值"
+                    },
+                    {
+                      "step": "将key输入框内容修改为 editTargetV2，value格式输入框填写 ^\\d{4}$，数据源类型切换选择「doris3.x」，点击【确定】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表刷新，原key editTarget 记录更新为key editTargetV2，value格式显示 ^\\d{4}$，数据源类型显示「doris3.x」，更新人为当前登录用户，更新时间更新为当前时间"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "新增子层级",
+              "test_cases": [
+                {
+                  "title": "验证新增子层级完整流程",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在key为 parentKey 的第一层级记录",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载，列表显示 parentKey 记录"
+                    },
+                    {
+                      "step": "在key为 parentKey 的行，点击操作列的【新增子层级】按钮",
+                      "expected": "弹出弹窗，标题为「新增子层级」，包含key（必填）、中文名称（非必填）、value格式（非必填）三个字段，不含数据源类型选项"
+                    },
+                    {
+                      "step": "在弹窗中key输入框填写 childKey，中文名称填写「子层级键」，value格式填写 ^[0-9]+$，点击【确定】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表刷新，parentKey 行显示「+」展开图标，点击「+」后展开子层级，可见key为 childKey 的子层级记录，中文名称显示「子层级键」，value格式显示 ^[0-9]+$"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证第5层级不显示新增子层级按钮",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理中已存在5层嵌套层级数据（第5层key为 level5Key）",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "逐层点击「+」展开，依次展开第1层到第5层级，找到第5层key为 level5Key 的记录，查看其操作列",
+                      "expected": "第5层 level5Key 记录的操作列中，仅显示【编辑】和【删除】按钮，不显示【新增子层级】按钮"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "删除key",
+              "test_cases": [
+                {
+                  "title": "验证单个删除含子层级的key会联动删除子层级数据",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理中已存在key为 deleteParent 的记录，其下有子层级key为 deleteChild",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载，deleteParent 记录在列表中显示「+」图标"
+                    },
+                    {
+                      "step": "在key为 deleteParent 的行，点击操作列的【删除】按钮",
+                      "expected": "弹出确认弹窗，提示文本为「请确认是否删除key信息，若存在子层级key信息会联动删除」"
+                    },
+                    {
+                      "step": "点击确认弹窗中的【确认】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表刷新，deleteParent 记录从列表中消失，子层级 deleteChild 也不再存在"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证批量删除多条key（含子层级）",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在key为 batchKey1（含子层级 batchKey1Child）和 batchKey2（无子层级）的记录",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "在列表中勾选 batchKey1 和 batchKey2 两行的行选择框",
+                      "expected": "两行均显示勾选状态，列表顶部或底部出现批量删除入口"
+                    },
+                    {
+                      "step": "点击【批量删除】按钮",
+                      "expected": "弹出确认弹窗，提示文本为「请确认是否批量删除key信息，若存在子层级key信息会联动删除」"
+                    },
+                    {
+                      "step": "点击确认弹窗中的【确认】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表刷新，batchKey1、batchKey2 均从列表消失，batchKey1 的子层级 batchKey1Child 也不再存在"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "搜索与筛选",
+              "test_cases": [
+                {
+                  "title": "验证key名模糊搜索功能（含子层级key命中）",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在key为 orderInfo 的第一层级记录，其子层级包含key为 orderStatus 的第二层级记录",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载，列表显示所有第一层级数据"
+                    },
+                    {
+                      "step": "在搜索框中输入 orderInfo，等待搜索结果返回",
+                      "expected": "列表仅显示key包含 orderInfo 的第一层级记录，key名称中不含 orderInfo 的记录均不显示"
+                    },
+                    {
+                      "step": "清空搜索框，重新输入 orderStatus（子层级key名），等待搜索结果返回",
+                      "expected": "列表展示命中子层级的父级记录 orderInfo，点击「+」后可见 orderStatus 子层级记录"
+                    },
+                    {
+                      "step": "清空搜索框，等待列表恢复",
+                      "expected": "列表恢复显示所有第一层级数据"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证创建人筛选功能",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在由用户 testUser01 创建的key记录",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "在创建人筛选器中选择 testUser01，等待筛选结果返回",
+                      "expected": "列表仅显示创建人为 testUser01 的记录，其他用户创建的记录不显示"
+                    },
+                    {
+                      "step": "清除创建人筛选条件",
+                      "expected": "列表恢复显示所有记录"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "层级展开",
+              "test_cases": [
+                {
+                  "title": "验证层级展开/下钻及「+」标识显示逻辑",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在key为 rootKey（含子层级 level2Key，level2Key 含子层级 level3Key）的三层嵌套数据，以及key为 leafKey（无子层级）的记录",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "rootKey 行显示「+」展开图标，leafKey 行不显示「+」图标，列表展示条数按最外层级统计"
+                    },
+                    {
+                      "step": "点击 rootKey 行的「+」图标",
+                      "expected": "rootKey 展开，显示第二层级子节点 level2Key，level2Key 行显示「+」图标（表明还有下级）"
+                    },
+                    {
+                      "step": "点击 level2Key 行的「+」图标",
+                      "expected": "level2Key 展开，显示第三层级子节点 level3Key，level3Key 行无「+」图标（已是最末叶节点）"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "正则测试",
+              "test_cases": [
+                {
+                  "title": "验证value格式有内容时正则测试控件显示及匹配通过/失败场景",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，进入json格式校验管理页面",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【新增】按钮，在弹窗中key输入框填写 regexTestKey，value格式输入框为空，查看弹窗内容",
+                      "expected": "弹窗中不显示「测试数据」输入框和「正则匹配测试」按钮"
+                    },
+                    {
+                      "step": "在value格式输入框中填写 ^\\d{6}$，查看弹窗变化",
+                      "expected": "弹窗动态显示「测试数据」输入框和「正则匹配测试」按钮"
+                    },
+                    {
+                      "step": "在「测试数据」输入框中填写 123456，点击【正则匹配测试】按钮",
+                      "expected": "显示匹配结果为「匹配成功」或等价通过提示"
+                    },
+                    {
+                      "step": "清空「测试数据」输入框，填写 abcdef，点击【正则匹配测试】按钮",
+                      "expected": "显示匹配结果为「匹配失败」或等价不通过提示"
+                    },
+                    {
+                      "step": "清空value格式输入框内容，查看弹窗变化",
+                      "expected": "「测试数据」输入框和「正则匹配测试」按钮隐藏"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "导入",
+              "test_cases": [
+                {
+                  "title": "验证导入正确文件全流程（重复则跳过）",
+                  "priority": "P0",
+                  "preconditions": "使用有权限账号登录系统，已准备好符合模板格式的XLSX文件 json_format_import_template.xlsx，文件中各层key填写完整，无重复key",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击列表右上角【导入】按钮",
+                      "expected": "弹出导入弹窗，标题为「导入标准」，包含「重复处理规则」选项（默认选中「重复则跳过」）和文件上传区域"
+                    },
+                    {
+                      "step": "确认重复处理规则为默认「重复则跳过」，在文件上传区域上传 json_format_import_template.xlsx 文件，点击【确定】按钮，等待校验和导入接口响应完成",
+                      "expected": "弹窗关闭，列表刷新，导入文件中的key数据成功出现在列表中，层级关系正确"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证导入模板下载功能",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，进入json格式校验管理页面",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【导入】按钮，在导入弹窗中点击【下载模板】链接，等待文件下载完成",
+                      "expected": "浏览器下载文件，文件命名为 json_format_import_template.xlsx，打开文件后包含5个Sheet（分别对应一层、二层、三层、四层、五层），一层Sheet包含「*key」、「中文名称」、「value格式」列，二至五层Sheet各自包含「*上一层级的key名」、「*key」、「中文名称」、「value格式」列"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证重复处理规则「重复则覆盖更新」生效",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在key为 existKey、value格式为 ^[a-z]+$ 的记录；已准备好包含key existKey、value格式为 ^[A-Z]+$ 的XLSX导入文件",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载，existKey 记录的value格式显示 ^[a-z]+$"
+                    },
+                    {
+                      "step": "点击【导入】按钮，在导入弹窗中将重复处理规则切换为「重复则覆盖更新」，上传包含key existKey（value格式为 ^[A-Z]+$）的XLSX文件，点击【确定】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表刷新，existKey 记录的value格式更新为 ^[A-Z]+$"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证重复处理规则「重复则跳过」对已存在key不覆盖",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在key为 skipKey、value格式为 ^[a-z]+$ 的记录；已准备好包含key skipKey、value格式为 ^[A-Z]+$ 的XLSX导入文件",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载，skipKey 记录的value格式显示 ^[a-z]+$"
+                    },
+                    {
+                      "step": "点击【导入】按钮，在导入弹窗中确认重复处理规则为「重复则跳过」（默认值），上传包含key skipKey（value格式为 ^[A-Z]+$）的XLSX文件，点击【确定】按钮，等待接口响应完成",
+                      "expected": "弹窗关闭，列表刷新，skipKey 记录的value格式仍为 ^[a-z]+$，未被覆盖"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证导入文件key名超255字符时标红并批注「长度超限」",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，已准备好XLSX导入文件，其中一层Sheet的某一行key列填写256个字符（256个字母 b 重复）",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【导入】按钮，上传包含256字符key的XLSX文件，点击【确定】按钮，等待校验完成",
+                      "expected": "弹窗提示「导入表格中存在错误数据，请检查后重新导入」，并提供导出错误文件的入口，无法完成导入"
+                    },
+                    {
+                      "step": "点击导出错误文件入口，等待文件下载完成",
+                      "expected": "下载文件命名为 json_format_error_ 加当日日期（如 json_format_error_20260406.xlsx），打开文件，256字符key所在单元格显示红色标注，批注内容为「长度超限」"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证导入文件必填项未填写时标红并批注「必填项未填写」",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，已准备好XLSX导入文件，其中一层Sheet的某一行key列为空（必填项缺失）",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【导入】按钮，上传key列为空的XLSX文件，点击【确定】按钮，等待校验完成",
+                      "expected": "弹窗提示「导入表格中存在错误数据，请检查后重新导入」，无法完成导入"
+                    },
+                    {
+                      "step": "点击导出错误文件入口，等待文件下载完成，打开下载的错误文件",
+                      "expected": "key列为空的单元格显示红色标注，批注内容为「必填项未填写」"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证导入文件二层key上一层级key名无法匹配时标红并批注提示",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，已准备好XLSX导入文件，其中二层Sheet的「*上一层级的key名」列填写为 nonExistParentKey（系统中不存在该key）",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击【导入】按钮，上传二层Sheet中上一层级key为 nonExistParentKey 的XLSX文件，点击【确定】按钮，等待校验完成",
+                      "expected": "弹窗提示「导入表格中存在错误数据，请检查后重新导入」，无法完成导入"
+                    },
+                    {
+                      "step": "点击导出错误文件入口，等待文件下载完成，打开下载的错误文件",
+                      "expected": "二层Sheet中「*上一层级的key名」为 nonExistParentKey 的单元格显示红色标注，批注内容为「上一层级无相同key名匹配」"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "导出",
+              "test_cases": [
+                {
+                  "title": "验证导出列表数据完整流程及文件命名",
+                  "priority": "P0",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在至少2条数据",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "点击列表右上角【导出】按钮",
+                      "expected": "弹出确认弹窗，提示文本为「请确认是否导出列表数据」"
+                    },
+                    {
+                      "step": "点击确认弹窗中的【确认】按钮，等待文件下载完成",
+                      "expected": "浏览器下载文件，文件命名为 json_format_ 加当日日期（如 json_format_20260406），打开文件后包含key、中文名称、value格式、数据源类型、创建人、创建时间、更新人、更新时间、层级关系等列，数据内容与列表一致"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证筛选后导出仅包含筛选结果数据",
+                  "priority": "P1",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中已存在由用户 exportUser 创建的key exportKey1 以及由其他用户创建的数据",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "在创建人筛选器中选择 exportUser，等待列表筛选结果返回",
+                      "expected": "列表仅显示创建人为 exportUser 的记录"
+                    },
+                    {
+                      "step": "点击【导出】按钮，在确认弹窗中点击【确认】，等待文件下载完成",
+                      "expected": "下载文件仅包含创建人为 exportUser 的记录，不包含其他用户的数据"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "空列表与分页",
+              "test_cases": [
+                {
+                  "title": "验证列表无数据时的空状态展示",
+                  "priority": "P2",
+                  "preconditions": "使用有权限账号登录系统，json格式校验管理列表中无任何数据（或通过搜索条件使结果为空）",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "在搜索框中输入一个不存在的key名 nonExistKeyXyz123，等待搜索结果返回",
+                      "expected": "列表显示空状态（如「暂无数据」或等价的空态提示），不显示任何记录行，分页区域显示总条数为0"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
