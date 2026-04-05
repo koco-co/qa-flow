@@ -119,9 +119,7 @@ function loadPreferences(): XmindPreferences {
 
     const content = readFileSync(prefPath, "utf-8");
 
-    const tmplMatch = content.match(
-      /root_title_template:\s*`([^`]+)`/,
-    );
+    const tmplMatch = content.match(/root_title_template:\s*`([^`]+)`/);
     if (tmplMatch) defaults.root_title_template = tmplMatch[1];
 
     const idMatch = content.match(/iteration_id:\s*(\S+)/);
@@ -356,10 +354,7 @@ async function readXmindSheets(
   return [sheets, zip];
 }
 
-async function writeXmindSheets(
-  zip: JSZip,
-  outputPath: string,
-): Promise<void> {
+async function writeXmindSheets(zip: JSZip, outputPath: string): Promise<void> {
   const out = await zip.generateAsync({
     type: "nodebuffer",
     compression: "DEFLATE",
@@ -449,18 +444,14 @@ function buildRawL1Node(data: IntermediateJson): XMindTopicNode {
 
       l1Children.push({
         title: mod.name,
-        ...(pageNodes.length > 0
-          ? { children: { attached: pageNodes } }
-          : {}),
+        ...(pageNodes.length > 0 ? { children: { attached: pageNodes } } : {}),
       });
     }
   }
 
   return {
     title: l1Title,
-    ...(l1Children.length > 0
-      ? { children: { attached: l1Children } }
-      : {}),
+    ...(l1Children.length > 0 ? { children: { attached: l1Children } } : {}),
   };
 }
 
@@ -547,9 +538,10 @@ interface ArchiveFrontMatter {
   [key: string]: unknown;
 }
 
-function parseFrontMatter(
-  content: string,
-): { fm: ArchiveFrontMatter; body: string } {
+function parseFrontMatter(content: string): {
+  fm: ArchiveFrontMatter;
+  body: string;
+} {
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   if (!m) return { fm: {}, body: content };
 
@@ -753,11 +745,20 @@ async function main(): Promise<void> {
     .description(
       "Convert intermediate JSON or Archive Markdown to .xmind files",
     )
-    .requiredOption("--input <path>", "Path to input JSON, MD file, or directory of MD files")
-    .option("--output <path>", "Path to output .xmind file (auto-derived for MD input)")
+    .requiredOption(
+      "--input <path>",
+      "Path to input JSON, MD file, or directory of MD files",
+    )
+    .option(
+      "--output <path>",
+      "Path to output .xmind file (auto-derived for MD input)",
+    )
     .option("--mode <mode>", "Write mode: create | append | replace", "create")
     .option("--project <name>", "Project name for XMind root node", "数栈测试")
-    .option("--version <ver>", "PRD version (e.g. 6.4.9) for root title template")
+    .option(
+      "--version <ver>",
+      "PRD version (e.g. 6.4.9) for root title template",
+    )
     .option("--json-only", "Only output intermediate JSON (MD input only)")
     .parse(process.argv);
 
@@ -906,9 +907,7 @@ async function processMdFile(
     return;
   }
 
-  process.stdout.write(
-    `XMind: ${resolve(xmindPath)} (${caseCount} cases)\n`,
-  );
+  process.stdout.write(`XMind: ${resolve(xmindPath)} (${caseCount} cases)\n`);
 }
 
 main().catch((err) => {
