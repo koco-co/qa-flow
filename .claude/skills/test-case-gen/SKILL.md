@@ -9,8 +9,8 @@ argument-hint: "[PRD 路径或蓝湖 URL] [--quick]"
 
 <!-- 前置加载 -->
 
-执行前检查 `${CLAUDE_SKILL_DIR}/preferences.md` 是否存在，若存在则读取。
-偏好优先级：用户当前指令 > preferences.md > 本 skill 内置规则（references/）。
+执行前读取 `preferences/` 目录下所有 `.md` 文件（如存在）。
+偏好优先级：用户当前指令 > preferences/ 规则 > 本 skill 内置规则（references/）。
 读取项目配置：`.claude/config.json`（模块、仓库、路径的唯一权威来源）。
 全程遵守 `.claude/rules/test-case-writing.md` 用例编写规范。
 
@@ -172,7 +172,7 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 为每个模块派发独立 Writer，输入包含：
 - 增强后 PRD 对应模块内容
 - 该模块已确认的测试点清单
-- preferences.md 规则（若存在）
+- preferences/ 目录下的偏好规则（若存在）
 - 历史归档用例参考（来自 analyze 步骤）
 
 ### 4.2 BLOCKED 中转
