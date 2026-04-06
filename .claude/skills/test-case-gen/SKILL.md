@@ -6,7 +6,9 @@ description:
   触发词：生成测试用例、生成用例、写用例、为 <需求名称> 生成用例、test case、
   重新生成 xxx 模块、追加用例。支持 --quick 快速模式和蓝湖 URL 输入。
   也支持标准化归档：当用户提供 .xmind 或 .csv 文件时，触发归档标准化流程。
-  触发词：标准化归档、归档用例、转化用例、标准化 xmind、标准化 csv。"
+  触发词：标准化归档、归档用例、转化用例、标准化 xmind、标准化 csv。
+  也支持 XMind 反向同步：将手动修改的 XMind 同步回 Archive MD。
+  触发词：同步 xmind、同步 XMind 文件、反向同步。"
 argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 ---
 
@@ -28,6 +30,7 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 | 续传       | 自动检测 `.temp/.qa-state-*.json` 存在 | 从断点节点继续                                    |
 | 模块重跑   | `重新生成 xxx 的「yyy」模块`           | 仅执行 write → review → output（replace 模式）    |
 | 标准化归档 | 用户提供 `.xmind` 或 `.csv` 文件       | 走独立流程：parse → standardize → review → output |
+| 反向同步   | `同步 xmind`、`反向同步`               | XMind → Archive MD，走独立 5 步流程              |
 
 ---
 
@@ -46,19 +49,12 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 npx tsx .claude/scripts/history-convert.ts --path {{input_file}} --detect
 ```
 
-展示解析结果：
+展示解析结果后，使用 AskUserQuestion 工具向用户确认：
 
-```
-已解析源文件：{{input_file}}
-文件类型：{{xmind | csv}}
-用例数量：{{count}} 条
-模块分布：{{module_list}}
-
-选项：
-1. ✓ 标准化归档（AI 按规则重写用例，推荐）
-2. 仅格式转换（保留原始内容，直接转为 Archive MD）
-3. 查看原始用例内容
-```
+- 问题：`已解析源文件 {{input_file}}（{{xmind|csv}}），共 {{count}} 条用例。选择处理方式？`
+- 选项 1：标准化归档 — AI 按规则重写用例（推荐）
+- 选项 2：仅格式转换 — 保留原始内容，直接转为 Archive MD
+- 选项 3：查看原始用例内容
 
 > **选项 1（标准化归档）**：AI 读取原始用例内容，按 `test-case-rules.md` 全部规则重写步骤、预期、前置条件，确保达到自动化可执行精度。原始 XMind/CSV 内容**不直接放入**产物中。
 > **选项 2（仅格式转换）**：调用 `history-convert.ts` 直接转换，不经过 AI 重写。
@@ -102,19 +98,73 @@ npx tsx .claude/scripts/xmind-gen.ts --input {{final_json}} --output {{xmind_tmp
 npx tsx .claude/scripts/plugin-loader.ts notify --event archive-converted --data '{"fileCount":1,"caseCount":{{count}}}'
 ```
 
-### 交互点 — 完成确认
+### 交互点 — 完成确认（使用 AskUserQuestion 工具）
 
+使用 AskUserQuestion 工具向用户确认：
+
+- 问题：`标准化归档完成。Archive MD：{{archive_tmp_path}}，XMind：{{xmind_tmp_path}}，共 {{n}} 条用例（标准化前 {{original_count}} 条，标准化后 {{final_count}} 条）。下一步？`
+- 选项 1：完成
+- 选项 2：修改某条用例（→ xmind-editor skill）
+
+---
+
+## XMind 反向同步流程（XMind → Archive MD）
+
+> 当用户在 XMind 软件中手动修改了用例后，需要将变更同步回 Archive MD 归档文件。
+> 此流程**不走** 7 节点工作流，为独立的反向同步操作。
+
+### 触发条件
+
+用户输入包含触发词：同步 xmind、同步 XMind 文件、反向同步。
+或指定了具体 XMind 文件路径（如 `同步 workspace/xmind/202604/数据质量.xmind`）。
+
+### RS1: 确认 XMind 文件
+
+若用户未指定 XMind 文件，使用 AskUserQuestion 工具询问：
+
+- 问题：`请指定要同步的 XMind 文件路径，或输入关键词搜索`
+- 选项 1：从最近生成的 XMind 中选择
+- 选项 2：手动输入文件路径
+
+若选择"从最近生成的 XMind 中选择"，列出 `workspace/xmind/` 下最近修改的文件供选择。
+
+### RS2: 解析 XMind 文件
+
+```bash
+npx tsx .claude/scripts/history-convert.ts --path {{xmind_file}} --detect
 ```
-标准化归档完成
 
-Archive MD：{{archive_tmp_path}}
-XMind：{{xmind_tmp_path}}
-共 {{n}} 条用例（标准化前 {{original_count}} 条，标准化后 {{final_count}} 条）
+展示解析结果，并使用 AskUserQuestion 确认：
 
-选项：
-1. 完成
-2. 修改某条用例（→ xmind-editor skill）
+- 问题：`已解析 {{xmind_file}}，共 {{count}} 条用例。确认同步到 Archive MD？`
+- 选项 1：确认同步（推荐）— 覆盖对应的 Archive MD 文件
+- 选项 2：预览变更 — 先生成到 tmp/ 目录，对比后再决定
+- 选项 3：取消
+
+### RS3: 定位对应 Archive MD
+
+按以下优先级查找对应的 Archive MD 文件：
+
+1. XMind 文件名匹配：`workspace/archive/{{YYYYMM}}/{{same_name}}.md`
+2. 同月份目录下搜索 frontmatter 中 `suite_name` 匹配的文件
+3. 未找到 → 使用 AskUserQuestion 询问用户指定目标路径或创建新文件
+
+### RS4: 执行转换
+
+```bash
+npx tsx .claude/scripts/history-convert.ts --path {{xmind_file}}
 ```
+
+转换完成后，将生成的 Archive MD 覆盖写入目标路径（或写入 tmp/ 供预览）。
+
+### RS5: 完成确认
+
+使用 AskUserQuestion 工具：
+
+- 问题：`反向同步完成。Archive MD 已更新：{{archive_path}}，共 {{count}} 条用例。下一步？`
+- 选项 1：完成
+- 选项 2：查看同步后的 Archive MD
+- 选项 3：修改某条用例（→ xmind-editor skill）
 
 ---
 
@@ -144,17 +194,14 @@ npx tsx .claude/scripts/plugin-loader.ts check --input "{{user_input}}"
 npx tsx .claude/scripts/state.ts init --prd {{prd_path}} --mode {{mode}}
 ```
 
-### 交互点 A — 确认参数
+### 交互点 A — 确认参数（使用 AskUserQuestion 工具）
 
-```
-已识别 PRD：{{prd_path}}
-运行模式：{{mode}}
+使用 AskUserQuestion 工具向用户展示以下选项：
 
-选项：
-1. ✓ 继续（推荐）
-2. 切换为快速模式
-3. 指定其他 PRD 文件
-```
+- 问题：`已识别 PRD：{{prd_path}}，运行模式：{{mode}}。如何继续？`
+- 选项 1：继续（推荐）
+- 选项 2：切换为快速模式
+- 选项 3：指定其他 PRD 文件
 
 等待用户选择后进入节点 2（transform）。
 
@@ -223,12 +270,17 @@ npx tsx .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
 - 按 `references/prd-template.md` 模板填充
 - 生成 CLARIFY 块（若有待确认项）
 
-### 2.5 CLARIFY 中转（若有待确认项）
+### 2.5 CLARIFY 中转（强制检查）
+
+> **⚠️ transform subagent 必须输出 CLARIFY 块（含待确认项或空声明）。若 subagent 输出中缺少 `## CLARIFY` 标记，主 agent 须要求 subagent 补充执行 6 维度自检。**
 
 处理流程参见 `references/clarify-protocol.md`：
 
-1. 解析 transform 输出中的 `## CLARIFY` 块
-2. 逐个向用户展示选择框（AskUserQuestion），包含推荐答案和备选
+1. 检查 transform 输出中是否包含 `## CLARIFY` 块
+   - **缺失** → 通过 SendMessage 要求 subagent 执行步骤 5（CLARIFY 自检），不可跳过
+   - **空声明**（"无待确认项"）→ 正常进入下一节点
+   - **有待确认项** → 执行下方步骤 2-6
+2. 逐个向用户展示选择框（**使用 AskUserQuestion 工具**），包含推荐答案和备选
 3. 收集确认结果，打包为 `## CONFIRMED` 发回 transform subagent
 4. subagent 合入确认结果，移除 🔴 标记
 5. 若产生新的待确认项 → 循环（最多 3 轮）
@@ -282,17 +334,14 @@ npx tsx .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node enhance --data '{{json}}'
 ```
 
-### 交互点 B（--quick 模式跳过）
+### 交互点 B（--quick 模式跳过，使用 AskUserQuestion 工具）
 
-```
-增强完成：识别 {{n}} 张图片，{{m}} 个页面要点
-健康度：{{health_warnings}}
+使用 AskUserQuestion 工具向用户展示：
 
-选项：
-1. ✓ 继续分析（推荐）
-2. 补充 PRD 信息
-3. 查看增强后的文件
-```
+- 问题：`增强完成：识别 {{n}} 张图片，{{m}} 个页面要点。健康度：{{health_warnings}}。如何继续？`
+- 选项 1：继续分析（推荐）
+- 选项 2：补充 PRD 信息
+- 选项 3：查看增强后的文件
 
 ---
 
@@ -320,7 +369,9 @@ npx tsx .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir works
 npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --data '{{json}}'
 ```
 
-### 交互点 C（--quick 模式跳过，普通模式为关键门控）
+### 交互点 C（--quick 模式跳过，使用 AskUserQuestion 工具）
+
+先在普通文本中展示测试点清单概览：
 
 ```
 测试点清单（共 {{n}} 个模块，{{m}} 条测试点）：
@@ -329,12 +380,14 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 │  ├─ {{page_1}}: {{points}}...
 │  └─ {{page_2}}: {{points}}...
 └─ {{module_b}}（{{count_b}} 条）
-
-选项：
-1. ✓ 确认，开始生成（推荐）
-2. 调整测试点清单
-3. 增加/删除测试点
 ```
+
+然后使用 AskUserQuestion 工具向用户确认：
+
+- 问题：`以上测试点清单是否确认？`
+- 选项 1：确认，开始生成（推荐）
+- 选项 2：调整测试点清单
+- 选项 3：增加/删除测试点
 
 用户确认后方可进入 write 节点。
 
@@ -357,9 +410,13 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 - 已确认信息（来自 CLARIFY 交互）
 - 源码上下文（来自 transform 步骤的源码分析结果，包括按钮名称、表单结构、字段定义、导航路径等 🔵 标注信息。若 transform 阶段完成了 B 级分析，须将关键 UI 结构摘要传给 Writer）
 
-### 5.2 BLOCKED 中转
+### 5.2 BLOCKED 中转（强制检查）
 
-若 Writer 返回 `## BLOCKED` → 执行 BLOCKED 中转协议（见下文）。
+> **⚠️ Writer subagent 必须输出 BLOCKED 块（含阻断项或空声明）。若 subagent 输出中缺少 `## BLOCKED` 标记，主 agent 须要求 subagent 补充执行 5 维度自检。**
+
+- Writer 输出缺少 `## BLOCKED` → 通过 SendMessage 要求 subagent 执行 BLOCKED 前置自检
+- 空声明（"无阻断项"）→ 正常继续
+- 有阻断项 → 执行 BLOCKED 中转协议（见下文）
 
 ### 5.3 更新状态
 
@@ -401,16 +458,14 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node write --data 
 npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data '{{json}}'
 ```
 
-### 交互点 D
+### 交互点 D（使用 AskUserQuestion 工具）
 
-```
-评审完成：共 {{n}} 条用例，修正 {{m}} 条，问题率 {{rate}}%
+使用 AskUserQuestion 工具向用户展示：
 
-选项：
-1. ✓ 生成产物（推荐）
-2. 查看修正详情
-3. 人工复核后继续
-```
+- 问题：`评审完成：共 {{n}} 条用例，修正 {{m}} 条，问题率 {{rate}}%。如何继续？`
+- 选项 1：生成产物（推荐）
+- 选项 2：查看修正详情
+- 选项 3：人工复核后继续
 
 ---
 
@@ -452,20 +507,14 @@ notify_data 必需字段：`count`、`file`、`duration`。
 npx tsx .claude/scripts/state.ts clean --prd-slug {{slug}}
 ```
 
-### 交互点 E — 完成确认
+### 交互点 E — 完成确认（使用 AskUserQuestion 工具）
 
-```
-用例生成完成
+先在普通文本中展示产物摘要，然后使用 AskUserQuestion 工具：
 
-XMind：{{xmind_path}}
-Archive：{{archive_path}}
-共 {{n}} 条用例（P0: {{p0}}, P1: {{p1}}, P2: {{p2}}）
-
-选项：
-1. 完成
-2. 修改某条用例（→ xmind-editor skill）
-3. 重新生成某个模块
-```
+- 问题：`用例生成完成。XMind：{{xmind_path}}，Archive：{{archive_path}}，共 {{n}} 条用例（P0: {{p0}}, P1: {{p1}}, P2: {{p2}}）。下一步？`
+- 选项 1：完成
+- 选项 2：修改某条用例（→ xmind-editor skill）
+- 选项 3：重新生成某个模块
 
 ---
 
@@ -476,21 +525,10 @@ Archive：{{archive_path}}
 ### 处理流程
 
 1. **解析**：从 BLOCKED 内容中提取问题列表
-2. **逐条询问**：每次只向用户提出一个问题，格式如下：
+2. **逐条询问**（使用 AskUserQuestion 工具）：每次只向用户提出一个问题，使用 AskUserQuestion 工具：
 
-```
-Writer 需要确认（{{current}}/{{total}}）：
-
-{{question_description}}
-
-候选答案：
-A. {{candidate_a}}（来源：源码分析）
-B. {{candidate_b}}
-C. ✓ {{ai_recommended}}（AI 推荐）
-D. 自行输入
-
-请选择或直接输入答案：
-```
+- 问题：`Writer 需要确认（{{current}}/{{total}}）：{{question_description}}`
+- 选项按候选答案列出，AI 推荐项标注"（推荐）"
 
 3. **收集完毕**：将所有答案注入 `## 已确认信息` 章节，重启该模块的 Writer
 4. **注入格式**：
