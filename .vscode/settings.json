@@ -23,6 +23,7 @@
     "nodebuffer",
     "prds",
     "prefs",
+    "pycache",
     "rgba",
     "SMALLINT",
     "sparkthrift",

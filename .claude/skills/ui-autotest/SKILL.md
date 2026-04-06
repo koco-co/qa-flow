@@ -193,7 +193,7 @@ npx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
 **7.1 全部通过**
 
 ```
-✅ UI 自动化测试完成
+✅ {{需求名称}} UI 自动化测试完成
 
 通过：{{passed}} / {{total}}
 耗时：{{duration}}
@@ -215,7 +215,7 @@ npx playwright test {{full_spec_path}} --project=chromium --reporter=html --outp
 Bug 报告输出至：`workspace/reports/bugs/{{YYYYMMDD}}/ui-autotest-{{suite_name}}.html`
 
 ```
-❌ UI 自动化测试完成（存在失败）
+❌ {{需求名称}} UI 自动化测试完成（存在失败）
 
 通过：{{passed}} / {{total}}
 失败：{{failed}} 条

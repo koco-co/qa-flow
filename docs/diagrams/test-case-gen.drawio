@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="cli-anything" agent="cli-anything-drawio/1.0.0" version="24.0.0">
+  <diagram id="diagram_1775495574793955" name="Page-1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="init" value="1. init&#xa;输入解析·插件检测" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="30.0" y="200.0" width="140.0" height="70.0" as="geometry" />
+        </mxCell>
+        <mxCell id="transform" value="2. transform&#xa;源码分析·需求结构化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="200.0" y="200.0" width="150.0" height="70.0" as="geometry" />
+        </mxCell>
+        <mxCell id="enhance" value="3. enhance&#xa;图片识别·标准化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="380.0" y="200.0" width="140.0" height="70.0" as="geometry" />
+        </mxCell>
+        <mxCell id="analyze" value="4. analyze&#xa;历史检索·脑暴清单" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="550.0" y="200.0" width="150.0" height="70.0" as="geometry" />
+        </mxCell>
+        <mxCell id="write" value="5. write&#xa;并行 Writer&#xa;Sub-Agents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="730.0" y="200.0" width="150.0" height="70.0" as="geometry" />
+        </mxCell>
+        <mxCell id="review" value="6. review&#xa;质量审查&#xa;(阈值门控)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="910.0" y="200.0" width="140.0" height="70.0" as="geometry" />
+        </mxCell>
+        <mxCell id="output" value="7. output&#xa;XMind + MD&#xa;+ 通知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="1080.0" y="200.0" width="140.0" height="70.0" as="geometry" />
+        </mxCell>
+        <mxCell id="clarify" value="CLARIFY&#xa;协议" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="250.0" y="320.0" width="100.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="blocked" value="BLOCKED&#xa;协议" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="780.0" y="320.0" width="100.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="quality_gate" value="&lt; 15% 静默修复&#xa;15-40% 自动修复&#xa;&gt; 40% 打回" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=15;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="885.0" y="330.0" width="170.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="plugins_node" value="Plugin Hooks&#xa;(lanhu/zentao)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="30.0" y="50.0" width="140.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="state_node" value="断点续传&#xa;state.ts" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="550.0" y="50.0" width="140.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495625727306" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="init" target="transform">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495625859310" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="transform" target="enhance">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495625987743" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="enhance" target="analyze">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495626116663" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="analyze" target="write">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495626245755" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="write" target="review">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495626396448" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="review" target="output">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_transform_clarify" value="信息不足" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="transform" target="clarify">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_write_blocked" value="信息不足" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="write" target="blocked">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_review_gate" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="review" target="quality_gate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_plugins_init" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;dashed=1;" edge="1" parent="1" source="plugins_node" target="init">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
