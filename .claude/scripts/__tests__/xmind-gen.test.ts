@@ -82,8 +82,8 @@ describe("xmind-gen.ts create mode", () => {
       case_count: number;
     };
 
-    assert.equal(result.root_title, "数据资产");
-    assert.equal(result.l1_title, "【v6.4.10】质量问题台账");
+    assert.equal(result.root_title, "数据资产v6.4.10迭代用例(#23)");
+    assert.equal(result.l1_title, "质量问题台账");
     assert.equal(result.mode, "create");
     assert.ok(result.output_path.endsWith("test-stdout.xmind"));
     // 3 sub_group cases + 1 page-level case (列表页) + 1 page-level case (新增页) = 5
@@ -167,13 +167,13 @@ describe("xmind-gen.ts content.json validation", () => {
     assert.ok(rootTopic, "rootTopic missing");
 
     // Root title
-    assert.equal(rootTopic.title, "数据资产", "root title mismatch");
+    assert.equal(rootTopic.title, "数据资产v6.4.10迭代用例(#23)", "root title mismatch");
 
     // L1: requirement_name with version prefix
     const l1Nodes = rootTopic.children?.attached ?? [];
     assert.ok(l1Nodes.length > 0, "L1 nodes missing");
     const l1 = l1Nodes[0];
-    assert.equal(l1.title, "【v6.4.10】质量问题台账", "L1 title mismatch");
+    assert.equal(l1.title, "质量问题台账", "L1 title mismatch");
 
     // L2: module name
     const l2Nodes = l1.children?.attached ?? [];
@@ -249,8 +249,8 @@ describe("xmind-gen.ts append mode", () => {
     assert.ok(attached.length >= 2, "Should have 2 L1 nodes after append");
 
     const titles = attached.map((n) => n.title);
-    assert.ok(titles.includes("【v6.4.10】质量问题台账"), "Original L1 should be present");
-    assert.ok(titles.includes("【v6.4.11】数据质量规则"), "Appended L1 should be present");
+    assert.ok(titles.includes("质量问题台账"), "Original L1 should be present");
+    assert.ok(titles.includes("数据质量规则"), "Appended L1 should be present");
   });
 
   it("creates new file if output does not exist in append mode", () => {
@@ -260,6 +260,78 @@ describe("xmind-gen.ts append mode", () => {
     const { code, stderr } = run(["--input", FIXTURE, "--output", output, "--mode", "append"]);
     assert.equal(code, 0, `stderr: ${stderr}`);
     assert.ok(existsSync(output), "file should have been created");
+  });
+});
+
+describe("xmind-gen.ts <br> tag sanitization", () => {
+  const BR_FIXTURE = join(import.meta.dirname, "fixtures/sample-cases-with-br.json");
+
+  it("converts <br> tags to newlines in step, expected, and preconditions", async () => {
+    const output = join(TMP_DIR, "test-br-sanitize.xmind");
+    const { code, stderr } = run(["--input", BR_FIXTURE, "--output", output]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    type SheetNode = {
+      title?: string;
+      children?: { attached?: SheetNode[] };
+      notes?: { plain: { content: string } };
+    };
+    type Sheet = { rootTopic?: SheetNode };
+
+    const sheets = (await readContentJson(output)) as Sheet[];
+    const root = sheets[0]?.rootTopic;
+    assert.ok(root);
+
+    // Navigate to the case node: root → L1 → L2 → L3 → L4(sub_group) → case
+    const l1 = root.children?.attached?.[0];
+    assert.ok(l1);
+    const l2 = l1.children?.attached?.[0];
+    assert.ok(l2);
+    const l3 = l2.children?.attached?.[0];
+    assert.ok(l3);
+    const l4SubGroup = l3.children?.attached?.[0];
+    assert.ok(l4SubGroup, "sub_group node missing");
+    const caseNode = l4SubGroup.children?.attached?.[0];
+    assert.ok(caseNode, "case node missing");
+
+    // Preconditions should have <br> converted to \n
+    assert.ok(caseNode.notes?.plain?.content, "precondition note missing");
+    assert.ok(
+      !caseNode.notes!.plain.content.includes("<br"),
+      "preconditions still contains <br> tag",
+    );
+    assert.ok(
+      caseNode.notes!.plain.content.includes("\n"),
+      "preconditions should contain newline",
+    );
+
+    // Step nodes
+    const stepNodes = caseNode.children?.attached ?? [];
+    assert.ok(stepNodes.length >= 2, "should have at least 2 steps");
+
+    // Second step has <br> in both step and expected
+    const step2 = stepNodes[1];
+    assert.ok(step2.title, "step 2 title missing");
+    assert.ok(
+      !step2.title!.includes("<br"),
+      `step title still contains <br> tag: ${step2.title}`,
+    );
+    assert.ok(
+      step2.title!.includes("\n"),
+      "step title should contain newline after <br> conversion",
+    );
+
+    // Expected of step 2
+    const expected2 = step2.children?.attached?.[0];
+    assert.ok(expected2?.title, "expected 2 title missing");
+    assert.ok(
+      !expected2!.title!.includes("<br"),
+      `expected title still contains <br> tag: ${expected2!.title}`,
+    );
+    assert.ok(
+      expected2!.title!.includes("\n"),
+      "expected title should contain newline after <br> conversion",
+    );
   });
 });
 
@@ -291,7 +363,7 @@ describe("xmind-gen.ts replace mode", () => {
 
     // The original L1 should be gone, replaced by the new one
     const titles = attached.map((n) => n.title);
-    assert.ok(!titles.includes("【v6.4.10】质量问题台账"), "Old L1 should be replaced");
-    assert.ok(titles.includes("【v6.4.99】质量问题台账"), "New L1 should be present");
+    assert.ok(titles.includes("质量问题台账"), "L1 should be present (replaced with new version)");
+    assert.equal(attached.length, 1, "Should still have exactly 1 L1 node after replace");
   });
 });

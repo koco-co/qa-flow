@@ -187,6 +187,12 @@ function stripPriorityPrefix(title: string): string {
   return title.replace(/^【P\d】/, "");
 }
 
+// ─── Sanitize <br> tags to newlines ─────────────────────────────────────────
+
+function sanitizeBr(text: string): string {
+  return text.replace(/<br\s*\/?>/gi, "\n");
+}
+
 // ─── Case count ──────────────────────────────────────────────────────────────
 
 function countCases(modules: Module[]): number {
@@ -224,7 +230,7 @@ function collectPageCases(page: Page): TestCase[] {
 
 function buildCaseTopic(tc: TestCase): TopicBuilder {
   const caseChildren: TopicBuilder[] = tc.steps.map((s) =>
-    Topic(s.step).children([Topic(s.expected)]),
+    Topic(sanitizeBr(s.step)).children([Topic(sanitizeBr(s.expected))]),
   );
 
   const displayTitle = stripPriorityPrefix(tc.title);
@@ -236,7 +242,7 @@ function buildCaseTopic(tc: TestCase): TopicBuilder {
   }
 
   if (tc.preconditions) {
-    caseTopic = caseTopic.note(tc.preconditions);
+    caseTopic = caseTopic.note(sanitizeBr(tc.preconditions));
   }
 
   return caseTopic;
@@ -379,8 +385,8 @@ async function writeXmindSheets(zip: JSZip, outputPath: string): Promise<void> {
 
 function buildRawCaseNode(tc: TestCase): XMindTopicNode {
   const stepNodes: XMindTopicNode[] = tc.steps.map((s) => ({
-    title: s.step,
-    children: { attached: [{ title: s.expected }] },
+    title: sanitizeBr(s.step),
+    children: { attached: [{ title: sanitizeBr(s.expected) }] },
   }));
 
   const displayTitle = stripPriorityPrefix(tc.title);
@@ -395,7 +401,7 @@ function buildRawCaseNode(tc: TestCase): XMindTopicNode {
   }
 
   if (tc.preconditions) {
-    node.notes = { plain: { content: tc.preconditions } };
+    node.notes = { plain: { content: sanitizeBr(tc.preconditions) } };
   }
 
   return node;

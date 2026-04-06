@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "project_name": "数据资产",
+    "requirement_name": "key范围校验测试",
+    "version": "v6.4.10",
+    "requirement_id": 10300
+  },
+  "modules": [
+    {
+      "name": "数据质量",
+      "pages": [
+        {
+          "name": "规则集管理",
+          "sub_groups": [
+            {
+              "name": "规则配置",
+              "test_cases": [
+                {
+                  "title": "【P1】验证统计函数选择key范围校验后字段选择变为单选",
+                  "priority": "P1",
+                  "preconditions": "1、已在【通用配置 → json格式校验管理】页面维护key1（姓名）、key2（年龄）<br>2、已创建规则集\"rule_set_key_range_test\"",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 规则集管理】页面，等待列表加载完成",
+                      "expected": "页面正常加载，规则集列表显示已创建的规则集"
+                    },
+                    {
+                      "step": "点击【添加规则-完整性校验】，配置如下：<br>- *规则类型: 字段级<br>- *字段: info<br>- *统计函数: key范围校验",
+                      "expected": "1) 切换为key范围校验后，统计函数标签旁出现悬浮提示图标，鼠标悬浮显示文案\"当选择key范围校验时，字段仅支持单选\"<br>2) 字段选择框变为单选模式，原多选值自动清空"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
