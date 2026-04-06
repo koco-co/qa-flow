@@ -1,10 +1,40 @@
+# ── 依赖 ────────────────────────────────────────────────
 node_modules/
-workspace/.repos
-!workspace/.gitkeep
+
+# ── 环境配置（敏感信息） ────────────────────────────────
 .env
-.DS_Store
-*.log
-.temp/
 .auth/
+
+# ── 源码仓库（只读，体积大） ────────────────────────────
+workspace/.repos/
+!workspace/.repos/**/.gitkeep
+
+# ── Playwright 自动生成产物 ─────────────────────────────
+test-results/
+playwright-report/
+workspace/reports/playwright/
+workspace/reports/bugs/
+
+# ── 临时文件 ────────────────────────────────────────────
+.temp/
+workspace/.temp/
 .trash/
-tools/lanhu/__pycache__/
+
+# ── 编译 / 构建产物 ─────────────────────────────────────
+dist/
+*.tsbuildinfo
+
+# ── Python ─────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+
+# ── 操作系统 ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── 日志 ────────────────────────────────────────────────
+*.log
+
+# ── 保留 workspace 目录结构 ─────────────────────────────
+!workspace/.gitkeep

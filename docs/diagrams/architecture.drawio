@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="cli-anything" agent="cli-anything-drawio/1.0.0" version="24.0.0">
+  <diagram id="diagram_1775495574523592" name="Page-1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="user_input" value="User Input" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="500.0" y="30.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="router" value="qa-flow Router" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="130.0" width="200.0" height="80.0" as="geometry" />
+        </mxCell>
+        <mxCell id="setup" value="0: setup&#xa;环境初始化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="50.0" y="280.0" width="140.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="tcg" value="1: test-case-gen&#xa;测试用例生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="230.0" y="280.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="ca" value="2: code-analysis&#xa;报错/冲突分析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="430.0" y="280.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="xe" value="3: xmind-editor&#xa;XMind 局部编辑" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="630.0" y="280.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="ua" value="4: ui-autotest&#xa;UI 自动化测试" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="830.0" y="280.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="plugins" value="Plugin System&#xa;lanhu / zentao / notify" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="200.0" y="420.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="state" value="State Management&#xa;断点续传" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="420.0" y="420.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="prefs" value="Preferences&#xa;偏好学习" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="640.0" y="420.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="workspace" value="workspace/&#xa;XMind / Archive MD / Reports" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f5f5f5;" vertex="1" parent="1">
+          <mxGeometry x="200.0" y="540.0" width="160.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="notify_out" value="IM Notifications&#xa;钉钉/飞书/企微/邮件" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="500.0" y="540.0" width="160.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="e_user_router" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="user_input" target="router">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_r_setup" value="init" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="router" target="setup">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_r_tcg" value="#1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="router" target="tcg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_r_ca" value="#2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="router" target="ca">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_r_xe" value="#3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="router" target="xe">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_r_ua" value="#4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="router" target="ua">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_tcg_ws" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="tcg" target="workspace">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ca_ws" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="ca" target="workspace">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ua_ws" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="ua" target="workspace">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_tcg_no" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="tcg" target="notify_out">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ca_no" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="ca" target="notify_out">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ua_no" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#666666;" edge="1" parent="1" source="ua" target="notify_out">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
