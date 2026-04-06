@@ -24,7 +24,7 @@
 <br />
 
 ```
-PRD / Story  ──>  测试用例生成  ──>  XMind + Archive MD  ──>  UI 自动化验证
+PRD  ──>  测试用例生成  ──>  XMind + Archive MD  ──>  UI 自动化验证
 报错日志     ──>  智能分析      ──>  HTML 报告 + IM 通知
 ```
 
@@ -55,14 +55,14 @@ PRD / Story  ──>  测试用例生成  ──>  XMind + Archive MD  ──>  
 
 ## 核心特性
 
-| 特性 | 说明 |
-| --- | --- |
-| **7 节点流水线** | PRD &rarr; Transform &rarr; Enhance &rarr; Analyze &rarr; Write &rarr; Review &rarr; Output |
-| **多 Agent 并行** | Writer Sub-Agents 按模块并行生成用例，大型需求效率显著提升 |
-| **插件化集成** | 蓝湖 PRD 导入、禅道 Bug 集成、IM 通知，按需启用，不侵入核心流程 |
-| **交互式流程** | 每个关键节点提供推荐选项 + 自由输入，支持 `--quick` 快速模式和断点续传 |
-| **偏好学习** | 用户反馈自动沉淀到 `preferences/` 目录，持续修正生成风格 |
-| **全链路覆盖** | 测试用例生成 + Bug 分析 + XMind 编辑 + Playwright UI 自动化 |
+| 特性              | 说明                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| **7 节点流水线**  | PRD &rarr; Transform &rarr; Enhance &rarr; Analyze &rarr; Write &rarr; Review &rarr; Output |
+| **多 Agent 并行** | Writer Sub-Agents 按模块并行生成用例，大型需求效率显著提升                                  |
+| **插件化集成**    | 蓝湖 PRD 导入、禅道 Bug 集成、IM 通知，按需启用，不侵入核心流程                             |
+| **交互式流程**    | 每个关键节点提供推荐选项 + 自由输入，支持 `--quick` 快速模式和断点续传                      |
+| **偏好学习**      | 用户反馈自动沉淀到 `preferences/` 目录，持续修正生成风格                                    |
+| **全链路覆盖**    | 测试用例生成 + Bug 分析 + XMind 编辑 + Playwright UI 自动化                                 |
 
 ---
 
@@ -119,13 +119,13 @@ cp .env.example .env
 
 5 步交互向导自动完成：
 
-| 步骤 | 说明 |
-| --- | --- |
-| 1 | 环境检测 — Node.js, npm, tsx 可用性 |
-| 2 | 工作区创建 — `workspace/` 子目录结构 |
-| 3 | 源码仓库配置 — 克隆 Git 仓库到 `.repos/`（可选） |
-| 4 | 插件配置 — 检测 `.env` 中的插件凭证（可选） |
-| 5 | 环境验证 — 综合校验所有配置项 |
+| 步骤 | 说明                                             |
+| ---- | ------------------------------------------------ |
+| 1    | 环境检测 — Node.js, npm, tsx 可用性              |
+| 2    | 工作区创建 — `workspace/` 子目录结构             |
+| 3    | 源码仓库配置 — 克隆 Git 仓库到 `.repos/`（可选） |
+| 4    | 插件配置 — 检测 `.env` 中的插件凭证（可选）      |
+| 5    | 环境验证 — 综合校验所有配置项                    |
 
 ### 常用命令
 
@@ -166,23 +166,23 @@ UI自动化测试 {{需求名称}} https://your-app.example.com
 
 #### 7 个节点
 
-| 节点 | 名称 | 说明 | 关键脚本 |
-| --- | --- | --- | --- |
-| 1 | **init** | 解析输入、检测断点、加载插件 | `state.ts`, `plugin-loader.ts` |
-| 2 | **transform** | 源码分析 + PRD 结构化，含 CLARIFY 交互协议（最多 3 轮） | `repo-profile.ts`, `repo-sync.ts` |
-| 3 | **enhance** | 图片识别、frontmatter 标准化、页面高亮提取 | `image-compress.ts`, `prd-frontmatter.ts` |
-| 4 | **analyze** | 历史用例检索 + QA 头脑风暴 &rarr; 测试点清单 | `archive-gen.ts search` |
-| 5 | **write** | 按模块拆分并行 Writer Sub-Agents 生成用例 | Parallel sub-agents |
-| 6 | **review** | 质量门控审查（阈值 < 15% / 15-40% / > 40%），最多 2 轮 | Quality gate |
-| 7 | **output** | 生成 XMind + Archive MD，发送 IM 通知，清理状态 | `xmind-gen.ts`, `archive-gen.ts` |
+| 节点 | 名称          | 说明                                                    | 关键脚本                                  |
+| ---- | ------------- | ------------------------------------------------------- | ----------------------------------------- |
+| 1    | **init**      | 解析输入、检测断点、加载插件                            | `state.ts`, `plugin-loader.ts`            |
+| 2    | **transform** | 源码分析 + PRD 结构化，含 CLARIFY 交互协议（最多 3 轮） | `repo-profile.ts`, `repo-sync.ts`         |
+| 3    | **enhance**   | 图片识别、frontmatter 标准化、页面高亮提取              | `image-compress.ts`, `prd-frontmatter.ts` |
+| 4    | **analyze**   | 历史用例检索 + QA 头脑风暴 &rarr; 测试点清单            | `archive-gen.ts search`                   |
+| 5    | **write**     | 按模块拆分并行 Writer Sub-Agents 生成用例               | Parallel sub-agents                       |
+| 6    | **review**    | 质量门控审查（阈值 < 15% / 15-40% / > 40%），最多 2 轮  | Quality gate                              |
+| 7    | **output**    | 生成 XMind + Archive MD，发送 IM 通知，清理状态         | `xmind-gen.ts`, `archive-gen.ts`          |
 
 #### 质量门控 (Review 节点)
 
-| 阈值 | 动作 |
-| --- | --- |
-| < 15% 问题 | Silent fix — 直接修复 |
-| 15% - 40% | Auto-fix + Warning — 修复并警告 |
-| > 40% | Block — 打回重写 |
+| 阈值       | 动作                            |
+| ---------- | ------------------------------- |
+| < 15% 问题 | Silent fix — 直接修复           |
+| 15% - 40%  | Auto-fix + Warning — 修复并警告 |
+| > 40%      | Block — 打回重写                |
 
 #### 运行模式
 
@@ -236,13 +236,13 @@ RS1: 确认 XMind → RS2: 解析 → RS3: 定位 Archive MD → RS4: 转换 →
 
 #### 5 种模式（优先级路由）
 
-| 优先级 | 模式 | 信号特征 | 输出 |
-| --- | --- | --- | --- |
-| P1 | **Hotfix 用例** | 禅道 Bug URL | MD 测试用例 |
-| P2 | **合并冲突** | `<<<<<<< HEAD` markers | HTML 冲突报告 |
-| P3 | **后端 Bug** | Java stack trace, `Exception`, `Caused by` | HTML Bug 报告 |
-| P4 | **前端 Bug** | `TypeError`, `ChunkLoadError`, React error | HTML Bug 报告 |
-| P5 | **信息不足** | 模糊描述 | 补料清单 |
+| 优先级 | 模式            | 信号特征                                   | 输出          |
+| ------ | --------------- | ------------------------------------------ | ------------- |
+| P1     | **Hotfix 用例** | 禅道 Bug URL                               | MD 测试用例   |
+| P2     | **合并冲突**    | `<<<<<<< HEAD` markers                     | HTML 冲突报告 |
+| P3     | **后端 Bug**    | Java stack trace, `Exception`, `Caused by` | HTML Bug 报告 |
+| P4     | **前端 Bug**    | `TypeError`, `ChunkLoadError`, React error | HTML Bug 报告 |
+| P5     | **信息不足**    | 模糊描述                                   | 补料清单      |
 
 #### 处理流程
 
@@ -262,11 +262,11 @@ RS1: 确认 XMind → RS2: 解析 → RS3: 定位 Archive MD → RS4: 转换 →
 
 #### 输出目录
 
-| 类型 | 路径 |
-| --- | --- |
-| Bug 报告 | `workspace/reports/bugs/YYYYMMDD/` |
-| 冲突报告 | `workspace/reports/conflicts/YYYYMMDD/` |
-| Hotfix 用例 | `workspace/issues/YYYYMM/` |
+| 类型        | 路径                                    |
+| ----------- | --------------------------------------- |
+| Bug 报告    | `workspace/reports/bugs/YYYYMMDD/`      |
+| 冲突报告    | `workspace/reports/conflicts/YYYYMMDD/` |
+| Hotfix 用例 | `workspace/issues/YYYYMM/`              |
 
 ---
 
@@ -276,13 +276,13 @@ RS1: 确认 XMind → RS2: 解析 → RS3: 定位 Archive MD → RS4: 转换 →
 
 #### 操作列表
 
-| 操作 | 命令示例 | 脚本 |
-| --- | --- | --- |
-| 搜索 | `搜索用例 "导出"` | `xmind-edit.ts search "keyword"` |
-| 查看 | `查看用例 "验证列表页默认加载"` | `xmind-edit.ts show --file X --title "Y"` |
+| 操作 | 命令示例                                | 脚本                                                           |
+| ---- | --------------------------------------- | -------------------------------------------------------------- |
+| 搜索 | `搜索用例 "导出"`                       | `xmind-edit.ts search "keyword"`                               |
+| 查看 | `查看用例 "验证列表页默认加载"`         | `xmind-edit.ts show --file X --title "Y"`                      |
 | 修改 | `修改用例 "验证导出仅导出当前筛选结果"` | `xmind-edit.ts patch --file X --title "Y" --case-json '{...}'` |
-| 新增 | `新增用例 到 "规则列表页" 分组` | `xmind-edit.ts add --file X --parent "Y" --case-json '{...}'` |
-| 删除 | `删除用例 "验证xxx"` | `xmind-edit.ts delete --file X --title "Y"` |
+| 新增 | `新增用例 到 "规则列表页" 分组`         | `xmind-edit.ts add --file X --parent "Y" --case-json '{...}'`  |
+| 删除 | `删除用例 "验证xxx"`                    | `xmind-edit.ts delete --file X --title "Y"`                    |
 
 #### 偏好学习
 
@@ -300,30 +300,30 @@ RS1: 确认 XMind → RS2: 解析 → RS3: 定位 Archive MD → RS4: 转换 →
 
 #### 8 个步骤
 
-| 步骤 | 名称 | 说明 |
-| --- | --- | --- |
-| 1 | **解析输入** | 提取 `md_path` 和 `url`，通过 `parse-cases.ts` 解析用例 |
-| 2 | **交互确认** | 用户选择范围：smoke (P0) / full (P0+P1+P2) / custom |
-| 3 | **会话准备** | 通过 `session-login.ts` 检查/创建登录 session |
-| 4 | **脚本生成** | 最多 5 个并行 Sub-Agents 生成 `.ts` 代码块 |
-| 5 | **合并脚本** | `merge-specs.ts` 合并为 `smoke.spec.ts` 和 `full.spec.ts` |
-| 6 | **执行测试** | `npx playwright test` with HTML reporter |
-| 7 | **结果处理** | 失败用例触发 Bug Reporter Sub-Agents 生成报告 |
-| 8 | **发送通知** | 通过 Plugin 发送通过/失败摘要 |
+| 步骤 | 名称         | 说明                                                      |
+| ---- | ------------ | --------------------------------------------------------- |
+| 1    | **解析输入** | 提取 `md_path` 和 `url`，通过 `parse-cases.ts` 解析用例   |
+| 2    | **交互确认** | 用户选择范围：smoke (P0) / full (P0+P1+P2) / custom       |
+| 3    | **会话准备** | 通过 `session-login.ts` 检查/创建登录 session             |
+| 4    | **脚本生成** | 最多 5 个并行 Sub-Agents 生成 `.ts` 代码块                |
+| 5    | **合并脚本** | `merge-specs.ts` 合并为 `smoke.spec.ts` 和 `full.spec.ts` |
+| 6    | **执行测试** | `npx playwright test` with HTML reporter                  |
+| 7    | **结果处理** | 失败用例触发 Bug Reporter Sub-Agents 生成报告             |
+| 8    | **发送通知** | 通过 Plugin 发送通过/失败摘要                             |
 
 #### 测试范围
 
-| 模式 | 用例范围 | 命令 |
-| --- | --- | --- |
-| Smoke | 仅 P0 | `UI自动化测试 {{需求名称}} {{url}}` |
-| Full | P0 + P1 + P2 | `执行UI测试 {{archive_md_path}} {{url}}` |
-| Custom | 用户自选 | 解析后交互选择 |
+| 模式   | 用例范围     | 命令                                     |
+| ------ | ------------ | ---------------------------------------- |
+| Smoke  | 仅 P0        | `UI自动化测试 {{需求名称}} {{url}}`      |
+| Full   | P0 + P1 + P2 | `执行UI测试 {{archive_md_path}} {{url}}` |
+| Custom | 用户自选     | 解析后交互选择                           |
 
 #### 输出
 
-| 类型 | 路径 |
-| --- | --- |
-| E2E 用例脚本 | `tests/e2e/YYYYMM/<suite_name>/` |
+| 类型            | 路径                                     |
+| --------------- | ---------------------------------------- |
+| E2E 用例脚本    | `tests/e2e/YYYYMM/<suite_name>/`         |
 | Playwright 报告 | `workspace/reports/playwright/YYYYMMDD/` |
 
 ---
@@ -334,18 +334,18 @@ RS1: 确认 XMind → RS2: 解析 → RS3: 定位 Archive MD → RS4: 转换 →
 
 ### 内置插件
 
-| 插件 | Hook | 功能 | 启用条件 |
-| --- | --- | --- | --- |
-| **lanhu** | `test-case-gen:init` | 从蓝湖 URL 爬取 PRD 文档和截图 | `.env` 配置 `LANHU_COOKIE` |
-| **zentao** | `code-analysis:init` | 读取禅道 Bug 详情和关联信息 | `.env` 配置 `ZENTAO_BASE_URL` + 账号密码 |
-| **notify** | `*:output` | 钉钉 / 飞书 / 企微 / 邮件通知 | `.env` 配置任意一个通道的 Webhook 或 SMTP |
+| 插件       | Hook                 | 功能                           | 启用条件                                  |
+| ---------- | -------------------- | ------------------------------ | ----------------------------------------- |
+| **lanhu**  | `test-case-gen:init` | 从蓝湖 URL 爬取 PRD 文档和截图 | `.env` 配置 `LANHU_COOKIE`                |
+| **zentao** | `code-analysis:init` | 读取禅道 Bug 详情和关联信息    | `.env` 配置 `ZENTAO_BASE_URL` + 账号密码  |
+| **notify** | `*:output`           | 钉钉 / 飞书 / 企微 / 邮件通知  | `.env` 配置任意一个通道的 Webhook 或 SMTP |
 
 ### 生命周期 Hook
 
-| Hook | 时机 | 类型 |
-| --- | --- | --- |
-| `<skill>:init` | Skill 初始化阶段 | `input-adapter` — 适配输入格式 |
-| `*:output` | 任意 Skill 产出后 | `post-action` — 通知、归档等后置动作 |
+| Hook           | 时机              | 类型                                 |
+| -------------- | ----------------- | ------------------------------------ |
+| `<skill>:init` | Skill 初始化阶段  | `input-adapter` — 适配输入格式       |
+| `*:output`     | 任意 Skill 产出后 | `post-action` — 通知、归档等后置动作 |
 
 ### 开发自定义插件
 
@@ -434,18 +434,18 @@ qa-flow/
 
 所有脚本位于 `.claude/scripts/`，使用 `npx tsx` 执行：
 
-| 脚本 | 核心子命令 | 说明 |
-| --- | --- | --- |
-| `state.ts` | `init` / `resume` / `update` / `clean` | 断点状态初始化、续传、更新与清理 |
-| `xmind-gen.ts` | `--input <json> --output <dir>` | 从 JSON 中间格式生成 XMind 文件 |
-| `xmind-edit.ts` | `search` / `show` / `patch` / `add` / `delete` | XMind 用例增删改查 |
-| `archive-gen.ts` | `--input <json> --output <dir>` / `search` | 生成 Archive MD 或关键词搜索 |
-| `image-compress.ts` | `--dir <dir>` | 批量压缩图片（超 2000px 自动缩放） |
-| `plugin-loader.ts` | `check` / `notify` | 插件可用性检测与通知调度 |
-| `repo-sync.ts` | `--url <url> --branch <branch>` | 源码仓库分支同步/克隆 |
-| `repo-profile.ts` | `match` / `save` / `sync-profile` | 需求与源码仓库智能匹配 |
-| `prd-frontmatter.ts` | `--file <path>` | PRD frontmatter 标准化 |
-| `config.ts` | (无参数) | 读取 `.env` 输出项目配置 |
+| 脚本                 | 核心子命令                                     | 说明                               |
+| -------------------- | ---------------------------------------------- | ---------------------------------- |
+| `state.ts`           | `init` / `resume` / `update` / `clean`         | 断点状态初始化、续传、更新与清理   |
+| `xmind-gen.ts`       | `--input <json> --output <dir>`                | 从 JSON 中间格式生成 XMind 文件    |
+| `xmind-edit.ts`      | `search` / `show` / `patch` / `add` / `delete` | XMind 用例增删改查                 |
+| `archive-gen.ts`     | `--input <json> --output <dir>` / `search`     | 生成 Archive MD 或关键词搜索       |
+| `image-compress.ts`  | `--dir <dir>`                                  | 批量压缩图片（超 2000px 自动缩放） |
+| `plugin-loader.ts`   | `check` / `notify`                             | 插件可用性检测与通知调度           |
+| `repo-sync.ts`       | `--url <url> --branch <branch>`                | 源码仓库分支同步/克隆              |
+| `repo-profile.ts`    | `match` / `save` / `sync-profile`              | 需求与源码仓库智能匹配             |
+| `prd-frontmatter.ts` | `--file <path>`                                | PRD frontmatter 标准化             |
+| `config.ts`          | (无参数)                                       | 读取 `.env` 输出项目配置           |
 
 ---
 
@@ -455,39 +455,39 @@ qa-flow/
 
 ### 核心配置
 
-| 变量 | 必填 | 说明 |
-| --- | --- | --- |
-| `WORKSPACE_DIR` | 否 | 工作区目录名，默认 `workspace` |
-| `SOURCE_REPOS` | 否 | 源码仓库 Git URL（逗号分隔） |
+| 变量            | 必填 | 说明                           |
+| --------------- | ---- | ------------------------------ |
+| `WORKSPACE_DIR` | 否   | 工作区目录名，默认 `workspace` |
+| `SOURCE_REPOS`  | 否   | 源码仓库 Git URL（逗号分隔）   |
 
 ### 插件: 蓝湖
 
-| 变量 | 必填 | 说明 |
-| --- | --- | --- |
-| `LANHU_COOKIE` | 否 | 蓝湖登录 Cookie |
+| 变量           | 必填 | 说明            |
+| -------------- | ---- | --------------- |
+| `LANHU_COOKIE` | 否   | 蓝湖登录 Cookie |
 
 ### 插件: 禅道
 
-| 变量 | 必填 | 说明 |
-| --- | --- | --- |
-| `ZENTAO_BASE_URL` | 否 | 禅道系统地址（如 `http://zenpms.example.cn/zentao`） |
-| `ZENTAO_ACCOUNT` | 否 | 禅道账号 |
-| `ZENTAO_PASSWORD` | 否 | 禅道密码 |
+| 变量              | 必填 | 说明                                                 |
+| ----------------- | ---- | ---------------------------------------------------- |
+| `ZENTAO_BASE_URL` | 否   | 禅道系统地址（如 `http://zenpms.example.cn/zentao`） |
+| `ZENTAO_ACCOUNT`  | 否   | 禅道账号                                             |
+| `ZENTAO_PASSWORD` | 否   | 禅道密码                                             |
 
 ### 插件: 通知（任选一个通道）
 
-| 变量 | 必填 | 说明 |
-| --- | --- | --- |
-| `DINGTALK_WEBHOOK_URL` | 否 | 钉钉群机器人 Webhook |
-| `DINGTALK_KEYWORD` | 否 | 钉钉安全关键词，默认 `qa-flow` |
-| `FEISHU_WEBHOOK_URL` | 否 | 飞书群机器人 Webhook |
-| `WECOM_WEBHOOK_URL` | 否 | 企业微信群机器人 Webhook |
-| `SMTP_HOST` | 否 | 邮件服务器地址 |
-| `SMTP_PORT` | 否 | 邮件端口，默认 `587` |
-| `SMTP_USER` | 否 | 邮件账号 |
-| `SMTP_PASS` | 否 | 邮件密码 / 授权码 |
-| `SMTP_FROM` | 否 | 发件人地址 |
-| `SMTP_TO` | 否 | 收件人地址（逗号分隔） |
+| 变量                   | 必填 | 说明                           |
+| ---------------------- | ---- | ------------------------------ |
+| `DINGTALK_WEBHOOK_URL` | 否   | 钉钉群机器人 Webhook           |
+| `DINGTALK_KEYWORD`     | 否   | 钉钉安全关键词，默认 `qa-flow` |
+| `FEISHU_WEBHOOK_URL`   | 否   | 飞书群机器人 Webhook           |
+| `WECOM_WEBHOOK_URL`    | 否   | 企业微信群机器人 Webhook       |
+| `SMTP_HOST`            | 否   | 邮件服务器地址                 |
+| `SMTP_PORT`            | 否   | 邮件端口，默认 `587`           |
+| `SMTP_USER`            | 否   | 邮件账号                       |
+| `SMTP_PASS`            | 否   | 邮件密码 / 授权码              |
+| `SMTP_FROM`            | 否   | 发件人地址                     |
+| `SMTP_TO`              | 否   | 收件人地址（逗号分隔）         |
 
 ---
 
