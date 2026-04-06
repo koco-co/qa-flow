@@ -2,7 +2,7 @@
   "meta": {
     "project_name": "数据资产平台",
     "requirement_name": "【内置规则丰富】有效性，json中key对应的value值格式校验",
-    "version": "v6.3",
+    "version": "v6.3.10",
     "requirement_id": 15694,
     "description": "有效性校验支持对json类型字段做key对应的value值格式校验",
     "prd_path": "workspace/prds/202604/【内置规则丰富】有效性，json中key对应的value值格式校验/【内置规则丰富】有效性，json中key对应的value值格式校验.md"

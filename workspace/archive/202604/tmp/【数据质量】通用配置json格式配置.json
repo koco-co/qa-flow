@@ -2,17 +2,17 @@
   "meta": {
     "project_name": "数据资产平台",
     "requirement_name": "【通用配置】json格式配置",
-    "version": "v6.3",
+    "version": "v6.3.10",
     "requirement_id": 15696,
     "description": "json格式校验管理，支持key的CRUD、层级管理、导入导出、正则测试",
     "prd_path": "workspace/prds/202604/【通用配置】json格式配置/【通用配置】json格式配置.md"
   },
   "modules": [
     {
-      "name": "通用配置",
+      "name": "数据质量",
       "pages": [
         {
-          "name": "json格式校验管理-列表页",
+          "name": "通用配置-json格式校验管理",
           "sub_groups": [
             {
               "name": "新增key",

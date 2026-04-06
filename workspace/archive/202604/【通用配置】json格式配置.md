@@ -1,22 +1,30 @@
 ---
-suite_name: "【通用配置】json格式配置"
+suite_name: "【通用配置】json格式配置(#15696)"
 description: "json格式校验管理，支持key的CRUD、层级管理、导入导出、正则测试"
 prd_id: 15696
-prd_version: "v6.3"
+prd_version: "v6.3.10"
+root_name: "数据资产v6.3.10迭代用例(#23)"
 product: ""
 tags:
-  - "【通用配置】json格式配置"
   - "通用配置"
-  - "json格式校验管理-列表页"
+  - "json格式校验管理"
+  - "数据质量"
+  - "key管理"
+  - "导入导出"
+  - "正则测试"
+  - "层级管理"
+  - "CRUD"
+  - "批量删除"
+  - "搜索筛选"
 create_at: "2026-04-06"
 status: "草稿"
 case_count: 26
 origin: "xmind"
 ---
 
-## 通用配置
+## 数据质量
 
-### json格式校验管理-列表页
+### 通用配置-json格式校验管理
 
 #### 新增key
 

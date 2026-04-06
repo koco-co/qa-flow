@@ -1,13 +1,21 @@
 ---
-suite_name: "【内置规则丰富】有效性，json中key对应的value值格式校验"
+suite_name: "【内置规则丰富】有效性，json中key对应的value值格式校验(#15694)"
 description: "有效性校验支持对json类型字段做key对应的value值格式校验"
 prd_id: 15694
-prd_version: "v6.3"
+prd_version: "v6.3.10"
+root_name: "数据资产v6.3.10迭代用例(#23)"
 product: ""
 tags:
-  - "【内置规则丰富】有效性，json中key对应的value值格式校验"
+  - "内置规则丰富"
+  - "有效性校验"
+  - "json格式校验"
+  - "value值格式"
   - "数据质量"
   - "规则任务管理"
+  - "规则配置"
+  - "质量报告"
+  - "校验key"
+  - "数据源兼容性"
 create_at: "2026-04-06"
 status: "草稿"
 case_count: 30
