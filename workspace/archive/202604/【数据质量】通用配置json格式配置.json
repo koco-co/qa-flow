@@ -534,7 +534,7 @@
                 {
                   "title": "验证key数量达1000条以上时列表加载和搜索性能正常",
                   "priority": "P2",
-                  "preconditions": "1) 使用 admin 账号登录系统\n2) 通过【导入】功能批量导入1000条以上key数据到json格式校验管理列表，导入文件包含1000行一层key数据（key1 至 key1000），每条记录数据源类型为 sparkthrift2.x",
+                  "preconditions": "1) 使用 admin 账号登录系统\n2) 通过【导入】功能批量导入1000条以上key数据到json格式校验管理列表，导入文件包含1000行一层key数据（key_0001 至 key_1000），每条记录数据源类型为 sparkthrift2.x，数据生成脚本如下:\n\nimport openpyxl\n\nwb = openpyxl.Workbook()\nws1 = wb.active\nws1.title = \"一层\"\nws1.append([\"key\", \"中文名称\", \"value格式\"])\nfor i in range(1, 1001):\n    ws1.append([f\"key_{i:04d}\", f\"测试key{i}\", \"\"])\n\nwb.save(\"json_format_import_1000.xlsx\")\nprint(\"已生成 json_format_import_1000.xlsx，共1000条一层key数据\")",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成",
