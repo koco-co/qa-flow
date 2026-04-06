@@ -531,7 +531,7 @@ origin: "xmind"
    INSERT INTO quality_test_db.json_ref_key_link_test VALUES
      (1, '{"refTestKey":"Alpha"}'),
      (2, '{"refTestKey":"Beta"}');
-3) 已在【数据质量 → 通用配置】页面通过【新增】创建 json key 配置：key=refTestKey、中文名称=引用测试key、value格式=^[a-zA-Z]+$、数据源类型=Doris
+3) 已在【数据质量 → 通用配置】页面通过【新增】创建 json key 配置：key=refTestKey、中文名称=引用测试key、value格式=^[a-zA-Z]+$、数据源类型=doris3.x
 ```
 
 > 用例步骤
@@ -545,6 +545,6 @@ origin: "xmind"
 | 5    | 在 Step 2 监控规则中通过【导入规则包】导入规则集“rule_set_json_config_del_test”的“json格式校验测试包”，点击【下一步】进入 Step 3 调度属性后点击【保存】 | 导入的规则包内容正常展示，任务保存成功，规则任务列表中显示 task_json_config_del_test |
 | 6    | 返回【数据质量 → 通用配置】页面，在 key 为 refTestKey 的行点击操作列的【删除】按钮 | 弹出确认弹窗，提示文本为「请确认是否删除key信息，若存在子层级key信息会联动删除」 |
 | 7    | 在删除确认弹窗中点击【确认】按钮，等待接口响应完成 | 弹窗关闭，列表刷新，refTestKey 记录从列表中消失 |
-| 8    | 进入【数据质量 → 规则集管理】页面，找到 rule_set_json_config_del_test，点击【编辑】进入 Step 2 监控规则查看已配置规则 | Step 2 中仍正常展示完整性校验-key范围校验规则和有效性校验-value格式校验规则，规则配置的key范围/value格式字段显示原始配置值 |
+| 8    | 进入【数据质量 → 规则集管理】页面，找到 rule_set_json_config_del_test，点击【编辑】进入 Step 2 监控规则查看已配置规则 | Step 2 中仍正常展示完整性校验-key范围校验规则和有效性校验-value格式校验规则，规则配置的key范围/value格式字段显示原始配置值，页面未出现因 refTestKey 已删除导致的报错 |
 | 9    | 进入【数据质量 → 规则任务管理】页面，找到 task_json_config_del_test，点击操作列的【立即执行】按钮 | 页面提示“操作成功，稍后可在任务查询中查看详情” |
-| 10   | 进入【数据质量 → 校验结果查询】页面，找到 task_json_config_del_test 最新实例记录并打开实例详情 | 1) 本次执行生成新的实例记录，任务名称与执行时间与本次操作匹配<br>2) 实例详情中可正常查看完整性校验-key范围校验规则和有效性校验-value格式校验规则的执行结果，任务最新状态为「校验通过」 |
+| 10   | 进入【数据质量 → 校验结果查询】页面，找到 task_json_config_del_test 最新实例记录并打开实例详情 | 1) 本次执行生成新的实例记录，任务名称与执行时间与本次操作匹配<br>2) 实例详情中可正常查看完整性校验-key范围校验规则和有效性校验-value格式校验规则的执行结果，任务最新状态为「校验通过」<br>3) 页面未出现因 refTestKey 已删除导致的异常报错 |
