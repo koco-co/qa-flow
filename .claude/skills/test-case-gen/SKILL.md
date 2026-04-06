@@ -354,6 +354,8 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 - 该模块已确认的测试点清单
 - preferences/ 目录下的偏好规则（若存在）
 - 历史归档用例参考（来自 analyze 步骤）
+- 已确认信息（来自 CLARIFY 交互）
+- 源码上下文（来自 transform 步骤的源码分析结果，包括按钮名称、表单结构、字段定义、导航路径等 🔵 标注信息。若 transform 阶段完成了 B 级分析，须将关键 UI 结构摘要传给 Writer）
 
 ### 5.2 BLOCKED 中转
 
