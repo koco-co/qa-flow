@@ -1,0 +1,13 @@
+{
+  "name": "zentao",
+  "description": "禅道 Bug 集成插件：从禅道链接提取 Bug 信息和修复分支",
+  "version": "1.0.0",
+  "env_required": ["ZENTAO_BASE_URL", "ZENTAO_ACCOUNT", "ZENTAO_PASSWORD"],
+  "hooks": {
+    "code-analysis:init": "input-adapter"
+  },
+  "commands": {
+    "fetch": "npx tsx plugins/zentao/fetch.ts --bug-id {{bug_id}} --output {{output_dir}}"
+  },
+  "url_patterns": ["zentao", "zenpms"]
+}

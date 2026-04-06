@@ -1,0 +1,16 @@
+{
+  "repo_profiles": {
+    "岚图": {
+      "repos": [
+        {
+          "path": "workspace/.repos/CustomItem/dt-center-assets",
+          "branch": "release_6.3.x_ltqc"
+        },
+        {
+          "path": "workspace/.repos/CustomItem/dt-insight-studio",
+          "branch": "dataAssets/release_6.3.x_ltqc"
+        }
+      ]
+    }
+  }
+}
