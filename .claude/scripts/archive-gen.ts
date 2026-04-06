@@ -28,6 +28,48 @@ import {
   todayString,
 } from "./lib/frontmatter.js";
 
+// ─── Root name builder ──────────────────────────────────────────────────────
+
+interface XmindPreferences {
+  root_title_template: string;
+  iteration_id: string;
+}
+
+function loadXmindPreferences(): XmindPreferences {
+  const defaults: XmindPreferences = {
+    root_title_template: "数据资产v{{prd_version}}迭代用例(#{{iteration_id}})",
+    iteration_id: "23",
+  };
+
+  try {
+    const prefPath = resolve(
+      dirname(new URL(import.meta.url).pathname),
+      "../preferences/xmind-structure.md",
+    );
+    if (!existsSync(prefPath)) return defaults;
+
+    const content = readFileSync(prefPath, "utf-8");
+
+    const tmplMatch = content.match(/root_title_template:\s*`([^`]+)`/);
+    if (tmplMatch) defaults.root_title_template = tmplMatch[1];
+
+    const idMatch = content.match(/iteration_id:\s*(\S+)/);
+    if (idMatch) defaults.iteration_id = idMatch[1];
+  } catch {
+    // ignore
+  }
+  return defaults;
+}
+
+function buildRootName(version?: string): string {
+  if (!version) return "";
+  const prefs = loadXmindPreferences();
+  const ver = version.replace(/^v/i, "");
+  return prefs.root_title_template
+    .replace("{{prd_version}}", ver)
+    .replace("{{iteration_id}}", prefs.iteration_id);
+}
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface TestStep {
@@ -125,15 +167,41 @@ function countCasesInModules(modules: Module[]): number {
 function inferTags(meta: Meta, modules: Module[]): string[] {
   const tags = new Set<string>();
 
+  // Add module_key (e.g. "数据质量")
   if (meta.module_key) tags.add(meta.module_key);
-  if (meta.requirement_name) tags.add(meta.requirement_name);
 
-  for (const mod of modules) {
-    if (mod.name) tags.add(mod.name);
-    for (const page of mod.pages) {
-      if (page.name) tags.add(page.name);
+  // Add requirement name without brackets prefix as a separate tag
+  if (meta.requirement_name) {
+    // Extract bracket content: 【xxx】 → "xxx"
+    const bracketMatch = meta.requirement_name.match(/^【(.+?)】/);
+    if (bracketMatch) {
+      tags.add(bracketMatch[1]);
+    }
+    // Extract the part after brackets
+    const afterBracket = meta.requirement_name.replace(/^【.+?】/, "").trim();
+    if (afterBracket) {
+      tags.add(afterBracket);
     }
   }
+
+  // Add version tag
+  if (meta.version) tags.add(meta.version);
+
+  // Add module names (L2)
+  for (const mod of modules) {
+    if (mod.name && mod.name !== "未分类") tags.add(mod.name);
+    // Add page names (L3)
+    for (const page of mod.pages) {
+      if (page.name && page.name !== "未分类") tags.add(page.name);
+      // Add sub_group names (L4)
+      for (const sg of page.sub_groups ?? []) {
+        if (sg.name) tags.add(sg.name);
+      }
+    }
+  }
+
+  // Add prd_id tag
+  if (meta.requirement_id) tags.add(`#${meta.requirement_id}`);
 
   return Array.from(tags).slice(0, 10);
 }
@@ -214,9 +282,11 @@ function buildBodyFromModules(modules: Module[]): string {
 function renderBuiltIn(data: IntermediateJson): string {
   const { meta, modules } = data;
   const caseCount = countCasesInModules(modules);
+  const rootName = buildRootName(meta.version);
 
   const fm: FrontMatter = {
     suite_name: meta.requirement_name,
+    ...(rootName ? { root_name: rootName } : {}),
     description: meta.description ?? meta.requirement_name,
     ...(meta.requirement_id !== undefined
       ? { prd_id: meta.requirement_id }
@@ -261,8 +331,10 @@ function renderWithTemplate(
 
   const { meta, modules } = data;
   const caseCount = countCasesInModules(modules);
+  const rootName = buildRootName(meta.version);
   const fm: FrontMatter = {
     suite_name: meta.requirement_name,
+    ...(rootName ? { root_name: rootName } : {}),
     description: meta.description ?? meta.requirement_name,
     ...(meta.requirement_id !== undefined
       ? { prd_id: meta.requirement_id }
