@@ -20,7 +20,7 @@
                 {
                   "title": "验证key范围校验完整主流程：配置规则+执行校验+查看质量报告",
                   "priority": "P0",
-                  "preconditions": "已在【通用配置 → json格式校验管理】中维护如下key数据（含多层级）：第一层级：key1（姓名）、key2（年龄）；第二层级：key11（省份）、key22（城市）\n已在Doris数据源中执行如下建表及灌数SQL：CREATE TABLE test_json_key_range (id INT, info JSON) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES(\"replication_num\" = \"1\"); INSERT INTO test_json_key_range VALUES (1, '{\"key1\":\"张三\",\"key2\":25,\"key11\":\"广东\",\"key22\":\"深圳\"}'), (2, '{\"key1\":\"李四\"}'), (3, '{\"key2\":30,\"key11\":\"北京\",\"key22\":\"朝阳\"}');\n已创建规则任务\"task_json_key_range_test\"并关联上述Doris表，任务状态为启用",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面，通过【新增】按钮维护如下key数据（含多层级）：\n   第一层级：key1（姓名）、key2（年龄）\n   第二层级：key11（省份）、key22（城市）\n2) 已在Doris数据源中执行如下建表及灌数SQL：\n   CREATE TABLE test_json_key_range (\n     id INT,\n     info JSON\n   ) DISTRIBUTED BY HASH(id) BUCKETS 3\n   PROPERTIES(\"replication_num\" = \"1\");\n   INSERT INTO test_json_key_range VALUES\n     (1, '{\"key1\":\"张三\",\"key2\":25,\"key11\":\"广东\",\"key22\":\"深圳\"}'),\n     (2, '{\"key1\":\"李四\"}'),\n     (3, '{\"key2\":30,\"key11\":\"北京\",\"key22\":\"朝阳\"}');\n3) 已创建规则任务\"task_json_key_range_test\"并关联上述Doris表，任务状态为启用",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -31,8 +31,8 @@
                       "expected": ""
                     },
                     {
-                      "step": "点击【新增规则】，在统计函数下拉列表中选择【key范围校验】；在字段选择框中选择\"info\"（json类型字段）；校验方法选择【包含】；在校验内容下拉框中勾选\"key1（姓名）\"和\"key2（年龄）\"，点击【确认】；强弱规则保持【强规则】；点击【保存】",
-                      "expected": "保存成功，规则配置参数展示区显示：规则类型=字段级、字段=info、统计函数=key范围校验、校验方法=包含、校验内容=key1-key2、强弱规则=强规则"
+                      "step": "点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: 在下拉列表中选择\"key范围校验\"\n- 字段: 在字段选择框中选择\"info\"（json类型字段）\n- 校验方法: 选择\"包含\"\n- 校验内容: 在下拉框中勾选\"key1（姓名）\"和\"key2（年龄）\"，点击【确认】\n- 强弱规则: 保持\"强规则\"\n点击【保存】按钮",
+                      "expected": "保存成功，规则配置参数展示区显示：\n1) 规则类型=字段级\n2) 字段=info\n3) 统计函数=key范围校验\n4) 校验方法=包含\n5) 校验内容=key1-key2\n6) 强弱规则=强规则"
                     },
                     {
                       "step": "返回规则任务列表，找到\"task_json_key_range_test\"，点击【立即执行】，等待任务执行状态变为\"执行完成\"",
@@ -40,14 +40,14 @@
                     },
                     {
                       "step": "进入【数据质量 → 质量报告】，找到该任务最新一次执行记录，查看报告详情",
-                      "expected": "质量报告中该规则行显示：规则类型列=完整性校验、规则名称列=key范围校验、字段类型列=json；id=1的记录（含key1和key2）质检结果=校验通过，详情说明=符合规则key范围包含\"key1-key2\"，操作列无查看详情；id=2、3的记录（缺少key1或key2其中一个）质检结果=校验不通过，未通过原因=key范围校验未通过，详情说明=不符合规则key范围包含\"key1-key2\"，操作列显示【查看详情】"
+                      "expected": "质量报告中该规则行显示：\n1) 规则类型列=完整性校验、规则名称列=key范围校验、字段类型列=json\n2) id=1的记录（含key1和key2）质检结果=校验通过，详情说明=符合规则key范围包含\"key1-key2\"，操作列显示\"--\"\n3) id=2的记录（仅含key1，缺key2）质检结果=校验不通过，未通过原因=key范围校验未通过，详情说明=不符合规则key范围包含\"key1-key2\"，操作列显示【查看详情】\n4) id=3的记录（缺key1）质检结果=校验不通过，未通过原因=key范围校验未通过，详情说明=不符合规则key范围包含\"key1-key2\"，操作列显示【查看详情】"
                     }
                   ]
                 },
                 {
                   "title": "验证统计函数选择key范围校验后字段选择变为单选",
                   "priority": "P0",
-                  "preconditions": "已创建规则任务\"task_json_key_range_test\"，关联的数据表含多个json/string类型字段：info（json类型）、extra_info（string类型）\n进入该任务的规则配置编辑页面",
+                  "preconditions": "1) 已创建规则任务\"task_json_key_range_test\"，关联的数据表含多个json/string类型字段：info（json类型）、extra_info（string类型）\n2) 进入该任务的规则配置编辑页面",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -58,57 +58,57 @@
                       "expected": ""
                     },
                     {
-                      "step": "点击【新增规则】，先选择一个普通统计函数（如：非空值数），在字段选择框中同时勾选\"info\"和\"extra_info\"两个字段，确认此时字段支持多选",
+                      "step": "点击【新增规则】，先在统计函数下拉列表中选择一个普通统计函数\"非空值数\"，在字段选择框中同时勾选\"info\"和\"extra_info\"两个字段",
                       "expected": "字段选择框支持多选，可同时勾选多个字段"
                     },
                     {
-                      "step": "将统计函数切换为【key范围校验】，观察字段选择框的变化及悬浮提示",
-                      "expected": "切换为key范围校验后，统计函数标签旁出现悬浮提示图标，鼠标悬浮显示文案\"当选择key范围校验时，字段仅支持单选\"；字段选择框变为单选模式，原多选值自动清空"
+                      "step": "将统计函数切换为\"key范围校验\"，观察字段选择框的变化及统计函数标签旁的悬浮提示图标",
+                      "expected": "1) 切换为key范围校验后，统计函数标签旁出现悬浮提示图标，鼠标悬浮显示文案\"当选择key范围校验时，字段仅支持单选\"\n2) 字段选择框变为单选模式，原多选值自动清空"
                     },
                     {
-                      "step": "在字段选择框中尝试同时勾选\"info\"和\"extra_info\"两个字段",
-                      "expected": "字段选择框只允许选择一个字段，选择\"extra_info\"后\"info\"自动取消，最终只有一个字段被选中"
+                      "step": "在字段选择框中尝试先选择\"info\"，再选择\"extra_info\"",
+                      "expected": "字段选择框只允许选择一个字段，选择\"extra_info\"后\"info\"自动取消，最终只有\"extra_info\"一个字段被选中"
                     }
                   ]
                 },
                 {
-                  "title": "验证校验方法切换（包含↔不包含）规则保存和执行结果差异",
+                  "title": "验证校验方法切换（包含与不包含）规则保存和执行结果差异",
                   "priority": "P1",
-                  "preconditions": "已在【通用配置 → json格式校验管理】中维护key数据：key1（姓名）、key2（年龄）\nDoris表test_json_key_range中已有数据：id=1记录包含key1和key2，id=2记录仅包含key1\n已创建规则任务\"task_json_method_switch\"并关联上述Doris表",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面，通过【新增】按钮维护key数据：key1（姓名）、key2（年龄）\n2) 已在Doris表test_json_key_range中插入以下数据：\n   INSERT INTO test_json_key_range VALUES\n     (1, '{\"key1\":\"张三\",\"key2\":25}'),\n     (2, '{\"key1\":\"李四\"}');\n3) 已创建规则任务\"task_json_method_switch\"并关联上述Doris表",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_method_switch\"，点击【编辑规则】，新增规则：统计函数=key范围校验、字段=info（json类型）、校验方法=【包含】、校验内容勾选\"key1（姓名）\"和\"key2（年龄）\"，保存后立即执行任务，等待执行完成",
-                      "expected": ""
+                      "step": "找到\"task_json_method_switch\"，点击【编辑规则】，点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: key范围校验\n- 字段: info（json类型）\n- 校验方法: 包含\n- 校验内容: 勾选\"key1（姓名）\"和\"key2（年龄）\"\n点击【保存】",
+                      "expected": "规则保存成功"
                     },
                     {
-                      "step": "查看质量报告，记录id=1和id=2的质检结果",
-                      "expected": ""
+                      "step": "返回规则任务列表，点击\"task_json_method_switch\"的【立即执行】，等待执行状态变为\"执行完成\"，进入【质量报告】查看最新执行结果",
+                      "expected": "1) id=1（含key1和key2）质检结果=校验通过\n2) id=2（仅含key1，缺key2）质检结果=校验不通过，未通过原因=key范围校验未通过"
                     },
                     {
-                      "step": "返回规则配置，将校验方法改为【不包含】，保存后再次立即执行任务，等待执行完成",
-                      "expected": ""
+                      "step": "返回规则配置页面，编辑该规则，将校验方法由\"包含\"改为\"不包含\"，点击【保存】",
+                      "expected": "规则保存成功，校验方法显示为\"不包含\""
                     },
                     {
-                      "step": "再次查看质量报告，查看最新一次执行结果中id=1和id=2的质检结果",
-                      "expected": "步骤3（包含逻辑）：id=1（含key1和key2）质检结果=校验通过；id=2（仅含key1，缺key2）质检结果=校验不通过，未通过原因=key范围校验未通过\n步骤5（不包含逻辑）：id=1（含key1和key2，违反不包含规则）质检结果=校验不通过，详情说明=不符合规则key范围不包含\"key1-key2\"；id=2（仅含key1，key2不存在，部分符合）质检结果根据系统规则判定，详情说明中显示不包含的key信息"
+                      "step": "返回规则任务列表，再次点击【立即执行】，等待执行状态变为\"执行完成\"，进入【质量报告】查看最新执行结果",
+                      "expected": "1) id=1（含key1和key2，违反不包含规则）质检结果=校验不通过，详情说明=不符合规则key范围不包含\"key1-key2\"\n2) id=2（仅含key1，部分包含）质检结果=校验不通过，详情说明=不符合规则key范围不包含\"key1-key2\""
                     }
                   ]
                 },
                 {
                   "title": "验证校验内容支持多选和全选操作",
                   "priority": "P1",
-                  "preconditions": "已在【通用配置 → json格式校验管理】中维护以下key数据：key1（姓名）、key2（年龄）、key3（性别）、key11（省份）、key22（城市）、key33（区县）\n已进入规则任务\"task_json_key_range_test\"的规则配置编辑页",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面，通过【新增】按钮维护以下key数据：\n   第一层级：key1（姓名）、key2（年龄）、key3（性别）\n   第二层级：key11（省份）、key22（城市）、key33（区县）\n2) 已创建规则任务\"task_json_key_range_test\"并关联含json字段的数据表",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，新增规则，统计函数选择【key范围校验】，字段选择\"info\"，点击校验内容下拉框",
+                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，字段选择\"info\"，点击校验内容下拉框，等待下拉列表加载完成",
                       "expected": ""
                     },
                     {
@@ -116,34 +116,34 @@
                       "expected": "勾选3个key后，下拉框内显示已选中3项，各key名前复选框呈选中状态"
                     },
                     {
-                      "step": "点击【全部】选项，观察所有key是否被全部勾选",
+                      "step": "点击下拉框顶部的【全部】选项",
                       "expected": "点击\"全部\"后，所有6个key（key1、key2、key3、key11、key22、key33）全部被勾选，\"全部\"选项呈全选状态"
                     },
                     {
-                      "step": "再次点击【全部】选项，观察是否全部取消勾选",
-                      "expected": "再次点击\"全部\"，所有key全部取消勾选，\"全部\"选项恢复未选状态"
+                      "step": "再次点击【全部】选项",
+                      "expected": "所有key全部取消勾选，\"全部\"选项恢复未选状态"
                     },
                     {
-                      "step": "重新勾选\"key1（姓名）\"和\"key11（省份）\"，确认后查看校验内容回显",
-                      "expected": "确认后，规则配置中校验内容回显格式为\"key1-key11\"（分层级用\"-\"拼接、不同配置组用\";\"分隔）"
+                      "step": "重新勾选\"key1（姓名）\"和\"key11（省份）\"，点击【确认】按钮，查看校验内容回显",
+                      "expected": "确认后，规则配置中校验内容回显格式为\"key1;key11\"（同层级key用\"-\"拼接，不同层级配置组用\";\"分隔）"
                     }
                   ]
                 },
                 {
                   "title": "验证校验内容下拉框支持输入关键词搜索查询",
                   "priority": "P1",
-                  "preconditions": "已在【通用配置 → json格式校验管理】中维护以下key数据：key1（姓名）、key2（年龄）、key3（性别）、key11（省份）、key22（城市）、key33（区县）\n已进入规则任务\"task_json_key_range_test\"规则配置编辑页，统计函数已选择key范围校验",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面，通过【新增】按钮维护以下key数据：\n   第一层级：key1（姓名）、key2（年龄）、key3（性别）\n   第二层级：key11（省份）、key22（城市）、key33（区县）\n2) 已创建规则任务\"task_json_key_range_test\"并关联含json字段的数据表",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，新增规则，统计函数选择【key范围校验】，字段选择\"info\"，点击校验内容下拉框",
+                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，字段选择\"info\"，点击校验内容下拉框，等待下拉列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "在校验内容下拉框内的输入框中输入\"key1\"",
+                      "step": "在校验内容下拉框内的搜索输入框中输入\"key1\"",
                       "expected": "下拉列表过滤显示包含\"key1\"的结果：key1（姓名）、key11（省份），其余key不显示"
                     },
                     {
@@ -151,45 +151,45 @@
                       "expected": "下拉列表过滤显示包含\"省份\"的结果：key11（省份），其余key不显示"
                     },
                     {
-                      "step": "输入\"xyz_not_exist\"（不存在的关键词）",
-                      "expected": "下拉列表显示\"暂无数据\"或空列表，不显示任何key选项"
+                      "step": "清空搜索框内容，输入\"xyz_not_exist\"",
+                      "expected": "下拉列表显示\"暂无数据\"，不显示任何key选项"
                     }
                   ]
                 },
                 {
                   "title": "验证key数据量超过200条时默认加载前200条及搜索功能",
                   "priority": "P1",
-                  "preconditions": "已在【通用配置 → json格式校验管理】中维护超过200条key数据，前200条为key_001至key_200，第201条起为key_201、key_202等\n已进入规则任务\"task_json_key_range_test\"规则配置编辑页，统计函数已选择key范围校验",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面批量维护超过200条key数据，前200条为key_001至key_200，第201条起为key_201、key_202等\n2) 已创建规则任务\"task_json_key_range_test\"并关联含json字段的数据表",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，新增规则，统计函数选择【key范围校验】，字段选择\"info\"，点击校验内容下拉框，等待列表加载完成",
+                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，字段选择\"info\"，点击校验内容下拉框，等待列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "在下拉框中统计可见的key条目总数，并滚动到列表底部查看是否有更多数据提示",
-                      "expected": "下拉框中最多显示200条key数据（key_001至key_200），滚动到底部不再追加加载或有提示\"已加载前200条\""
+                      "step": "滚动下拉列表到底部，观察可见的key条目总数",
+                      "expected": "下拉框中最多显示200条key数据（key_001至key_200），滚动到底部不再追加加载"
                     },
                     {
                       "step": "在搜索框中输入\"key_201\"，等待搜索结果加载",
-                      "expected": "输入\"key_201\"后，搜索结果正确返回\"key_201\"（超出默认200条的数据可通过搜索找到），不受前200条默认加载限制"
+                      "expected": "搜索结果正确返回\"key_201\"，不受前200条默认加载限制"
                     }
                   ]
                 },
                 {
-                  "title": "验证校验内容回显格式为key1-key2;key11-key22格式",
+                  "title": "验证校验内容回显格式为同层级key用横线拼接不同层级用分号分隔",
                   "priority": "P1",
-                  "preconditions": "已在【通用配置 → json格式校验管理】中维护key数据：第一层级key1（姓名）、key2（年龄）；第二层级key11（省份）、key22（城市）\n已进入规则任务\"task_json_key_range_test\"规则配置编辑页",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面，通过【新增】按钮维护key数据：\n   第一层级：key1（姓名）、key2（年龄）\n   第二层级：key11（省份）、key22（城市）\n2) 已创建规则任务\"task_json_key_range_test\"并关联含json字段的数据表",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，新增规则，统计函数选择【key范围校验】，字段选择\"info\"，打开校验内容下拉框，在第一层级勾选\"key1（姓名）\"和\"key2（年龄）\"，在第二层级勾选\"key11（省份）\"和\"key22（城市）\"，点击确认",
+                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，字段选择\"info\"，打开校验内容下拉框，在第一层级勾选\"key1（姓名）\"和\"key2（年龄）\"，在第二层级勾选\"key11（省份）\"和\"key22（城市）\"，点击【确认】",
                       "expected": ""
                     },
                     {
@@ -197,15 +197,15 @@
                       "expected": "校验内容回显格式为\"key1-key2;key11-key22\"，同层级key用\"-\"连接，不同层级配置组之间用\";\"分隔"
                     },
                     {
-                      "step": "保存规则后，再次打开规则配置编辑页，查看已保存的校验内容展示",
+                      "step": "点击【保存】按钮，等待保存成功后再次点击该规则行进入编辑页面，查看已保存的校验内容展示",
                       "expected": "已保存的规则中校验内容回显仍为\"key1-key2;key11-key22\"，格式不变"
                     }
                   ]
                 },
                 {
-                  "title": "验证校验内容悬浮展示：默认显示前两个key，悬浮展示全部",
+                  "title": "验证校验内容悬浮展示：默认显示前两个key悬浮展示全部",
                   "priority": "P1",
-                  "preconditions": "已在规则任务\"task_json_key_range_test\"中配置key范围校验规则，校验内容共选择了4个key：key1（姓名）、key2（年龄）、key11（省份）、key22（城市）\n规则已保存，进入规则配置查看页",
+                  "preconditions": "1) 已在规则任务\"task_json_key_range_test\"中配置key范围校验规则，校验内容共选择了4个key：\n   第一层级：key1（姓名）、key2（年龄）\n   第二层级：key11（省份）、key22（城市）\n2) 规则已保存成功",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -217,7 +217,7 @@
                     },
                     {
                       "step": "观察\"校验内容\"列在非悬浮状态下的显示内容",
-                      "expected": "校验内容列默认仅展示前两个key信息（如\"key1-key2…\"），超出部分以省略号或截断方式显示"
+                      "expected": "校验内容列默认仅展示前两个key信息（如\"key1-key2...\"），超出部分以省略号截断显示"
                     },
                     {
                       "step": "将鼠标悬浮在\"校验内容\"列的文本上，等待tooltip出现",
@@ -226,20 +226,20 @@
                   ]
                 },
                 {
-                  "title": "验证校验内容悬浮提示文案正确",
+                  "title": "验证校验内容标签旁悬浮提示文案正确",
                   "priority": "P1",
-                  "preconditions": "已进入规则任务的规则配置编辑页，统计函数已选择key范围校验",
+                  "preconditions": "1) 已创建规则任务\"task_json_key_range_test\"并关联含json字段的数据表",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到任意规则任务，点击【编辑规则】，新增规则，统计函数选择【key范围校验】",
+                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"",
                       "expected": ""
                     },
                     {
-                      "step": "将鼠标悬浮在\"校验内容\"标签旁的提示图标上",
+                      "step": "将鼠标悬浮在\"校验内容\"标签旁的提示图标上，等待tooltip出现",
                       "expected": "tooltip显示文案为\"校验内容key信息需要在通用配置模块维护。\"，文案完全匹配，无多余空格或乱码"
                     }
                   ]
@@ -252,57 +252,57 @@
                 {
                   "title": "验证json类型字段可成功配置key范围校验规则",
                   "priority": "P0",
-                  "preconditions": "已创建规则任务\"task_field_type_test\"，关联的Doris表含以下字段：info（JSON类型）、name（VARCHAR类型）、age（INT类型）\n已在通用配置中维护key1（姓名）、key2（年龄）",
+                  "preconditions": "1) 已创建规则任务\"task_field_type_test\"，关联的Doris表含以下字段：info（JSON类型）、name（VARCHAR类型）、age（INT类型）\n2) 已在【通用配置 → json格式校验管理】页面，通过【新增】按钮维护key1（姓名）、key2（年龄）",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_field_type_test\"，点击【编辑规则】，新增规则，统计函数选择【key范围校验】，展开字段选择列表",
+                      "step": "找到\"task_field_type_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，展开字段选择列表",
                       "expected": "字段下拉列表中，JSON类型字段\"info\"可正常选择，INT类型字段\"age\"置灰不可选"
                     },
                     {
-                      "step": "观察字段下拉列表中各字段的可选状态，选择\"info\"（JSON类型字段），选择校验方法【包含】，校验内容勾选\"key1（姓名）\"，点击保存",
-                      "expected": "选择\"info\"字段后保存成功，规则配置项正常展示"
+                      "step": "选择\"info\"（JSON类型字段），在规则配置表单中按顺序配置如下：\n- 校验方法: 包含\n- 校验内容: 勾选\"key1（姓名）\"\n点击【保存】按钮",
+                      "expected": "保存成功，规则配置参数展示区显示字段=info、统计函数=key范围校验"
                     }
                   ]
                 },
                 {
                   "title": "验证string类型字段可成功配置key范围校验规则",
                   "priority": "P1",
-                  "preconditions": "已创建规则任务\"task_field_type_test\"，关联的Doris表含string（VARCHAR/TEXT）类型字段：extra_info（VARCHAR类型，存储JSON字符串）\n已在通用配置中维护key1（姓名）、key2（年龄）",
+                  "preconditions": "1) 已创建规则任务\"task_field_type_test\"，关联的Doris表含string（VARCHAR/TEXT）类型字段：extra_info（VARCHAR类型，存储JSON字符串）\n2) 已在【通用配置 → json格式校验管理】页面，通过【新增】按钮维护key1（姓名）、key2（年龄）",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_field_type_test\"，点击【编辑规则】，新增规则，统计函数选择【key范围校验】",
+                      "step": "找到\"task_field_type_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，展开字段选择列表",
                       "expected": "字段下拉列表中string类型字段\"extra_info\"可正常选择（不置灰）"
                     },
                     {
-                      "step": "在字段下拉框中选择\"extra_info\"（string类型），校验方法选择【包含】，校验内容勾选\"key1（姓名）\"，点击保存",
-                      "expected": "保存成功，规则配置参数中字段=extra_info，无报错提示"
+                      "step": "在字段下拉框中选择\"extra_info\"（string类型），在规则配置表单中按顺序配置如下：\n- 校验方法: 包含\n- 校验内容: 勾选\"key1（姓名）\"\n点击【保存】按钮",
+                      "expected": "保存成功，规则配置参数展示区显示字段=extra_info，无报错提示"
                     }
                   ]
                 },
                 {
-                  "title": "验证选择非json/string类型字段时key范围校验不可用或提示错误",
+                  "title": "验证非json和string类型字段不可选择key范围校验",
                   "priority": "P1",
-                  "preconditions": "已创建规则任务\"task_field_type_test\"，关联的Doris表含INT类型字段\"age\"、DATE类型字段\"create_date\"、BIGINT类型字段\"user_id\"",
+                  "preconditions": "1) 已创建规则任务\"task_field_type_test\"，关联的Doris表含INT类型字段\"age\"、DATE类型字段\"create_date\"、BIGINT类型字段\"user_id\"",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_field_type_test\"，点击【编辑规则】，新增规则，统计函数选择【key范围校验】",
-                      "expected": "字段下拉框中，INT类型字段\"age\"、DATE类型字段\"create_date\"、BIGINT类型字段\"user_id\"均置灰不可选，或不出现在可选列表中"
+                      "step": "找到\"task_field_type_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，展开字段选择列表",
+                      "expected": "字段下拉框中，INT类型字段\"age\"、DATE类型字段\"create_date\"、BIGINT类型字段\"user_id\"均置灰不可选"
                     },
                     {
-                      "step": "观察字段下拉框，尝试选择\"age\"（INT类型）字段",
-                      "expected": "无法选择\"age\"字段，系统未发生JS报错"
+                      "step": "尝试点击\"age\"（INT类型）字段",
+                      "expected": "\"age\"字段无法被选中，字段选择框保持为空，系统无JS报错"
                     }
                   ]
                 }
@@ -314,57 +314,57 @@
                 {
                   "title": "验证未选择字段时保存key范围校验规则提示必填",
                   "priority": "P1",
-                  "preconditions": "已进入规则任务\"task_json_key_range_test\"的规则配置编辑页",
+                  "preconditions": "1) 已创建规则任务\"task_json_key_range_test\"并关联含json字段的数据表\n2) 已在【通用配置 → json格式校验管理】页面维护key1（姓名）",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择【key范围校验】",
+                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"",
                       "expected": ""
                     },
                     {
-                      "step": "不选择任何字段，校验方法选择【包含】，校验内容勾选\"key1（姓名）\"，直接点击【保存】",
-                      "expected": "保存失败，字段选择框下方显示红色错误提示\"请选择字段\"（或等效必填提示），页面不跳转，规则未被保存"
+                      "step": "不选择任何字段，校验方法选择\"包含\"，校验内容勾选\"key1（姓名）\"，直接点击【保存】",
+                      "expected": "保存失败，字段选择框下方显示红色错误提示\"请选择字段\"，页面不跳转，规则未被保存"
                     }
                   ]
                 },
                 {
                   "title": "验证未选择校验内容时保存key范围校验规则提示必填",
                   "priority": "P1",
-                  "preconditions": "已进入规则任务\"task_json_key_range_test\"的规则配置编辑页\n已在通用配置中维护key1（姓名）、key2（年龄）",
+                  "preconditions": "1) 已创建规则任务\"task_json_key_range_test\"并关联含json字段的数据表\n2) 已在【通用配置 → json格式校验管理】页面维护key1（姓名）、key2（年龄）",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择【key范围校验】，字段选择\"info\"，校验方法选择【包含】",
+                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，字段选择\"info\"，校验方法选择\"包含\"",
                       "expected": ""
                     },
                     {
                       "step": "不选择任何校验内容（校验内容选择框保持空），直接点击【保存】",
-                      "expected": "保存失败，校验内容选择框下方显示红色错误提示\"请选择校验内容\"（或等效必填提示），页面不跳转，规则未被保存"
+                      "expected": "保存失败，校验内容选择框下方显示红色错误提示\"请选择校验内容\"，页面不跳转，规则未被保存"
                     }
                   ]
                 },
                 {
                   "title": "验证未选择校验方法时保存key范围校验规则提示必填",
                   "priority": "P1",
-                  "preconditions": "已进入规则任务\"task_json_key_range_test\"的规则配置编辑页\n已在通用配置中维护key1（姓名）",
+                  "preconditions": "1) 已创建规则任务\"task_json_key_range_test\"并关联含json字段的数据表\n2) 已在【通用配置 → json格式校验管理】页面维护key1（姓名）",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择【key范围校验】，字段选择\"info\"，校验内容勾选\"key1（姓名）\"",
+                      "step": "找到\"task_json_key_range_test\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，字段选择\"info\"，校验内容勾选\"key1（姓名）\"",
                       "expected": ""
                     },
                     {
-                      "step": "清空/不选择校验方法（若默认有值则手动清除），直接点击【保存】",
-                      "expected": "保存失败，校验方法下拉框下方显示红色错误提示\"请选择校验方法\"（或等效必填提示），页面不跳转，规则未被保存"
+                      "step": "清空校验方法下拉框（若默认有值则手动清除），直接点击【保存】",
+                      "expected": "保存失败，校验方法下拉框下方显示红色错误提示\"请选择校验方法\"，页面不跳转，规则未被保存"
                     }
                   ]
                 }
@@ -376,23 +376,23 @@
                 {
                   "title": "验证规则库中新增key范围校验内置规则展示信息正确",
                   "priority": "P1",
-                  "preconditions": "当前环境为v6.3岚图定制化分支，数据质量模块规则库功能可用",
+                  "preconditions": "1) 当前环境为v6.3岚图定制化分支\n2) 数据质量模块规则库功能可用",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "导航至【数据质量 → 规则库】（或规则配置中的内置规则列表），在规则分类中选择【完整性校验】，查找\"key范围校验\"规则",
+                      "step": "导航至【数据质量 → 规则库】页面，在规则分类筛选中选择\"完整性校验\"，在列表中查找\"key范围校验\"规则",
                       "expected": "规则库完整性校验分类下可找到\"key范围校验\"规则"
                     },
                     {
-                      "step": "点击\"key范围校验\"规则行或查看规则详情",
-                      "expected": "规则详情显示：规则名称=key范围校验、规则解释=对数据中包含的key范围校验、规则分类=完整性校验、关联范围=字段、规则描述=校验json类型的字段中key名是否完整，对key的范围进行校验"
+                      "step": "点击\"key范围校验\"规则行查看规则详情",
+                      "expected": "规则详情显示：\n1) 规则名称=key范围校验\n2) 规则解释=对数据中包含的key范围校验\n3) 规则分类=完整性校验\n4) 关联范围=字段\n5) 规则描述=校验json类型的字段中key名是否完整，对key的范围进行校验"
                     },
                     {
-                      "step": "将鼠标悬浮在规则列表中\"key范围校验\"的统计函数名称或提示图标上",
-                      "expected": "悬浮提示内容为\"对数据中包含的key范围校验\"（与规则库中\"规则解释\"字段内容一致）"
+                      "step": "返回规则列表，将鼠标悬浮在\"key范围校验\"的统计函数名称旁的提示图标上，等待tooltip出现",
+                      "expected": "悬浮提示内容为\"对数据中包含的key范围校验\"，与规则库中\"规则解释\"字段内容一致"
                     }
                   ]
                 }
@@ -404,7 +404,7 @@
                 {
                   "title": "验证校验不通过时查看明细：标题、字段标红及全字段展示",
                   "priority": "P1",
-                  "preconditions": "已在Doris表test_json_key_range中插入数据：INSERT INTO test_json_key_range VALUES (10, '{\"key1\":\"王五\"}');（仅含key1，缺key2）\n规则任务\"task_json_key_range_test\"已配置key范围校验规则（包含key1和key2），并已执行完成，id=10记录质检结果为\"校验不通过\"",
+                  "preconditions": "1) 已在Doris表test_json_key_range中插入数据：\n   INSERT INTO test_json_key_range VALUES (10, '{\"key1\":\"王五\"}');\n   （仅含key1，缺key2）\n2) 规则任务\"task_json_key_range_test\"已配置key范围校验规则（包含key1和key2），并已执行完成\n3) id=10记录质检结果为\"校验不通过\"",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -415,34 +415,34 @@
                       "expected": ""
                     },
                     {
-                      "step": "点击该规则行的【查看明细】或【查看详情】按钮，等待明细弹窗/页面加载完成",
+                      "step": "点击该规则行操作列的【查看明细】按钮，等待明细弹窗加载完成",
                       "expected": "成功打开明细页面，页面加载不报错"
                     },
                     {
                       "step": "观察明细页面的标题文案、数据列表字段列数、以及id=10记录的\"info\"字段展示样式",
-                      "expected": "明细标题显示\"查看\"完整性校验-key范围校验\"明细\"（文案完全匹配）；数据列表展示原表全部字段（id、info等）；id=10记录的\"info\"字段内容以红色字体或红色背景高亮标红展示；不符合要求的数据（id=10）出现在列表中"
+                      "expected": "1) 明细标题显示\"查看\"完整性校验-key范围校验\"明细\"\n2) 数据列表展示原表全部字段（id、info等）\n3) id=10记录的\"info\"字段内容以红色字体或红色背景高亮标红展示\n4) 不符合要求的数据（id=10）出现在列表中"
                     }
                   ]
                 },
                 {
                   "title": "验证下载明细数据中校验字段标红展示",
                   "priority": "P1",
-                  "preconditions": "规则任务\"task_json_key_range_test\"已执行，存在校验不通过记录，明细页面已打开",
+                  "preconditions": "1) 规则任务\"task_json_key_range_test\"已执行完成，存在校验不通过记录\n2) 已进入结果查询页面，可查看校验不通过规则的明细",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "进入\"task_json_key_range_test\"结果查询页，点击校验不通过规则的【查看明细】，等待明细页加载完成",
+                      "step": "进入\"task_json_key_range_test\"结果查询页，点击校验不通过规则行操作列的【查看明细】按钮，等待明细页加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "点击明细页面的【下载】或【导出】按钮，等待文件下载完成，打开下载的Excel/CSV文件",
-                      "expected": "文件成功下载，文件格式为Excel（.xlsx）或CSV（.csv）"
+                      "step": "点击明细页面右上角的【下载明细】按钮，等待文件下载完成",
+                      "expected": "文件成功下载，文件格式为Excel（.xlsx）"
                     },
                     {
-                      "step": "查看下载文件中校验字段（info列）的单元格样式",
+                      "step": "打开下载的Excel文件，查看校验字段（info列）中不符合规则记录的单元格样式",
                       "expected": "Excel文件中，不符合规则记录的\"info\"字段对应单元格呈红色背景或红色字体标注，与页面展示一致"
                     }
                   ]
@@ -450,7 +450,7 @@
                 {
                   "title": "验证校验通过时结果查询页不显示明细入口",
                   "priority": "P1",
-                  "preconditions": "已在Doris表test_json_key_range中插入数据：INSERT INTO test_json_key_range VALUES (20, '{\"key1\":\"赵六\",\"key2\":35}');（包含key1和key2）\n规则任务\"task_json_key_range_test\"已配置包含key1和key2的规则，并已执行完成，id=20记录质检结果为\"校验通过\"",
+                  "preconditions": "1) 已在Doris表test_json_key_range中插入数据：\n   INSERT INTO test_json_key_range VALUES (20, '{\"key1\":\"赵六\",\"key2\":35}');\n   （包含key1和key2）\n2) 规则任务\"task_json_key_range_test\"已配置包含key1和key2的规则，并已执行完成\n3) id=20记录质检结果为\"校验通过\"",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -462,14 +462,14 @@
                     },
                     {
                       "step": "找到质检结果为\"校验通过\"的规则行，查看操作列",
-                      "expected": "质检结果为\"校验通过\"的规则行，操作列不显示【查看明细】或【查看详情】按钮（显示\"--\"或操作列为空），无法进入明细页"
+                      "expected": "质检结果为\"校验通过\"的规则行，操作列显示\"--\"，不显示【查看明细】按钮，无法进入明细页"
                     }
                   ]
                 },
                 {
                   "title": "验证校验失败时支持查看日志",
                   "priority": "P2",
-                  "preconditions": "已创建规则任务\"task_json_fail_test\"，规则配置中校验内容引用了已被删除的key（模拟校验失败场景），任务已执行，执行状态为\"执行失败\"",
+                  "preconditions": "1) 已创建规则任务\"task_json_fail_test\"，规则配置中校验内容引用了已被删除的key（模拟校验失败场景）\n2) 任务已执行，执行状态为\"执行失败\"",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -480,8 +480,8 @@
                       "expected": ""
                     },
                     {
-                      "step": "点击该记录行的【查看日志】按钮，等待日志内容加载",
-                      "expected": "日志弹窗或页面正常打开，显示任务执行失败的错误日志内容，日志内容包含报错时间、错误类型或错误描述信息，不显示空白页"
+                      "step": "点击该记录行操作列的【查看日志】按钮，等待日志内容加载",
+                      "expected": "日志弹窗正常打开，显示任务执行失败的错误日志内容，日志内容包含报错时间和错误描述信息，不显示空白页"
                     }
                   ]
                 }
@@ -493,7 +493,7 @@
                 {
                   "title": "验证质量报告中校验通过行的各列展示内容正确",
                   "priority": "P0",
-                  "preconditions": "规则任务\"task_json_key_range_test\"已执行完成，存在质检结果为\"校验通过\"的记录\n该规则配置：字段=info（json类型）、统计函数=key范围校验、校验方法=包含、校验内容=key1-key2",
+                  "preconditions": "1) 规则任务\"task_json_key_range_test\"已执行完成，存在质检结果为\"校验通过\"的记录\n2) 该规则配置：字段=info（json类型）、统计函数=key范围校验、校验方法=包含、校验内容=key1-key2",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -505,14 +505,14 @@
                     },
                     {
                       "step": "找到质检结果为\"校验通过\"的规则行，逐列查看各字段值",
-                      "expected": "该规则行各列展示正确：规则类型列=完整性校验；规则名称列=key范围校验；字段类型列=json；质检结果=校验通过；未通过原因列=--（无内容）；详情说明列=符合规则key范围包含\"key1-key2\"；操作列=--（无查看详情入口）"
+                      "expected": "该规则行各列展示正确：\n1) 规则类型列=完整性校验\n2) 规则名称列=key范围校验\n3) 字段类型列=json\n4) 质检结果=校验通过\n5) 未通过原因列=--\n6) 详情说明列=符合规则key范围包含\"key1-key2\"\n7) 操作列=--"
                     }
                   ]
                 },
                 {
                   "title": "验证质量报告中校验不通过行的各列展示内容正确",
                   "priority": "P0",
-                  "preconditions": "规则任务\"task_json_key_range_test\"已执行完成，存在质检结果为\"校验不通过\"的记录\n该规则配置：字段=info（json类型）、统计函数=key范围校验、校验方法=包含、校验内容=key1-key2",
+                  "preconditions": "1) 规则任务\"task_json_key_range_test\"已执行完成，存在质检结果为\"校验不通过\"的记录\n2) 该规则配置：字段=info（json类型）、统计函数=key范围校验、校验方法=包含、校验内容=key1-key2",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -523,15 +523,15 @@
                       "expected": ""
                     },
                     {
-                      "step": "找到质检结果为\"校验不通过\"的规则行，逐列查看各字段值，并点击操作列的【查看详情】",
-                      "expected": "该规则行各列展示正确：规则类型列=完整性校验；规则名称列=key范围校验；字段类型列=json；质检结果=校验不通过；未通过原因列=key范围校验未通过；详情说明列=不符合规则key范围包含\"key1-key2\"；操作列显示【查看详情】按钮，点击后跳转至明细页"
+                      "step": "找到质检结果为\"校验不通过\"的规则行，逐列查看各字段值，并点击操作列的【查看详情】按钮",
+                      "expected": "该规则行各列展示正确：\n1) 规则类型列=完整性校验\n2) 规则名称列=key范围校验\n3) 字段类型列=json\n4) 质检结果=校验不通过\n5) 未通过原因列=key范围校验未通过\n6) 详情说明列=不符合规则key范围包含\"key1-key2\"\n7) 操作列显示【查看详情】按钮，点击后跳转至明细页"
                     }
                   ]
                 },
                 {
                   "title": "验证质量报告中不包含校验方法的详情说明格式正确",
                   "priority": "P1",
-                  "preconditions": "规则任务\"task_json_not_include_test\"已执行，配置：字段=info（json类型）、统计函数=key范围校验、校验方法=不包含、校验内容=key1-key2",
+                  "preconditions": "1) 规则任务\"task_json_not_include_test\"已执行完成\n2) 配置：字段=info（json类型）、统计函数=key范围校验、校验方法=不包含、校验内容=key1-key2",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -543,7 +543,7 @@
                     },
                     {
                       "step": "分别查看校验通过行和校验不通过行的\"详情说明\"列内容",
-                      "expected": "校验通过行：详情说明=符合规则key范围不包含\"key1-key2\"；校验不通过行：详情说明=不符合规则key范围不包含\"key1-key2\"；两者格式均正确体现\"不包含\"校验方法"
+                      "expected": "1) 校验通过行：详情说明=符合规则key范围不包含\"key1-key2\"\n2) 校验不通过行：详情说明=不符合规则key范围不包含\"key1-key2\"\n3) 两者格式均正确体现\"不包含\"校验方法"
                     }
                   ]
                 }
@@ -555,7 +555,7 @@
                 {
                   "title": "验证规则配置参数卡片完整展示所有字段",
                   "priority": "P1",
-                  "preconditions": "规则任务\"task_json_key_range_test\"中已配置并保存以下规则：字段=info（json类型）、统计函数=key范围校验、过滤条件=id > 0、校验方法=包含、校验内容=key1-key2;key11-key22、强弱规则=强规则、规则描述=测试key范围校验规则",
+                  "preconditions": "1) 规则任务\"task_json_key_range_test\"中已配置并保存以下规则：\n   - 字段: info（json类型）\n   - 统计函数: key范围校验\n   - 过滤条件: id > 0\n   - 校验方法: 包含\n   - 校验内容: key1-key2;key11-key22\n   - 强弱规则: 强规则\n   - 规则描述: 测试key范围校验规则",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
@@ -566,8 +566,8 @@
                       "expected": ""
                     },
                     {
-                      "step": "找到已配置的key范围校验规则，点击规则行展开或查看参数详情卡片，逐项核对各参数字段",
-                      "expected": "规则配置参数卡片完整展示以下所有字段且内容正确：规则类型=字段级；字段=info；统计函数=key范围校验；过滤条件=id > 0；校验方法=包含；校验内容=key1-key2;key11-key22；强弱规则=强规则；规则描述=测试key范围校验规则"
+                      "step": "找到已配置的key范围校验规则，点击规则行展开查看参数详情卡片，逐项核对各参数字段",
+                      "expected": "规则配置参数卡片完整展示以下所有字段且内容正确：\n1) 规则类型=字段级\n2) 字段=info\n3) 统计函数=key范围校验\n4) 过滤条件=id > 0\n5) 校验方法=包含\n6) 校验内容=key1-key2;key11-key22\n7) 强弱规则=强规则\n8) 规则描述=测试key范围校验规则"
                     }
                   ]
                 }
@@ -579,61 +579,61 @@
                 {
                   "title": "验证Doris3.x数据源的json字段支持key范围校验",
                   "priority": "P1",
-                  "preconditions": "已在Doris3.x数据源中执行以下SQL：CREATE TABLE doris_json_test (id INT, data JSON) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES(\"replication_num\" = \"1\"); INSERT INTO doris_json_test VALUES (1, '{\"key1\":\"A\",\"key2\":\"B\"}'), (2, '{\"key1\":\"C\"}');\n已在通用配置中维护key1、key2，已创建关联该Doris3.x表的规则任务\"task_doris_test\"",
+                  "preconditions": "1) 已在Doris3.x数据源中执行以下SQL：\n   CREATE TABLE doris_json_test (\n     id INT,\n     data JSON\n   ) DISTRIBUTED BY HASH(id) BUCKETS 3\n   PROPERTIES(\"replication_num\" = \"1\");\n   INSERT INTO doris_json_test VALUES\n     (1, '{\"key1\":\"A\",\"key2\":\"B\"}'),\n     (2, '{\"key1\":\"C\"}');\n2) 已在【通用配置 → json格式校验管理】页面维护key1、key2\n3) 已创建关联该Doris3.x表的规则任务\"task_doris_test\"",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_doris_test\"，点击【编辑规则】，新增规则：统计函数=key范围校验、字段=data（json类型）、校验方法=包含、校验内容=key1和key2，保存",
+                      "step": "找到\"task_doris_test\"，点击【编辑规则】，点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: key范围校验\n- 字段: data（json类型）\n- 校验方法: 包含\n- 校验内容: 勾选key1和key2\n点击【保存】按钮",
                       "expected": "保存成功，无报错"
                     },
                     {
-                      "step": "立即执行\"task_doris_test\"，等待任务执行完成（状态变为\"执行完成\"）",
+                      "step": "返回规则任务列表，点击\"task_doris_test\"的【立即执行】，等待任务执行状态变为\"执行完成\"",
                       "expected": "任务执行完成，状态=执行完成，无异常日志"
                     },
                     {
-                      "step": "查看质量报告中的执行结果",
-                      "expected": "id=1（含key1和key2）质检结果=校验通过；id=2（缺key2）质检结果=校验不通过"
+                      "step": "进入【质量报告】查看执行结果",
+                      "expected": "1) id=1（含key1和key2）质检结果=校验通过\n2) id=2（缺key2）质检结果=校验不通过"
                     }
                   ]
                 },
                 {
-                  "title": "验证SparkThrift2.x数据源的json字段支持key范围校验",
+                  "title": "验证SparkThrift2.x数据源的string字段支持key范围校验",
                   "priority": "P1",
-                  "preconditions": "SparkThrift2.x数据源已配置并连接正常，已在该数据源中创建含json字段的表并插入数据：CREATE TABLE spark_json_test (id INT, data STRING); INSERT INTO spark_json_test VALUES (1, '{\"key1\":\"X\",\"key2\":\"Y\"}'), (2, '{\"key1\":\"Z\"}');\n已创建关联该SparkThrift2.x表的规则任务\"task_spark_test\"，已在通用配置中维护key1、key2",
+                  "preconditions": "1) SparkThrift2.x数据源已配置并连接正常\n2) 已在该数据源中执行以下SQL：\n   CREATE TABLE spark_json_test (id INT, data STRING);\n   INSERT INTO spark_json_test VALUES\n     (1, '{\"key1\":\"X\",\"key2\":\"Y\"}'),\n     (2, '{\"key1\":\"Z\"}');\n3) 已在【通用配置 → json格式校验管理】页面维护key1、key2\n4) 已创建关联该SparkThrift2.x表的规则任务\"task_spark_test\"",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_spark_test\"，点击【编辑规则】，新增规则：统计函数=key范围校验、字段=data（string类型）、校验方法=包含、校验内容=key1和key2，保存后立即执行，等待状态变为\"执行完成\"",
+                      "step": "找到\"task_spark_test\"，点击【编辑规则】，点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: key范围校验\n- 字段: data（string类型）\n- 校验方法: 包含\n- 校验内容: 勾选key1和key2\n点击【保存】按钮，保存后返回列表点击【立即执行】，等待状态变为\"执行完成\"",
                       "expected": "保存成功，任务执行完成，无异常日志"
                     },
                     {
-                      "step": "查看质量报告中的执行结果",
-                      "expected": "id=1质检结果=校验通过；id=2质检结果=校验不通过，与Doris数据源行为一致"
+                      "step": "进入【质量报告】查看执行结果",
+                      "expected": "1) id=1质检结果=校验通过\n2) id=2质检结果=校验不通过"
                     }
                   ]
                 },
                 {
-                  "title": "验证Hive2.x数据源的json字段支持key范围校验",
+                  "title": "验证Hive2.x数据源的string字段支持key范围校验",
                   "priority": "P1",
-                  "preconditions": "Hive2.x数据源已配置并连接正常，已在该数据源中创建含string类型字段的表并插入数据：CREATE TABLE hive_json_test (id INT, data STRING); INSERT INTO hive_json_test VALUES (1, '{\"key1\":\"M\",\"key2\":\"N\"}'), (2, '{\"key1\":\"P\"}');\n已创建关联该Hive2.x表的规则任务\"task_hive_test\"，已在通用配置中维护key1、key2",
+                  "preconditions": "1) Hive2.x数据源已配置并连接正常\n2) 已在该数据源中执行以下SQL：\n   CREATE TABLE hive_json_test (id INT, data STRING);\n   INSERT INTO hive_json_test VALUES\n     (1, '{\"key1\":\"M\",\"key2\":\"N\"}'),\n     (2, '{\"key1\":\"P\"}');\n3) 已在【通用配置 → json格式校验管理】页面维护key1、key2\n4) 已创建关联该Hive2.x表的规则任务\"task_hive_test\"",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_hive_test\"，点击【编辑规则】，新增规则：统计函数=key范围校验、字段=data（string类型）、校验方法=包含、校验内容=key1和key2，保存后立即执行，等待状态变为\"执行完成\"",
+                      "step": "找到\"task_hive_test\"，点击【编辑规则】，点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: key范围校验\n- 字段: data（string类型）\n- 校验方法: 包含\n- 校验内容: 勾选key1和key2\n点击【保存】按钮，保存后返回列表点击【立即执行】，等待状态变为\"执行完成\"",
                       "expected": "保存成功，任务执行完成，无异常日志"
                     },
                     {
-                      "step": "查看质量报告中的执行结果",
-                      "expected": "id=1质检结果=校验通过；id=2质检结果=校验不通过，与Doris/Spark数据源行为一致"
+                      "step": "进入【质量报告】查看执行结果",
+                      "expected": "1) id=1质检结果=校验通过\n2) id=2质检结果=校验不通过"
                     }
                   ]
                 }
@@ -645,19 +645,140 @@
                 {
                   "title": "验证key数量几千个时按层级校验逻辑正确执行",
                   "priority": "P1",
-                  "preconditions": "已在【通用配置 → json格式校验管理】中维护含3000条key的数据（第一层级key_l1_001至key_l1_1000，第二层级key_l2_001至key_l2_2000）\n已在Doris表中插入以下数据：INSERT INTO test_json_key_range VALUES (30, '{\"key_l1_001\":\"v1\",\"key_l2_001\":\"v2\"}'), (31, '{\"key_l1_001\":\"v3\"}'), (32, '{\"key_other\":\"v4\"}');\n已创建规则任务\"task_json_large_key_test\"并关联上述Doris表，校验内容选择第一层级key_l1_001和第二层级key_l2_001",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面批量维护含3000条key的数据：\n   第一层级：key_l1_001至key_l1_1000\n   第二层级：key_l2_001至key_l2_2000\n2) 已在Doris表中执行以下灌数SQL：\n   INSERT INTO test_json_key_range VALUES\n     (30, '{\"key_l1_001\":\"v1\",\"key_l2_001\":\"v2\"}'),\n     (31, '{\"key_l1_001\":\"v3\"}'),\n     (32, '{\"key_other\":\"v4\"}');\n3) 已创建规则任务\"task_json_large_key_test\"并关联上述Doris表",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_large_key_test\"，点击【编辑规则】，配置key范围校验规则：字段=info、校验方法=包含、校验内容=key_l1_001（第一层级）和key_l2_001（第二层级）；保存后立即执行，等待任务执行完成",
-                      "expected": "保存成功，任务在合理时间内（5分钟内）执行完成，无超时或OOM报错"
+                      "step": "找到\"task_json_large_key_test\"，点击【编辑规则】，点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: key范围校验\n- 字段: info\n- 校验方法: 包含\n- 校验内容: 通过搜索框搜索并勾选key_l1_001（第一层级）和key_l2_001（第二层级）\n点击【保存】按钮，保存后返回列表点击【立即执行】，等待任务执行完成",
+                      "expected": "保存成功，任务在5分钟内执行完成，无超时或OOM报错"
                     },
                     {
-                      "step": "进入质量报告查看执行结果，分别查看id=30、31、32的记录校验结果",
-                      "expected": "id=30（含key_l1_001和key_l2_001）=校验通过；id=31（缺key_l2_001）=校验不通过；id=32（不含任何目标key）=校验不通过；层级匹配逻辑正确，第一层级key不与第二层级key混淆"
+                      "step": "进入【质量报告】查看执行结果，分别查看id=30、31、32的记录校验结果",
+                      "expected": "1) id=30（含key_l1_001和key_l2_001）=校验通过\n2) id=31（缺key_l2_001）=校验不通过\n3) id=32（不含任何目标key）=校验不通过\n4) 层级匹配逻辑正确，第一层级key不与第二层级key混淆"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证千级key数据量下校验内容选择列表的加载搜索和选择性能",
+                  "priority": "P1",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面批量维护含2000条key的数据：\n   第一层级：key_l1_001至key_l1_1000\n   第二层级：key_l2_001至key_l2_1000\n2) 已创建规则任务\"task_json_large_key_perf\"并关联含json字段的Doris表",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
+                      "expected": ""
+                    },
+                    {
+                      "step": "找到\"task_json_large_key_perf\"，点击【编辑规则】，点击【新增规则】，统计函数选择\"key范围校验\"，字段选择\"info\"，点击校验内容下拉框，等待列表加载完成",
+                      "expected": "校验内容下拉列表在3秒内加载完成，默认展示前200条key数据，页面无卡顿"
+                    },
+                    {
+                      "step": "在搜索框中输入\"key_l2_999\"，等待搜索结果返回",
+                      "expected": "搜索结果在2秒内返回，正确显示\"key_l2_999\"，搜索响应无明显延迟"
+                    },
+                    {
+                      "step": "勾选搜索到的\"key_l2_999\"，清空搜索框，再搜索并勾选\"key_l1_500\"，点击【确认】",
+                      "expected": "两个key均成功选中，校验内容回显\"key_l1_500;key_l2_999\"，选择操作流畅无卡顿"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "key被删除后的关联影响",
+              "test_cases": [
+                {
+                  "title": "验证删除已被规则引用的key后规则配置回显和编辑功能正常",
+                  "priority": "P1",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面维护key数据：key_del_1（测试名1）、key_del_2（测试名2）、key_del_3（测试名3）\n2) 已创建规则任务\"task_json_key_del_test\"，并配置key范围校验规则：字段=info、校验方法=包含、校验内容=key_del_1-key_del_2-key_del_3\n3) 规则已保存成功",
+                  "steps": [
+                    {
+                      "step": "进入【通用配置 → json格式校验管理】页面，等待列表加载完成",
+                      "expected": ""
+                    },
+                    {
+                      "step": "找到\"key_del_2（测试名2）\"，点击操作列的【删除】按钮，在确认弹窗中点击【确定】，等待删除成功提示",
+                      "expected": "key_del_2删除成功，列表中不再显示key_del_2"
+                    },
+                    {
+                      "step": "进入【数据质量 → 规则任务管理】页面，找到\"task_json_key_del_test\"，点击【编辑规则】，查看已配置的key范围校验规则的校验内容回显",
+                      "expected": "校验内容回显中key_del_2已被自动移除或标记为无效状态，剩余key_del_1和key_del_3正常显示"
+                    },
+                    {
+                      "step": "点击该规则的【编辑】按钮，打开校验内容下拉框，观察可选key列表",
+                      "expected": "校验内容下拉框中不再显示key_del_2，key_del_1和key_del_3正常展示可选，编辑功能正常可用"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证删除已被规则引用的key后执行校验任务不受影响",
+                  "priority": "P1",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面维护key数据：key_exec_1（名称1）、key_exec_2（名称2）\n2) 已创建规则任务\"task_json_key_exec_test\"，配置key范围校验规则：字段=info、校验方法=包含、校验内容=key_exec_1-key_exec_2\n3) 已在Doris表中插入数据：\n   INSERT INTO test_json_key_range VALUES\n     (40, '{\"key_exec_1\":\"a\",\"key_exec_2\":\"b\"}');\n4) 已在通用配置中删除key_exec_2",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
+                      "expected": ""
+                    },
+                    {
+                      "step": "找到\"task_json_key_exec_test\"，点击【立即执行】，等待任务执行状态变化",
+                      "expected": "任务正常执行完成，执行状态变为\"执行完成\"，不因key被删除而执行失败"
+                    },
+                    {
+                      "step": "进入【质量报告】查看该任务最新执行结果",
+                      "expected": "质量报告正常生成，显示校验结果，质量任务不受已删除key的影响"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "抽样与分区场景",
+              "test_cases": [
+                {
+                  "title": "验证key范围校验规则结合抽样功能正确执行",
+                  "priority": "P1",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面维护key1（姓名）、key2（年龄）\n2) 已在Doris表test_json_sampling中插入100条数据，其中50条包含key1和key2，50条仅包含key1：\n   CREATE TABLE test_json_sampling (\n     id INT,\n     info JSON\n   ) DISTRIBUTED BY HASH(id) BUCKETS 3\n   PROPERTIES(\"replication_num\" = \"1\");\n   -- 插入100条数据（id=1~50含key1和key2，id=51~100仅含key1）\n3) 已创建规则任务\"task_json_sampling_test\"并关联上述Doris表，任务配置中抽样行数设置为10",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
+                      "expected": ""
+                    },
+                    {
+                      "step": "找到\"task_json_sampling_test\"，点击【编辑规则】，点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: key范围校验\n- 字段: info\n- 校验方法: 包含\n- 校验内容: 勾选key1和key2\n点击【保存】按钮",
+                      "expected": "保存成功"
+                    },
+                    {
+                      "step": "返回规则任务列表，点击【立即执行】，等待任务执行状态变为\"执行完成\"",
+                      "expected": "任务执行完成，无报错"
+                    },
+                    {
+                      "step": "进入【质量报告】查看该任务执行结果，查看抽样行数和校验明细",
+                      "expected": "1) 质量报告中抽样行数显示为10\n2) 校验结果基于抽样的10条数据进行判定\n3) 校验通过和不通过的结果与抽样数据实际内容一致"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证对分区表配置key范围校验规则指定分区下数据校验正确",
+                  "priority": "P1",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面维护key1（姓名）、key2（年龄）\n2) 已在Hive数据源中执行以下SQL创建分区表并灌数：\n   CREATE TABLE hive_json_partition (\n     id INT,\n     info STRING\n   ) PARTITIONED BY (dt STRING);\n   ALTER TABLE hive_json_partition ADD PARTITION (dt='20260401');\n   ALTER TABLE hive_json_partition ADD PARTITION (dt='20260402');\n   INSERT INTO hive_json_partition PARTITION (dt='20260401') VALUES\n     (1, '{\"key1\":\"张三\",\"key2\":25}'),\n     (2, '{\"key1\":\"李四\"}');\n   INSERT INTO hive_json_partition PARTITION (dt='20260402') VALUES\n     (3, '{\"key1\":\"王五\",\"key2\":30}');\n3) 已创建规则任务\"task_json_partition_test\"并关联上述Hive分区表",
+                  "steps": [
+                    {
+                      "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
+                      "expected": ""
+                    },
+                    {
+                      "step": "找到\"task_json_partition_test\"，点击【编辑规则】，点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: key范围校验\n- 字段: info（string类型）\n- 校验方法: 包含\n- 校验内容: 勾选key1和key2\n- 过滤条件: 指定分区dt=20260401\n点击【保存】按钮",
+                      "expected": "保存成功"
+                    },
+                    {
+                      "step": "返回规则任务列表，点击【立即执行】，等待任务执行状态变为\"执行完成\"",
+                      "expected": "任务执行完成，无报错"
+                    },
+                    {
+                      "step": "进入【质量报告】查看该任务执行结果",
+                      "expected": "1) 仅校验dt=20260401分区下的数据（id=1和id=2）\n2) id=1（含key1和key2）质检结果=校验通过\n3) id=2（仅含key1，缺key2）质检结果=校验不通过\n4) dt=20260402分区的数据（id=3）不参与本次校验"
                     }
                   ]
                 }
@@ -669,19 +790,19 @@
                 {
                   "title": "验证将key范围校验规则设为弱规则时执行和报告显示正常",
                   "priority": "P2",
-                  "preconditions": "已在通用配置中维护key1、key2；Doris表test_json_key_range中含id=2的记录（仅含key1，缺key2）\n已创建规则任务\"task_json_weak_rule_test\"",
+                  "preconditions": "1) 已在【通用配置 → json格式校验管理】页面维护key1（姓名）、key2（年龄）\n2) 已在Doris表test_json_key_range中插入数据：\n   INSERT INTO test_json_key_range VALUES (2, '{\"key1\":\"李四\"}');\n   （仅含key1，缺key2）\n3) 已创建规则任务\"task_json_weak_rule_test\"并关联上述Doris表",
                   "steps": [
                     {
                       "step": "进入【数据质量 → 规则任务管理】页面，等待规则任务列表加载完成",
                       "expected": ""
                     },
                     {
-                      "step": "找到\"task_json_weak_rule_test\"，点击【编辑规则】，新增规则：统计函数=key范围校验、字段=info、校验方法=包含、校验内容=key1和key2、强弱规则=【弱规则】，保存后立即执行，等待执行完成",
+                      "step": "找到\"task_json_weak_rule_test\"，点击【编辑规则】，点击【新增规则】，在规则配置表单中按顺序配置如下：\n- 统计函数: key范围校验\n- 字段: info\n- 校验方法: 包含\n- 校验内容: 勾选key1和key2\n- 强弱规则: 弱规则\n点击【保存】按钮，保存后返回列表点击【立即执行】，等待执行完成",
                       "expected": "保存成功，任务正常执行完成，无报错"
                     },
                     {
-                      "step": "进入质量报告，查看id=2记录（校验不通过）的展示和任务整体执行状态",
-                      "expected": "id=2记录质检结果=校验不通过，但任务整体状态不因弱规则未通过而标记为\"失败\"；质量报告中\"强弱规则\"列或规则标识显示\"弱规则\""
+                      "step": "进入【质量报告】，查看id=2记录的质检结果和任务整体执行状态",
+                      "expected": "1) id=2记录质检结果=校验不通过\n2) 任务整体状态不因弱规则未通过而标记为\"失败\"\n3) 质量报告中\"强弱规则\"列显示\"弱规则\""
                     }
                   ]
                 }
