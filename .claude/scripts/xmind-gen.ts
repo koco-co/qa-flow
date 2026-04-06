@@ -170,9 +170,8 @@ function buildRootTitle(meta: Meta): string {
 }
 
 function buildL1Title(meta: Meta): string {
-  const name = meta.requirement_name;
-  const ticket = meta.requirement_ticket;
-  return ticket ? `${name}(#${ticket})` : name;
+  // Strip trailing (#xxxxx) from requirement_name if present (frontmatter suite_name may include it)
+  return meta.requirement_name.replace(/\(#\d+\)\s*$/, "").trim();
 }
 
 function buildL1Labels(meta: Meta): string[] {
@@ -732,22 +731,35 @@ function archiveToJson(
 
   const suiteName =
     typeof fm.suite_name === "string" ? fm.suite_name : basename(mdPath, ".md");
-  const caseId = typeof fm.case_id === "number" ? fm.case_id : undefined;
+  const prdId =
+    typeof fm.prd_id === "number"
+      ? fm.prd_id
+      : typeof fm.case_id === "number"
+        ? fm.case_id
+        : undefined;
+
+  // Resolve version: CLI --version > frontmatter prd_version
+  const resolvedVersion =
+    version ??
+    (typeof fm.prd_version === "string" ? fm.prd_version : undefined);
+
+  // Resolve project name: frontmatter root_name > CLI --project
+  const resolvedProject =
+    typeof fm.root_name === "string" ? fm.root_name : projectName;
 
   const modules = parseArchiveBody(body);
 
   const meta: Meta = {
-    project_name: projectName,
+    project_name: resolvedProject,
     requirement_name: suiteName,
   };
 
-  if (version) {
-    meta.version = version;
+  if (resolvedVersion) {
+    meta.version = resolvedVersion;
   }
 
-  if (caseId) {
-    meta.requirement_ticket = String(caseId);
-    meta.requirement_id = caseId;
+  if (prdId) {
+    meta.requirement_id = prdId;
   }
 
   return { meta, modules };
