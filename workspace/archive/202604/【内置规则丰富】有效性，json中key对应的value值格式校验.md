@@ -34,9 +34,9 @@ origin: "xmind"
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
-3. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_ui"，Step 1 基础信息配置如下：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_ui"，Step 1 基础信息配置如下：
    - *选择数据源: Doris
    - *选择数据库: quality_test_db
    - *选择数据表: json_format_test（含字段 info（JSON类型）、name（VARCHAR类型））
@@ -57,9 +57,9 @@ origin: "xmind"
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
-3. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_tip"，关联Doris数据源 quality_test_db 库 json_format_test 表，规则包名称"提示测试包"，已进入 Step 2 监控规则
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_tip"，关联Doris数据源 quality_test_db 库 json_format_test 表，规则包名称"提示测试包"，已进入 Step 2 监控规则
 ```
 
 > 用例步骤
@@ -76,8 +76,8 @@ origin: "xmind"
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已执行以下 SQL 创建包含多种字段类型的测试表：
+1) 使用 admin 账号登录系统
+2) 已执行以下 SQL 创建包含多种字段类型的测试表：
    CREATE TABLE quality_test_db.multi_type_test (
      id INT,
      name VARCHAR(255),
@@ -86,9 +86,9 @@ origin: "xmind"
      info JSON,
      created_at DATETIME
    );
-3. 已在资产平台引入该表，且元数据字段类型识别正确
-4. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_field_type_test"，关联Doris数据源quality_test_db库multi_type_test表，规则包名称"字段类型测试包"，已进入 Step 2 监控规则
-5. 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
+3) 已在资产平台引入该表，且元数据字段类型识别正确
+4) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_field_type_test"，关联Doris数据源quality_test_db库multi_type_test表，规则包名称"字段类型测试包"，已进入 Step 2 监控规则
+5) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
 ```
 
 > 用例步骤
@@ -107,12 +107,12 @@ origin: "xmind"
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护以下数据：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护以下数据：
    - key路径「product-name」，中文名称「产品名称」，value格式正则：^.{1,50}$
    - key路径「product-code」，中文名称「产品编码」，value格式正则：^[A-Z]{2}\d{6}$
    - key路径「product-desc」，中文名称「产品描述」，未配置value格式
-3. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_select_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"key选择测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_select_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"key选择测试包"，已进入 Step 2 监控规则
 ```
 
 > 用例步骤
@@ -129,12 +129,12 @@ origin: "xmind"
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key：
    - key路径「user-name」，中文名称「用户姓名」，value格式正则：^[\u4e00-\u9fa5a-zA-Z]{1,20}$
    - key路径「user-phone」，中文名称「用户手机号」，value格式正则：^1[3-9]\d{9}$
    - key路径「user-id」，中文名称「用户身份证号」，value格式正则：^\d{18}$
-3. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_multi_select_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"多选全选测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_multi_select_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"多选全选测试包"，已进入 Step 2 监控规则
 ```
 
 > 用例步骤
@@ -152,12 +152,12 @@ origin: "xmind"
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key：
    - key路径「order-amount」，中文名称「订单金额」，value格式正则：^\d+\.\d{2}$
    - key路径「order-status」，中文名称「订单状态」，value格式正则：^(paid|pending)$
    - key路径「user-name」，中文名称「用户姓名」，value格式正则：^.{1,20}$
-3. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_search_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"key搜索测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_search_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"key搜索测试包"，已进入 Step 2 监控规则
 ```
 
 > 用例步骤
@@ -173,8 +173,8 @@ origin: "xmind"
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护超过200条配置了value格式的key（共210条，key命名规则为 test-key-001 至 test-key-210，中文名称分别为「测试键001」至「测试键210」，每条均配置value格式正则 ^.+$），通用配置导入文件生成脚本如下:
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护超过200条配置了value格式的key（共210条，key命名规则为 test-key-001 至 test-key-210，中文名称分别为「测试键001」至「测试键210」，每条均配置value格式正则 ^.+$），通用配置导入文件生成脚本如下:
 
 import openpyxl
 
@@ -188,7 +188,7 @@ for i in range(1, 211):
 wb.save("json_value_format_import_210.xlsx")
 print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，均配置value格式")
 
-3. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_large_key_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"大数据量key测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_large_key_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"大数据量key测试包"，已进入 Step 2 监控规则
 ```
 
 > 用例步骤
@@ -204,12 +204,12 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key（层级结构）：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key（层级结构）：
    - 一级key「person」下二级key「name」，路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
    - 一级key「person」下二级key「age」，路径「person-age」，中文名称「人员年龄」，value格式正则：^\d{1,3}$
    - 一级key「address」下二级key「city」，路径「address-city」，中文名称「地址城市」，value格式正则：^.{1,20}$
-3. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_layer_key_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"层级key测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_layer_key_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"层级key测试包"，已进入 Step 2 监控规则
 ```
 
 > 用例步骤
@@ -225,13 +225,13 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key：
    - key路径「field-key1」，中文名称「字段键1」，value格式正则：^.+$
    - key路径「field-key2」，中文名称「字段键2」，value格式正则：^.+$
    - key路径「field-key3」，中文名称「字段键3」，value格式正则：^.+$
    - key路径「field-key4」，中文名称「字段键4」，value格式正则：^.+$
-3. 已通过【数据质量 → 规则集管理】页面，创建规则集"rule_set_hover_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"悬浮展示测试包"，在 Step 2 中配置「格式-json格式校验」规则，校验key选择了4个key：「field-key1」「field-key2」「field-key3」「field-key4」，并已保存
+3) 已通过【数据质量 → 规则集管理】页面，创建规则集"rule_set_hover_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"悬浮展示测试包"，在 Step 2 中配置「格式-json格式校验」规则，校验key选择了4个key：「field-key1」「field-key2」「field-key3」「field-key4」，并已保存
 ```
 
 > 用例步骤
@@ -250,12 +250,12 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key（共15条）：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护以下配置了value格式的key（共15条）：
    - key路径「check-key-01」，中文名称「校验键01」，value格式正则：^[A-Z]{2}\d{4}$
    - key路径「check-key-02」，中文名称「校验键02」，value格式正则：^1[3-9]\d{9}$
    - key路径「check-key-03」至「check-key-15」，中文名称「校验键03」至「校验键15」，各配置不同正则
-3. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_preview_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"value预览测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_preview_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"value预览测试包"，已进入 Step 2 监控规则
 ```
 
 > 用例步骤
@@ -275,16 +275,16 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已执行以下 SQL 创建包含 int 类型字段的测试表：
+1) 使用 admin 账号登录系统
+2) 已执行以下 SQL 创建包含 int 类型字段的测试表：
    CREATE TABLE quality_test_db.int_type_test (
      id INT,
      count_val INT,
      note VARCHAR(255)
    );
-3. 已在资产平台引入该表，元数据中 count_val 字段类型识别为 int
-4. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_int_type_test"，关联Doris数据源quality_test_db库int_type_test表，规则包名称"int类型限制测试包"，已进入 Step 2 监控规则
-5. 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
+3) 已在资产平台引入该表，元数据中 count_val 字段类型识别为 int
+4) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_int_type_test"，关联Doris数据源quality_test_db库int_type_test表，规则包名称"int类型限制测试包"，已进入 Step 2 监控规则
+5) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
 ```
 
 > 用例步骤
@@ -299,9 +299,9 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_required_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"必填校验测试包"，已进入 Step 2 监控规则
-3. 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
+1) 使用 admin 账号登录系统
+2) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_required_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"必填校验测试包"，已进入 Step 2 监控规则
+3) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
 ```
 
 > 用例步骤
@@ -318,9 +318,9 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护key路径「device-type」，中文名称「设备类型」，value格式正则：^(mobile|pc|tablet)$
-3. 已通过【数据质量 → 规则集管理】页面，创建规则集"rule_set_param_display_test"，关联Doris数据源quality_test_db库含json字段（字段名 device_info，类型 json）的数据表，规则包名称"参数展示测试包"，在 Step 2 中配置「格式-json格式校验」规则：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护key路径「device-type」，中文名称「设备类型」，value格式正则：^(mobile|pc|tablet)$
+3) 已通过【数据质量 → 规则集管理】页面，创建规则集"rule_set_param_display_test"，关联Doris数据源quality_test_db库含json字段（字段名 device_info，类型 json）的数据表，规则包名称"参数展示测试包"，在 Step 2 中配置「格式-json格式校验」规则：
    - 字段：device_info
    - 校验key：device-type
    - 强弱规则：强规则
@@ -343,14 +343,14 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 数据源中心已添加数据源「测试数据源_Doris」并授权给资产平台
-3. 已在「通用配置 → json格式校验管理」中维护如下数据：
+1) 使用 admin 账号登录系统
+2) 数据源中心已添加数据源「测试数据源_Doris」并授权给资产平台
+3) 已在「通用配置 → json格式校验管理」中维护如下数据：
    - key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
    - key路径「person-age」，中文名称「人员年龄」，value格式正则：^\d{1,3}$
    - key路径「person-email」，中文名称「人员邮箱」，未配置value格式
-4. 资产平台已引入该数据源，数据源下存在 quality_test_db 数据库
-5. 已执行以下 SQL 创建测试表并灌入数据：
+4) 资产平台已引入该数据源，数据源下存在 quality_test_db 数据库
+5) 已执行以下 SQL 创建测试表并灌入数据：
    CREATE TABLE quality_test_db.json_format_test (
      id INT,
      info JSON,
@@ -359,9 +359,9 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
    INSERT INTO quality_test_db.json_format_test VALUES
      (1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row1'),
      (2, '{"person":{"name":"李四","age":"30","email":"admin@test.com"}}', 'row2');
-6. 已在资产平台引入该表，且元数据中 info 字段类型识别为 json
-7. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_p0"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"P0主流程测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=info、校验key=person-name和person-age、强弱规则=强规则，已保存规则集
-8. 已通过【数据质量 → 规则任务管理】页面，点击【新建监控规则】创建任务"json格式校验任务_P0"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_value_fmt_p0"的"P0主流程测试包"，已完成 Step 3 调度属性并保存
+6) 已在资产平台引入该表，且元数据中 info 字段类型识别为 json
+7) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_p0"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"P0主流程测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=info、校验key=person-name和person-age、强弱规则=强规则，已保存规则集
+8) 已通过【数据质量 → 规则任务管理】页面，点击【新建监控规则】创建任务"json格式校验任务_P0"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_value_fmt_p0"的"P0主流程测试包"，已完成 Step 3 调度属性并保存
 ```
 
 > 用例步骤
@@ -377,11 +377,11 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护：
    - key路径「order-amount」，中文名称「订单金额」，value格式正则：^\d+\.\d{2}$
    - key路径「order-status」，中文名称「订单状态」，value格式正则：^(pending|paid|cancelled)$
-3. 已执行以下 SQL 创建测试表并灌入包含不合规数据的数据：
+3) 已执行以下 SQL 创建测试表并灌入包含不合规数据的数据：
    CREATE TABLE quality_test_db.json_invalid_test (
      id INT,
      order_info JSON,
@@ -391,8 +391,8 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
      (1, '{"order":{"amount":"100.00","status":"paid"}}', 'row_valid'),
      (2, '{"order":{"amount":"abc","status":"unknown"}}', 'row_invalid'),
      (3, '{"order":{"amount":"50.5","status":"pending"}}', 'row_invalid2');
-4. 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_fail"，关联Doris数据源quality_test_db库json_invalid_test表，规则包名称"校验不通过测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=order_info、校验key=order-amount和order-status，已保存规则集
-5. 已通过【数据质量 → 规则任务管理】页面，点击【新建监控规则】创建任务"json格式校验任务_不通过"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_value_fmt_fail"的"校验不通过测试包"，已完成保存并执行完成，结果为「校验不通过」
+4) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_fail"，关联Doris数据源quality_test_db库json_invalid_test表，规则包名称"校验不通过测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=order_info、校验key=order-amount和order-status，已保存规则集
+5) 已通过【数据质量 → 规则任务管理】页面，点击【新建监控规则】创建任务"json格式校验任务_不通过"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_value_fmt_fail"的"校验不通过测试包"，已完成保存并执行完成，结果为「校验不通过」
 ```
 
 > 用例步骤
@@ -411,10 +411,10 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 数据源中心已添加 Doris 3.x 版本数据源「测试数据源_Doris3」并授权给资产平台
-3. 已在「通用配置 → json格式校验管理」中维护key路径「item-sku」，中文名称「商品SKU」，value格式正则：^SKU\d{8}$
-4. 已执行以下 SQL 创建测试表并灌入数据：
+1) 使用 admin 账号登录系统
+2) 数据源中心已添加 Doris 3.x 版本数据源「测试数据源_Doris3」并授权给资产平台
+3) 已在「通用配置 → json格式校验管理」中维护key路径「item-sku」，中文名称「商品SKU」，value格式正则：^SKU\d{8}$
+4) 已执行以下 SQL 创建测试表并灌入数据：
    CREATE TABLE quality_doris3_test.json_sku_test (
      id INT,
      item_info JSON
@@ -422,8 +422,8 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
    INSERT INTO quality_doris3_test.json_sku_test VALUES
      (1, '{"item":{"sku":"SKU12345678"}}'),
      (2, '{"item":{"sku":"invalid_sku"}}');
-5. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_doris3_compat"，关联Doris3.x数据源的json_sku_test表，规则包名称"Doris3兼容性测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=item_info、校验key=item-sku，已保存规则集
-6. 已通过【数据质量 → 规则任务管理】创建任务"Doris3兼容性测试任务"，关联同一Doris3.x表，在 Step 2 中通过【导入规则包】导入上述规则集的规则包，已完成保存
+5) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_doris3_compat"，关联Doris3.x数据源的json_sku_test表，规则包名称"Doris3兼容性测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=item_info、校验key=item-sku，已保存规则集
+6) 已通过【数据质量 → 规则任务管理】创建任务"Doris3兼容性测试任务"，关联同一Doris3.x表，在 Step 2 中通过【导入规则包】导入上述规则集的规则包，已完成保存
 ```
 
 > 用例步骤
@@ -439,10 +439,10 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 数据源中心已添加 SparkThrift 2.x 版本数据源「测试数据源_Spark2」并授权给资产平台
-3. 已在「通用配置 → json格式校验管理」中维护key路径「event-type」，中文名称「事件类型」，value格式正则：^(click|view|purchase)$
-4. 已在 Spark 数据源的 spark_test_db 数据库中创建测试表并灌入数据：
+1) 使用 admin 账号登录系统
+2) 数据源中心已添加 SparkThrift 2.x 版本数据源「测试数据源_Spark2」并授权给资产平台
+3) 已在「通用配置 → json格式校验管理」中维护key路径「event-type」，中文名称「事件类型」，value格式正则：^(click|view|purchase)$
+4) 已在 Spark 数据源的 spark_test_db 数据库中创建测试表并灌入数据：
    CREATE TABLE spark_test_db.json_event_test (
      id INT,
      event_data STRING
@@ -450,8 +450,8 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
    INSERT INTO spark_test_db.json_event_test VALUES
      (1, '{"event":{"type":"click"}}'),
      (2, '{"event":{"type":"unknown"}}');
-5. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_spark2_compat"，关联SparkThrift2.x数据源的json_event_test表，规则包名称"Spark2兼容性测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=event_data（string）、校验key=event-type，已保存规则集
-6. 已通过【数据质量 → 规则任务管理】创建任务"Spark2兼容性测试任务"，关联同一Spark表，在 Step 2 中通过【导入规则包】导入上述规则集的规则包，已完成保存
+5) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_spark2_compat"，关联SparkThrift2.x数据源的json_event_test表，规则包名称"Spark2兼容性测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=event_data（string）、校验key=event-type，已保存规则集
+6) 已通过【数据质量 → 规则任务管理】创建任务"Spark2兼容性测试任务"，关联同一Spark表，在 Step 2 中通过【导入规则包】导入上述规则集的规则包，已完成保存
 ```
 
 > 用例步骤
@@ -466,10 +466,10 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 数据源中心已添加 Hive 2.x 版本数据源「测试数据源_Hive2」并授权给资产平台
-3. 已在「通用配置 → json格式校验管理」中维护key路径「score-value」，中文名称「分数值」，value格式正则：^\d{1,3}$
-4. 已在 Hive 数据源的 hive_test_db 数据库中创建测试表并灌入数据：
+1) 使用 admin 账号登录系统
+2) 数据源中心已添加 Hive 2.x 版本数据源「测试数据源_Hive2」并授权给资产平台
+3) 已在「通用配置 → json格式校验管理」中维护key路径「score-value」，中文名称「分数值」，value格式正则：^\d{1,3}$
+4) 已在 Hive 数据源的 hive_test_db 数据库中创建测试表并灌入数据：
    CREATE TABLE hive_test_db.json_score_test (
      id INT,
      score_info STRING
@@ -477,8 +477,8 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
    INSERT INTO hive_test_db.json_score_test VALUES
      (1, '{"score":{"value":"95"}}'),
      (2, '{"score":{"value":"1000"}}');
-5. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_hive2_compat"，关联Hive2.x数据源的json_score_test表，规则包名称"Hive2兼容性测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=score_info（string）、校验key=score-value，已保存规则集
-6. 已通过【数据质量 → 规则任务管理】创建任务"Hive2兼容性测试任务"，关联同一Hive表，在 Step 2 中通过【导入规则包】导入上述规则集的规则包，已完成保存
+5) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_hive2_compat"，关联Hive2.x数据源的json_score_test表，规则包名称"Hive2兼容性测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=score_info（string）、校验key=score-value，已保存规则集
+6) 已通过【数据质量 → 规则任务管理】创建任务"Hive2兼容性测试任务"，关联同一Hive表，在 Step 2 中通过【导入规则包】导入上述规则集的规则包，已完成保存
 ```
 
 > 用例步骤
@@ -495,9 +495,9 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护key路径「tag-code」，中文名称「标签编码」，value格式正则：^TAG\d{4}$
-3. 已执行以下 SQL 创建测试表并灌入包含不合规数据的数据：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护key路径「tag-code」，中文名称「标签编码」，value格式正则：^TAG\d{4}$
+3) 已执行以下 SQL 创建测试表并灌入包含不合规数据的数据：
    CREATE TABLE quality_test_db.json_weak_test (
      id INT,
      tag_info JSON
@@ -505,11 +505,11 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
    INSERT INTO quality_test_db.json_weak_test VALUES
      (1, '{"tag":{"code":"TAG0001"}}'),
      (2, '{"tag":{"code":"invalid"}}');
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_weak_test"，关联Doris数据源quality_test_db库json_weak_test表，规则包名称"弱规则测试包"，在 Step 2 中配置：
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_weak_test"，关联Doris数据源quality_test_db库json_weak_test表，规则包名称"弱规则测试包"，在 Step 2 中配置：
    - 一条强规则：完整性校验（期望通过）
    - 一条弱规则：「格式-json格式校验」（字段=tag_info，校验key=tag-code，强弱规则=弱规则）
    已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"弱规则测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_weak_test"的"弱规则测试包"，已完成保存
+5) 已通过【数据质量 → 规则任务管理】创建任务"弱规则测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_weak_test"的"弱规则测试包"，已完成保存
 ```
 
 > 用例步骤
@@ -527,8 +527,8 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护1200条key，其中：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护1200条key，其中：
    - key路径「perf-key-0001」至「perf-key-1000」，中文名称「性能键0001」至「性能键1000」，每条均配置value格式正则：^.+$（共1000条已配置value格式）
    - key路径「perf-novalue-1001」至「perf-novalue-1200」，中文名称「无格式键1001」至「无格式键1200」，未配置value格式（共200条未配置value格式）
    通用配置导入文件生成脚本如下:
@@ -547,7 +547,7 @@ for i in range(1001, 1201):
 wb.save("json_value_format_import_1200.xlsx")
 print("已生成 json_value_format_import_1200.xlsx，共1200条key数据（1000条配置value格式+200条未配置）")
 
-3. 已执行以下 SQL 创建测试表并灌入数据：
+3) 已执行以下 SQL 创建测试表并灌入数据：
    CREATE TABLE quality_test_db.json_perf_test (
      id INT,
      big_info JSON
@@ -570,8 +570,8 @@ with open("insert_json_perf_1000.sql", "w") as f:
     f.write("\n".join(lines))
 print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_perf_test"，关联Doris数据源quality_test_db库json_perf_test表，规则包名称"大数据量key校验包"，在 Step 2 中配置「格式-json格式校验」规则：字段=big_info、校验key=perf-key-0001和perf-key-0002，已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"大数据量key校验任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_perf_test"的"大数据量key校验包"，已完成保存
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_perf_test"，关联Doris数据源quality_test_db库json_perf_test表，规则包名称"大数据量key校验包"，在 Step 2 中配置「格式-json格式校验」规则：字段=big_info、校验key=perf-key-0001和perf-key-0002，已保存规则集
+5) 已通过【数据质量 → 规则任务管理】创建任务"大数据量key校验任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_perf_test"的"大数据量key校验包"，已完成保存
 ```
 
 > 用例步骤
@@ -588,19 +588,19 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护以下key：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护以下key：
    - key路径「del-key-a」，中文名称「待删除键A」，value格式正则：^[A-Z]+$
    - key路径「del-key-b」，中文名称「待删除键B」，value格式正则：^\d+$
-3. 已执行以下 SQL 创建测试表并灌入数据：
+3) 已执行以下 SQL 创建测试表并灌入数据：
    CREATE TABLE quality_test_db.json_del_test (
      id INT,
      del_info JSON
    );
    INSERT INTO quality_test_db.json_del_test VALUES
      (1, '{"del":{"key":{"a":"ABC","b":"123"}}}');
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_key_del_test"，关联Doris数据源quality_test_db库json_del_test表，规则包名称"key删除测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=del_info、校验key=del-key-a和del-key-b，已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"key删除影响测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_key_del_test"的"key删除测试包"，已完成保存
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_key_del_test"，关联Doris数据源quality_test_db库json_del_test表，规则包名称"key删除测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=del_info、校验key=del-key-a和del-key-b，已保存规则集
+5) 已通过【数据质量 → 规则任务管理】创建任务"key删除影响测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_key_del_test"的"key删除测试包"，已完成保存
 ```
 
 > 用例步骤
@@ -618,11 +618,11 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护以下key：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护以下key：
    - key路径「preview-key-x」，中文名称「预览键X」，value格式正则：^[0-9]+$
    - key路径「preview-key-y」，中文名称「预览键Y」，value格式正则：^[a-z]+$
-3. 已执行以下 SQL 创建测试表并灌入数据：
+3) 已执行以下 SQL 创建测试表并灌入数据：
    CREATE TABLE quality_test_db.json_preview_del (
      id INT,
      preview_info JSON
@@ -630,9 +630,9 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
    INSERT INTO quality_test_db.json_preview_del VALUES
      (1, '{"preview":{"key":{"x":"123","y":"abc"}}}'),
      (2, '{"preview":{"key":{"x":"456","y":"def"}}}');
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_preview_del_test"，关联Doris数据源quality_test_db库json_preview_del表，规则包名称"key删除预览测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=preview_info、校验key=preview-key-x和preview-key-y，已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"key删除预览测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_preview_del_test"的"key删除预览测试包"，已完成保存
-6. 已在「通用配置 → json格式校验管理」中删除「preview-key-x」
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_preview_del_test"，关联Doris数据源quality_test_db库json_preview_del表，规则包名称"key删除预览测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=preview_info、校验key=preview-key-x和preview-key-y，已保存规则集
+5) 已通过【数据质量 → 规则任务管理】创建任务"key删除预览测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_preview_del_test"的"key删除预览测试包"，已完成保存
+6) 已在「通用配置 → json格式校验管理」中删除「preview-key-x」
 ```
 
 > 用例步骤
@@ -650,9 +650,9 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护key路径「sample-code」，中文名称「样本编码」，value格式正则：^S\d{6}$
-3. 已执行以下 SQL 创建测试表并灌入20条数据：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护key路径「sample-code」，中文名称「样本编码」，value格式正则：^S\d{6}$
+3) 已执行以下 SQL 创建测试表并灌入20条数据：
    CREATE TABLE quality_test_db.json_sample_test (
      id INT,
      sample_info JSON
@@ -678,8 +678,8 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
      (18, '{"sample":{"code":"S000018"}}'),
      (19, '{"sample":{"code":"S000019"}}'),
      (20, '{"sample":{"code":"S000020"}}');
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_sample_test"，关联Doris数据源quality_test_db库json_sample_test表，规则包名称"抽样校验测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=sample_info、校验key=sample-code、抽样方式=随机抽样、抽样比例=50%，已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"抽样校验测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_sample_test"的"抽样校验测试包"，已完成保存
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_sample_test"，关联Doris数据源quality_test_db库json_sample_test表，规则包名称"抽样校验测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=sample_info、校验key=sample-code、抽样方式=随机抽样、抽样比例=50%，已保存规则集
+5) 已通过【数据质量 → 规则任务管理】创建任务"抽样校验测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_sample_test"的"抽样校验测试包"，已完成保存
 ```
 
 > 用例步骤
@@ -697,10 +697,10 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 数据源中心已添加 Hive 2.x 版本数据源「测试数据源_Hive2」并授权给资产平台
-3. 已在「通用配置 → json格式校验管理」中维护key路径「part-code」，中文名称「分区编码」，value格式正则：^P\d{4}$
-4. 已在 Hive 数据源的 hive_test_db 数据库中创建分区表并灌入数据：
+1) 使用 admin 账号登录系统
+2) 数据源中心已添加 Hive 2.x 版本数据源「测试数据源_Hive2」并授权给资产平台
+3) 已在「通用配置 → json格式校验管理」中维护key路径「part-code」，中文名称「分区编码」，value格式正则：^P\d{4}$
+4) 已在 Hive 数据源的 hive_test_db 数据库中创建分区表并灌入数据：
    CREATE TABLE hive_test_db.json_partition_test (
      id INT,
      part_info STRING
@@ -714,8 +714,8 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
    INSERT INTO hive_test_db.json_partition_test PARTITION (dt='2026-04-02') VALUES
      (3, '{"part":{"code":"P0003"}}'),
      (4, '{"part":{"code":"P0004"}}');
-5. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_partition_test"，关联Hive2.x数据源的json_partition_test表，规则包名称"分区校验测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=part_info（string）、校验key=part-code、过滤条件=分区字段 dt = '2026-04-01'，已保存规则集
-6. 已通过【数据质量 → 规则任务管理】创建任务"分区校验测试任务"，关联同一Hive分区表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_partition_test"的"分区校验测试包"，已完成保存
+5) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_partition_test"，关联Hive2.x数据源的json_partition_test表，规则包名称"分区校验测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=part_info（string）、校验key=part-code、过滤条件=分区字段 dt = '2026-04-01'，已保存规则集
+6) 已通过【数据质量 → 规则任务管理】创建任务"分区校验测试任务"，关联同一Hive分区表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_partition_test"的"分区校验测试包"，已完成保存
 ```
 
 > 用例步骤
@@ -735,7 +735,7 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
+1) 使用 admin 账号登录系统
 ```
 
 > 用例步骤
@@ -754,8 +754,8 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已执行以下 SQL 创建测试表并灌入包含不合规数据的数据：
+1) 使用 admin 账号登录系统
+2) 已执行以下 SQL 创建测试表并灌入包含不合规数据的数据：
    CREATE TABLE quality_test_db.json_dl_test (
      id INT,
      payload JSON,
@@ -764,11 +764,11 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
    INSERT INTO quality_test_db.json_dl_test VALUES
      (1, '{"product":{"code":"AB123456","price":"100.00"}}', 'valid'),
      (2, '{"product":{"code":"invalid_code","price":"abc"}}', 'invalid');
-3. 已在「通用配置 → json格式校验管理」中维护：
+3) 已在「通用配置 → json格式校验管理」中维护：
    - key路径「product-code」，中文名称「产品编码」，value格式正则：^[A-Z]{2}\d{6}$
    - key路径「product-price」，中文名称「产品价格」，value格式正则：^\d+\.\d{2}$
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_dl_test"，关联Doris数据源quality_test_db库json_dl_test表，规则包名称"下载明细测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=payload、校验key=product-code和product-price，已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"下载明细测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_dl_test"的"下载明细测试包"，已完成保存并执行完成，结果为「校验不通过」
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_dl_test"，关联Doris数据源quality_test_db库json_dl_test表，规则包名称"下载明细测试包"，在 Step 2 中配置「格式-json格式校验」规则：字段=payload、校验key=product-code和product-price，已保存规则集
+5) 已通过【数据质量 → 规则任务管理】创建任务"下载明细测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_dl_test"的"下载明细测试包"，已完成保存并执行完成，结果为「校验不通过」
 ```
 
 > 用例步骤
@@ -784,8 +784,8 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已执行以下 SQL 创建测试表并灌入合规数据：
+1) 使用 admin 账号登录系统
+2) 已执行以下 SQL 创建测试表并灌入合规数据：
    CREATE TABLE quality_test_db.json_pass_test (
      id INT,
      info JSON
@@ -793,9 +793,9 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
    INSERT INTO quality_test_db.json_pass_test VALUES
      (1, '{"meta":{"version":"v1.0"}}'),
      (2, '{"meta":{"version":"v2.5"}}');
-3. 已在「通用配置 → json格式校验管理」中维护key路径「meta-version」，中文名称「版本号」，value格式正则：^v\d+\.\d+$
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_pass_test"，关联Doris数据源quality_test_db库json_pass_test表，规则包名称"通过场景测试包"，在 Step 2 中配置「格式-json格式校验」规则（字段=info，校验key=meta-version），已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"通过场景测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_pass_test"的"通过场景测试包"，已完成保存并执行，结果为「校验通过」
+3) 已在「通用配置 → json格式校验管理」中维护key路径「meta-version」，中文名称「版本号」，value格式正则：^v\d+\.\d+$
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_pass_test"，关联Doris数据源quality_test_db库json_pass_test表，规则包名称"通过场景测试包"，在 Step 2 中配置「格式-json格式校验」规则（字段=info，校验key=meta-version），已保存规则集
+5) 已通过【数据质量 → 规则任务管理】创建任务"通过场景测试任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_pass_test"的"通过场景测试包"，已完成保存并执行，结果为「校验通过」
 ```
 
 > 用例步骤
@@ -810,9 +810,9 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已通过规则集管理配置「格式-json格式校验」规则，并在规则任务管理中通过【导入规则包】引用该规则集，创建任务"日志查看测试任务"
-3. 已配置「格式-json格式校验」规则，且由于数据源连接异常导致任务执行状态为「校验失败」
+1) 使用 admin 账号登录系统
+2) 已通过规则集管理配置「格式-json格式校验」规则，并在规则任务管理中通过【导入规则包】引用该规则集，创建任务"日志查看测试任务"
+3) 已配置「格式-json格式校验」规则，且由于数据源连接异常导致任务执行状态为「校验失败」
 ```
 
 > 用例步骤
@@ -831,9 +831,9 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护key路径「meta-version」，中文名称「版本号」，value格式正则：^v\d+\.\d+$
-3. 已执行以下 SQL 创建测试表并灌入合规数据：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护key路径「meta-version」，中文名称「版本号」，value格式正则：^v\d+\.\d+$
+3) 已执行以下 SQL 创建测试表并灌入合规数据：
    CREATE TABLE quality_test_db.json_report_pass (
      id INT,
      info JSON
@@ -841,8 +841,8 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
    INSERT INTO quality_test_db.json_report_pass VALUES
      (1, '{"meta":{"version":"v1.0"}}'),
      (2, '{"meta":{"version":"v2.3"}}');
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_report_pass_test"，关联Doris数据源quality_test_db库json_report_pass表，规则包名称"报告通过测试包"，在 Step 2 中配置「格式-json格式校验」规则（字段=info，校验key=meta-version），已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"报告通过展示任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_report_pass_test"的"报告通过测试包"，已完成保存并执行，结果为「校验通过」
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_report_pass_test"，关联Doris数据源quality_test_db库json_report_pass表，规则包名称"报告通过测试包"，在 Step 2 中配置「格式-json格式校验」规则（字段=info，校验key=meta-version），已保存规则集
+5) 已通过【数据质量 → 规则任务管理】创建任务"报告通过展示任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_report_pass_test"的"报告通过测试包"，已完成保存并执行，结果为「校验通过」
 ```
 
 > 用例步骤
@@ -857,11 +857,11 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
 > 前置条件
 
 ```
-1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护：
+1) 使用 admin 账号登录系统
+2) 已在「通用配置 → json格式校验管理」中维护：
    - key路径「log-level」，中文名称「日志级别」，value格式正则：^(INFO|WARN|ERROR)$
    - key路径「log-code」，中文名称「日志编码」，value格式正则：^[A-Z]{3}\d{5}$
-3. 已执行以下 SQL 创建测试表并灌入包含不合规数据的数据：
+3) 已执行以下 SQL 创建测试表并灌入包含不合规数据的数据：
    CREATE TABLE quality_test_db.json_report_fail (
      id INT,
      log_info JSON
@@ -869,8 +869,8 @@ print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
    INSERT INTO quality_test_db.json_report_fail VALUES
      (1, '{"log":{"level":"INFO","code":"ERR00001"}}'),
      (2, '{"log":{"level":"DEBUG","code":"invalid"}}');
-4. 已通过【数据质量 → 规则集管理】创建规则集"rule_set_report_fail_test"，关联Doris数据源quality_test_db库json_report_fail表，规则包名称"报告不通过测试包"，在 Step 2 中配置「格式-json格式校验」规则（字段=log_info，校验key=log-level;log-code），已保存规则集
-5. 已通过【数据质量 → 规则任务管理】创建任务"报告不通过展示任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_report_fail_test"的"报告不通过测试包"，已完成保存并执行，结果为「校验不通过」
+4) 已通过【数据质量 → 规则集管理】创建规则集"rule_set_report_fail_test"，关联Doris数据源quality_test_db库json_report_fail表，规则包名称"报告不通过测试包"，在 Step 2 中配置「格式-json格式校验」规则（字段=log_info，校验key=log-level;log-code），已保存规则集
+5) 已通过【数据质量 → 规则任务管理】创建任务"报告不通过展示任务"，关联同一Doris表，在 Step 2 中通过【导入规则包】导入规则集"rule_set_report_fail_test"的"报告不通过测试包"，已完成保存并执行，结果为「校验不通过」
 ```
 
 > 用例步骤
