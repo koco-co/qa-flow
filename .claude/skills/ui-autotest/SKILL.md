@@ -185,18 +185,22 @@ npx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
 
 ## 步骤 7：处理结果
 
+**输出模板中的变量说明：**
+
+- `{{full_spec_path}}`：步骤 5 生成的 `full.spec.ts` 完整路径（如 `tests/e2e/202604/登录功能/full.spec.ts`）
+- `{{YYYYMMDD}}`：当天日期（如 `20260407`）
+
 **7.1 全部通过**
 
 ```
-✅ 测试完成
+✅ UI 自动化测试完成
 
 通过：{{passed}} / {{total}}
 耗时：{{duration}}
 报告：workspace/reports/playwright/{{YYYYMMDD}}/index.html
 
-选项：
-1. 完成
-2. 查看详细报告
+验收命令（可直接复制运行）：
+npx playwright test {{full_spec_path}} --project=chromium --reporter=html --output-folder=workspace/reports/playwright/{{YYYYMMDD}}/
 ```
 
 **7.2 存在失败**
@@ -211,7 +215,7 @@ npx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
 Bug 报告输出至：`workspace/reports/bugs/{{YYYYMMDD}}/ui-autotest-{{suite_name}}.html`
 
 ```
-❌ 测试完成（存在失败）
+❌ UI 自动化测试完成（存在失败）
 
 通过：{{passed}} / {{total}}
 失败：{{failed}} 条
@@ -224,10 +228,8 @@ Bug 报告输出至：`workspace/reports/bugs/{{YYYYMMDD}}/ui-autotest-{{suite_n
 
 Bug 报告：workspace/reports/bugs/{{YYYYMMDD}}/ui-autotest-{{suite_name}}.html
 
-选项：
-1. 完成
-2. 仅重跑失败用例
-3. 查看 Bug 报告
+验收命令（可直接复制运行）：
+npx playwright test {{full_spec_path}} --project=chromium --reporter=html --output-folder=workspace/reports/playwright/{{YYYYMMDD}}/
 ```
 
 ---
