@@ -6,7 +6,7 @@
 ## Root 节点命名模板
 
 ```
-root_title_template: `数据资产v{{prd_version}}迭代用例(#{{iteration_id}})`
+root_title_template: `数据资产{{prd_version}}迭代用例(#{{iteration_id}})`
 iteration_id: 23
 ```
 
