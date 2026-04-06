@@ -36,13 +36,7 @@ origin: "xmind"
 ```
 1) 使用 admin 账号登录系统
 2) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
-3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_ui"，Step 1 基础信息配置如下：
-   - *选择数据源: Doris
-   - *选择数据库: quality_test_db
-   - *选择数据表: json_format_test（含字段 info（JSON类型）、name（VARCHAR类型））
-   - 规则集描述: 无
-   - *规则包名称: value格式校验UI测试包
-   已点击【下一步】进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面创建规则集"rule_set_value_fmt_ui"，关联Doris数据源 quality_test_db 库 json_format_test 表（含字段 info（JSON类型）、name（VARCHAR类型）），规则包名称"value格式校验UI测试包"
 ```
 
 > 用例步骤
@@ -59,7 +53,7 @@ origin: "xmind"
 ```
 1) 使用 admin 账号登录系统
 2) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
-3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_tip"，关联Doris数据源 quality_test_db 库 json_format_test 表，规则包名称"提示测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_value_fmt_tip"，关联Doris数据源 quality_test_db 库 json_format_test 表，规则包名称"提示测试包"
 ```
 
 > 用例步骤
@@ -87,7 +81,7 @@ origin: "xmind"
      created_at DATETIME
    );
 3) 已在资产平台引入该表，且元数据字段类型识别正确
-4) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_field_type_test"，关联Doris数据源quality_test_db库multi_type_test表，规则包名称"字段类型测试包"，已进入 Step 2 监控规则
+4) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_field_type_test"，关联Doris数据源quality_test_db库multi_type_test表，规则包名称"字段类型测试包"
 5) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
 ```
 
@@ -112,7 +106,7 @@ origin: "xmind"
    - key路径「product-name」，中文名称「产品名称」，value格式正则：^.{1,50}$
    - key路径「product-code」，中文名称「产品编码」，value格式正则：^[A-Z]{2}\d{6}$
    - key路径「product-desc」，中文名称「产品描述」，未配置value格式
-3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_select_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"key选择测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_select_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"key选择测试包"
 ```
 
 > 用例步骤
@@ -134,7 +128,7 @@ origin: "xmind"
    - key路径「user-name」，中文名称「用户姓名」，value格式正则：^[\u4e00-\u9fa5a-zA-Z]{1,20}$
    - key路径「user-phone」，中文名称「用户手机号」，value格式正则：^1[3-9]\d{9}$
    - key路径「user-id」，中文名称「用户身份证号」，value格式正则：^\d{18}$
-3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_multi_select_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"多选全选测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_multi_select_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"多选全选测试包"
 ```
 
 > 用例步骤
@@ -157,7 +151,7 @@ origin: "xmind"
    - key路径「order-amount」，中文名称「订单金额」，value格式正则：^\d+\.\d{2}$
    - key路径「order-status」，中文名称「订单状态」，value格式正则：^(paid|pending)$
    - key路径「user-name」，中文名称「用户姓名」，value格式正则：^.{1,20}$
-3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_search_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"key搜索测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_search_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"key搜索测试包"
 ```
 
 > 用例步骤
@@ -188,7 +182,7 @@ for i in range(1, 211):
 wb.save("json_value_format_import_210.xlsx")
 print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，均配置value格式")
 
-3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_large_key_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"大数据量key测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_large_key_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"大数据量key测试包"
 ```
 
 > 用例步骤
@@ -209,7 +203,7 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
    - 一级key「person」下二级key「name」，路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
    - 一级key「person」下二级key「age」，路径「person-age」，中文名称「人员年龄」，value格式正则：^\d{1,3}$
    - 一级key「address」下二级key「city」，路径「address-city」，中文名称「地址城市」，value格式正则：^.{1,20}$
-3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_layer_key_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"层级key测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_layer_key_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"层级key测试包"
 ```
 
 > 用例步骤
@@ -255,7 +249,7 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
    - key路径「check-key-01」，中文名称「校验键01」，value格式正则：^[A-Z]{2}\d{4}$
    - key路径「check-key-02」，中文名称「校验键02」，value格式正则：^1[3-9]\d{9}$
    - key路径「check-key-03」至「check-key-15」，中文名称「校验键03」至「校验键15」，各配置不同正则
-3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_preview_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"value预览测试包"，已进入 Step 2 监控规则
+3) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_preview_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"value预览测试包"
 ```
 
 > 用例步骤
@@ -283,7 +277,7 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
      note VARCHAR(255)
    );
 3) 已在资产平台引入该表，元数据中 count_val 字段类型识别为 int
-4) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_int_type_test"，关联Doris数据源quality_test_db库int_type_test表，规则包名称"int类型限制测试包"，已进入 Step 2 监控规则
+4) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_int_type_test"，关联Doris数据源quality_test_db库int_type_test表，规则包名称"int类型限制测试包"
 5) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
 ```
 
@@ -300,7 +294,7 @@ print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，
 
 ```
 1) 使用 admin 账号登录系统
-2) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_required_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"必填校验测试包"，已进入 Step 2 监控规则
+2) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_required_test"，关联Doris数据源quality_test_db库json_format_test表，规则包名称"必填校验测试包"
 3) 已在「通用配置 → json格式校验管理」中维护key路径「person-name」，中文名称「人员姓名」，value格式正则：^[\u4e00-\u9fa5]+$
 ```
 
