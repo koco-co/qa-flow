@@ -111,7 +111,7 @@ export function parseStepTable(tableText: string): ParsedStep[] {
  */
 export function extractPreconditions(block: string): string {
   const preMatch = block.match(
-    />\s*前置条件\s*\n+([\s\S]*?)(?=\n>|\n#+|\n\||z)/,
+    />\s*前置条件\s*\n+([\s\S]*?)(?=\n>|\n#+|\n\||$)/,
   );
   if (preMatch) {
     return preMatch[1]

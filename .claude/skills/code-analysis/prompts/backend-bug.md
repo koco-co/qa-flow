@@ -100,6 +100,7 @@
   "analysis_time": "YYYY-MM-DD HH:mm",
   "problem_type": "代码问题 | 环境问题 | 混合",
   "severity": "严重 | 一般 | 低",
+  "severityClass": "critical | major | normal | low（与 severity 对应：严重→critical，一般→normal，低→low）",
   "summary": "一段话概述根因（≤80字）",
   "request_info": {
     "method": "GET | POST | ...",

@@ -79,7 +79,7 @@
 **Q: 生成过程中断了，怎样继续？**
 
 - 运行 `继续 <需求名称> 的用例生成`
-- 系统会读取 `.qa-state.json` 的断点状态自动恢复
+- 系统会读取 `workspace/.temp/.qa-state-{需求名}.json` 的断点状态自动恢复
 
 **Q: XMind 和 Archive MD 的区别？**
 

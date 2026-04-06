@@ -460,6 +460,9 @@ function csvRowsToArchives(
   iterationId?: string;
   archiveYYYYMM: string;
 }> {
+  // Detect if module values are simple names (no path separators) vs structured paths
+  const hasPathModules = rows.some((r) => r.module.includes("/"));
+
   // Group rows by L1 requirement
   const l1Groups = new Map<
     string,
@@ -469,22 +472,38 @@ function csvRowsToArchives(
   let productName = "";
   let iterationId: string | undefined;
 
-  for (const row of rows) {
-    if (!productName && row.product) {
-      const parsed = parseProduct(row.product);
-      productName = parsed.productName;
-      iterationId = parsed.iterationId;
+  if (hasPathModules) {
+    // Structured module paths: group by L1 from path
+    for (const row of rows) {
+      if (!productName && row.product) {
+        const parsed = parseProduct(row.product);
+        productName = parsed.productName;
+        iterationId = parsed.iterationId;
+      }
+      const { version, l1Name, caseId } = parseModulePath(row.module);
+      const key = l1Name;
+      const existing = l1Groups.get(key);
+      if (existing) {
+        existing.rows.push(row);
+        if (!existing.caseId && caseId) existing.caseId = caseId;
+        if (!existing.version && version) existing.version = version;
+      } else {
+        l1Groups.set(key, { rows: [row], caseId, version });
+      }
     }
-    const { version, l1Name, caseId } = parseModulePath(row.module);
-    const key = l1Name;
-    const existing = l1Groups.get(key);
-    if (existing) {
-      existing.rows.push(row);
-      if (!existing.caseId && caseId) existing.caseId = caseId;
-      if (!existing.version && version) existing.version = version;
-    } else {
-      l1Groups.set(key, { rows: [row], caseId, version });
+  } else {
+    // Simple module names: merge all rows into one L1 group,
+    // module column becomes H2 heading in the body
+    const suiteName = basename(rows[0]?.product || "", ".csv") ||
+      [...new Set(rows.map((r) => r.module).filter(Boolean))].join("、") || "未命名";
+    for (const row of rows) {
+      if (!productName && row.product) {
+        const parsed = parseProduct(row.product);
+        productName = parsed.productName;
+        iterationId = parsed.iterationId;
+      }
     }
+    l1Groups.set(suiteName, { rows, version: "" });
   }
 
   const results: Array<{
@@ -533,7 +552,11 @@ function csvRowsToArchives(
       .filter((r) => r.title)
       .map((r) => {
         const { headings, caseTitle } = splitCsvTitle(r.title);
-        return { headings, caseTitle, row: r };
+        // When modules are simple names (no path structure), use module column as H2 fallback
+        const effectiveHeadings = !hasPathModules && headings.length === 0 && r.module
+          ? [r.module, ...headings]
+          : headings;
+        return { headings: effectiveHeadings, caseTitle, row: r };
       });
 
     const bodyParts: string[] = [];
