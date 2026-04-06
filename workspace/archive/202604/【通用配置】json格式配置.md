@@ -474,7 +474,19 @@ origin: "xmind"
 > 前置条件
 ```
 1) 使用 admin 账号登录系统
-2) 通过【导入】功能批量导入1000条以上key数据到json格式校验管理列表，导入文件包含1000行一层key数据（key1 至 key1000），每条记录数据源类型为 sparkthrift2.x
+2) 通过【导入】功能批量导入1000条以上key数据到json格式校验管理列表，导入文件包含1000行一层key数据（key_0001 至 key_1000），每条记录数据源类型为 sparkthrift2.x，数据生成脚本如下:
+
+import openpyxl
+
+wb = openpyxl.Workbook()
+ws1 = wb.active
+ws1.title = "一层"
+ws1.append(["key", "中文名称", "value格式"])
+for i in range(1, 1001):
+    ws1.append([f"key_{i:04d}", f"测试key{i}", ""])
+
+wb.save("json_format_import_1000.xlsx")
+print("已生成 json_format_import_1000.xlsx，共1000条一层key数据")
 ```
 
 > 用例步骤

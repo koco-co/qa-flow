@@ -133,7 +133,20 @@ origin: "xmind"
 
 > 前置条件
 ```
-1) 已在【通用配置 → json格式校验管理】页面批量维护超过200条key数据，前200条为key_001至key_200，第201条起为key_201、key_202等
+1) 已在【通用配置 → json格式校验管理】页面批量维护超过200条key数据，前200条为key_001至key_200，第201条起为key_201、key_202等，通用配置导入文件生成脚本如下:
+
+import openpyxl
+
+wb = openpyxl.Workbook()
+ws1 = wb.active
+ws1.title = "一层"
+ws1.append(["key", "中文名称", "value格式"])
+for i in range(1, 251):
+    ws1.append([f"key_{i:03d}", f"测试key{i}", ""])
+
+wb.save("json_key_range_import_250.xlsx")
+print("已生成 json_key_range_import_250.xlsx，共250条一层key数据")
+
 2) 已创建规则任务"task_json_key_range_test"并关联含json字段的数据表
 ```
 
@@ -546,11 +559,47 @@ origin: "xmind"
 1) 已在【通用配置 → json格式校验管理】页面批量维护含3000条key的数据：
    第一层级：key_l1_001至key_l1_1000
    第二层级：key_l2_001至key_l2_2000
+   通用配置导入文件生成脚本如下:
+
+import openpyxl
+
+wb = openpyxl.Workbook()
+# 一层 Sheet
+ws1 = wb.active
+ws1.title = "一层"
+ws1.append(["key", "中文名称", "value格式"])
+for i in range(1, 1001):
+    ws1.append([f"key_l1_{i:03d}", f"一层key{i}", ""])
+
+# 二层 Sheet
+ws2 = wb.create_sheet("二层")
+ws2.append(["上一层级的key名", "key", "中文名称", "value格式"])
+for i in range(1, 2001):
+    parent_key = f"key_l1_{((i - 1) % 1000) + 1:03d}"
+    ws2.append([parent_key, f"key_l2_{i:03d}", f"二层key{i}", ""])
+
+wb.save("json_key_range_import_3000.xlsx")
+print("已生成 json_key_range_import_3000.xlsx，共3000条key数据（一层1000+二层2000）")
+
 2) 已在Doris表中执行以下灌数SQL：
    INSERT INTO test_json_key_range VALUES
      (30, '{"key_l1_001":"v1","key_l2_001":"v2"}'),
      (31, '{"key_l1_001":"v3"}'),
      (32, '{"key_other":"v4"}');
+   Doris表大量json数据灌数脚本如下:
+
+lines = []
+lines.append("INSERT INTO test_json_key_range VALUES")
+for i in range(30, 1030):
+    keys = [f'"key_l1_{(i % 1000) + 1:03d}": "v{i}"', f'"key_l2_{(i % 2000) + 1:03d}": "v{i}"'] if i % 3 != 0 else [f'"key_l1_{(i % 1000) + 1:03d}": "v{i}"']
+    json_str = "{" + ", ".join(keys) + "}"
+    comma = "," if i < 1029 else ";"
+    lines.append(f"  ({i}, '{json_str}'){comma}")
+
+with open("insert_json_key_range_1000.sql", "w") as f:
+    f.write("\n".join(lines))
+print("已生成 insert_json_key_range_1000.sql，共1000条INSERT记录")
+
 3) 已创建规则任务"task_json_large_key_test"并关联上述Doris表
 ```
 
@@ -569,6 +618,28 @@ origin: "xmind"
 1) 已在【通用配置 → json格式校验管理】页面批量维护含2000条key的数据：
    第一层级：key_l1_001至key_l1_1000
    第二层级：key_l2_001至key_l2_1000
+   通用配置导入文件生成脚本如下:
+
+import openpyxl
+
+wb = openpyxl.Workbook()
+# 一层 Sheet
+ws1 = wb.active
+ws1.title = "一层"
+ws1.append(["key", "中文名称", "value格式"])
+for i in range(1, 1001):
+    ws1.append([f"key_l1_{i:03d}", f"一层key{i}", ""])
+
+# 二层 Sheet
+ws2 = wb.create_sheet("二层")
+ws2.append(["上一层级的key名", "key", "中文名称", "value格式"])
+for i in range(1, 1001):
+    parent_key = f"key_l1_{i:03d}"
+    ws2.append([parent_key, f"key_l2_{i:03d}", f"二层key{i}", ""])
+
+wb.save("json_key_range_perf_import_2000.xlsx")
+print("已生成 json_key_range_perf_import_2000.xlsx，共2000条key数据（一层1000+二层1000）")
+
 2) 已创建规则任务"task_json_large_key_perf"并关联含json字段的Doris表
 ```
 

@@ -235,7 +235,20 @@ origin: "xmind"
 > 前置条件
 ```
 1. 使用 admin 账号登录系统
-2. 已在「通用配置 → json格式校验管理」中维护超过200条配置了value格式的key（共210条，key命名规则为 test-key-001 至 test-key-210，中文名称分别为「测试键001」至「测试键210」，每条均配置value格式正则 ^.+$）
+2. 已在「通用配置 → json格式校验管理」中维护超过200条配置了value格式的key（共210条，key命名规则为 test-key-001 至 test-key-210，中文名称分别为「测试键001」至「测试键210」，每条均配置value格式正则 ^.+$），通用配置导入文件生成脚本如下:
+
+import openpyxl
+
+wb = openpyxl.Workbook()
+ws1 = wb.active
+ws1.title = "一层"
+ws1.append(["key", "中文名称", "value格式"])
+for i in range(1, 211):
+    ws1.append([f"test-key-{i:03d}", f"测试键{i:03d}", "^.+$"])
+
+wb.save("json_value_format_import_210.xlsx")
+print("已生成 json_value_format_import_210.xlsx，共210条一层key数据，均配置value格式")
+
 3. 已创建规则任务「大数据量key测试任务」并关联包含 json 字段的数据表 quality_test_db.json_format_test
 ```
 
@@ -633,6 +646,22 @@ origin: "xmind"
 2. 已在「通用配置 → json格式校验管理」中维护1200条key，其中：
    - key路径「perf-key-0001」至「perf-key-1000」，中文名称「性能键0001」至「性能键1000」，每条均配置value格式正则：^.+$（共1000条已配置value格式）
    - key路径「perf-novalue-1001」至「perf-novalue-1200」，中文名称「无格式键1001」至「无格式键1200」，未配置value格式（共200条未配置value格式）
+   通用配置导入文件生成脚本如下:
+
+import openpyxl
+
+wb = openpyxl.Workbook()
+ws1 = wb.active
+ws1.title = "一层"
+ws1.append(["key", "中文名称", "value格式"])
+for i in range(1, 1001):
+    ws1.append([f"perf-key-{i:04d}", f"性能键{i:04d}", "^.+$"])
+for i in range(1001, 1201):
+    ws1.append([f"perf-novalue-{i}", f"无格式键{i}", ""])
+
+wb.save("json_value_format_import_1200.xlsx")
+print("已生成 json_value_format_import_1200.xlsx，共1200条key数据（1000条配置value格式+200条未配置）")
+
 3. 已执行以下 SQL 创建测试表并灌入数据：
    CREATE TABLE quality_test_db.json_perf_test (
      id INT,
@@ -641,6 +670,21 @@ origin: "xmind"
    INSERT INTO quality_test_db.json_perf_test VALUES
      (1, '{"perf":{"key":{"0001":"valid_data"}}}'),
      (2, '{"perf":{"key":{"0001":"also_valid"}}}');
+   Doris表大量json数据灌数脚本如下:
+
+lines = []
+lines.append("CREATE TABLE IF NOT EXISTS quality_test_db.json_perf_test (id INT, big_info JSON);")
+lines.append("INSERT INTO quality_test_db.json_perf_test VALUES")
+for i in range(1, 1001):
+    keys = [f'"perf-key-{j:04d}": "value_{j}"' for j in range(max(1, i-2), min(1001, i+3))]
+    json_str = "{" + ", ".join(keys) + "}"
+    comma = "," if i < 1000 else ";"
+    lines.append(f"  ({i}, '{json_str}'){comma}")
+
+with open("insert_json_perf_1000.sql", "w") as f:
+    f.write("\n".join(lines))
+print("已生成 insert_json_perf_1000.sql，共1000条INSERT记录")
+
 4. 已创建规则任务「大数据量key校验任务」并关联 quality_test_db.json_perf_test 表
 ```
 
