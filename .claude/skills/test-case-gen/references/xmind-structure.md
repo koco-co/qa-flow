@@ -6,16 +6,16 @@
 
 ## 1. 节点层级映射
 
-| XMind 层级 | 来源字段                                 | 备注                                                     |
-| ---------- | ---------------------------------------- | -------------------------------------------------------- |
-| Root       | `meta.project_name`                      | 文件根节点标题                                           |
-| L1         | `meta.requirement_name`                  | 有 trackerId：原始名称；无 trackerId：`【版本】需求名称` |
-| L2         | `modules[].name`                         | 模块 / 菜单名称                                          |
-| L3         | `modules[].pages[].name`                 | 页面名称                                                 |
-| L4（可选） | `modules[].pages[].sub_groups[].name`    | 功能子组，无子组时跳过此层                               |
-| 用例节点   | `CaseObject.priority + CaseObject.title` | 格式：`【P0】验证xxx`                                    |
-| 步骤节点   | `StepObject.step`                        | 用例节点的子节点                                         |
-| 预期节点   | `StepObject.expected`                    | 步骤节点的子节点                                         |
+| XMind 层级  | 来源字段                                 | 备注                                                   |
+| ----------- | ---------------------------------------- | ------------------------------------------------------ |
+| Root        | `meta.project_name`                      | 文件根节点标题                                         |
+| L1          | `meta.requirement_name`                  | 需求名称；`meta.requirement_id` 存在时写入 L1 labels   |
+| L2          | `modules[].name`                         | 模块名称（如「数据质量」「数据安全」）                 |
+| L3          | `modules[].pages[].name`                 | 菜单名称（如「json格式校验管理」，多级菜单用横杠连接） |
+| L4（可选）  | `modules[].pages[].sub_groups[].name`    | 功能点名称（如「新增key」「编辑key」），无子组时跳过   |
+| L5 用例节点 | `CaseObject.priority + CaseObject.title` | 格式：`【P0】验证xxx`                                  |
+| 步骤节点    | `StepObject.step`                        | L5 用例节点的子节点                                    |
+| 预期节点    | `StepObject.expected`                    | 步骤节点的子节点                                       |
 
 ---
 

@@ -154,11 +154,16 @@ function validateInput(data: unknown): asserts data is IntermediateJson {
 
 // ─── Title builders ──────────────────────────────────────────────────────────
 
+function normalizeVersion(version: string): string {
+  return version.replace(/^v/i, "");
+}
+
 function buildRootTitle(meta: Meta): string {
   if (meta.version) {
     const prefs = loadPreferences();
+    const ver = normalizeVersion(meta.version);
     return prefs.root_title_template
-      .replace("{{prd_version}}", meta.version)
+      .replace("{{prd_version}}", ver)
       .replace("{{iteration_id}}", prefs.iteration_id);
   }
   return meta.project_name;
@@ -168,6 +173,13 @@ function buildL1Title(meta: Meta): string {
   const name = meta.requirement_name;
   const ticket = meta.requirement_ticket;
   return ticket ? `${name}(#${ticket})` : name;
+}
+
+function buildL1Labels(meta: Meta): string[] {
+  if (meta.requirement_id) {
+    return [`(#${meta.requirement_id})`];
+  }
+  return [];
 }
 
 // ─── Strip priority prefix from case title ──────────────────────────────────
@@ -319,7 +331,11 @@ async function createXmind(
   const { topics: l2Topics, promoted } = buildTopicTree(data.modules);
 
   const l1Children = [...promoted, ...l2Topics];
-  const l1 = Topic(l1Title).children(l1Children);
+  let l1 = Topic(l1Title).children(l1Children);
+  const l1Labels = buildL1Labels(data.meta);
+  if (l1Labels.length > 0) {
+    l1 = l1.labels(l1Labels);
+  }
   const root = RootTopic(rootTitle).children([l1]);
   const wb = Workbook(root);
   await writeLocalFile(wb, outputPath);
@@ -408,6 +424,7 @@ function buildRawPageChildren(page: Page): XMindTopicNode[] {
 
 function buildRawL1Node(data: IntermediateJson): XMindTopicNode {
   const l1Title = buildL1Title(data.meta);
+  const l1Labels = buildL1Labels(data.meta);
   const l1Children: XMindTopicNode[] = [];
 
   for (const mod of data.modules) {
@@ -451,6 +468,7 @@ function buildRawL1Node(data: IntermediateJson): XMindTopicNode {
 
   return {
     title: l1Title,
+    ...(l1Labels.length > 0 ? { labels: l1Labels } : {}),
     ...(l1Children.length > 0 ? { children: { attached: l1Children } } : {}),
   };
 }

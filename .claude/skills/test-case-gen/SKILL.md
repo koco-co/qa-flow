@@ -420,7 +420,9 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data
 >
 > - XMind → `workspace/xmind/{{YYYYMM}}/{{需求名称}}.xmind`
 > - Archive MD → `workspace/archive/{{YYYYMM}}/{{需求名称}}.md`
+> - **中间 JSON** → `workspace/archive/{{YYYYMM}}/tmp/{{需求名称}}.json`（中间产物必须放在 `tmp/` 子目录）
 > - 禁止输出到 `workspace/cases/` 目录（该目录不存在且不应被创建）
+> - 禁止将中间 JSON 放在 `archive/YYYYMM/` 根目录下
 
 ### 7.1 生成 XMind
 
