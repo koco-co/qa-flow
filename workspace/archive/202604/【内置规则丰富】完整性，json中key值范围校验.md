@@ -34,13 +34,7 @@ origin: "xmind"
 
 ```
 1) 已在【通用配置 → json格式校验管理】页面维护key1（姓名）、key2（年龄）
-2) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_range_test"，Step 1 基础信息配置如下：
-   - *选择数据源: Doris
-   - *选择数据库: qa_test
-   - *选择数据表: test_json_key_range（含字段 info（JSON类型）、extra_info（VARCHAR类型））
-   - 规则集描述: 无
-   - *规则包名称: key范围校验测试包
-   已点击【下一步】进入 Step 2 监控规则
+2) 已通过【数据质量 → 规则集管理】页面创建规则集"rule_set_key_range_test"，关联Doris数据源 qa_test 库 test_json_key_range 表（含字段 info（JSON类型）、extra_info（VARCHAR类型）），规则包名称"key范围校验测试包"
 ```
 
 > 用例步骤
@@ -85,7 +79,7 @@ origin: "xmind"
 1) 已在【通用配置 → json格式校验管理】页面维护以下key数据：
    第一层级：key1（姓名）、key2（年龄）、key3（性别）
    第二层级：key11（省份）、key22（城市）、key33（区县）
-2) 已通过【数据质量 → 规则集管理】页面，点击【新建规则集】创建规则集"rule_set_key_range_test"，关联含json字段的数据表，规则包名称"key范围校验测试包"，已进入 Step 2 监控规则
+2) 已通过【数据质量 → 规则集管理】页面创建规则集"rule_set_key_range_test"，关联含json字段的数据表，规则包名称"key范围校验测试包"
 ```
 
 > 用例步骤
