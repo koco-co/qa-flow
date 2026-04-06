@@ -540,7 +540,7 @@ origin: "xmind"
 | ---- | ---- | ---- |
 | 1    | 进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成 | 页面正常加载，列表中显示 key 为 refTestKey 的记录 |
 | 2    | 进入【数据质量 → 规则集管理】页面，点击【新建规则集】，在 Step 1 基础信息中配置规则集名称=rule_set_json_config_del_test、关联 Doris 数据源 quality_test_db.json_ref_key_link_test 表，并新增规则包“json格式校验测试包”，点击【下一步】 | 规则集创建页面正常打开，Step 1 配置项可正常填写，点击【下一步】后进入 Step 2 监控规则 |
-| 3    | 在 Step 2 监控规则中点击【新增规则】，新增完整性校验规则并配置字段=info、统计函数=key范围校验、校验方法=包含、校验内容=refTestKey；再新增有效性校验规则并配置字段=info、统计规则=格式-json格式校验、校验key=refTestKey、强弱规则=强规则；分别点击规则行【保存】后，再点击页面底部【保存】 | 两条规则均保存成功，规则集列表中显示 rule_set_json_config_del_test |
+| 3    | 在 Step 2 监控规则中点击【新增规则】，新增完整性校验规则并配置配置如下：*字段=info、*统计函数=key范围校验、*校验方法=包含、*校验内容=refTestKey；再新增有效性校验规则并配置字段=info、统计规则=格式-json格式校验、校验key=refTestKey、强弱规则=强规则；分别点击规则行【保存】后，再点击页面底部【保存】 | 两条规则均保存成功，规则集列表中显示 rule_set_json_config_del_test |
 | 4    | 进入【数据质量 → 规则任务管理】页面，点击【新建监控规则】，在 Step 1 基础信息中配置规则名称=task_json_config_del_test，并关联同一 Doris 表，点击【下一步】 | 规则任务创建页面正常打开，Step 1 配置保存成功并进入 Step 2 监控规则 |
 | 5    | 在 Step 2 监控规则中通过【导入规则包】导入规则集“rule_set_json_config_del_test”的“json格式校验测试包”，点击【下一步】进入 Step 3 调度属性后点击【保存】 | 导入的规则包内容正常展示，任务保存成功，规则任务列表中显示 task_json_config_del_test |
 | 6    | 返回【数据质量 → 通用配置】页面，在 key 为 refTestKey 的行点击操作列的【删除】按钮 | 弹出确认弹窗，提示文本为「请确认是否删除key信息，若存在子层级key信息会联动删除」 |
