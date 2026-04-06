@@ -1,0 +1,12 @@
+{
+  "name": "notify",
+  "description": "IM 通知插件：钉钉/飞书/企微/邮件",
+  "version": "1.0.0",
+  "env_required_any": ["DINGTALK_WEBHOOK_URL", "FEISHU_WEBHOOK_URL", "WECOM_WEBHOOK_URL", "SMTP_HOST"],
+  "hooks": {
+    "*:output": "post-action"
+  },
+  "commands": {
+    "send": "npx tsx plugins/notify/send.ts --event {{event}} --data '{{json}}'"
+  }
+}

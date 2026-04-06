@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} - Bug 分析报告</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #1a1a2e;
+      background: #f4f6fb;
+      padding: 24px;
+    }
+
+    .page-header {
+      max-width: 960px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-header .badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-code { background: #fee2e2; color: #991b1b; }
+    .badge-env  { background: #fef3c7; color: #92400e; }
+    .badge-mix  { background: #ede9fe; color: #5b21b6; }
+
+    .severity-critical { background: #991b1b; color: #fff; }
+    .severity-major    { background: #ea580c; color: #fff; }
+    .severity-normal   { background: #0369a1; color: #fff; }
+    .severity-low      { background: #6b7280; color: #fff; }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 20px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-header h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .card-header .icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .card-body { padding: 20px; }
+
+    /* 概述卡片 */
+    .overview-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    .overview-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .overview-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .summary-box {
+      background: #f0f9ff;
+      border-left: 4px solid #0284c7;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      color: #0c4a6e;
+      font-size: 14px;
+    }
+
+    /* 堆栈追踪 */
+    .stack-pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .stack-pre .highlight { color: #f87171; font-weight: 600; }
+    .stack-pre .cause     { color: #fbbf24; }
+    .stack-pre .at-biz    { color: #86efac; }
+    .stack-pre .at-fw     { color: #94a3b8; }
+
+    /* 根因分析 */
+    .root-cause-box {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 6px;
+      padding: 16px;
+      color: #7c2d12;
+    }
+
+    /* 代码定位 */
+    .code-location-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .file-badge {
+      background: #1e293b;
+      color: #94a3b8;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    .line-badge {
+      background: #0ea5e9;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .code-snippet {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 14px 16px;
+      border-radius: 6px;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .code-analysis {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: #fefce8;
+      border-left: 3px solid #facc15;
+      border-radius: 0 4px 4px 0;
+      font-size: 13px;
+      color: #713f12;
+    }
+
+    /* 修复建议 */
+    .fix-list { list-style: none; display: grid; gap: 12px; }
+
+    .fix-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .fix-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #2563eb;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .fix-content { display: grid; gap: 4px; }
+    .fix-location { font-weight: 600; color: #1e40af; font-size: 13px; }
+    .fix-action   { color: #111827; }
+    .fix-reason   { color: #6b7280; font-size: 12px; }
+
+    /* curl 信息 */
+    .curl-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .curl-table tr { border-bottom: 1px solid #f3f4f6; }
+    .curl-table tr:last-child { border-bottom: none; }
+    .curl-table td { padding: 8px 12px; vertical-align: top; }
+    .curl-table td:first-child {
+      font-weight: 600;
+      color: #6b7280;
+      width: 120px;
+      white-space: nowrap;
+    }
+
+    .status-ok  { color: #16a34a; font-weight: 600; }
+    .status-err { color: #dc2626; font-weight: 600; }
+
+    /* 环境信息 */
+    .env-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .env-item {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+
+    .env-key   { font-size: 11px; color: #9ca3af; margin-bottom: 2px; }
+    .env-value { font-weight: 600; color: #111827; font-size: 13px; }
+    .env-value.na { color: #d1d5db; }
+
+    /* 空值占位 */
+    .na-text { color: #d1d5db; font-style: italic; }
+
+    /* 页脚 */
+    footer {
+      max-width: 960px;
+      margin: 24px auto 0;
+      text-align: center;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <span class="badge {{#eq problem_type '代码问题'}}badge-code{{/eq}}{{#eq problem_type '环境问题'}}badge-env{{/eq}}{{#eq problem_type '混合'}}badge-mix{{/eq}}">{{problem_type}}</span>
+  <span class="badge severity-{{severityClass}}">{{severity}}</span>
+  <span style="color:#9ca3af;font-size:12px;">生成时间：{{analysis_time}}</span>
+</div>
+
+<div class="container">
+
+  <!-- 概述 -->
+  <div class="card">
+    <div class="card-body">
+      <div class="overview-title">{{title}}</div>
+      <div class="overview-meta">
+        <span>问题类型：{{problem_type}}</span>
+        <span>严重程度：{{severity}}</span>
+        {{#if environment.deploy_env}}<span>环境：{{environment.deploy_env}}</span>{{/if}}
+      </div>
+      <div class="summary-box">{{summary}}</div>
+    </div>
+  </div>
+
+  <!-- curl / 请求信息 -->
+  {{#if request_info}}
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3"/>
+      </svg>
+      <h2>请求信息</h2>
+    </div>
+    <div class="card-body">
+      <table class="curl-table">
+        <tbody>
+          {{#if request_info.method}}
+          <tr>
+            <td>请求方法</td>
+            <td><strong>{{request_info.method}}</strong></td>
+          </tr>
+          {{/if}}
+          {{#if request_info.url}}
+          <tr>
+            <td>请求地址</td>
+            <td><code>{{request_info.url}}</code></td>
+          </tr>
+          {{/if}}
+          {{#if request_info.params}}
+          <tr>
+            <td>请求参数</td>
+            <td>{{request_info.params}}</td>
+          </tr>
+          {{/if}}
+          {{#if request_info.status_code}}
+          <tr>
+            <td>响应状态</td>
+            <td>
+              <span class="{{#gte request_info.status_code 400}}status-err{{else}}status-ok{{/gte}}">
+                {{request_info.status_code}}
+              </span>
+            </td>
+          </tr>
+          {{/if}}
+          {{#if request_info.response_preview}}
+          <tr>
+            <td>响应预览</td>
+            <td><code>{{request_info.response_preview}}</code></td>
+          </tr>
+          {{/if}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- 堆栈追踪 -->
+  {{#if stack_trace}}
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      </svg>
+      <h2>堆栈追踪</h2>
+    </div>
+    <div class="card-body">
+      {{#if stack_trace.exception_type}}
+        <p style="margin-bottom:8px;">
+          <strong>异常类型：</strong><code>{{stack_trace.exception_type}}</code>
+        </p>
+      {{/if}}
+      {{#if stack_trace.exception_message}}
+        <p style="margin-bottom:12px;color:#374151;">{{stack_trace.exception_message}}</p>
+      {{/if}}
+      {{#if stack_trace.caused_by_chain}}
+      <pre class="stack-pre">{{#each stack_trace.caused_by_chain}}<span class="cause">{{this}}</span>
+{{/each}}</pre>
+      {{/if}}
+      {{#if stack_trace.root_cause_frame}}
+        <p style="margin-top:12px;">
+          <strong>根因帧：</strong><code>{{stack_trace.root_cause_frame}}</code>
+        </p>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- 根因分析 -->
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <h2>根因分析</h2>
+    </div>
+    <div class="card-body">
+      <div class="root-cause-box">{{root_cause}}</div>
+    </div>
+  </div>
+
+  <!-- 代码定位 -->
+  {{#if code_location}}
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+      </svg>
+      <h2>代码定位</h2>
+    </div>
+    <div class="card-body">
+      <div class="code-location-header">
+        <span class="file-badge">{{code_location.file}}</span>
+        {{#if code_location.line}}<span class="line-badge">L{{code_location.line}}</span>{{/if}}
+      </div>
+      {{#if code_location.snippet}}
+      <pre class="code-snippet">{{code_location.snippet}}</pre>
+      {{/if}}
+      {{#if code_location.analysis}}
+      <div class="code-analysis">{{code_location.analysis}}</div>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- 修复建议 -->
+  {{#if fix_suggestions}}
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+      </svg>
+      <h2>修复建议</h2>
+    </div>
+    <div class="card-body">
+      <ul class="fix-list">
+        {{#each fix_suggestions}}
+        <li class="fix-item">
+          <span class="fix-number">{{priority}}</span>
+          <div class="fix-content">
+            <div class="fix-location">📍 {{location}}</div>
+            <div class="fix-action">{{action}}</div>
+            <div class="fix-reason">💡 {{reason}}</div>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- 环境信息 -->
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+      </svg>
+      <h2>环境信息</h2>
+    </div>
+    <div class="card-body">
+      <div class="env-grid">
+        <div class="env-item">
+          <div class="env-key">Java 版本</div>
+          <div class="env-value {{#unless environment.java_version}}na{{/unless}}">
+            {{#if environment.java_version}}{{environment.java_version}}{{else}}未知{{/if}}
+          </div>
+        </div>
+        <div class="env-item">
+          <div class="env-key">框架</div>
+          <div class="env-value {{#unless environment.framework}}na{{/unless}}">
+            {{#if environment.framework}}{{environment.framework}}{{else}}未知{{/if}}
+          </div>
+        </div>
+        <div class="env-item">
+          <div class="env-key">部署环境</div>
+          <div class="env-value {{#unless environment.deploy_env}}na{{/unless}}">
+            {{#if environment.deploy_env}}{{environment.deploy_env}}{{else}}未知{{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  由 qa-flow code-analysis skill 自动生成 · {{analysis_time}}
+</footer>
+
+</body>
+</html>

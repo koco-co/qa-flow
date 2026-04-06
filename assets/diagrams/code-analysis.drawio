@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="cli-anything" agent="cli-anything-drawio/1.0.0" version="24.0.0">
+  <diagram id="diagram_1775495574402564" name="Page-1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="input" value="Error Input&#xa;报错输入" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="500.0" y="30.0" width="160.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="detect" value="Signal Detection&#xa;信号检测" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="130.0" width="200.0" height="80.0" as="geometry" />
+        </mxCell>
+        <mxCell id="hotfix" value="E: Hotfix 用例&#xa;禅道 Bug URL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="50.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="conflict" value="B: 合并冲突&#xa;&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="260.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="backend" value="A: 后端 Bug&#xa;Java stack trace" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="470.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend" value="C: 前端 Bug&#xa;TypeError / Chunk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="680.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="insufficient" value="D: 信息不足&#xa;补料清单" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="890.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="sync" value="源码同步&#xa;repo-sync.ts" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="350.0" y="410.0" width="150.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="analyze_ai" value="AI 分析&#xa;+ Prompt" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="550.0" y="410.0" width="150.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="html_report" value="HTML 报告" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="350.0" y="520.0" width="140.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="md_case" value="MD 测试用例" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="550.0" y="520.0" width="140.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="notify_node" value="IM 通知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="750.0" y="520.0" width="140.0" height="50.0" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495638712580" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="input" target="detect">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495638840171" value="P1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="hotfix">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495638969423" value="P2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="conflict">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495639100431" value="P3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="backend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495639224403" value="P4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="frontend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495639358314" value="P5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="insufficient">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495649889953" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="hotfix" target="md_case">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495650020012" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="conflict" target="sync">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495650181673" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="backend" target="sync">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495650311916" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="frontend" target="sync">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495650548172" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="sync" target="analyze_ai">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495650832853" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="analyze_ai" target="html_report">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495651226186" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="analyze_ai" target="md_case">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495651376813" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="html_report" target="notify_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1775495651520231" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="md_case" target="notify_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

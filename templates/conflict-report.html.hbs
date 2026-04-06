@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} - 冲突分析报告</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #1a1a2e;
+      background: #f4f6fb;
+      padding: 24px;
+    }
+
+    .page-header {
+      max-width: 960px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+
+    .badge-conflict { background: #fce7f3; color: #9d174d; }
+    .badge-auto     { background: #dcfce7; color: #166534; }
+    .badge-manual   { background: #fef9c3; color: #854d0e; }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 20px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-header h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .card-header .icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .card-body { padding: 20px; }
+
+    /* 概述 */
+    .overview-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
+    }
+
+    .branch-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    .branch-chip {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-family: monospace;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .arrow { color: #9ca3af; font-size: 16px; }
+
+    /* 统计卡片组 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px 18px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label { font-size: 12px; color: #6b7280; }
+
+    .stat-total    .stat-number { color: #6366f1; }
+    .stat-auto     .stat-number { color: #16a34a; }
+    .stat-manual   .stat-number { color: #d97706; }
+    .stat-files    .stat-number { color: #0284c7; }
+
+    /* 冲突文件列表 */
+    .file-list { list-style: none; display: grid; gap: 6px; }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .file-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-auto   { background: #16a34a; }
+    .dot-manual { background: #d97706; }
+
+    /* 冲突块分析 */
+    .conflict-list { display: grid; gap: 20px; }
+
+    .conflict-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .conflict-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      gap: 12px;
+    }
+
+    .conflict-id {
+      font-weight: 700;
+      color: #374151;
+      font-size: 13px;
+    }
+
+    .conflict-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .conflict-type {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .type-logic { background: #fee2e2; color: #991b1b; }
+    .type-format{ background: #dbeafe; color: #1e40af; }
+    .type-dep   { background: #fef3c7; color: #92400e; }
+
+    .resolution-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .res-auto   { background: #dcfce7; color: #166534; }
+    .res-manual { background: #fef9c3; color: #854d0e; }
+
+    .conflict-item-body { padding: 14px 16px; }
+
+    .intent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .intent-box {
+      background: #f9fafb;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .intent-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .intent-head     .intent-label { color: #1d4ed8; }
+    .intent-incoming .intent-label { color: #7c3aed; }
+
+    .intent-text { font-size: 13px; color: #374151; }
+
+    .suggestion-box {
+      background: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: #14532d;
+      margin-bottom: 10px;
+    }
+
+    .decision-box {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: #78350f;
+      margin-bottom: 10px;
+    }
+
+    .merged-code {
+      background: #0f172a;
+      color: #86efac;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* 人工决策表 */
+    .decision-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .decision-table th {
+      background: #f3f4f6;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .decision-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: top;
+    }
+
+    .decision-table tr:last-child td { border-bottom: none; }
+
+    .decision-table td:first-child { font-family: monospace; font-size: 12px; color: #6b7280; }
+
+    .option-list { list-style: disc; padding-left: 16px; margin: 4px 0; }
+    .option-list li { margin-bottom: 2px; }
+
+    .recommended-tag {
+      display: inline-block;
+      background: #d1fae5;
+      color: #065f46;
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-left: 6px;
+      font-weight: 600;
+    }
+
+    footer {
+      max-width: 960px;
+      margin: 24px auto 0;
+      text-align: center;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <span class="badge badge-conflict">合并冲突</span>
+  <span style="color:#9ca3af;font-size:12px;">生成时间：{{analysis_time}}</span>
+</div>
+
+<div class="container">
+
+  <!-- 概述 -->
+  <div class="card">
+    <div class="card-body">
+      <div class="overview-title">{{title}}</div>
+      {{#if branches}}
+      <div class="branch-row">
+        <span class="branch-chip">{{branches.incoming}}</span>
+        <span class="arrow">→</span>
+        <span class="branch-chip">{{branches.head}}</span>
+      </div>
+      {{/if}}
+      <div class="stats-grid">
+        <div class="stat-card stat-total">
+          <div class="stat-number">{{summary.total_conflicts}}</div>
+          <div class="stat-label">冲突总数</div>
+        </div>
+        <div class="stat-card stat-auto">
+          <div class="stat-number">{{summary.auto_resolvable}}</div>
+          <div class="stat-label">可自动合并</div>
+        </div>
+        <div class="stat-card stat-manual">
+          <div class="stat-number">{{summary.manual_required}}</div>
+          <div class="stat-label">需人工决策</div>
+        </div>
+        <div class="stat-card stat-files">
+          <div class="stat-number">{{summary.files_affected.length}}</div>
+          <div class="stat-label">涉及文件</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 冲突文件列表 -->
+  {{#if summary.files_affected}}
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <h2>冲突文件列表</h2>
+    </div>
+    <div class="card-body">
+      <ul class="file-list">
+        {{#each summary.files_affected}}
+        <li class="file-item">
+          <span class="file-dot dot-manual"></span>
+          {{this}}
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- 冲突块分析 -->
+  {{#if conflicts}}
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+      </svg>
+      <h2>冲突块分析</h2>
+    </div>
+    <div class="card-body">
+      <div class="conflict-list">
+        {{#each conflicts}}
+        <div class="conflict-item">
+          <div class="conflict-item-header">
+            <span class="conflict-id">#{{id}} {{file}}</span>
+            <div class="conflict-meta">
+              {{#if line_range}}<span style="color:#9ca3af;font-size:11px;">L{{line_range}}</span>{{/if}}
+              <span class="conflict-type {{#eq type '逻辑冲突'}}type-logic{{/eq}}{{#eq type '格式冲突'}}type-format{{/eq}}{{#eq type '依赖冲突'}}type-dep{{/eq}}">{{type}}</span>
+              <span class="resolution-badge {{#eq resolution 'auto'}}res-auto{{/eq}}{{#eq resolution 'manual'}}res-manual{{/eq}}">
+                {{#eq resolution 'auto'}}可自动合并{{/eq}}{{#eq resolution 'manual'}}需人工决策{{/eq}}
+              </span>
+            </div>
+          </div>
+          <div class="conflict-item-body">
+            {{#if head_intent}}
+            <div class="intent-grid">
+              <div class="intent-box intent-head">
+                <div class="intent-label">HEAD（当前）</div>
+                <div class="intent-text">{{head_intent}}</div>
+              </div>
+              <div class="intent-box intent-incoming">
+                <div class="intent-label">合入侧</div>
+                <div class="intent-text">{{incoming_intent}}</div>
+              </div>
+            </div>
+            {{/if}}
+            {{#if suggestion}}
+            <div class="suggestion-box">合并建议：{{suggestion}}</div>
+            {{/if}}
+            {{#if decision_basis}}
+            <div class="decision-box">决策依据：{{decision_basis}}</div>
+            {{/if}}
+            {{#if merged_code}}
+            <pre class="merged-code">{{merged_code}}</pre>
+            {{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- 需人工决策项 -->
+  {{#if manual_decision_list}}
+  <div class="card">
+    <div class="card-header">
+      <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+      <h2>需人工决策项</h2>
+    </div>
+    <div class="card-body">
+      <table class="decision-table">
+        <thead>
+          <tr>
+            <th>冲突位置</th>
+            <th>决策内容</th>
+            <th>可选方案</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each manual_decision_list}}
+          <tr>
+            <td>#{{conflict_id}} {{file}}</td>
+            <td>{{description}}</td>
+            <td>
+              <ul class="option-list">
+                {{#each options}}
+                <li>
+                  {{this}}
+                  {{#if (eq this ../recommended)}}<span class="recommended-tag">推荐</span>{{/if}}
+                </li>
+                {{/each}}
+              </ul>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {{/if}}
+
+</div>
+
+<footer>
+  由 qa-flow code-analysis skill 自动生成 · {{analysis_time}}
+</footer>
+
+</body>
+</html>

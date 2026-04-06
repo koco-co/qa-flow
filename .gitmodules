@@ -1,0 +1,3 @@
+[submodule "tools/lanhu/lanhu-mcp"]
+	path = tools/lanhu/lanhu-mcp
+	url = https://github.com/dsphper/lanhu-mcp.git
