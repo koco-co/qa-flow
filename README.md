@@ -100,7 +100,7 @@ git clone https://github.com/your-org/qa-flow.git
 cd qa-flow
 
 # 2. 安装依赖
-npm install
+bun install
 
 # 3. 安装 Playwright skill（UI 自动化功能需要）
 npx skills add playwright-cli
@@ -504,13 +504,13 @@ git checkout -b feat/my-feature
 # 2. 编写代码（不可变数据原则，函数 < 50 行，文件 < 800 行）
 
 # 3. 代码风格检查（Biome）
-npm run check
+bun run check
 
 # 4. 自动修复风格问题
-npm run check:fix
+bun run check:fix
 
 # 5. 运行测试
-npm test
+bun run test
 
 # 6. 提交 PR
 ```
@@ -527,10 +527,10 @@ npm test
 
 ```bash
 # 运行所有单元测试
-npm test
+bun run test
 
 # 监听模式
-npm run test:watch
+bun run test:watch
 ```
 
 测试文件位于 `.claude/scripts/__tests__/`，覆盖率目标 80%+。

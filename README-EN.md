@@ -100,7 +100,7 @@ git clone https://github.com/your-org/qa-flow.git
 cd qa-flow
 
 # 2. Install dependencies
-npm install
+bun install
 
 # 3. Install Playwright skill (required for UI automation)
 npx skills add playwright-cli
@@ -504,13 +504,13 @@ git checkout -b feat/my-feature
 # 2. Code (immutable data, functions < 50 lines, files < 800 lines)
 
 # 3. Lint (Biome)
-npm run check
+bun run check
 
 # 4. Auto-fix style issues
-npm run check:fix
+bun run check:fix
 
 # 5. Run tests
-npm test
+bun run test
 
 # 6. Submit PR
 ```
@@ -527,10 +527,10 @@ Types: feat / fix / refactor / docs / test / chore / perf / ci
 
 ```bash
 # Run all unit tests
-npm test
+bun run test
 
 # Watch mode
-npm run test:watch
+bun run test:watch
 ```
 
 Test files are located at `.claude/scripts/__tests__/` with 80%+ coverage target.

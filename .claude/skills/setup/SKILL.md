@@ -37,7 +37,7 @@ npx tsx .claude/skills/setup/scripts/init-wizard.ts scan
 | 检测项       | 通过条件                                       |
 | ------------ | ---------------------------------------------- |
 | Node.js 版本 | >= 18.0.0                                      |
-| 包管理器     | npm / pnpm / yarn 任意一种可用                 |
+| 包管理器     | bun / npm / pnpm / yarn 任意一种可用           |
 | .env         | 项目根目录存在（内容不校验，覆盖 config.json） |
 | .env 文件    | 项目根目录存在（内容不校验）                   |
 | 脚本依赖     | `tsx` 可执行                                   |
@@ -51,7 +51,7 @@ npx tsx .claude/skills/setup/scripts/init-wizard.ts scan
 ```
 环境扫描结果：
 ✓ Node.js v{{version}}
-✓ npm v{{version}}
+✓ bun v{{version}}
 {{❌ / ✓}} config.json
 {{❌ / ✓}} .env 文件
 {{❌ / ✓}} tsx 可执行
