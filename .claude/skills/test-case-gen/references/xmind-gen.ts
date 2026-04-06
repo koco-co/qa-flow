@@ -170,8 +170,9 @@ function buildRootTitle(meta: Meta): string {
 }
 
 function buildL1Title(meta: Meta): string {
-  // Strip trailing (#xxxxx) from requirement_name if present (frontmatter suite_name may include it)
-  return meta.requirement_name.replace(/\(#\d+\)\s*$/, "").trim();
+  const name = meta.requirement_name;
+  const ticket = meta.requirement_ticket;
+  return ticket ? `${name}(#${ticket})` : name;
 }
 
 function buildL1Labels(meta: Meta): string[] {
@@ -593,7 +594,8 @@ function parseArchiveBody(body: string): Module[] {
     if (!currentCase) return;
     currentCase.steps = stepsRows;
     if (preconditionLines.length > 0) {
-      currentCase.preconditions = preconditionLines.join("\n").trim();
+      currentCase.preconditions =
+        "前置条件\n" + preconditionLines.join("\n").trim();
     }
 
     if (currentSubGroup) {
@@ -708,10 +710,7 @@ function parseArchiveBody(body: string): Module[] {
             .map((c) => c.trim())
             .filter((c) => c.length > 0);
           if (cells.length >= 3) {
-            stepsRows.push({
-              step: cells[1].replace(/<br\s*\/?>/gi, "\n"),
-              expected: cells[2].replace(/<br\s*\/?>/gi, "\n"),
-            });
+            stepsRows.push({ step: cells[1], expected: cells[2] });
           }
           continue;
         }
