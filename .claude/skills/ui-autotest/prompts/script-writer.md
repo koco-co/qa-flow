@@ -218,9 +218,59 @@ await page.keyboard.press("Enter");
 
 ## 前置条件处理
 
-- 前置条件含 SQL 准备时：添加注释说明，测试代码跳过数据库操作
+### SQL / 数据表前置条件（使用 assets-sql-sync 插件）
+
+当前置条件包含 SQL 建表、数据源导入、元数据同步等操作时，**必须**使用 `setupPreconditions` API 自动完成，不得手动跳过或仅添加注释。
+
+```typescript
+import { setupPreconditions } from '../../helpers/preconditions'
+
+test.describe("{{suite_name}} - {{page}}", () => {
+  // 在 beforeAll 中执行 SQL 前置条件
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage()
+    await setupPreconditions(page, {
+      datasourceType: 'Doris',  // 支持: Doris, MySQL, Hive, SparkThrift
+      tables: [
+        {
+          name: 'qa_test.table_a',
+          sql: 'DROP TABLE IF EXISTS qa_test.table_a;\nCREATE TABLE qa_test.table_a (\n  id INT,\n  name VARCHAR(100)\n);\nINSERT INTO qa_test.table_a VALUES (1, \'测试数据\');'
+        }
+      ],
+      syncTimeout: 180,  // 元数据同步超时（秒），默认 180
+    })
+    await page.close()
+  })
+
+  test("{{title}}", async ({ page, step }) => {
+    // ... 测试步骤
+  })
+})
+```
+
+**工作流程**：`setupPreconditions` 内部会自动完成以下操作：
+1. 在离线开发项目中通过 DDL 创建表
+2. 将数据源导入资产管理
+3. 触发元数据同步并等待完成
+
+**SQL 文件引用**：当用例的 SQL 较长时，可将 SQL 存放在 `tests/e2e/{{YYYYMM}}/{{suite_name}}/sql/{{name}}.sql`，然后读取：
+
+```typescript
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
+
+const sql = readFileSync(resolve(__dirname, 'sql/table_a.sql'), 'utf-8')
+await setupPreconditions(page, {
+  datasourceType: 'Doris',
+  tables: [{ name: 'qa_test.table_a', sql }],
+})
+```
+
+### 非 SQL 前置条件
+
 - 前置条件含登录要求时：已通过 `storageState` 处理，无需额外操作
-- 前置条件含特定数据时：在步骤开始前添加注释 `// 前置：{{precondition}}`
+- 前置条件含页面操作准备时：在 `test.beforeAll` 或测试步骤开头执行对应操作
+- 前置条件仅含环境说明时：在步骤开始前添加注释 `// 前置：{{precondition}}`
 
 ---
 

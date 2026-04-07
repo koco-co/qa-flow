@@ -118,7 +118,13 @@ bun run .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --outp
 - 提示词：读取 `${CLAUDE_SKILL_DIR}/prompts/script-writer.md`
 - 参考资料：playwright-cli skill 的 references（获取 API 用法）
 
-**4.2 输出格式**
+**4.2 SQL 前置条件处理**
+
+当用例的 `preconditions` 包含 SQL 建表/数据准备时，sub-agent 必须在生成的脚本中使用 `setupPreconditions` API（来自 `assets-sql-sync` 插件），而非添加注释跳过。具体用法参见 `${CLAUDE_SKILL_DIR}/prompts/script-writer.md` 的「前置条件处理」章节。
+
+若用例同时包含多张表的 SQL，可将 SQL 文件放在 `tests/e2e/{{YYYYMM}}/{{suite_name}}/sql/` 目录下，脚本中通过 `readFileSync` 读取。
+
+**4.3 输出格式**
 
 每个 sub-agent 输出代码块，保存到：
 
