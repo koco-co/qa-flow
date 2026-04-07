@@ -1,11 +1,11 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * plugins/zentao/fetch.ts — 禅道 Bug 信息 + 修复分支抓取器
  *
  * Usage:
- *   npx tsx plugins/zentao/fetch.ts --bug-id 138845 --output workspace/.temp/zentao
- *   npx tsx plugins/zentao/fetch.ts --url "http://zenpms.dtstack.cn/zentao/bug-view-138845.html" --output workspace/.temp/zentao
- *   npx tsx plugins/zentao/fetch.ts --help
+ *   bun run plugins/zentao/fetch.ts --bug-id 138845 --output workspace/.temp/zentao
+ *   bun run plugins/zentao/fetch.ts --url "http://zenpms.dtstack.cn/zentao/bug-view-138845.html" --output workspace/.temp/zentao
+ *   bun run plugins/zentao/fetch.ts --help
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";

@@ -16,23 +16,27 @@ function runPluginLoader(
   extraEnv: Record<string, string> = {},
 ): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/plugin-loader.ts", ...args], {
-      cwd: "/Users/poco/Documents/DTStack/qa-flow",
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        // Ensure we start with a clean slate for plugin env vars
-        LANHU_COOKIE: "",
-        DINGTALK_WEBHOOK_URL: "",
-        FEISHU_WEBHOOK_URL: "",
-        WECOM_WEBHOOK_URL: "",
-        SMTP_HOST: "",
-        ZENTAO_BASE_URL: "",
-        ZENTAO_ACCOUNT: "",
-        ZENTAO_PASSWORD: "",
-        ...extraEnv,
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/plugin-loader.ts", ...args],
+      {
+        cwd: "/Users/poco/Documents/DTStack/qa-flow",
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          // Ensure we start with a clean slate for plugin env vars
+          LANHU_COOKIE: "",
+          DINGTALK_WEBHOOK_URL: "",
+          FEISHU_WEBHOOK_URL: "",
+          WECOM_WEBHOOK_URL: "",
+          SMTP_HOST: "",
+          ZENTAO_BASE_URL: "",
+          ZENTAO_ACCOUNT: "",
+          ZENTAO_PASSWORD: "",
+          ...extraEnv,
+        },
       },
-    });
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
@@ -89,7 +93,10 @@ describe("plugin-loader.ts list", () => {
 
   it("lanhu is inactive when LANHU_COOKIE is empty", () => {
     const { stdout } = runPluginLoader(["list"], { LANHU_COOKIE: "" });
-    const plugins = JSON.parse(stdout) as Array<{ name: string; active: boolean }>;
+    const plugins = JSON.parse(stdout) as Array<{
+      name: string;
+      active: boolean;
+    }>;
     const lanhu = plugins.find((p) => p.name === "lanhu");
     assert.ok(lanhu, "lanhu should be present");
     assert.equal(lanhu?.active, false);
@@ -99,7 +106,10 @@ describe("plugin-loader.ts list", () => {
     const { stdout } = runPluginLoader(["list"], {
       LANHU_COOKIE: "session=abc123",
     });
-    const plugins = JSON.parse(stdout) as Array<{ name: string; active: boolean }>;
+    const plugins = JSON.parse(stdout) as Array<{
+      name: string;
+      active: boolean;
+    }>;
     const lanhu = plugins.find((p) => p.name === "lanhu");
     assert.ok(lanhu, "lanhu should be present");
     assert.equal(lanhu?.active, true);
@@ -107,7 +117,10 @@ describe("plugin-loader.ts list", () => {
 
   it("notify is inactive when no webhook env vars are set", () => {
     const { stdout } = runPluginLoader(["list"]);
-    const plugins = JSON.parse(stdout) as Array<{ name: string; active: boolean }>;
+    const plugins = JSON.parse(stdout) as Array<{
+      name: string;
+      active: boolean;
+    }>;
     const notify = plugins.find((p) => p.name === "notify");
     assert.ok(notify, "notify should be present");
     assert.equal(notify?.active, false);
@@ -115,9 +128,13 @@ describe("plugin-loader.ts list", () => {
 
   it("notify is active when DINGTALK_WEBHOOK_URL is set", () => {
     const { stdout } = runPluginLoader(["list"], {
-      DINGTALK_WEBHOOK_URL: "https://oapi.dingtalk.com/robot/send?access_token=xxx",
+      DINGTALK_WEBHOOK_URL:
+        "https://oapi.dingtalk.com/robot/send?access_token=xxx",
     });
-    const plugins = JSON.parse(stdout) as Array<{ name: string; active: boolean }>;
+    const plugins = JSON.parse(stdout) as Array<{
+      name: string;
+      active: boolean;
+    }>;
     const notify = plugins.find((p) => p.name === "notify");
     assert.ok(notify, "notify should be present");
     assert.equal(notify?.active, true);
@@ -127,7 +144,10 @@ describe("plugin-loader.ts list", () => {
     const { stdout } = runPluginLoader(["list"], {
       FEISHU_WEBHOOK_URL: "https://open.feishu.cn/open-apis/bot/v2/hook/xxx",
     });
-    const plugins = JSON.parse(stdout) as Array<{ name: string; active: boolean }>;
+    const plugins = JSON.parse(stdout) as Array<{
+      name: string;
+      active: boolean;
+    }>;
     const notify = plugins.find((p) => p.name === "notify");
     assert.equal(notify?.active, true);
   });
@@ -136,7 +156,11 @@ describe("plugin-loader.ts list", () => {
 describe("plugin-loader.ts check", () => {
   it("returns matched: true when URL matches active plugin pattern", () => {
     const { stdout, code } = runPluginLoader(
-      ["check", "--input", "https://lanhuapp.com/web/#/item/project/product?tid=xxx"],
+      [
+        "check",
+        "--input",
+        "https://lanhuapp.com/web/#/item/project/product?tid=xxx",
+      ],
       { LANHU_COOKIE: "session=active" },
     );
     assert.equal(code, 0);
@@ -168,7 +192,11 @@ describe("plugin-loader.ts check", () => {
 
   it("matched: true output includes plugin name", () => {
     const { stdout } = runPluginLoader(
-      ["check", "--input", "http://zenpms.dtstack.cn/zentao/bug-view-138845.html"],
+      [
+        "check",
+        "--input",
+        "http://zenpms.dtstack.cn/zentao/bug-view-138845.html",
+      ],
       { ZENTAO_BASE_URL: "http://zenpms.dtstack.cn", ZENTAO_COOKIE: "sid=xxx" },
     );
     const result = JSON.parse(stdout) as { matched: boolean; plugin?: string };
@@ -187,7 +215,10 @@ describe("plugin-loader.ts resolve", () => {
     assert.equal(code, 0, "should exit 0 when plugin found");
     const result = JSON.parse(stdout) as { plugin: string; command: string };
     assert.equal(result.plugin, "lanhu");
-    assert.ok(result.command.includes(url), "command should contain the resolved URL");
+    assert.ok(
+      result.command.includes(url),
+      "command should contain the resolved URL",
+    );
   });
 
   it("replaces {{url}} placeholder in fetch command", () => {
@@ -196,8 +227,14 @@ describe("plugin-loader.ts resolve", () => {
       LANHU_COOKIE: "session=abc",
     });
     const result = JSON.parse(stdout) as { command: string };
-    assert.ok(result.command.includes(url), "{{url}} should be replaced with actual URL");
-    assert.ok(!result.command.includes("{{url}}"), "no {{url}} placeholder should remain");
+    assert.ok(
+      result.command.includes(url),
+      "{{url}} should be replaced with actual URL",
+    );
+    assert.ok(
+      !result.command.includes("{{url}}"),
+      "no {{url}} placeholder should remain",
+    );
   });
 
   it("exits 1 and returns error JSON when no plugin matches", () => {
@@ -213,9 +250,12 @@ describe("plugin-loader.ts resolve", () => {
 
   it("exits 1 when matching plugin is inactive", () => {
     // lanhu matches URL but is inactive
-    const { code } = runPluginLoader(["resolve", "--url", "https://lanhuapp.com/web/#/item"], {
-      LANHU_COOKIE: "",
-    });
+    const { code } = runPluginLoader(
+      ["resolve", "--url", "https://lanhuapp.com/web/#/item"],
+      {
+        LANHU_COOKIE: "",
+      },
+    );
     assert.equal(code, 1);
   });
 });
@@ -245,7 +285,10 @@ describe("plugin-loader.ts notify", () => {
         "--data",
         '{"count":42,"file":"test.xmind","duration":30}',
       ],
-      { DINGTALK_WEBHOOK_URL: "https://oapi.dingtalk.com/robot/send?access_token=test" },
+      {
+        DINGTALK_WEBHOOK_URL:
+          "https://oapi.dingtalk.com/robot/send?access_token=test",
+      },
     );
     assert.equal(code, 0);
     const result = JSON.parse(stdout) as {
@@ -255,7 +298,9 @@ describe("plugin-loader.ts notify", () => {
     };
     if (!result.skipped) {
       assert.equal(result.plugin, "notify");
-      assert.ok(typeof result.command === "string" && result.command.length > 0);
+      assert.ok(
+        typeof result.command === "string" && result.command.length > 0,
+      );
     }
   });
 
@@ -263,24 +308,42 @@ describe("plugin-loader.ts notify", () => {
     const event = "case-generated";
     const data = '{"count":5}';
 
-    const { stdout } = runPluginLoader(["notify", "--event", event, "--data", data], {
-      FEISHU_WEBHOOK: "https://open.feishu.cn/open-apis/bot/v2/hook/test",
-    });
+    const { stdout } = runPluginLoader(
+      ["notify", "--event", event, "--data", data],
+      {
+        FEISHU_WEBHOOK: "https://open.feishu.cn/open-apis/bot/v2/hook/test",
+      },
+    );
     const result = JSON.parse(stdout) as {
       command?: string;
       skipped?: boolean;
     };
     if (!result.skipped && result.command) {
-      assert.ok(result.command.includes(event), "command should include event name");
-      assert.ok(!result.command.includes("{{event}}"), "{{event}} placeholder should be replaced");
-      assert.ok(!result.command.includes("{{json}}"), "{{json}} placeholder should be replaced");
+      assert.ok(
+        result.command.includes(event),
+        "command should include event name",
+      );
+      assert.ok(
+        !result.command.includes("{{event}}"),
+        "{{event}} placeholder should be replaced",
+      );
+      assert.ok(
+        !result.command.includes("{{json}}"),
+        "{{json}} placeholder should be replaced",
+      );
     }
   });
 
   it("inactive notify is NOT an error (exit 0)", () => {
     // This is critical: notify being inactive should exit 0, not 1
     const { code } = runPluginLoader(
-      ["notify", "--event", "workflow-failed", "--data", '{"step":"write","reason":"timeout"}'],
+      [
+        "notify",
+        "--event",
+        "workflow-failed",
+        "--data",
+        '{"step":"write","reason":"timeout"}',
+      ],
       {
         DINGTALK_WEBHOOK_URL: "",
         FEISHU_WEBHOOK: "",
@@ -295,10 +358,14 @@ describe("plugin-loader.ts notify", () => {
 describe("plugin-loader.ts --help", () => {
   it("exits successfully on --help", () => {
     try {
-      execFileSync("npx", ["tsx", ".claude/scripts/plugin-loader.ts", "--help"], {
-        cwd: "/Users/poco/Documents/DTStack/qa-flow",
-        encoding: "utf8",
-      });
+      execFileSync(
+        "bun",
+        ["run", ".claude/scripts/plugin-loader.ts", "--help"],
+        {
+          cwd: "/Users/poco/Documents/DTStack/qa-flow",
+          encoding: "utf8",
+        },
+      );
     } catch (err: unknown) {
       const e = err as { status?: number };
       assert.ok(e.status === 0 || e.status === undefined);

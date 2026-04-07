@@ -1,10 +1,10 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * repo-sync.ts — Sync source code repositories.
  *
  * Usage:
- *   npx tsx .claude/scripts/repo-sync.ts --url <git-url> --branch <branch> [--base-dir workspace/.repos]
- *   npx tsx .claude/scripts/repo-sync.ts --help
+ *   bun run .claude/scripts/repo-sync.ts --url <git-url> --branch <branch> [--base-dir workspace/.repos]
+ *   bun run .claude/scripts/repo-sync.ts --help
  */
 
 import { execSync } from "node:child_process";

@@ -7,8 +7,8 @@
   "scripts": {
     "check": "biome check .",
     "check:fix": "biome check --fix .",
-    "test": "npx tsx --test '.claude/scripts/__tests__/**/*.test.ts'",
-    "test:watch": "npx tsx --test --watch '.claude/scripts/__tests__/**/*.test.ts'"
+    "test": "bun test ./.claude/scripts/__tests__",
+    "test:watch": "bun test --watch ./.claude/scripts/__tests__"
   },
   "dependencies": {
     "@types/nodemailer": "^8.0.0",

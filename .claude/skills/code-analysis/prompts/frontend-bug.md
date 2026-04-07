@@ -99,6 +99,7 @@ grep -r "ComponentName" .repos/xxx-frontend/src/ --include="*.tsx" --include="*.
 
 - 优先建议最小化、风险最低的方案（如空值防护）
 - 说明是否需要同步修改后端接口或配置
+- **重要**：修复建议基于 AI 分析推断，仅供开发人员参考，不作为最终修复方案。报告中必须标注"以下建议基于 AI 分析，仅供参考"
 
 ---
 
@@ -147,6 +148,8 @@ grep -r "ComponentName" .repos/xxx-frontend/src/ --include="*.tsx" --include="*.
 ```
 
 若某字段信息不足，填 `null`，不要留空字符串占位。
+
+**符号约束**：所有 JSON 字段值（title、summary、root_cause、fix_suggestions 中的 action/reason 等）必须使用纯文本，不得包含任何 emoji 符号（U+1Fxxx 范围如 🐛📡🚀 等绝对禁止；U+26xx 范围如 ⚠️✅❌ 仅允许在 HTML 模板固定位置使用，不允许出现在 AI 填充的数据字段中）。
 
 ---
 

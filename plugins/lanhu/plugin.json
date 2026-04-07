@@ -7,7 +7,7 @@
     "test-case-gen:init": "input-adapter"
   },
   "commands": {
-    "fetch": "npx tsx plugins/lanhu/fetch.ts --url {{url}} --output {{output_dir}}"
+    "fetch": "bun run plugins/lanhu/fetch.ts --url {{url}} --output {{output_dir}}"
   },
   "url_patterns": ["lanhuapp.com"]
 }

@@ -12,35 +12,61 @@ const TMP_DIR = join(tmpdir(), `qa-flow-xmind-edit-test-${process.pid}`);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function runGen(args: string[]): { stdout: string; stderr: string; code: number } {
+function runGen(args: string[]): {
+  stdout: string;
+  stderr: string;
+  code: number;
+} {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/xmind-gen.ts", ...args], {
-      cwd: REPO_ROOT,
-      encoding: "utf8",
-    });
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/xmind-gen.ts", ...args],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8",
+      },
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
-    return { stdout: e.stdout ?? "", stderr: e.stderr ?? "", code: e.status ?? 1 };
+    return {
+      stdout: e.stdout ?? "",
+      stderr: e.stderr ?? "",
+      code: e.status ?? 1,
+    };
   }
 }
 
-function runEdit(args: string[]): { stdout: string; stderr: string; code: number } {
+function runEdit(args: string[]): {
+  stdout: string;
+  stderr: string;
+  code: number;
+} {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/xmind-edit.ts", ...args], {
-      cwd: REPO_ROOT,
-      encoding: "utf8",
-    });
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/xmind-edit.ts", ...args],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8",
+      },
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
-    return { stdout: e.stdout ?? "", stderr: e.stderr ?? "", code: e.status ?? 1 };
+    return {
+      stdout: e.stdout ?? "",
+      stderr: e.stderr ?? "",
+      code: e.status ?? 1,
+    };
   }
 }
 
 async function readContentJson(
   xmindPath: string,
-): Promise<{ rootTopic?: { title?: string; children?: { attached?: unknown[] } } }[]> {
+): Promise<
+  { rootTopic?: { title?: string; children?: { attached?: unknown[] } } }[]
+> {
   const buffer = readFileSync(xmindPath);
   const zip = await JSZip.loadAsync(buffer);
   const contentFile = zip.file("content.json");
@@ -123,10 +149,20 @@ describe("xmind-edit search", () => {
 
   it("respects --limit option", () => {
     createTestXmind("search-limit");
-    const { code, stdout } = runEdit(["search", "验证", "--dir", TMP_DIR, "--limit", "2"]);
+    const { code, stdout } = runEdit([
+      "search",
+      "验证",
+      "--dir",
+      TMP_DIR,
+      "--limit",
+      "2",
+    ]);
     assert.equal(code, 0);
     const results = JSON.parse(stdout) as unknown[];
-    assert.ok(results.length <= 2, `got ${results.length} results, expected at most 2`);
+    assert.ok(
+      results.length <= 2,
+      `got ${results.length} results, expected at most 2`,
+    );
   });
 });
 
@@ -165,7 +201,13 @@ describe("xmind-edit show", () => {
 
   it("exits with code 1 when title is not found", () => {
     const xmindPath = createTestXmind("show-not-found");
-    const { code, stderr } = runEdit(["show", "--file", xmindPath, "--title", "XXXX_NOT_EXIST"]);
+    const { code, stderr } = runEdit([
+      "show",
+      "--file",
+      xmindPath,
+      "--title",
+      "XXXX_NOT_EXIST",
+    ]);
     assert.equal(code, 1);
     assert.match(stderr, /No topic found/);
   });
@@ -203,7 +245,10 @@ describe("xmind-edit patch", () => {
       children?: { attached?: SheetNode[] };
       markers?: { markerId: string }[];
     };
-    function findByTitle(node: SheetNode, title: string): SheetNode | undefined {
+    function findByTitle(
+      node: SheetNode,
+      title: string,
+    ): SheetNode | undefined {
       if (node.title === title) return node;
       for (const child of node.children?.attached ?? []) {
         const found = findByTitle(child as SheetNode, title);
@@ -249,7 +294,9 @@ describe("xmind-edit patch", () => {
       "验证翻页功能",
     ]);
     assert.equal(showCode, 0);
-    const updated = JSON.parse(showOut) as { steps: { step: string; expected: string }[] };
+    const updated = JSON.parse(showOut) as {
+      steps: { step: string; expected: string }[];
+    };
     assert.equal(updated.steps.length, 2);
     assert.equal(updated.steps[0].step, "打开页面");
     assert.equal(updated.steps[1].expected, "弹出确认框");
@@ -267,7 +314,10 @@ describe("xmind-edit patch", () => {
       "验证默认加载列表页",
     ]);
     assert.equal(showCode1, 0);
-    const before = JSON.parse(showOut1) as { preconditions?: string; steps: unknown[] };
+    const before = JSON.parse(showOut1) as {
+      preconditions?: string;
+      steps: unknown[];
+    };
 
     const { code } = runEdit([
       "patch",
@@ -357,7 +407,11 @@ describe("xmind-edit add", () => {
 
   it("exits with code 1 when parent not found", () => {
     const xmindPath = createTestXmind("add-no-parent");
-    const newCase = JSON.stringify({ title: "测试", priority: "P1", steps: [] });
+    const newCase = JSON.stringify({
+      title: "测试",
+      priority: "P1",
+      steps: [],
+    });
 
     const { code, stderr } = runEdit([
       "add",
@@ -390,8 +444,20 @@ describe("xmind-edit add", () => {
       return rec.file === xmindPath;
     }).length;
 
-    const newCase = JSON.stringify({ title: "验证计数增加用例", priority: "P2", steps: [] });
-    runEdit(["add", "--file", xmindPath, "--parent", "新增页", "--case-json", newCase]);
+    const newCase = JSON.stringify({
+      title: "验证计数增加用例",
+      priority: "P2",
+      steps: [],
+    });
+    runEdit([
+      "add",
+      "--file",
+      xmindPath,
+      "--parent",
+      "新增页",
+      "--case-json",
+      newCase,
+    ]);
 
     const { code: c2, stdout: s2 } = runEdit([
       "search",
@@ -407,7 +473,10 @@ describe("xmind-edit add", () => {
       return rec.file === xmindPath;
     }).length;
 
-    assert.ok(after > before, `after (${after}) should be greater than before (${before})`);
+    assert.ok(
+      after > before,
+      `after (${after}) should be greater than before (${before})`,
+    );
   });
 });
 
@@ -436,7 +505,13 @@ describe("xmind-edit delete", () => {
     assert.equal(result.would_delete.title, "验证翻页功能");
 
     // File should NOT be modified — case should still exist
-    const { code: showCode } = runEdit(["show", "--file", xmindPath, "--title", "验证翻页功能"]);
+    const { code: showCode } = runEdit([
+      "show",
+      "--file",
+      xmindPath,
+      "--title",
+      "验证翻页功能",
+    ]);
     assert.equal(showCode, 0, "case should still exist after dry-run");
   });
 
@@ -444,7 +519,13 @@ describe("xmind-edit delete", () => {
     const xmindPath = createTestXmind("delete-real");
 
     // Verify case exists
-    const { code: pre } = runEdit(["show", "--file", xmindPath, "--title", "验证翻页功能"]);
+    const { code: pre } = runEdit([
+      "show",
+      "--file",
+      xmindPath,
+      "--title",
+      "验证翻页功能",
+    ]);
     assert.equal(pre, 0, "case should exist before delete");
 
     // Delete
@@ -457,18 +538,33 @@ describe("xmind-edit delete", () => {
     ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
-    const result = JSON.parse(stdout) as { deleted: { title: string }; file: string };
+    const result = JSON.parse(stdout) as {
+      deleted: { title: string };
+      file: string;
+    };
     assert.equal(result.deleted.title, "验证翻页功能");
     assert.equal(result.file, xmindPath);
 
     // Verify case no longer exists
-    const { code: post } = runEdit(["show", "--file", xmindPath, "--title", "验证翻页功能"]);
+    const { code: post } = runEdit([
+      "show",
+      "--file",
+      xmindPath,
+      "--title",
+      "验证翻页功能",
+    ]);
     assert.equal(post, 1, "case should not exist after delete");
   });
 
   it("exits with code 1 when title is not found", () => {
     const xmindPath = createTestXmind("delete-not-found");
-    const { code, stderr } = runEdit(["delete", "--file", xmindPath, "--title", "XXXX_NOT_EXIST"]);
+    const { code, stderr } = runEdit([
+      "delete",
+      "--file",
+      xmindPath,
+      "--title",
+      "XXXX_NOT_EXIST",
+    ]);
     assert.equal(code, 1);
     assert.match(stderr, /No topic found/);
   });
@@ -477,15 +573,33 @@ describe("xmind-edit delete", () => {
     const xmindPath = createTestXmind("delete-subgroup");
 
     // Delete one case from sub-group
-    const { code } = runEdit(["delete", "--file", xmindPath, "--title", "验证按问题类型筛选"]);
+    const { code } = runEdit([
+      "delete",
+      "--file",
+      xmindPath,
+      "--title",
+      "验证按问题类型筛选",
+    ]);
     assert.equal(code, 0);
 
     // The deleted case should be gone
-    const { code: c1 } = runEdit(["show", "--file", xmindPath, "--title", "验证按问题类型筛选"]);
+    const { code: c1 } = runEdit([
+      "show",
+      "--file",
+      xmindPath,
+      "--title",
+      "验证按问题类型筛选",
+    ]);
     assert.equal(c1, 1, "deleted case should be gone");
 
     // Another case in same group should still exist
-    const { code: c2 } = runEdit(["show", "--file", xmindPath, "--title", "验证默认加载列表页"]);
+    const { code: c2 } = runEdit([
+      "show",
+      "--file",
+      xmindPath,
+      "--title",
+      "验证默认加载列表页",
+    ]);
     assert.equal(c2, 0, "sibling case should still exist");
   });
 });

@@ -1,10 +1,10 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * image-compress.ts — Compress images larger than max size using macOS `sips`.
  *
  * Usage:
- *   npx tsx .claude/scripts/image-compress.ts --dir <path> [--max-size 2000] [--dry-run]
- *   npx tsx .claude/scripts/image-compress.ts --help
+ *   bun run .claude/scripts/image-compress.ts --dir <path> [--max-size 2000] [--dry-run]
+ *   bun run .claude/scripts/image-compress.ts --help
  */
 
 import { execSync } from "node:child_process";

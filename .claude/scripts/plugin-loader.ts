@@ -1,13 +1,13 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * plugin-loader.ts — Plugin discovery and dispatch CLI.
  *
  * Usage:
- *   npx tsx .claude/scripts/plugin-loader.ts list
- *   npx tsx .claude/scripts/plugin-loader.ts check --input "https://lanhuapp.com/..."
- *   npx tsx .claude/scripts/plugin-loader.ts resolve --url "https://lanhuapp.com/..."
- *   npx tsx .claude/scripts/plugin-loader.ts notify --event case-generated --data '{"count":42}'
- *   npx tsx .claude/scripts/plugin-loader.ts --help
+ *   bun run .claude/scripts/plugin-loader.ts list
+ *   bun run .claude/scripts/plugin-loader.ts check --input "https://lanhuapp.com/..."
+ *   bun run .claude/scripts/plugin-loader.ts resolve --url "https://lanhuapp.com/..."
+ *   bun run .claude/scripts/plugin-loader.ts notify --event case-generated --data '{"count":42}'
+ *   bun run .claude/scripts/plugin-loader.ts --help
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";

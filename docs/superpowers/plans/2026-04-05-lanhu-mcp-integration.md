@@ -12,20 +12,21 @@
 
 ## File Structure
 
-| File | Action | Responsibility |
-|------|--------|---------------|
-| `.gitmodules` | Create | Declare lanhu-mcp submodule |
-| `tools/lanhu/lanhu-mcp/` | Create (submodule) | Upstream lanhu-mcp code |
-| `tools/lanhu/bridge.py` | Create | Import LanhuExtractor, call APIs, output JSON to stdout |
-| `tools/lanhu/setup.sh` | Create | Init submodule + uv sync |
-| `plugins/lanhu/fetch.ts` | Modify | Replace direct API calls with subprocess to bridge.py |
-| `plugins/lanhu/__tests__/fetch.test.ts` | Modify | Update tests for new flow |
+| File                                    | Action             | Responsibility                                          |
+| --------------------------------------- | ------------------ | ------------------------------------------------------- |
+| `.gitmodules`                           | Create             | Declare lanhu-mcp submodule                             |
+| `tools/lanhu/lanhu-mcp/`                | Create (submodule) | Upstream lanhu-mcp code                                 |
+| `tools/lanhu/bridge.py`                 | Create             | Import LanhuExtractor, call APIs, output JSON to stdout |
+| `tools/lanhu/setup.sh`                  | Create             | Init submodule + uv sync                                |
+| `plugins/lanhu/fetch.ts`                | Modify             | Replace direct API calls with subprocess to bridge.py   |
+| `plugins/lanhu/__tests__/fetch.test.ts` | Modify             | Update tests for new flow                               |
 
 ---
 
 ### Task 1: Add lanhu-mcp as git submodule + setup script
 
 **Files:**
+
 - Create: `.gitmodules`
 - Create: `tools/lanhu/setup.sh`
 
@@ -94,11 +95,13 @@ git commit -m "chore: add lanhu-mcp as git submodule with setup script"
 ### Task 2: Create bridge.py
 
 **Files:**
+
 - Create: `tools/lanhu/bridge.py`
 
 - [ ] **Step 1: Verify lanhu-mcp function signatures**
 
 Read `tools/lanhu/lanhu-mcp/lanhu_mcp_server.py` to confirm:
+
 - `LanhuExtractor.__init__()` takes no args, reads `COOKIE` from `os.getenv("LANHU_COOKIE")`
 - `extractor.parse_url(url)` returns `{"team_id", "project_id", "doc_id", "version_id"}`
 - `extractor.get_pages_list(url)` is async, takes url string, returns dict with `document_name`, `document_type`, `pages[]`
@@ -254,6 +257,7 @@ git commit -m "feat: add Python bridge script for lanhu-mcp integration"
 ### Task 3: Rewrite fetch.ts as adapter
 
 **Files:**
+
 - Modify: `plugins/lanhu/fetch.ts`
 
 - [ ] **Step 1: Write the failing test for subprocess integration**
@@ -274,7 +278,7 @@ it("extracts pageId from hash query params", () => {
 
 ```bash
 cd /Users/poco/Documents/DTStack/qa-flow
-npx tsx --test plugins/lanhu/__tests__/fetch.test.ts
+bun test plugins/lanhu/__tests__/fetch.test.ts
 ```
 
 Expected: PASS — `parseLanhuUrl` already extracts all hash query params into `params`.
@@ -284,7 +288,7 @@ Expected: PASS — `parseLanhuUrl` already extracts all hash query params into `
 Replace the content of `plugins/lanhu/fetch.ts`. Keep: CLI interface, `parseLanhuUrl` (simplified), `downloadImage`, `htmlToMarkdown`, `slugify`, front-matter output. Remove: `fetchJson`, `extractTitle`, `extractTextContent`, direct API URL construction. Add: subprocess call to bridge.py, auto-setup check.
 
 ```typescript
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * plugins/lanhu/fetch.ts — 蓝湖 PRD 适配层
  *
@@ -293,7 +297,12 @@ Replace the content of `plugins/lanhu/fetch.ts`. Keep: CLI interface, `parseLanh
  */
 
 import { execSync } from "node:child_process";
-import { createWriteStream, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
@@ -435,7 +444,10 @@ export function extractImageUrls(data: unknown): string[] {
     for (const [key, value] of Object.entries(obj)) {
       if (
         typeof value === "string" &&
-        (key === "url" || key === "src" || key === "imageUrl" || key === "cover") &&
+        (key === "url" ||
+          key === "src" ||
+          key === "imageUrl" ||
+          key === "cover") &&
         (value.startsWith("http") || value.startsWith("//"))
       ) {
         urls.push(value.startsWith("//") ? `https:${value}` : value);
@@ -640,7 +652,9 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
     try {
       const urlObj = new URL(imageUrl);
       const rawName = urlObj.pathname.split("/").pop() ?? `image-${i + 1}`;
-      const ext = rawName.includes(".") ? rawName.split(".").pop() ?? "png" : "png";
+      const ext = rawName.includes(".")
+        ? (rawName.split(".").pop() ?? "png")
+        : "png";
       const slug = slugify(rawName.replace(/\.[^.]+$/, "")) || `image-${i + 1}`;
       const fileName = `${i + 1}-${slug}.${ext}`;
       const destPath = join(imagesDir, fileName);
@@ -654,8 +668,11 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
   // 7. Compress images
   if (downloadedImages.length > 0) {
     try {
-      const compressScript = resolve(projectRoot, ".claude/scripts/image-compress.ts");
-      execSync(`npx tsx "${compressScript}" --dir "${imagesDir}"`, {
+      const compressScript = resolve(
+        projectRoot,
+        ".claude/scripts/image-compress.ts",
+      );
+      execSync(`bun run "${compressScript}" --dir "${imagesDir}"`, {
         stdio: "pipe",
         cwd: projectRoot,
       });
@@ -709,7 +726,8 @@ async function run(rawUrl: string, outputDir: string): Promise<void> {
 
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 
-const isMain = process.argv[1] === __filename || process.argv[1]?.endsWith("fetch.ts");
+const isMain =
+  process.argv[1] === __filename || process.argv[1]?.endsWith("fetch.ts");
 
 if (isMain) {
   const program = new Command("lanhu-fetch");
@@ -719,7 +737,10 @@ if (isMain) {
       "--url <url>",
       '蓝湖页面 URL，例如 "https://lanhuapp.com/web/#/item/project/product?tid=xxx&pid=xxx&docId=xxx"',
     )
-    .requiredOption("--output <dir>", "输出目录路径，例如 workspace/.temp/lanhu-import")
+    .requiredOption(
+      "--output <dir>",
+      "输出目录路径，例如 workspace/.temp/lanhu-import",
+    )
     .action(async (opts: { url: string; output: string }) => {
       await run(opts.url, opts.output);
     });
@@ -732,7 +753,7 @@ if (isMain) {
 
 ```bash
 cd /Users/poco/Documents/DTStack/qa-flow
-npx tsx --test plugins/lanhu/__tests__/fetch.test.ts
+bun test plugins/lanhu/__tests__/fetch.test.ts
 ```
 
 Expected: `parseLanhuUrl` tests still pass. `extractTitle`/`extractTextContent` tests will fail because those functions are removed. CLI integration tests should still pass (MISSING_COOKIE, INVALID_URL checks are preserved).
@@ -749,6 +770,7 @@ git commit -m "feat: rewrite fetch.ts as adapter calling lanhu-mcp bridge"
 ### Task 4: Update tests
 
 **Files:**
+
 - Modify: `plugins/lanhu/__tests__/fetch.test.ts`
 
 - [ ] **Step 1: Update test imports and remove deleted function tests**
@@ -833,7 +855,9 @@ describe("parseLanhuUrl", () => {
   });
 
   it("returns unknown for lanhu URL without required params", () => {
-    const result = parseLanhuUrl("https://lanhuapp.com/web/#/item/project/product?tid=t1");
+    const result = parseLanhuUrl(
+      "https://lanhuapp.com/web/#/item/project/product?tid=t1",
+    );
     assert.equal(result.pageType, "unknown");
   });
 
@@ -864,7 +888,7 @@ describe("htmlToMarkdown", () => {
 
   it("decodes HTML entities", () => {
     const result = htmlToMarkdown("a &amp; b &lt;c&gt; &quot;d&quot; &nbsp;e");
-    assert.ok(result.includes("a & b <c> \"d\""));
+    assert.ok(result.includes('a & b <c> "d"'));
     assert.ok(result.includes("e"));
   });
 
@@ -938,17 +962,25 @@ describe("extractImageUrls", () => {
       { url: "https://cdn.lanhu.com/dup.png" },
     ];
     const urls = extractImageUrls(data);
-    assert.equal(urls.filter((u) => u === "https://cdn.lanhu.com/dup.png").length, 1);
+    assert.equal(
+      urls.filter((u) => u === "https://cdn.lanhu.com/dup.png").length,
+      1,
+    );
   });
 
   it("recurses into nested objects", () => {
-    const data = { outer: { inner: { url: "https://cdn.lanhu.com/nested.png" } } };
+    const data = {
+      outer: { inner: { url: "https://cdn.lanhu.com/nested.png" } },
+    };
     const urls = extractImageUrls(data);
     assert.ok(urls.includes("https://cdn.lanhu.com/nested.png"));
   });
 
   it("recurses into arrays", () => {
-    const data = [{ url: "https://cdn.lanhu.com/arr1.png" }, { url: "https://cdn.lanhu.com/arr2.png" }];
+    const data = [
+      { url: "https://cdn.lanhu.com/arr1.png" },
+      { url: "https://cdn.lanhu.com/arr2.png" },
+    ];
     const urls = extractImageUrls(data);
     assert.equal(urls.length, 2);
   });
@@ -971,7 +1003,7 @@ describe("CLI: --help", () => {
     let stdout = "";
     let exitCode = 0;
     try {
-      stdout = execSync(`npx tsx "${FETCH_TS}" --help`, {
+      stdout = execSync(`bun run "${FETCH_TS}" --help`, {
         encoding: "utf8",
         cwd: PROJECT_ROOT,
         env: { ...process.env },
@@ -983,7 +1015,10 @@ describe("CLI: --help", () => {
       stdout = e.stdout ?? "";
     }
     assert.equal(exitCode, 0);
-    assert.ok(stdout.includes("--url") || stdout.includes("Usage"), "should show --url option");
+    assert.ok(
+      stdout.includes("--url") || stdout.includes("Usage"),
+      "should show --url option",
+    );
   });
 });
 
@@ -1002,7 +1037,7 @@ describe("CLI: missing LANHU_COOKIE", () => {
     let stderr = "";
     try {
       execSync(
-        `npx tsx "${FETCH_TS}" --url "https://lanhuapp.com/web/#/item/project/product?tid=t&pid=p&docId=d" --output "${TMP_DIR}/out"`,
+        `bun run "${FETCH_TS}" --url "https://lanhuapp.com/web/#/item/project/product?tid=t&pid=p&docId=d" --output "${TMP_DIR}/out"`,
         {
           encoding: "utf8",
           cwd: PROJECT_ROOT,
@@ -1032,7 +1067,7 @@ describe("CLI: invalid URL format", () => {
     let stderr = "";
     try {
       execSync(
-        `npx tsx "${FETCH_TS}" --url "https://example.com/not-lanhu" --output "${TMP_DIR}/out"`,
+        `bun run "${FETCH_TS}" --url "https://example.com/not-lanhu" --output "${TMP_DIR}/out"`,
         {
           encoding: "utf8",
           cwd: PROJECT_ROOT,
@@ -1048,7 +1083,9 @@ describe("CLI: invalid URL format", () => {
 
     assert.equal(exitCode, 1, "should exit with code 1");
     assert.ok(
-      stderr.includes("INVALID_URL") || stderr.includes("Invalid") || stderr.includes("Unsupported"),
+      stderr.includes("INVALID_URL") ||
+        stderr.includes("Invalid") ||
+        stderr.includes("Unsupported"),
       `stderr should mention invalid URL, got: ${stderr}`,
     );
   });
@@ -1060,7 +1097,7 @@ describe("CLI: invalid URL format", () => {
     let stderr = "";
     try {
       execSync(
-        `npx tsx "${FETCH_TS}" --url "https://lanhuapp.com/web/#/item/project/product?tid=only-tid" --output "${TMP_DIR}/out"`,
+        `bun run "${FETCH_TS}" --url "https://lanhuapp.com/web/#/item/project/product?tid=only-tid" --output "${TMP_DIR}/out"`,
         {
           encoding: "utf8",
           cwd: PROJECT_ROOT,
@@ -1087,7 +1124,7 @@ describe("CLI: invalid URL format", () => {
 
 ```bash
 cd /Users/poco/Documents/DTStack/qa-flow
-npx tsx --test plugins/lanhu/__tests__/fetch.test.ts
+bun test plugins/lanhu/__tests__/fetch.test.ts
 ```
 
 Expected: All tests PASS.
@@ -1109,7 +1146,7 @@ git commit -m "test: update fetch tests for bridge adapter architecture"
 
 ```bash
 cd /Users/poco/Documents/DTStack/qa-flow
-npx tsx plugins/lanhu/fetch.ts \
+bun run plugins/lanhu/fetch.ts \
   --url "https://lanhuapp.com/web/#/item/project/product?tid=24a1c6b2-a52e-454c-8d51-8aff866598b1&pid=7de90493-e80f-4592-a263-38fb2d2e98c0&versionId=236fbc84-10a3-4808-9559-66c1ef54ae55&docId=fc0fee93-74f5-4eff-a769-99e68506b296&docType=axure&pageId=e08ead471bc2471489e6fc7443d060c6&image_id=fc0fee93-74f5-4eff-a769-99e68506b296&parentId=9a152fb2-6417-4ee0-8df3-6f74f7deb413" \
   --output workspace/.temp/lanhu-e2e-test
 ```

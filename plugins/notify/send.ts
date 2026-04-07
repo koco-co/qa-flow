@@ -1,11 +1,11 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * qa-flow notify plugin — send IM/email notifications
  *
  * Usage:
- *   npx tsx plugins/notify/send.ts --event case-generated --data '{"count":42,"file":"test.xmind"}'
- *   npx tsx plugins/notify/send.ts --dry-run --event case-generated --data '{"count":42}'
- *   npx tsx plugins/notify/send.ts --help
+ *   bun run plugins/notify/send.ts --event case-generated --data '{"count":42,"file":"test.xmind"}'
+ *   bun run plugins/notify/send.ts --dry-run --event case-generated --data '{"count":42}'
+ *   bun run plugins/notify/send.ts --help
  */
 
 import crypto from "node:crypto";
@@ -46,40 +46,178 @@ export interface SendResult {
 
 // ── Message Formatting ───────────────────────────────────────────────────────
 
-export function formatMessage(event: EventType, data: NotifyData): FormattedMessage {
-  let text: string;
+export function formatMessage(
+  event: EventType,
+  data: NotifyData,
+): FormattedMessage {
+  const timestamp = new Date().toLocaleString("zh-CN", {
+    timeZone: "Asia/Shanghai",
+  });
+  const text = formatByEvent(event, data, timestamp);
 
-  switch (event) {
-    case "case-generated":
-      text = `✅ 用例生成完成\n\n- 用例数：${data.count ?? "-"}\n- 文件：${data.file ?? "-"}\n- 耗时：${data.duration ?? "-"}s`;
-      break;
-    case "bug-report":
-      text = `🐛 Bug 分析报告\n\n- 报告：${data.reportFile ?? "-"}\n- 摘要：${data.summary ?? "-"}`;
-      break;
-    case "conflict-analyzed":
-      text = `⚠️ 冲突分析完成\n\n- 报告：${data.reportFile ?? "-"}\n- 冲突数：${data.conflictCount ?? "-"}`;
-      break;
-    case "hotfix-case-generated":
-      text = `🔧 Hotfix 用例生成\n\n- Bug：${data.bugId ?? "-"}\n- 分支：${data.branch ?? "-"}\n- 文件：${data.file ?? "-"}`;
-      break;
-    case "ui-test-completed":
-      text = `🧪 UI 测试完成\n\n- 通过：${data.passed ?? "-"}\n- 失败：${data.failed ?? "-"}\n- 报告：${data.reportFile ?? "-"}`;
-      break;
-    case "archive-converted":
-      text = `📦 归档转化完成\n\n- 文件数：${data.fileCount ?? "-"}\n- 用例数：${data.caseCount ?? "-"}`;
-      break;
-    case "workflow-failed":
-      text = `❌ 工作流异常\n\n- 步骤：${data.step ?? "-"}\n- 原因：${data.reason ?? "-"}`;
-      break;
-    default:
-      text = `📢 qa-flow | ${event}\n\n${JSON.stringify(data, null, 2)}`;
-  }
-
-  // Title = first line without emoji (strip leading emoji + space)
   const firstLine = text.split("\n")[0];
   const title = firstLine.replace(/^[\p{Emoji}\s]+/u, "").trim();
 
   return { title, text };
+}
+
+function formatByEvent(
+  event: EventType,
+  data: NotifyData,
+  timestamp: string,
+): string {
+  switch (event) {
+    case "case-generated":
+      return [
+        "## ✅ 用例生成完成",
+        "",
+        `> **${data.requirement ?? "测试用例"}** 已生成`,
+        "",
+        "| 项目 | 详情 |",
+        "| --- | --- |",
+        `| 📊 用例数 | **${data.count ?? "-"}** |`,
+        `| 📁 XMind | ${data.file ?? "-"} |`,
+        `| 📝 Archive | ${data.archiveFile ?? "-"} |`,
+        `| ⏱ 耗时 | ${data.duration ? `${data.duration}s` : "-"} |`,
+        "",
+        `---`,
+        `🕐 ${timestamp} · QAFlow`,
+      ].join("\n");
+
+    case "bug-report":
+      return [
+        "## 🐛 Bug 分析报告",
+        "",
+        `> ${data.summary ?? "分析完成"}`,
+        "",
+        "| 项目 | 详情 |",
+        "| --- | --- |",
+        `| 🏷 类型 | ${data.problemType ?? "-"} |`,
+        `| 🔴 严重度 | **${data.severity ?? "-"}** |`,
+        `| 📍 根因 | ${data.rootCause ?? "-"} |`,
+        `| 📄 报告 | ${data.reportFile ?? "-"} |`,
+        "",
+        data.fixSuggestion ? `**💡 修复建议：** ${data.fixSuggestion}` : "",
+        "",
+        `---`,
+        `🕐 ${timestamp} · QAFlow`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+    case "conflict-analyzed": {
+      const total = data.conflictCount ?? "-";
+      const auto = data.autoResolvable ?? "-";
+      const manual = data.manualRequired ?? "-";
+      return [
+        "## ⚠️ 合并冲突分析",
+        "",
+        `> 检测到 **${total}** 处冲突`,
+        "",
+        "| 项目 | 详情 |",
+        "| --- | --- |",
+        `| 📊 冲突总数 | **${total}** |`,
+        `| 🤖 可自动合并 | ${auto} |`,
+        `| 👤 需人工决策 | ${manual} |`,
+        `| 📄 报告 | ${data.reportFile ?? "-"} |`,
+        "",
+        data.branches
+          ? `**🔀 分支：** ${(data.branches as string[]).join(" ← ")}`
+          : "",
+        "",
+        `---`,
+        `🕐 ${timestamp} · QAFlow`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    case "hotfix-case-generated":
+      return [
+        "## 🔧 Hotfix 用例生成",
+        "",
+        `> Bug **#${data.bugId ?? "-"}** 的验证用例已就绪`,
+        "",
+        "| 项目 | 详情 |",
+        "| --- | --- |",
+        `| 🐛 Bug ID | #${data.bugId ?? "-"} |`,
+        `| 🔀 修复分支 | ${data.branch ?? "-"} |`,
+        `| 📊 用例数 | ${data.caseCount ?? "-"} |`,
+        `| 📁 文件 | ${data.file ?? "-"} |`,
+        "",
+        `---`,
+        `🕐 ${timestamp} · QAFlow`,
+      ].join("\n");
+
+    case "ui-test-completed": {
+      const passed = Number(data.passed ?? 0);
+      const failed = Number(data.failed ?? 0);
+      const total = passed + failed;
+      const rate = total > 0 ? `${Math.round((passed / total) * 100)}%` : "-";
+      const statusIcon = failed > 0 ? "🔴" : "🟢";
+      return [
+        `## 🧪 UI 自动化测试完成 ${statusIcon}`,
+        "",
+        `> 通过率 **${rate}**（${passed}/${total}）`,
+        "",
+        "| 项目 | 详情 |",
+        "| --- | --- |",
+        `| ✅ 通过 | **${data.passed ?? "-"}** |`,
+        `| ❌ 失败 | **${data.failed ?? "-"}** |`,
+        `| 📊 通过率 | ${rate} |`,
+        `| 📄 报告 | ${data.reportFile ?? "-"} |`,
+        "",
+        `---`,
+        `🕐 ${timestamp} · QAFlow`,
+      ].join("\n");
+    }
+
+    case "archive-converted":
+      return [
+        "## 📦 归档转化完成",
+        "",
+        `> **${data.fileCount ?? "-"}** 个文件已标准化归档`,
+        "",
+        "| 项目 | 详情 |",
+        "| --- | --- |",
+        `| 📁 文件数 | **${data.fileCount ?? "-"}** |`,
+        `| 📊 用例数 | **${data.caseCount ?? "-"}** |`,
+        `| 📂 目录 | ${data.outputDir ?? "-"} |`,
+        "",
+        `---`,
+        `🕐 ${timestamp} · QAFlow`,
+      ].join("\n");
+
+    case "workflow-failed":
+      return [
+        "## ❌ 工作流异常中断",
+        "",
+        `> 步骤 **${data.step ?? "-"}** 执行失败`,
+        "",
+        "| 项目 | 详情 |",
+        "| --- | --- |",
+        `| 📍 失败步骤 | **${data.step ?? "-"}** |`,
+        `| 💬 原因 | ${data.reason ?? "-"} |`,
+        `| 🔄 可重试 | ${data.retryable ?? "是"} |`,
+        "",
+        "**⚡ 建议：** 检查上述原因后重新执行该步骤",
+        "",
+        `---`,
+        `🕐 ${timestamp} · QAFlow`,
+      ].join("\n");
+
+    default:
+      return [
+        `## 📢 QAFlow 通知 | ${event}`,
+        "",
+        "```json",
+        JSON.stringify(data, null, 2),
+        "```",
+        "",
+        `---`,
+        `🕐 ${timestamp} · QAFlow`,
+      ].join("\n");
+  }
 }
 
 // ── Channel Detection ────────────────────────────────────────────────────────
@@ -121,10 +259,10 @@ export function detectChannels(): ChannelConfig {
 export function isEmailEnabled(cfg: ChannelConfig): boolean {
   return Boolean(
     cfg.email.host &&
-      cfg.email.user &&
-      cfg.email.pass &&
-      cfg.email.from &&
-      cfg.email.to,
+    cfg.email.user &&
+    cfg.email.pass &&
+    cfg.email.from &&
+    cfg.email.to,
   );
 }
 
@@ -144,9 +282,14 @@ function buildDingtalkUrl(baseUrl: string, signSecret?: string): string {
   return `${baseUrl}&timestamp=${timestamp}&sign=${encodedSign}`;
 }
 
-async function sendDingtalk(cfg: ChannelConfig, msg: FormattedMessage): Promise<void> {
+async function sendDingtalk(
+  cfg: ChannelConfig,
+  msg: FormattedMessage,
+): Promise<void> {
   const url = buildDingtalkUrl(cfg.dingtalk!, cfg.dingtalkSignSecret);
-  const title = cfg.dingtalkKeyword ? `${cfg.dingtalkKeyword} ${msg.title}` : msg.title;
+  const title = cfg.dingtalkKeyword
+    ? `${cfg.dingtalkKeyword} ${msg.title}`
+    : msg.title;
 
   const body = {
     msgtype: "markdown",
@@ -171,7 +314,10 @@ async function sendDingtalk(cfg: ChannelConfig, msg: FormattedMessage): Promise<
 
 // ── Feishu ───────────────────────────────────────────────────────────────────
 
-async function sendFeishu(cfg: ChannelConfig, msg: FormattedMessage): Promise<void> {
+async function sendFeishu(
+  cfg: ChannelConfig,
+  msg: FormattedMessage,
+): Promise<void> {
   const body = {
     msg_type: "post",
     content: {
@@ -202,7 +348,10 @@ async function sendFeishu(cfg: ChannelConfig, msg: FormattedMessage): Promise<vo
 
 // ── WeCom ────────────────────────────────────────────────────────────────────
 
-async function sendWecom(cfg: ChannelConfig, msg: FormattedMessage): Promise<void> {
+async function sendWecom(
+  cfg: ChannelConfig,
+  msg: FormattedMessage,
+): Promise<void> {
   const body = {
     msgtype: "markdown",
     markdown: { content: msg.text },
@@ -226,7 +375,10 @@ async function sendWecom(cfg: ChannelConfig, msg: FormattedMessage): Promise<voi
 
 // ── Email ────────────────────────────────────────────────────────────────────
 
-async function sendEmail(cfg: ChannelConfig, msg: FormattedMessage): Promise<void> {
+async function sendEmail(
+  cfg: ChannelConfig,
+  msg: FormattedMessage,
+): Promise<void> {
   const { email } = cfg;
   // Dynamic import to avoid loading nodemailer when not needed
   const nodemailer = await import("nodemailer");
@@ -325,15 +477,18 @@ async function main(): Promise<void> {
     .name("notify")
     .description("qa-flow IM 通知发送工具")
     .version("1.0.0")
-    .requiredOption("-e, --event <type>", "事件类型 (case-generated, bug-report, ...)")
+    .requiredOption(
+      "-e, --event <type>",
+      "事件类型 (case-generated, bug-report, ...)",
+    )
     .option("-d, --data <json>", "事件数据 (JSON 字符串)", "{}")
     .option("--dry-run", "仅格式化消息，不实际发送")
     .addHelpText(
       "after",
       `
 示例:
-  $ npx tsx plugins/notify/send.ts --event case-generated --data '{"count":42,"file":"test.xmind","duration":30}'
-  $ npx tsx plugins/notify/send.ts --dry-run --event workflow-failed --data '{"step":"writer","reason":"timeout"}'
+  $ bun run plugins/notify/send.ts --event case-generated --data '{"count":42,"file":"test.xmind","duration":30}'
+  $ bun run plugins/notify/send.ts --dry-run --event workflow-failed --data '{"step":"writer","reason":"timeout"}'
 
 支持的事件类型:
   case-generated       用例生成完成
@@ -348,7 +503,11 @@ async function main(): Promise<void> {
 
   program.parse(process.argv);
 
-  const opts = program.opts<{ event: string; data: string; dryRun?: boolean }>();
+  const opts = program.opts<{
+    event: string;
+    data: string;
+    dryRun?: boolean;
+  }>();
 
   let data: NotifyData;
   try {
@@ -358,7 +517,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const result = await sendNotification(opts.event, data, { dryRun: opts.dryRun });
+  const result = await sendNotification(opts.event, data, {
+    dryRun: opts.dryRun,
+  });
 
   if (!opts.dryRun) {
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
@@ -366,7 +527,9 @@ async function main(): Promise<void> {
 }
 
 // Only run CLI when this file is executed directly (not imported as a module)
-const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+const isMain =
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === resolve(process.argv[1]);
 if (isMain) {
   main().catch((err: unknown) => {
     process.stderr.write(`[notify] Fatal error: ${err}\n`);

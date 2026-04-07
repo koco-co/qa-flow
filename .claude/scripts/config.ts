@@ -1,10 +1,10 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * config.ts — Outputs merged workspace config JSON to stdout.
  *
  * Usage:
- *   npx tsx .claude/scripts/config.ts
- *   npx tsx .claude/scripts/config.ts --help
+ *   bun run .claude/scripts/config.ts
+ *   bun run .claude/scripts/config.ts --help
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";

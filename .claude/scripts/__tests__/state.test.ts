@@ -24,15 +24,19 @@ function runState(
   extraEnv: Record<string, string> = {},
 ): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/state.ts", ...args], {
-      cwd: "/Users/poco/Documents/DTStack/qa-flow",
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        WORKSPACE_DIR: join(TMP_DIR, "workspace"),
-        ...extraEnv,
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/state.ts", ...args],
+      {
+        cwd: "/Users/poco/Documents/DTStack/qa-flow",
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          WORKSPACE_DIR: join(TMP_DIR, "workspace"),
+          ...extraEnv,
+        },
       },
-    });
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
@@ -76,7 +80,13 @@ describe("state.ts init", () => {
     const slug = `init-test-${Date.now()}`;
     const prd = `workspace/prds/202604/${slug}.md`;
 
-    const { stdout, code } = runState(["init", "--prd", prd, "--mode", "normal"]);
+    const { stdout, code } = runState([
+      "init",
+      "--prd",
+      prd,
+      "--mode",
+      "normal",
+    ]);
 
     assert.equal(code, 0, `init should exit 0, stderr: ${stdout}`);
     const state = JSON.parse(stdout) as QaState;
@@ -96,7 +106,10 @@ describe("state.ts init", () => {
 
     runState(["init", "--prd", prd, "--mode", "normal"]);
 
-    assert.ok(existsSync(stateFilePath(slug)), "state file should exist on disk");
+    assert.ok(
+      existsSync(stateFilePath(slug)),
+      "state file should exist on disk",
+    );
   });
 
   it("derives prd-slug from PRD filename (basename without .md)", () => {
@@ -105,7 +118,10 @@ describe("state.ts init", () => {
 
     runState(["init", "--prd", prd]);
 
-    assert.ok(existsSync(stateFilePath(slug)), `state file at expected path for slug "${slug}"`);
+    assert.ok(
+      existsSync(stateFilePath(slug)),
+      `state file at expected path for slug "${slug}"`,
+    );
   });
 
   it("mode defaults to 'normal' when not specified", () => {
@@ -132,8 +148,14 @@ describe("state.ts init", () => {
 
     const { stdout } = runState(["init", "--prd", prd]);
     const state = JSON.parse(stdout) as QaState;
-    assert.ok(!Number.isNaN(Date.parse(state.created_at)), "created_at should be valid ISO date");
-    assert.ok(!Number.isNaN(Date.parse(state.updated_at)), "updated_at should be valid ISO date");
+    assert.ok(
+      !Number.isNaN(Date.parse(state.created_at)),
+      "created_at should be valid ISO date",
+    );
+    assert.ok(
+      !Number.isNaN(Date.parse(state.updated_at)),
+      "updated_at should be valid ISO date",
+    );
   });
 });
 
@@ -157,7 +179,10 @@ describe("state.ts update", () => {
     assert.equal(code, 0, "update should exit 0");
     const state = JSON.parse(stdout) as QaState;
     assert.equal(state.current_node, "enhance");
-    assert.ok(state.completed_nodes.includes("enhance"), "enhance should be in completed_nodes");
+    assert.ok(
+      state.completed_nodes.includes("enhance"),
+      "enhance should be in completed_nodes",
+    );
   });
 
   it("merges --data into node_outputs[node]", () => {
@@ -187,7 +212,15 @@ describe("state.ts update", () => {
 
     runState(["init", "--prd", prd]);
 
-    runState(["update", "--prd-slug", slug, "--node", "enhance", "--data", '{"health_score":85}']);
+    runState([
+      "update",
+      "--prd-slug",
+      slug,
+      "--node",
+      "enhance",
+      "--data",
+      '{"health_score":85}',
+    ]);
 
     const { stdout } = runState([
       "update",
@@ -213,7 +246,15 @@ describe("state.ts update", () => {
     const prd = `workspace/prds/202604/${slug}.md`;
 
     runState(["init", "--prd", prd]);
-    runState(["update", "--prd-slug", slug, "--node", "enhance", "--data", "{}"]);
+    runState([
+      "update",
+      "--prd-slug",
+      slug,
+      "--node",
+      "enhance",
+      "--data",
+      "{}",
+    ]);
     const { stdout } = runState([
       "update",
       "--prd-slug",
@@ -226,7 +267,11 @@ describe("state.ts update", () => {
 
     const state = JSON.parse(stdout) as QaState;
     const count = state.completed_nodes.filter((n) => n === "enhance").length;
-    assert.equal(count, 1, "enhance should appear only once in completed_nodes");
+    assert.equal(
+      count,
+      1,
+      "enhance should appear only once in completed_nodes",
+    );
   });
 
   it("exits 1 when state file not found", () => {
@@ -263,7 +308,11 @@ describe("state.ts update", () => {
     ]);
     const updatedState = JSON.parse(updateOut) as QaState;
 
-    assert.equal(updatedState.created_at, initState.created_at, "created_at should not change");
+    assert.equal(
+      updatedState.created_at,
+      initState.created_at,
+      "created_at should not change",
+    );
     assert.notEqual(
       updatedState.updated_at,
       initState.updated_at,
@@ -289,7 +338,11 @@ describe("state.ts resume", () => {
   });
 
   it("exits 1 and outputs error JSON when state file not found", () => {
-    const { stdout, code } = runState(["resume", "--prd-slug", "nonexistent-slug-abc"]);
+    const { stdout, code } = runState([
+      "resume",
+      "--prd-slug",
+      "nonexistent-slug-abc",
+    ]);
 
     assert.equal(code, 1);
     const result = JSON.parse(stdout) as { error: string };
@@ -303,7 +356,10 @@ describe("state.ts clean", () => {
     const prd = `workspace/prds/202604/${slug}.md`;
 
     runState(["init", "--prd", prd]);
-    assert.ok(existsSync(stateFilePath(slug)), "file should exist before clean");
+    assert.ok(
+      existsSync(stateFilePath(slug)),
+      "file should exist before clean",
+    );
 
     const { stdout, code } = runState(["clean", "--prd-slug", slug]);
 
@@ -311,11 +367,18 @@ describe("state.ts clean", () => {
     const result = JSON.parse(stdout) as { cleaned: boolean; path: string };
     assert.equal(result.cleaned, true);
     assert.ok(result.path.includes(slug), "path should contain the slug");
-    assert.ok(!existsSync(stateFilePath(slug)), "file should not exist after clean");
+    assert.ok(
+      !existsSync(stateFilePath(slug)),
+      "file should not exist after clean",
+    );
   });
 
   it("succeeds even when state file does not exist", () => {
-    const { stdout, code } = runState(["clean", "--prd-slug", "already-gone-slug"]);
+    const { stdout, code } = runState([
+      "clean",
+      "--prd-slug",
+      "already-gone-slug",
+    ]);
 
     assert.equal(code, 0);
     const result = JSON.parse(stdout) as { cleaned: boolean };

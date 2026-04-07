@@ -24,4 +24,4 @@
 ## 脚本变更规则
 
 - 每次修改 `.claude/scripts/` 下的 ts 脚本后，**必须**同步更新或新增对应的单元测试
-- 修改完成后，**必须**全量运行一遍单元测试（`npx tsx --test .claude/scripts/__tests__/**/*.test.ts`），确认全部通过后才能交付
+- 修改完成后，**必须**全量运行一遍单元测试（`bun test ./.claude/scripts/__tests__`），确认全部通过后才能交付

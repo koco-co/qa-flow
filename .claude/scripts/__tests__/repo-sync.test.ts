@@ -8,14 +8,22 @@ const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/repo-sync.ts", ...args], {
-      cwd: REPO_ROOT,
-      encoding: "utf8",
-    });
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/repo-sync.ts", ...args],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8",
+      },
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
-    return { stdout: e.stdout ?? "", stderr: e.stderr ?? "", code: e.status ?? 1 };
+    return {
+      stdout: e.stdout ?? "",
+      stderr: e.stderr ?? "",
+      code: e.status ?? 1,
+    };
   }
 }
 
@@ -47,7 +55,9 @@ describe("repo-sync URL parsing (via parseGitUrl)", () => {
   });
 
   it("parses nested group path, takes last two segments", () => {
-    const { group, repo } = parseGitUrl("https://gitlab.com/org/sub-group/my-repo.git");
+    const { group, repo } = parseGitUrl(
+      "https://gitlab.com/org/sub-group/my-repo.git",
+    );
     assert.equal(group, "sub-group");
     assert.equal(repo, "my-repo");
   });

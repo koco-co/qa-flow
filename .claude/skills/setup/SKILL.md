@@ -8,7 +8,7 @@ argument-hint: "[step-number]"
 
 执行前读取 `preferences/` 目录下所有 `.md` 文件（如存在）。
 偏好优先级：用户当前指令 > preferences/ 规则 > 本 skill 内置规则。
-读取项目配置：执行 `npx tsx .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
+读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
 
 ---
 
@@ -29,18 +29,18 @@ argument-hint: "[step-number]"
 ### 1.1 执行环境扫描
 
 ```bash
-npx tsx .claude/skills/setup/scripts/init-wizard.ts scan
+bun run .claude/skills/setup/scripts/init-wizard.ts scan
 ```
 
 扫描项目包括：
 
 | 检测项       | 通过条件                                       |
 | ------------ | ---------------------------------------------- |
-| Node.js 版本 | >= 18.0.0                                      |
-| 包管理器     | bun / npm / pnpm / yarn 任意一种可用           |
+| Node.js 版本 | >= 22.0.0                                      |
+| Bun          | `bun` 可执行                                   |
 | .env         | 项目根目录存在（内容不校验，覆盖 config.json） |
 | .env 文件    | 项目根目录存在（内容不校验）                   |
-| 脚本依赖     | `tsx` 可执行                                   |
+| 核心脚本     | 核心脚本可通过 `bun run` 执行                  |
 
 ### 1.2 展示扫描结果
 
@@ -54,7 +54,7 @@ npx tsx .claude/skills/setup/scripts/init-wizard.ts scan
 ✓ bun v{{version}}
 {{❌ / ✓}} config.json
 {{❌ / ✓}} .env 文件
-{{❌ / ✓}} tsx 可执行
+{{❌ / ✓}} 核心脚本可执行
 
 选项：
 1. ✓ 继续初始化（推荐）
@@ -126,7 +126,7 @@ mkdir -p {{workspace_dir}}/{prds,xmind,archive,issues,history,reports,.repos,.te
 用户提供 Git URL → 解析 `{{group_name}}/{{repo_name}}` → clone 到 `{{workspace_dir}}/.repos/{{group_name}}/{{repo_name}}/`：
 
 ```bash
-npx tsx .claude/skills/setup/scripts/init-wizard.ts clone \
+bun run .claude/skills/setup/scripts/init-wizard.ts clone \
   --url {{repo_url}} \
   --branch {{branch}} \
   --base-dir {{workspace_dir}}/.repos
@@ -188,18 +188,18 @@ URL 格式示例：`http://gitlab.example.com/{{group_name}}/{{repo_name}}.git`
 ### 5.1 执行验证
 
 ```bash
-npx tsx .claude/skills/setup/scripts/init-wizard.ts verify
+bun run .claude/skills/setup/scripts/init-wizard.ts verify
 ```
 
 验证内容：
 
-| 验证项     | 说明                                     |
-| ---------- | ---------------------------------------- |
-| 工作区目录 | 所有子目录均存在                         |
-| .env 文件  | 存在且 WORKSPACE_DIR 字段已写入          |
-| 源码仓库   | 已配置仓库均可 git fetch（或标注为跳过） |
-| 插件凭证   | 已配置插件的环境变量非空                 |
-| 脚本可执行 | init-wizard.ts 等核心脚本可被 tsx 调用   |
+| 验证项     | 说明                                         |
+| ---------- | -------------------------------------------- |
+| 工作区目录 | 所有子目录均存在                             |
+| .env 文件  | 存在且 WORKSPACE_DIR 字段已写入              |
+| 源码仓库   | 已配置仓库均可 git fetch（或标注为跳过）     |
+| 插件凭证   | 已配置插件的环境变量非空                     |
+| 脚本可执行 | init-wizard.ts 等核心脚本可被 `bun run` 调用 |
 
 ### 5.2 展示汇总表
 
@@ -234,7 +234,7 @@ qa-flow v2.0 初始化完成
 3. 发送 `workflow-failed` 通知（若通知插件已配置）：
 
 ```bash
-node .claude/shared/scripts/notify.mjs \
+bun run .claude/scripts/plugin-loader.ts notify \
   --event workflow-failed \
   --data '{"step":"setup-{{step}}","reason":"{{error_msg}}"}'
 ```

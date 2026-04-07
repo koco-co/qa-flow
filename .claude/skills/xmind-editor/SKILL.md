@@ -15,7 +15,7 @@ argument-hint: "[操作] [用例标题或关键词]"
 ## 场景一：搜索用例
 
 ```bash
-npx tsx .claude/scripts/xmind-edit.ts search "{{keyword}}" --dir workspace/xmind
+bun run .claude/scripts/xmind-edit.ts search "{{keyword}}" --dir workspace/xmind
 ```
 
 展示所有匹配的用例列表（文件名 + 用例标题），用户选择后进入查看。
@@ -25,7 +25,7 @@ npx tsx .claude/scripts/xmind-edit.ts search "{{keyword}}" --dir workspace/xmind
 ## 场景二：查看用例
 
 ```bash
-npx tsx .claude/scripts/xmind-edit.ts show --file {{file}} --title "{{title}}"
+bun run .claude/scripts/xmind-edit.ts show --file {{file}} --title "{{title}}"
 ```
 
 展示该用例的完整内容（前置条件 + 步骤 + 预期结果），等待用户下一步指令。
@@ -40,7 +40,7 @@ npx tsx .claude/scripts/xmind-edit.ts show --file {{file}} --title "{{title}}"
 4. 执行写入：
 
 ```bash
-npx tsx .claude/scripts/xmind-edit.ts patch \
+bun run .claude/scripts/xmind-edit.ts patch \
   --file {{file}} \
   --title "{{title}}" \
   --case-json '{{json}}'
@@ -58,7 +58,7 @@ npx tsx .claude/scripts/xmind-edit.ts patch \
 3. 执行写入：
 
 ```bash
-npx tsx .claude/scripts/xmind-edit.ts add \
+bun run .claude/scripts/xmind-edit.ts add \
   --file {{file}} \
   --parent "{{parent}}" \
   --case-json '{{json}}'
@@ -73,7 +73,7 @@ npx tsx .claude/scripts/xmind-edit.ts add \
 1. 先预览：
 
 ```bash
-npx tsx .claude/scripts/xmind-edit.ts delete \
+bun run .claude/scripts/xmind-edit.ts delete \
   --file {{file}} \
   --title "{{title}}" \
   --dry-run

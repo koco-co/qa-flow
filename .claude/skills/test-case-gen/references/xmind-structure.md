@@ -74,7 +74,7 @@ workspace/xmind/YYYYMM/<功能名>.xmind
 
 ### 4.2 配置了 trackerId 的模块路径
 
-参考 `npx tsx .claude/scripts/config.ts` 中 `modules[].xmind` 字段指定的输出目录：
+参考 `bun run .claude/scripts/config.ts` 中 `modules[].xmind` 字段指定的输出目录：
 
 ```
 workspace/xmind/YYYYMM/<功能名>.xmind

@@ -1,13 +1,13 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * xmind-edit.ts — Search, view, patch, add, and delete test cases in existing .xmind files.
  *
  * Usage:
- *   npx tsx .claude/scripts/xmind-edit.ts search <query> [--dir <dir>] [--limit 20]
- *   npx tsx .claude/scripts/xmind-edit.ts show --file <xmind> --title <query>
- *   npx tsx .claude/scripts/xmind-edit.ts patch --file <xmind> --title <query> --case-json '<json>'
- *   npx tsx .claude/scripts/xmind-edit.ts add --file <xmind> --parent <query> --case-json '<json>'
- *   npx tsx .claude/scripts/xmind-edit.ts delete --file <xmind> --title <query> [--dry-run]
+ *   bun run .claude/scripts/xmind-edit.ts search <query> [--dir <dir>] [--limit 20]
+ *   bun run .claude/scripts/xmind-edit.ts show --file <xmind> --title <query>
+ *   bun run .claude/scripts/xmind-edit.ts patch --file <xmind> --title <query> --case-json '<json>'
+ *   bun run .claude/scripts/xmind-edit.ts add --file <xmind> --parent <query> --case-json '<json>'
+ *   bun run .claude/scripts/xmind-edit.ts delete --file <xmind> --title <query> [--dry-run]
  */
 
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";

@@ -16,7 +16,7 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 
 执行前读取 `preferences/` 目录下所有 `.md` 文件（如存在）。
 偏好优先级：用户当前指令 > preferences/ 规则 > 本 skill 内置规则（references/）。
-读取项目配置：执行 `npx tsx .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
+读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
 全程遵守 `.claude/rules/test-case-writing.md` 用例编写规范。
 
 ---
@@ -46,7 +46,7 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 ### 步骤 S1: 解析源文件
 
 ```bash
-npx tsx .claude/scripts/history-convert.ts --path {{input_file}} --detect
+bun run .claude/scripts/history-convert.ts --path {{input_file}} --detect
 ```
 
 展示解析结果后，使用 AskUserQuestion 工具向用户确认：
@@ -89,13 +89,13 @@ npx tsx .claude/scripts/history-convert.ts --path {{input_file}} --detect
 
 ```bash
 # 生成标准化 Archive MD（输出到 tmp/ 子目录）
-npx tsx .claude/scripts/archive-gen.ts convert --input {{final_json}} --output {{archive_tmp_path}}
+bun run .claude/scripts/archive-gen.ts convert --input {{final_json}} --output {{archive_tmp_path}}
 
 # 从标准化 JSON 生成 XMind（输出到 tmp/ 子目录）
-npx tsx .claude/scripts/xmind-gen.ts --input {{final_json}} --output {{xmind_tmp_path}} --mode create
+bun run .claude/scripts/xmind-gen.ts --input {{final_json}} --output {{xmind_tmp_path}} --mode create
 
 # 通知
-npx tsx .claude/scripts/plugin-loader.ts notify --event archive-converted --data '{"fileCount":1,"caseCount":{{count}}}'
+bun run .claude/scripts/plugin-loader.ts notify --event archive-converted --data '{"fileCount":1,"caseCount":{{count}}}'
 ```
 
 ### 交互点 — 完成确认（使用 AskUserQuestion 工具）
@@ -131,7 +131,7 @@ npx tsx .claude/scripts/plugin-loader.ts notify --event archive-converted --data
 ### RS2: 解析 XMind 文件
 
 ```bash
-npx tsx .claude/scripts/history-convert.ts --path {{xmind_file}} --detect
+bun run .claude/scripts/history-convert.ts --path {{xmind_file}} --detect
 ```
 
 展示解析结果，并使用 AskUserQuestion 确认：
@@ -152,7 +152,7 @@ npx tsx .claude/scripts/history-convert.ts --path {{xmind_file}} --detect
 ### RS4: 执行转换
 
 ```bash
-npx tsx .claude/scripts/history-convert.ts --path {{xmind_file}}
+bun run .claude/scripts/history-convert.ts --path {{xmind_file}}
 ```
 
 转换完成后，将生成的 Archive MD 覆盖写入目标路径（或写入 tmp/ 供预览）。
@@ -175,7 +175,7 @@ npx tsx .claude/scripts/history-convert.ts --path {{xmind_file}}
 ### 1.1 断点续传检测
 
 ```bash
-npx tsx .claude/scripts/state.ts resume --prd-slug {{prd_slug}}
+bun run .claude/scripts/state.ts resume --prd-slug {{prd_slug}}
 ```
 
 若返回有效状态 → 跳转到断点所在节点继续执行。
@@ -183,7 +183,7 @@ npx tsx .claude/scripts/state.ts resume --prd-slug {{prd_slug}}
 ### 1.2 插件检测（蓝湖 URL 等）
 
 ```bash
-npx tsx .claude/scripts/plugin-loader.ts check --input "{{user_input}}"
+bun run .claude/scripts/plugin-loader.ts check --input "{{user_input}}"
 ```
 
 若匹配插件（如蓝湖 URL）→ 执行插件 fetch 命令获取 PRD 内容。
@@ -191,7 +191,7 @@ npx tsx .claude/scripts/plugin-loader.ts check --input "{{user_input}}"
 ### 1.3 初始化状态
 
 ```bash
-npx tsx .claude/scripts/state.ts init --prd {{prd_path}} --mode {{mode}}
+bun run .claude/scripts/state.ts init --prd {{prd_path}} --mode {{mode}}
 ```
 
 ### 交互点 A — 确认参数（使用 AskUserQuestion 工具）
@@ -214,7 +214,7 @@ npx tsx .claude/scripts/state.ts init --prd {{prd_path}} --mode {{mode}}
 ### 2.1 源码配置匹配
 
 ```bash
-npx tsx .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
+bun run .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
 ```
 
 ### 2.2 源码配置确认（交互点）
@@ -243,19 +243,19 @@ npx tsx .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
 用户确认后，若提供了新的映射关系，询问是否保存：
 
 ```bash
-npx tsx .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_json}}'
+bun run .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_json}}'
 ```
 
 ### 2.3 拉取源码
 
 ```bash
-npx tsx .claude/scripts/repo-sync.ts sync-profile --name "{{profile_name}}"
+bun run .claude/scripts/repo-sync.ts sync-profile --name "{{profile_name}}"
 ```
 
 若用户自行输入了仓库（非 profile），则逐个调用：
 
 ```bash
-npx tsx .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
+bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
 ```
 
 将返回的 commit SHA 写入 PRD frontmatter。
@@ -289,7 +289,7 @@ npx tsx .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
 ### 2.6 更新状态
 
 ```bash
-npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node transform --data '{{json}}'
+bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node transform --data '{{json}}'
 ```
 
 数据结构：
@@ -316,7 +316,7 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node transform --d
 ### 3.1 Frontmatter 规范化
 
 ```bash
-npx tsx .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
+bun run .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 ```
 
 ### 3.2 PRD 增强（AI 任务）
@@ -331,7 +331,7 @@ npx tsx .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 ### 3.3 更新状态
 
 ```bash
-npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node enhance --data '{{json}}'
+bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node enhance --data '{{json}}'
 ```
 
 ### 交互点 B（--quick 模式跳过，使用 AskUserQuestion 工具）
@@ -352,7 +352,7 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node enhance --dat
 ### 4.1 历史用例检索
 
 ```bash
-npx tsx .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir workspace/archive
+bun run .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir workspace/archive
 ```
 
 > 注：`workspace/archive` 中的 `workspace` 对应 `.env` 中 `WORKSPACE_DIR` 的值（默认 `workspace`）。
@@ -366,7 +366,7 @@ npx tsx .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir works
 ### 4.3 更新状态
 
 ```bash
-npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --data '{{json}}'
+bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --data '{{json}}'
 ```
 
 ### 交互点 C（--quick 模式跳过，使用 AskUserQuestion 工具）
@@ -423,7 +423,7 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 每个 Writer 完成后更新状态：
 
 ```bash
-npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node write --data '{{json}}'
+bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node write --data '{{json}}'
 ```
 
 ---
@@ -455,7 +455,7 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node write --data 
 ### 6.3 更新状态
 
 ```bash
-npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data '{{json}}'
+bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data '{{json}}'
 ```
 
 ### 交互点 D（使用 AskUserQuestion 工具）
@@ -484,19 +484,19 @@ npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data
 ### 7.1 生成 XMind
 
 ```bash
-npx tsx .claude/scripts/xmind-gen.ts --input {{final_json}} --output workspace/xmind/{{YYYYMM}}/{{需求名称}}.xmind --mode create
+bun run .claude/scripts/xmind-gen.ts --input {{final_json}} --output workspace/xmind/{{YYYYMM}}/{{需求名称}}.xmind --mode create
 ```
 
 ### 7.2 生成 Archive MD
 
 ```bash
-npx tsx .claude/scripts/archive-gen.ts convert --input {{final_json}} --output workspace/archive/{{YYYYMM}}/{{需求名称}}.md
+bun run .claude/scripts/archive-gen.ts convert --input {{final_json}} --output workspace/archive/{{YYYYMM}}/{{需求名称}}.md
 ```
 
 ### 7.3 发送通知
 
 ```bash
-npx tsx .claude/scripts/plugin-loader.ts notify --event case-generated --data '{{notify_data}}'
+bun run .claude/scripts/plugin-loader.ts notify --event case-generated --data '{{notify_data}}'
 ```
 
 notify_data 必需字段：`count`、`file`、`duration`。
@@ -504,7 +504,7 @@ notify_data 必需字段：`count`、`file`、`duration`。
 ### 7.4 清理状态
 
 ```bash
-npx tsx .claude/scripts/state.ts clean --prd-slug {{slug}}
+bun run .claude/scripts/state.ts clean --prd-slug {{slug}}
 ```
 
 ### 交互点 E — 完成确认（使用 AskUserQuestion 工具）
@@ -576,7 +576,7 @@ npx tsx .claude/scripts/state.ts clean --prd-slug {{slug}}
 2. 发送 `workflow-failed` 通知：
 
 ```bash
-npx tsx .claude/scripts/plugin-loader.ts notify --event workflow-failed --data '{"step":"{{node}}","reason":"{{error_msg}}"}'
+bun run .claude/scripts/plugin-loader.ts notify --event workflow-failed --data '{"step":"{{node}}","reason":"{{error_msg}}"}'
 ```
 
 3. 向用户报告错误，提供重试选项

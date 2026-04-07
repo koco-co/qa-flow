@@ -30,7 +30,7 @@ LANHU_COOKIE="lanhu_session_id=xxx; path=/; secure"
 
 ```bash
 # 从蓝湖 URL 导入需求
-npx tsx plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --output workspace/prds/{{YYYYMM}}/
+bun run plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --output workspace/prds/{{YYYYMM}}/
 
 # 或通过 qa-flow 命令
 生成测试用例 https://lanhuapp.com/web/#/item/...

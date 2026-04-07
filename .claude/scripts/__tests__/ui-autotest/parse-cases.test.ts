@@ -274,8 +274,8 @@ function runCli(args: string[]): {
 } {
   try {
     const stdout = execFileSync(
-      "npx",
-      ["tsx", ".claude/skills/ui-autotest/scripts/parse-cases.ts", ...args],
+      "bun",
+      ["run", ".claude/skills/ui-autotest/scripts/parse-cases.ts", ...args],
       { cwd: REPO_ROOT, encoding: "utf8" },
     );
     return { stdout, stderr: "", code: 0 };

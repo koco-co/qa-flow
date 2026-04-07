@@ -10,14 +10,22 @@ const TMP_DIR = join(tmpdir(), `qa-flow-prd-frontmatter-test-${process.pid}`);
 
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/prd-frontmatter.ts", ...args], {
-      cwd: REPO_ROOT,
-      encoding: "utf8",
-    });
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/prd-frontmatter.ts", ...args],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8",
+      },
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
-    return { stdout: e.stdout ?? "", stderr: e.stderr ?? "", code: e.status ?? 1 };
+    return {
+      stdout: e.stdout ?? "",
+      stderr: e.stderr ?? "",
+      code: e.status ?? 1,
+    };
   }
 }
 
@@ -53,10 +61,19 @@ describe("prd-frontmatter normalize --dry-run", () => {
     const content = `---\nsuite_name: ""\ncreate_at: ""\nstatus: ""\n---\n\n## 模块\n`;
     const filePath = writeMd("dry-run-test.md", content);
 
-    const { code, stdout } = run(["normalize", "--file", filePath, "--dry-run"]);
+    const { code, stdout } = run([
+      "normalize",
+      "--file",
+      filePath,
+      "--dry-run",
+    ]);
     assert.equal(code, 0);
 
-    const out = JSON.parse(stdout) as { path: string; changes: string[]; dry_run: boolean };
+    const out = JSON.parse(stdout) as {
+      path: string;
+      changes: string[];
+      dry_run: boolean;
+    };
     assert.equal(out.dry_run, true);
     assert.ok(out.changes.length > 0, "should report changes");
 
@@ -70,7 +87,12 @@ describe("prd-frontmatter normalize --dry-run", () => {
       "missing-create-at.md",
       `---\nsuite_name: "Test"\nstatus: "草稿"\n---\n\n## Body\n`,
     );
-    const { code, stdout } = run(["normalize", "--file", filePath, "--dry-run"]);
+    const { code, stdout } = run([
+      "normalize",
+      "--file",
+      filePath,
+      "--dry-run",
+    ]);
     assert.equal(code, 0);
     const out = JSON.parse(stdout) as { changes: string[] };
     assert.ok(
@@ -84,7 +106,12 @@ describe("prd-frontmatter normalize --dry-run", () => {
       "no-status.md",
       `---\nsuite_name: "Test"\ncreate_at: "2026-01-01"\n---\n\n## Body\n`,
     );
-    const { code, stdout } = run(["normalize", "--file", filePath, "--dry-run"]);
+    const { code, stdout } = run([
+      "normalize",
+      "--file",
+      filePath,
+      "--dry-run",
+    ]);
     assert.equal(code, 0);
     const out = JSON.parse(stdout) as { changes: string[] };
     assert.ok(
@@ -165,7 +192,11 @@ describe("prd-frontmatter normalize (actual write)", () => {
 
 describe("prd-frontmatter normalize errors", () => {
   it("exits with code 1 for non-existent file", () => {
-    const { code, stderr } = run(["normalize", "--file", "/tmp/non-existent-file-xyz.md"]);
+    const { code, stderr } = run([
+      "normalize",
+      "--file",
+      "/tmp/non-existent-file-xyz.md",
+    ]);
     assert.equal(code, 1);
     assert.match(stderr, /cannot read|Error/i);
   });

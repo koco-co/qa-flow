@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, before, describe, it } from "node:test";
@@ -12,10 +19,14 @@ const TMP_DIR = join(tmpdir(), `qa-flow-xmind-test-${process.pid}`);
 
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/xmind-gen.ts", ...args], {
-      cwd: REPO_ROOT,
-      encoding: "utf8",
-    });
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/xmind-gen.ts", ...args],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8",
+      },
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
@@ -71,7 +82,12 @@ describe("xmind-gen.ts create mode", () => {
 
   it("outputs valid JSON result to stdout", () => {
     const output = join(TMP_DIR, "test-stdout.xmind");
-    const { code, stdout, stderr } = run(["--input", FIXTURE, "--output", output]);
+    const { code, stdout, stderr } = run([
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const result = JSON.parse(stdout) as {
@@ -106,7 +122,10 @@ describe("xmind-gen.ts create mode", () => {
 describe("xmind-gen.ts validation", () => {
   it("exits with code 1 when meta.project_name is missing", () => {
     const badFixture = join(TMP_DIR, "missing-project-name.json");
-    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<string, unknown>;
+    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
     const meta = { ...(data.meta as Record<string, unknown>) };
     delete meta.project_name;
     const badData = { ...data, meta };
@@ -120,7 +139,10 @@ describe("xmind-gen.ts validation", () => {
 
   it("exits with code 1 when modules is empty", () => {
     const badFixture = join(TMP_DIR, "empty-modules.json");
-    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<string, unknown>;
+    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
     const badData = { ...data, modules: [] };
     writeFileSync(badFixture, JSON.stringify(badData));
 
@@ -132,7 +154,14 @@ describe("xmind-gen.ts validation", () => {
 
   it("exits with code 1 for invalid --mode value", () => {
     const output = join(TMP_DIR, "bad-mode.xmind");
-    const { code, stderr } = run(["--input", FIXTURE, "--output", output, "--mode", "invalid"]);
+    const { code, stderr } = run([
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+      "--mode",
+      "invalid",
+    ]);
     assert.equal(code, 1);
     assert.match(stderr, /mode/i);
   });
@@ -145,8 +174,14 @@ describe("xmind-gen.ts content.json validation", () => {
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const sheets = await readContentJson(output);
-    assert.ok(Array.isArray(sheets), "content.json should be an array of sheets");
-    assert.ok((sheets as unknown[]).length > 0, "content.json should have at least one sheet");
+    assert.ok(
+      Array.isArray(sheets),
+      "content.json should be an array of sheets",
+    );
+    assert.ok(
+      (sheets as unknown[]).length > 0,
+      "content.json should have at least one sheet",
+    );
   });
 
   it("content.json has correct hierarchy: root → L1 → L2 → L3 → cases", async () => {
@@ -167,7 +202,11 @@ describe("xmind-gen.ts content.json validation", () => {
     assert.ok(rootTopic, "rootTopic missing");
 
     // Root title
-    assert.equal(rootTopic.title, "数据资产v6.4.10迭代用例(#23)", "root title mismatch");
+    assert.equal(
+      rootTopic.title,
+      "数据资产v6.4.10迭代用例(#23)",
+      "root title mismatch",
+    );
 
     // L1: requirement_name with version prefix
     const l1Nodes = rootTopic.children?.attached ?? [];
@@ -207,16 +246,27 @@ describe("xmind-gen.ts content.json validation", () => {
     );
 
     // Precondition note present
-    assert.ok(firstCase.notes?.plain?.content, "precondition note missing on P0 case");
+    assert.ok(
+      firstCase.notes?.plain?.content,
+      "precondition note missing on P0 case",
+    );
     assert.match(firstCase.notes!.plain.content, /环境已部署/);
 
     // Step → expected hierarchy
     const stepNodes = firstCase.children?.attached ?? [];
     assert.ok(stepNodes.length > 0, "step nodes missing");
-    assert.equal(stepNodes[0].title, "进入【数据质量 → 质量问题台账】页面", "step title mismatch");
+    assert.equal(
+      stepNodes[0].title,
+      "进入【数据质量 → 质量问题台账】页面",
+      "step title mismatch",
+    );
     const expectedNodes = stepNodes[0].children?.attached ?? [];
     assert.ok(expectedNodes.length > 0, "expected result node missing");
-    assert.equal(expectedNodes[0].title, "页面正常加载", "expected result mismatch");
+    assert.equal(
+      expectedNodes[0].title,
+      "页面正常加载",
+      "expected result mismatch",
+    );
   });
 });
 
@@ -229,7 +279,10 @@ describe("xmind-gen.ts append mode", () => {
     assert.equal(first.code, 0);
 
     // Build a second input with different requirement
-    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<string, unknown>;
+    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
     const meta = {
       ...(data.meta as Record<string, unknown>),
       requirement_name: "数据质量规则",
@@ -238,7 +291,14 @@ describe("xmind-gen.ts append mode", () => {
     const secondFixture = join(TMP_DIR, "second-input.json");
     writeFileSync(secondFixture, JSON.stringify({ ...data, meta }));
 
-    const second = run(["--input", secondFixture, "--output", output, "--mode", "append"]);
+    const second = run([
+      "--input",
+      secondFixture,
+      "--output",
+      output,
+      "--mode",
+      "append",
+    ]);
     assert.equal(second.code, 0, `stderr: ${second.stderr}`);
 
     type SheetNode = { title?: string; children?: { attached?: SheetNode[] } };
@@ -257,14 +317,24 @@ describe("xmind-gen.ts append mode", () => {
     const output = join(TMP_DIR, "test-append-new.xmind");
     assert.ok(!existsSync(output));
 
-    const { code, stderr } = run(["--input", FIXTURE, "--output", output, "--mode", "append"]);
+    const { code, stderr } = run([
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+      "--mode",
+      "append",
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
     assert.ok(existsSync(output), "file should have been created");
   });
 });
 
 describe("xmind-gen.ts <br> tag sanitization", () => {
-  const BR_FIXTURE = join(import.meta.dirname, "fixtures/sample-cases-with-br.json");
+  const BR_FIXTURE = join(
+    import.meta.dirname,
+    "fixtures/sample-cases-with-br.json",
+  );
 
   it("converts <br> tags to newlines in step, expected, and preconditions", async () => {
     const output = join(TMP_DIR, "test-br-sanitize.xmind");
@@ -344,7 +414,10 @@ describe("xmind-gen.ts replace mode", () => {
     assert.equal(first.code, 0);
 
     // Build a replacement with same requirement_name but different version
-    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<string, unknown>;
+    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
     const meta = {
       ...(data.meta as Record<string, unknown>),
       version: "v6.4.99",
@@ -352,7 +425,14 @@ describe("xmind-gen.ts replace mode", () => {
     const replaceFixture = join(TMP_DIR, "replace-input.json");
     writeFileSync(replaceFixture, JSON.stringify({ ...data, meta }));
 
-    const second = run(["--input", replaceFixture, "--output", output, "--mode", "replace"]);
+    const second = run([
+      "--input",
+      replaceFixture,
+      "--output",
+      output,
+      "--mode",
+      "replace",
+    ]);
     assert.equal(second.code, 0, `stderr: ${second.stderr}`);
 
     type SheetNode = { title?: string; children?: { attached?: SheetNode[] } };
@@ -363,7 +443,14 @@ describe("xmind-gen.ts replace mode", () => {
 
     // The original L1 should be gone, replaced by the new one
     const titles = attached.map((n) => n.title);
-    assert.ok(titles.includes("质量问题台账"), "L1 should be present (replaced with new version)");
-    assert.equal(attached.length, 1, "Should still have exactly 1 L1 node after replace");
+    assert.ok(
+      titles.includes("质量问题台账"),
+      "L1 should be present (replaced with new version)",
+    );
+    assert.equal(
+      attached.length,
+      1,
+      "Should still have exactly 1 L1 node after replace",
+    );
   });
 });

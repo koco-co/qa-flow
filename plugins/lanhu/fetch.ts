@@ -1,4 +1,4 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * plugins/lanhu/fetch.ts — 蓝湖 PRD 内容 + 截图抓取器 (bridge adapter)
  *
@@ -6,9 +6,9 @@
  * then downloads images and produces per-requirement PRD files.
  *
  * Usage:
- *   npx tsx plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --base-dir workspace/prds
- *   npx tsx plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --pages "15525,15529"
- *   npx tsx plugins/lanhu/fetch.ts --help
+ *   bun run plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --base-dir workspace/prds
+ *   bun run plugins/lanhu/fetch.ts --url "https://lanhuapp.com/web/#/item/..." --pages "15525,15529"
+ *   bun run plugins/lanhu/fetch.ts --help
  */
 
 import { execSync } from "node:child_process";
