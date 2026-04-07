@@ -21,7 +21,7 @@ function runConfig(extraEnv: Record<string, string> = {}): {
   code: number;
 } {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/config.ts"], {
+    const stdout = execFileSync("bun", ["run", ".claude/scripts/config.ts"], {
       cwd: "/Users/poco/Documents/DTStack/qa-flow",
       encoding: "utf8",
       env: {
@@ -59,7 +59,10 @@ describe("config.ts — output structure", () => {
   it("outputs valid JSON to stdout", () => {
     const { stdout, code } = runConfig();
     assert.equal(code, 0, "should exit 0");
-    assert.doesNotThrow(() => JSON.parse(stdout), "stdout should be valid JSON");
+    assert.doesNotThrow(
+      () => JSON.parse(stdout),
+      "stdout should be valid JSON",
+    );
   });
 
   it("output contains required top-level keys", () => {
@@ -77,7 +80,7 @@ describe("config.ts — output structure", () => {
       if (k !== "WORKSPACE_DIR" && v !== undefined) spawnEnv[k] = v;
     }
     try {
-      const stdout = execFileSync("npx", ["tsx", ".claude/scripts/config.ts"], {
+      const stdout = execFileSync("bun", ["run", ".claude/scripts/config.ts"], {
         cwd: "/Users/poco/Documents/DTStack/qa-flow",
         encoding: "utf8",
         env: spawnEnv,
@@ -138,7 +141,9 @@ describe("config.ts — plugins field", () => {
   it("plugin without env_required is always active", () => {
     // The real plugins/ dir contains at least one plugin without env guard
     const { stdout } = runConfig();
-    const cfg = JSON.parse(stdout) as { plugins: Record<string, { active: boolean }> };
+    const cfg = JSON.parse(stdout) as {
+      plugins: Record<string, { active: boolean }>;
+    };
     const entries = Object.values(cfg.plugins);
     // Just verify structure is correct (active field is boolean)
     for (const entry of entries) {
@@ -149,11 +154,22 @@ describe("config.ts — plugins field", () => {
   it("plugin entry contains description and commands fields", () => {
     const { stdout } = runConfig();
     const cfg = JSON.parse(stdout) as {
-      plugins: Record<string, { description: string; commands: Record<string, string> }>;
+      plugins: Record<
+        string,
+        { description: string; commands: Record<string, string> }
+      >;
     };
     for (const entry of Object.values(cfg.plugins)) {
-      assert.equal(typeof entry.description, "string", "description should be a string");
-      assert.equal(typeof entry.commands, "object", "commands should be an object");
+      assert.equal(
+        typeof entry.description,
+        "string",
+        "description should be a string",
+      );
+      assert.equal(
+        typeof entry.commands,
+        "object",
+        "commands should be an object",
+      );
     }
   });
 });
@@ -179,14 +195,16 @@ describe("config.ts — plugin active detection logic", () => {
 
   it("plugin with env_required_any at least one satisfied → active: true", () => {
     const { stdout } = runConfig();
-    const cfg = JSON.parse(stdout) as { plugins: Record<string, { active: boolean }> };
+    const cfg = JSON.parse(stdout) as {
+      plugins: Record<string, { active: boolean }>;
+    };
     // Verify structure is valid
     assert.ok(typeof cfg.plugins === "object");
   });
 
   it("--help flag exits successfully", () => {
     try {
-      execFileSync("npx", ["tsx", ".claude/scripts/config.ts", "--help"], {
+      execFileSync("bun", ["run", ".claude/scripts/config.ts", "--help"], {
         cwd: "/Users/poco/Documents/DTStack/qa-flow",
         encoding: "utf8",
       });

@@ -19,14 +19,22 @@ function isSipsAvailable(): boolean {
 
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/image-compress.ts", ...args], {
-      cwd: REPO_ROOT,
-      encoding: "utf8",
-    });
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/image-compress.ts", ...args],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8",
+      },
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
-    return { stdout: e.stdout ?? "", stderr: e.stderr ?? "", code: e.status ?? 1 };
+    return {
+      stdout: e.stdout ?? "",
+      stderr: e.stderr ?? "",
+      code: e.status ?? 1,
+    };
   }
 }
 
@@ -83,7 +91,11 @@ describe("image-compress with empty dir", () => {
 
     const { code, stdout } = run(["--dir", emptyDir]);
     assert.equal(code, 0);
-    const out = JSON.parse(stdout) as { processed: number; skipped: number; files: unknown[] };
+    const out = JSON.parse(stdout) as {
+      processed: number;
+      skipped: number;
+      files: unknown[];
+    };
     assert.equal(out.processed, 0);
     assert.equal(out.skipped, 0);
     assert.equal(out.files.length, 0);

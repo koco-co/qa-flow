@@ -103,7 +103,7 @@ cd qa-flow
 bun install
 
 # 3. Install Playwright skill (required for UI automation)
-npx skills add playwright-cli
+bunx skills add playwright-cli
 
 # 4. Create environment config
 cp .env.example .env
@@ -121,7 +121,7 @@ A 5-step interactive wizard will guide you through:
 
 | Step | Description                                                              |
 | ---- | ------------------------------------------------------------------------ |
-| 1    | Environment detection — Node.js, npm, tsx availability                   |
+| 1    | Environment detection — Node.js, Bun, and core script availability       |
 | 2    | Workspace creation — `workspace/` subdirectory structure                 |
 | 3    | Source repo configuration — Clone git repos into `.repos/` (optional)    |
 | 4    | Plugin configuration — Check for plugin credentials in `.env` (optional) |
@@ -307,7 +307,7 @@ Transforms Archive MD test cases into Playwright TypeScript scripts, executes by
 | 3    | **Session Prep**        | Check/create login session via `session-login.ts`                  |
 | 4    | **Script Generation**   | Up to 5 parallel Sub-Agents generate `.ts` code blocks             |
 | 5    | **Merge Scripts**       | `merge-specs.ts` assembles `smoke.spec.ts` and `full.spec.ts`      |
-| 6    | **Execute Tests**       | `npx playwright test` with HTML reporter                           |
+| 6    | **Execute Tests**       | `bunx playwright test` with HTML reporter                          |
 | 7    | **Process Results**     | Failed cases trigger Bug Reporter Sub-Agents for report generation |
 | 8    | **Send Notifications**  | Plugin sends pass/fail summary via IM                              |
 
@@ -361,7 +361,7 @@ Create a `plugin.json` under `plugins/<plugin-name>/`:
     "test-case-gen:init": "input-adapter"
   },
   "commands": {
-    "fetch": "npx tsx plugins/my-plugin/fetch.ts --url {{url}} --output {{output_dir}}"
+    "fetch": "bun run plugins/my-plugin/fetch.ts --url {{url}} --output {{output_dir}}"
   },
   "url_patterns": ["example.com"]
 }
@@ -432,7 +432,7 @@ qa-flow/
 
 ## Script CLI Reference
 
-All scripts are located at `.claude/scripts/`, executed with `npx tsx`:
+All scripts are located at `.claude/scripts/`, executed with `bun run`:
 
 | Script               | Commands                                       | Description                                          |
 | -------------------- | ---------------------------------------------- | ---------------------------------------------------- |
@@ -509,7 +509,7 @@ bun run check
 # 4. Auto-fix style issues
 bun run check:fix
 
-# 5. Run tests
+# 5. Run core script tests
 bun run test
 
 # 6. Submit PR
@@ -526,14 +526,17 @@ Types: feat / fix / refactor / docs / test / chore / perf / ci
 ### Testing
 
 ```bash
-# Run all unit tests
+# Run core script unit tests
 bun run test
 
 # Watch mode
 bun run test:watch
+
+# Run plugin tests as needed
+bun test ./plugins/zentao/__tests__/fetch.test.ts
 ```
 
-Test files are located at `.claude/scripts/__tests__/` with 80%+ coverage target.
+Core script tests live in `.claude/scripts/__tests__/`; plugin tests live in `plugins/*/__tests__/`, with an 80%+ coverage target.
 
 ---
 

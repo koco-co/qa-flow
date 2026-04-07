@@ -149,6 +149,8 @@
 
 若某字段信息不足，填 `null`，不要留空字符串占位。
 
+**符号约束**：所有 JSON 字段值（title、suggestion、decision_basis、head_intent、incoming_intent 等）必须使用纯文本，不得包含任何 emoji 符号（U+1Fxxx 范围如 🐛📡🚀 等绝对禁止；U+26xx 范围如 ⚠️✅❌ 仅允许在 HTML 模板固定位置使用，不允许出现在 AI 填充的数据字段中）。
+
 ---
 
 ## 注意事项

@@ -7,7 +7,7 @@
     "code-analysis:init": "input-adapter"
   },
   "commands": {
-    "fetch": "npx tsx plugins/zentao/fetch.ts --bug-id {{bug_id}} --output {{output_dir}}"
+    "fetch": "bun run plugins/zentao/fetch.ts --bug-id {{bug_id}} --output {{output_dir}}"
   },
   "url_patterns": ["zentao", "zenpms"]
 }

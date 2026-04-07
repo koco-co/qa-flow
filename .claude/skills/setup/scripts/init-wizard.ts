@@ -1,4 +1,4 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * init-wizard.ts — qa-flow v2.0 setup skill
  *
@@ -221,7 +221,7 @@ function runScan(): ScanResult {
     issues.push(`Node.js ${nodeVersion} is below the required v22`);
   }
   if (!depsInstalled) {
-    issues.push("node_modules/ not found — run: npm install");
+    issues.push("node_modules/ not found — run: bun install");
   }
   if (!workspaceExists) {
     issues.push("workspace/ directory not found — run: /using-qa-flow init");
@@ -264,7 +264,7 @@ function runVerify(): VerifyResult {
       status: scan.deps_installed ? "pass" : "fail",
       detail: scan.deps_installed
         ? "node_modules/ 存在"
-        : "node_modules/ 不存在，请运行 npm install",
+        : "node_modules/ 不存在，请运行 bun install",
     },
     {
       name: "工作区",

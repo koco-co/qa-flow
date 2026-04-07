@@ -1,10 +1,10 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * history-convert.ts — Convert historical CSV/XMind files to Archive Markdown.
  *
  * Usage:
- *   npx tsx .claude/scripts/history-convert.ts --path <file-or-dir> [--module <key>] [--detect] [--force]
- *   npx tsx .claude/scripts/history-convert.ts --help
+ *   bun run .claude/scripts/history-convert.ts --path <file-or-dir> [--module <key>] [--detect] [--force] [--no-split]
+ *   bun run .claude/scripts/history-convert.ts --help
  */
 
 import {
@@ -911,7 +911,94 @@ function renderCase(c: ParsedCase): string[] {
   return lines;
 }
 
-/** Render a ParsedL1 to complete Archive Markdown */
+/**
+ * Merge all L1s into a single Archive Markdown (--no-split mode).
+ * L1 titles become H2 headings; L2→H3, L3→H4, sub-groups/cases shift accordingly.
+ */
+function allL1sToMarkdown(
+  l1s: ParsedL1[],
+  suiteName: string,
+  prdVersion?: string,
+): string {
+  const moduleNames: string[] = [];
+  const pageNames: string[] = [];
+  const subGroupNames: string[] = [];
+  const caseTitles: string[] = [];
+  let totalCases = 0;
+
+  for (const l1 of l1s) {
+    moduleNames.push(l1.title);
+    totalCases += l1.totalCases;
+    for (const mod of l1.modules) {
+      moduleNames.push(mod.name);
+      for (const page of mod.pages) {
+        pageNames.push(page.name);
+        for (const c of page.cases) caseTitles.push(c.title);
+        for (const sg of page.subGroups) {
+          subGroupNames.push(sg.name);
+          for (const c of sg.cases) caseTitles.push(c.title);
+        }
+      }
+    }
+  }
+
+  const tags = inferTags({
+    suiteName,
+    modules: moduleNames,
+    pages: pageNames,
+    subGroups: subGroupNames,
+    caseTitles,
+  });
+
+  const fm: Record<string, string | number | boolean | string[]> = {
+    suite_name: suiteName,
+    description: `${suiteName}用例归档`,
+    tags,
+    prd_version: prdVersion ?? "",
+    dev_version: extractDevVersions(l1s.map((l) => l.title)),
+    create_at: todayString(),
+    status: "草稿",
+    origin: "xmind",
+    case_count: totalCases,
+  };
+
+  const bodyParts: string[] = [];
+
+  for (const l1 of l1s) {
+    // L1 → H2
+    bodyParts.push(`## ${l1.title}`);
+    bodyParts.push("");
+
+    for (const mod of l1.modules) {
+      // L2 → H3
+      bodyParts.push(`### ${mod.name}`);
+      bodyParts.push("");
+
+      for (const page of mod.pages) {
+        // L3 → H4
+        bodyParts.push(`#### ${page.name}`);
+        bodyParts.push("");
+
+        for (const c of page.cases) {
+          bodyParts.push(...renderCase(c));
+        }
+
+        for (const sg of page.subGroups) {
+          // Sub-groups rendered as bold separator under H4
+          bodyParts.push(`**${sg.name}**`);
+          bodyParts.push("");
+          for (const c of sg.cases) {
+            bodyParts.push(...renderCase(c));
+          }
+        }
+      }
+    }
+  }
+
+  return buildMarkdown(fm, bodyParts.join("\n"));
+}
+
+/** Render a single parsed case to Markdown lines */
 function l1ToMarkdown(l1: ParsedL1, prdVersion?: string): string {
   // Collect names for tag inference
   const moduleNames: string[] = [];
@@ -1046,6 +1133,7 @@ async function convertFile(
   inputPath: string,
   force: boolean,
   prdVersion?: string,
+  noSplit?: boolean,
 ): Promise<FileConvertResult[]> {
   const ext = extname(inputPath).toLowerCase();
   const outDir = computeOutputDir();
@@ -1119,6 +1207,37 @@ async function convertFile(
 
       const results: FileConvertResult[] = [];
 
+      if (noSplit) {
+        // Merge all L1s into a single file
+        const rawName = basename(inputPath, extname(inputPath))
+          .replace(/[\s_]+\(\d+\)_\d{8}_\d{6}$/, "")
+          .trim();
+        const suiteName = rawName || "未命名";
+        const fileName = `${suiteName}.md`;
+        const outputPath = join(outDir, fileName);
+
+        if (existsSync(outputPath) && !force) {
+          results.push({
+            input: inputPath,
+            output: outputPath,
+            status: "skipped",
+            reason: `output exists (${fileName}), use --force to overwrite`,
+          });
+        } else {
+          const totalCases = l1s.reduce((sum, l) => sum + l.totalCases, 0);
+          const content = allL1sToMarkdown(l1s, suiteName, prdVersion);
+          writeFileSync(outputPath, content, "utf8");
+          results.push({
+            input: inputPath,
+            output: outputPath,
+            status: "converted",
+            caseCount: totalCases,
+          });
+        }
+
+        return results;
+      }
+
       for (const l1 of l1s) {
         const fileName = `${sanitizeFilename(l1.title)}.md`;
         const outputPath = join(outDir, fileName);
@@ -1176,6 +1295,7 @@ program
   .option("--version <ver>", "PRD version (e.g. v6.4.8)")
   .option("--detect", "Scan only, report what would be converted (no write)")
   .option("--force", "Overwrite existing archive files")
+  .option("--no-split", "Merge all L1 nodes into a single archive file instead of splitting by L1")
   .action(
     async (opts: {
       path: string;
@@ -1183,10 +1303,12 @@ program
       version?: string;
       detect?: boolean;
       force?: boolean;
+      split?: boolean;
     }) => {
       const inputPath = resolve(opts.path);
       const detect = opts.detect === true;
       const force = opts.force === true;
+      const noSplit = opts.split === false;
       const prdVersion = opts.version;
 
       // Collect files to process
@@ -1215,7 +1337,7 @@ program
 
       const results: FileConvertResult[] = [];
       for (const f of files) {
-        const fileResults = await convertFile(f, force, prdVersion);
+        const fileResults = await convertFile(f, force, prdVersion, noSplit);
         results.push(...fileResults);
       }
 

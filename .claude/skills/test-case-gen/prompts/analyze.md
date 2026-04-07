@@ -24,7 +24,7 @@
 根据增强后 PRD 的模块名、功能关键词，检索历史归档用例：
 
 ```bash
-npx tsx .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir workspace/archive
+bun run .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir workspace/archive
 ```
 
 ### 1.2 分析历史覆盖

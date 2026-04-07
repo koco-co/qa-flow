@@ -1,15 +1,15 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * state.ts — Breakpoint resume state management CLI.
  *
  * Node lifecycle: init → transform → enhance → analyze → write → review → output
  *
  * Usage:
- *   npx tsx .claude/scripts/state.ts init --prd workspace/prds/202604/xxx.md --mode normal
- *   npx tsx .claude/scripts/state.ts update --prd-slug xxx --node transform --data '{"confidence":0.85}'
- *   npx tsx .claude/scripts/state.ts resume --prd-slug xxx
- *   npx tsx .claude/scripts/state.ts clean --prd-slug xxx
- *   npx tsx .claude/scripts/state.ts --help
+ *   bun run .claude/scripts/state.ts init --prd workspace/prds/202604/xxx.md --mode normal
+ *   bun run .claude/scripts/state.ts update --prd-slug xxx --node transform --data '{"confidence":0.85}'
+ *   bun run .claude/scripts/state.ts resume --prd-slug xxx
+ *   bun run .claude/scripts/state.ts clean --prd-slug xxx
+ *   bun run .claude/scripts/state.ts --help
  */
 
 import {

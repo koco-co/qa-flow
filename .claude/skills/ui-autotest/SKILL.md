@@ -10,7 +10,7 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 
 本 Skill 依赖外部 `playwright-cli` skill（单独安装）。执行前检查是否已安装：若未安装，提示用户执行 `/playwright-cli` 安装后再继续。
 
-读取项目配置：执行 `npx tsx .claude/scripts/config.ts`（从 `.env` 读取模块路径配置）。
+读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块路径配置）。
 
 ---
 
@@ -34,7 +34,7 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 **1.2 解析用例**
 
 ```bash
-npx tsx .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
+bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 ```
 
 解析输出为任务队列 JSON，格式：
@@ -87,7 +87,7 @@ npx tsx .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 **3.1 检查已有 session**
 
 ```bash
-npx tsx .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --output .auth/session.json
+bun run .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --output .auth/session.json
 ```
 
 若返回 `{ "valid": true }`，直接复用，跳过登录。
@@ -136,18 +136,75 @@ import { test, expect } from "@playwright/test";
 
 ---
 
-## 步骤 5：合并脚本
+## 步骤 5：逐条自测与修复（强制，不可跳过）
+
+> **⚠️ 强制规则：每条脚本必须单独执行验证通过后才能进入合并阶段。仅编译通过不代表验证通过，未经实际执行验证的脚本禁止交付。**
+
+**5.1 逐条执行验证**
+
+对 `workspace/.temp/ui-blocks/` 中的每个代码块，逐条执行 Playwright 测试：
 
 ```bash
-npx tsx .claude/skills/ui-autotest/scripts/merge-specs.ts \
+bunx playwright test workspace/.temp/ui-blocks/{{id}}.ts --project=chromium --timeout=30000
+```
+
+**5.2 失败处理（最多重试 3 轮）**
+
+脚本执行失败时，**不生成 bug 报告**，而是进入自修复循环：
+
+1. **分析失败原因**：读取 Playwright 错误信息（超时、元素不存在、断言失败等）
+2. **获取实际 DOM**：使用 playwright-cli 的 snapshot 工具获取当前页面的实际 DOM 结构
+3. **参考源码校对**：结合 `workspace/.repos/` 下的前端源码，校对：
+   - 实际路由路径（检查 `router/` 或 `routes/` 配置）
+   - 实际菜单/侧边栏导航方式（检查 layout 组件）
+   - 按钮文本、表单 label（检查对应组件的 JSX/template）
+   - API 接口路径（检查 service 层调用）
+4. **修复脚本**：根据实际 DOM 和源码修正选择器、导航方式、等待策略
+5. **重新执行验证**：修复后再次运行，直到通过或达到 3 次重试上限
+
+**5.3 反向优化 MD 用例**
+
+在自测修复过程中，若发现 MD 用例描述与实际系统行为不一致（如导航路径错误、按钮名称不对、步骤缺失），**必须同步更新原 Archive MD 文件**：
+
+- 修正不准确的步骤描述（如「进入【xxx】页面」中的导航路径）
+- 补充缺失的关键步骤（如需要先点击侧边栏展开子菜单）
+- 修正预期结果中的不准确描述
+- 在修改的步骤后追加注释：`<!-- 由 ui-autotest 自测校正 -->`
+
+**5.4 3 次重试仍失败的处理**
+
+若某条用例经过 3 轮修复仍无法通过：
+
+1. 记录为「环境/平台问题」，标记失败原因
+2. 将该用例从待合并列表中移除（不影响其他用例）
+3. 在最终报告中单独列出，注明失败原因和已尝试的修复措施
+4. **不自动生成 Bug 报告**（可能是环境问题而非真实 Bug），改为向用户报告：
+
+```
+以下用例经过 3 轮自测修复仍未通过，可能为环境或平台问题：
+
+- {{title}}：{{最后一次的错误摘要}}
+  已尝试：{{修复措施列表}}
+
+建议：手动检查测试环境后重试，或调整用例预期。
+```
+
+---
+
+## 步骤 6：合并脚本
+
+> 仅合并步骤 5 中**验证通过**的脚本。
+
+```bash
+bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
   --input workspace/.temp/ui-blocks/ \
   --output tests/e2e/{{YYYYMM}}/{{suite_name}}/
 ```
 
 生成：
 
-- `smoke.spec.ts`：仅含 P0 用例
-- `full.spec.ts`：含所有优先级用例
+- `smoke.spec.ts`：仅含 P0 用例（已验证通过）
+- `full.spec.ts`：含所有优先级用例（已验证通过）
 
 输出结果：
 
@@ -155,25 +212,28 @@ npx tsx .claude/skills/ui-autotest/scripts/merge-specs.ts \
 {
   "smoke_spec": "tests/e2e/{{YYYYMM}}/{{suite_name}}/smoke.spec.ts",
   "full_spec": "tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts",
-  "case_count": { "smoke": 5, "full": 20 }
+  "case_count": { "smoke": 5, "full": 20 },
+  "skipped": ["{{跳过的用例 id 列表}}"]
 }
 ```
 
 ---
 
-## 步骤 6：执行测试
+## 步骤 7：执行测试（全量回归）
+
+> 此步骤为合并后的全量回归验证，因步骤 5 已逐条验证通过，此处预期全部通过。
 
 根据执行范围选择 spec 文件：
 
 ```bash
 # 冒烟测试
-npx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/smoke.spec.ts \
+bunx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/smoke.spec.ts \
   --project=chromium \
   --reporter=html \
   --output-folder=workspace/reports/playwright/{{YYYYMMDD}}/
 
 # 完整测试
-npx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
+bunx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
   --project=chromium \
   --reporter=html \
   --output-folder=workspace/reports/playwright/{{YYYYMMDD}}/
@@ -183,14 +243,14 @@ npx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
 
 ---
 
-## 步骤 7：处理结果
+## 步骤 8：处理结果
 
 **输出模板中的变量说明：**
 
-- `{{full_spec_path}}`：步骤 5 生成的 `full.spec.ts` 完整路径（如 `tests/e2e/202604/登录功能/full.spec.ts`）
+- `{{full_spec_path}}`：步骤 6 生成的 `full.spec.ts` 完整路径（如 `tests/e2e/202604/登录功能/full.spec.ts`）
 - `{{YYYYMMDD}}`：当天日期（如 `20260407`）
 
-**7.1 全部通过**
+**8.1 全部通过**
 
 ```
 ✅ {{需求名称}} UI 自动化测试完成
@@ -200,10 +260,10 @@ npx playwright test tests/e2e/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
 报告：workspace/reports/playwright/{{YYYYMMDD}}/index.html
 
 验收命令（可直接复制运行）：
-npx playwright test {{full_spec_path}} --project=chromium --reporter=html --output-folder=workspace/reports/playwright/{{YYYYMMDD}}/
+bunx playwright test {{full_spec_path}} --project=chromium --reporter=html --output-folder=workspace/reports/playwright/{{YYYYMMDD}}/
 ```
 
-**7.2 存在失败**
+**8.2 存在失败**
 
 为每个失败的用例触发 bug-reporter sub-agent（读取 `${CLAUDE_SKILL_DIR}/prompts/bug-reporter.md`），输入：
 
@@ -229,15 +289,15 @@ Bug 报告输出至：`workspace/reports/bugs/{{YYYYMMDD}}/ui-autotest-{{suite_n
 Bug 报告：workspace/reports/bugs/{{YYYYMMDD}}/ui-autotest-{{suite_name}}.html
 
 验收命令（可直接复制运行）：
-npx playwright test {{full_spec_path}} --project=chromium --reporter=html --output-folder=workspace/reports/playwright/{{YYYYMMDD}}/
+bunx playwright test {{full_spec_path}} --project=chromium --reporter=html --output-folder=workspace/reports/playwright/{{YYYYMMDD}}/
 ```
 
 ---
 
-## 步骤 8：发送通知
+## 步骤 9：发送通知
 
 ```bash
-npx tsx .claude/scripts/plugin-loader.ts notify \
+bun run .claude/scripts/plugin-loader.ts notify \
   --event ui-test-completed \
   --data '{
     "passed": {{passed}},
@@ -258,7 +318,7 @@ npx tsx .claude/scripts/plugin-loader.ts notify \
 2. 发送 `workflow-failed` 通知：
 
 ```bash
-npx tsx .claude/scripts/plugin-loader.ts notify \
+bun run .claude/scripts/plugin-loader.ts notify \
   --event workflow-failed \
   --data '{"step":"{{step_name}}","reason":"{{error_msg}}"}'
 ```

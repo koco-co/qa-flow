@@ -1,12 +1,12 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * archive-gen.ts — Converts intermediate JSON test cases to Archive Markdown files,
  * and searches existing archives.
  *
  * Usage:
- *   npx tsx .claude/scripts/archive-gen.ts convert --input <json> --output <path> [--template templates/archive.md.hbs]
- *   npx tsx .claude/scripts/archive-gen.ts search --query <keywords> [--dir workspace/archive] [--limit 20]
- *   npx tsx .claude/scripts/archive-gen.ts --help
+ *   bun run .claude/scripts/archive-gen.ts convert --input <json> --output <path> [--template templates/archive.md.hbs]
+ *   bun run .claude/scripts/archive-gen.ts search --query <keywords> [--dir workspace/archive] [--limit 20]
+ *   bun run .claude/scripts/archive-gen.ts --help
  */
 
 import {

@@ -1,9 +1,9 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * merge-specs.ts — 合并 Playwright 代码块为 spec 文件
  *
  * 用法：
- *   npx tsx .claude/skills/ui-autotest/scripts/merge-specs.ts \
+ *   bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
  *     --input workspace/.temp/ui-blocks/ \
  *     --output tests/e2e/202604/xxx/
  */

@@ -142,7 +142,7 @@ transform 节点开始前，主 agent 已完成以下准备（你无需重复执
 ## 步骤 3：历史用例检索
 
 ```bash
-npx tsx .claude/scripts/archive-gen.ts search --query "{{模块关键词}}" --dir workspace/archive
+bun run .claude/scripts/archive-gen.ts search --query "{{模块关键词}}" --dir workspace/archive
 ```
 
 从返回的 `SearchResult[]` 中：
@@ -414,7 +414,7 @@ Then insert the new transform node section after the `---` following init:
 ### 2.1 源码配置匹配
 
 ```bash
-npx tsx .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
+bun run .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
 ```
 
 ### 2.2 源码配置确认（交互点）
@@ -443,19 +443,19 @@ npx tsx .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
 用户确认后，若用户提供了新的映射关系，询问是否保存：
 
 ```bash
-npx tsx .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_json}}'
+bun run .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_json}}'
 ```
 
 ### 2.3 拉取源码
 
 ```bash
-npx tsx .claude/scripts/repo-sync.ts sync-profile --name "{{profile_name}}"
+bun run .claude/scripts/repo-sync.ts sync-profile --name "{{profile_name}}"
 ```
 
 若用户自行输入了仓库（非 profile），则逐个调用：
 
 ```bash
-npx tsx .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
+bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
 ```
 
 将返回的 commit SHA 写入 PRD frontmatter。
@@ -484,7 +484,7 @@ npx tsx .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
 ### 2.6 更新状态
 
 ```bash
-npx tsx .claude/scripts/state.ts update --prd-slug {{slug}} --node transform --data '{{json}}'
+bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node transform --data '{{json}}'
 ```
 
 数据结构：

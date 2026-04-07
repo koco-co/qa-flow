@@ -47,7 +47,12 @@ describe("extractBugIdFromUrl", () => {
   });
 
   it("returns null for URL without bug-view pattern", () => {
-    assert.equal(extractBugIdFromUrl("http://zenpms.dtstack.cn/zentao/story-view-100.html"), null);
+    assert.equal(
+      extractBugIdFromUrl(
+        "http://zenpms.dtstack.cn/zentao/story-view-100.html",
+      ),
+      null,
+    );
   });
 
   it("returns null for empty string", () => {
@@ -63,7 +68,10 @@ describe("extractBugIdFromUrl", () => {
   });
 
   it("handles large bug ID numbers", () => {
-    assert.equal(extractBugIdFromUrl("/zentao/bug-view-9999999.html"), 9_999_999);
+    assert.equal(
+      extractBugIdFromUrl("/zentao/bug-view-9999999.html"),
+      9_999_999,
+    );
   });
 });
 
@@ -72,7 +80,10 @@ describe("extractBugIdFromUrl", () => {
 describe("detectFixBranch", () => {
   it("detects hotfix_ pattern in resolvedBuild", () => {
     const branch = detectFixBranch(["hotfix_6.4.10_138845"]);
-    assert.ok(branch?.startsWith("hotfix_"), `expected hotfix_, got: ${branch}`);
+    assert.ok(
+      branch?.startsWith("hotfix_"),
+      `expected hotfix_, got: ${branch}`,
+    );
     assert.equal(branch, "hotfix_6.4.10_138845");
   });
 
@@ -82,12 +93,22 @@ describe("detectFixBranch", () => {
   });
 
   it("detects hotfix in title string", () => {
-    const branch = detectFixBranch([null, null, "修复分支: hotfix_6.4.11_bug123"]);
-    assert.ok(branch?.includes("hotfix_"), `expected hotfix match, got: ${branch}`);
+    const branch = detectFixBranch([
+      null,
+      null,
+      "修复分支: hotfix_6.4.11_bug123",
+    ]);
+    assert.ok(
+      branch?.includes("hotfix_"),
+      `expected hotfix match, got: ${branch}`,
+    );
   });
 
   it("returns null when no branch info present", () => {
-    assert.equal(detectFixBranch(["已修复", "已验证", "fix in next release"]), null);
+    assert.equal(
+      detectFixBranch(["已修复", "已验证", "fix in next release"]),
+      null,
+    );
   });
 
   it("returns null for empty array", () => {
@@ -104,7 +125,10 @@ describe("detectFixBranch", () => {
   });
 
   it("prefers first hotfix match found across candidates", () => {
-    const branch = detectFixBranch(["hotfix_6.4.0_first", "hotfix_6.4.1_second"]);
+    const branch = detectFixBranch([
+      "hotfix_6.4.0_first",
+      "hotfix_6.4.1_second",
+    ]);
     assert.equal(branch, "hotfix_6.4.0_first");
   });
 });
@@ -116,7 +140,7 @@ describe("CLI: --help", () => {
     let stdout = "";
     let exitCode = 0;
     try {
-      stdout = execFileSync("npx", ["tsx", FETCH_TS, "--help"], {
+      stdout = execFileSync("bun", ["run", FETCH_TS, "--help"], {
         encoding: "utf8",
         cwd: PROJECT_ROOT,
         env: { ...process.env },
@@ -128,7 +152,9 @@ describe("CLI: --help", () => {
     }
     assert.equal(exitCode, 0, "should exit with code 0");
     assert.ok(
-      stdout.includes("--bug-id") || stdout.includes("--url") || stdout.includes("Usage"),
+      stdout.includes("--bug-id") ||
+        stdout.includes("--url") ||
+        stdout.includes("Usage"),
       `should show options, got: ${stdout}`,
     );
   });
@@ -144,7 +170,9 @@ describe("CLI: missing env vars", () => {
       ...Object.fromEntries(
         Object.entries(process.env).filter(
           ([k]) =>
-            k !== "ZENTAO_BASE_URL" && k !== "ZENTAO_ACCOUNT" && k !== "ZENTAO_PASSWORD",
+            k !== "ZENTAO_BASE_URL" &&
+            k !== "ZENTAO_ACCOUNT" &&
+            k !== "ZENTAO_PASSWORD",
         ),
       ),
       ZENTAO_BASE_URL: "",
@@ -157,8 +185,15 @@ describe("CLI: missing env vars", () => {
     let stdout = "";
     try {
       execFileSync(
-        "npx",
-        ["tsx", FETCH_TS, "--bug-id", "138845", "--output", join(TMP_DIR, "out")],
+        "bun",
+        [
+          "run",
+          FETCH_TS,
+          "--bug-id",
+          "138845",
+          "--output",
+          join(TMP_DIR, "out"),
+        ],
         {
           encoding: "utf8",
           cwd: PROJECT_ROOT,
@@ -194,7 +229,9 @@ describe("CLI: invalid bug ID format", () => {
       ...Object.fromEntries(
         Object.entries(process.env).filter(
           ([k]) =>
-            k !== "ZENTAO_BASE_URL" && k !== "ZENTAO_ACCOUNT" && k !== "ZENTAO_PASSWORD",
+            k !== "ZENTAO_BASE_URL" &&
+            k !== "ZENTAO_ACCOUNT" &&
+            k !== "ZENTAO_PASSWORD",
         ),
       ),
       ZENTAO_BASE_URL: "",
@@ -206,8 +243,15 @@ describe("CLI: invalid bug ID format", () => {
     let stdout = "";
     try {
       execFileSync(
-        "npx",
-        ["tsx", FETCH_TS, "--bug-id", "not-a-number", "--output", join(TMP_DIR, "out")],
+        "bun",
+        [
+          "run",
+          FETCH_TS,
+          "--bug-id",
+          "not-a-number",
+          "--output",
+          join(TMP_DIR, "out"),
+        ],
         {
           encoding: "utf8",
           cwd: PROJECT_ROOT,
@@ -239,7 +283,9 @@ describe("CLI: invalid bug ID format", () => {
       ...Object.fromEntries(
         Object.entries(process.env).filter(
           ([k]) =>
-            k !== "ZENTAO_BASE_URL" && k !== "ZENTAO_ACCOUNT" && k !== "ZENTAO_PASSWORD",
+            k !== "ZENTAO_BASE_URL" &&
+            k !== "ZENTAO_ACCOUNT" &&
+            k !== "ZENTAO_PASSWORD",
         ),
       ),
       ZENTAO_BASE_URL: "",
@@ -251,9 +297,9 @@ describe("CLI: invalid bug ID format", () => {
     let stdout = "";
     try {
       execFileSync(
-        "npx",
+        "bun",
         [
-          "tsx",
+          "run",
           FETCH_TS,
           "--url",
           "http://zenpms.dtstack.cn/zentao/story-view-100.html",

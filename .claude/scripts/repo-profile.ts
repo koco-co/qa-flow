@@ -1,4 +1,4 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * repo-profile.ts — Repo profile management for transform node.
  *

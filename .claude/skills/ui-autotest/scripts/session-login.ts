@@ -1,10 +1,10 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 
 /**
  * session-login.ts — Playwright 登录态管理
  *
  * 用法：
- *   npx tsx .claude/skills/ui-autotest/scripts/session-login.ts \
+ *   bun run .claude/skills/ui-autotest/scripts/session-login.ts \
  *     --url https://xxx.dtstack.cn \
  *     --output .auth/session.json
  *
@@ -118,7 +118,7 @@ async function guidedLogin(url: string, outputPath: string): Promise<void> {
     chromium = (pw as { chromium: unknown }).chromium;
   } catch {
     throw new Error(
-      "未找到 playwright 模块。请先安装：npm install @playwright/test && npx playwright install chromium",
+      "未找到 playwright 模块。请先安装：bun install @playwright/test && bunx playwright install chromium",
     );
   }
 

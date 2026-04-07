@@ -25,27 +25,29 @@ function stripEmoji(s: string): string {
 // ── Message Formatting ───────────────────────────────────────────────────────
 
 describe("formatMessage", () => {
-  it("case-generated: includes count, file, duration", () => {
+  it("case-generated: includes count, file, duration in markdown table", () => {
     const msg = formatMessage("case-generated", { count: 42, file: "test.xmind", duration: 30 });
     assert.ok(msg.text.includes("42"), "should include count");
     assert.ok(msg.text.includes("test.xmind"), "should include file");
     assert.ok(msg.text.includes("30"), "should include duration");
-    assert.ok(msg.text.startsWith("✅"), "should start with ✅");
+    assert.ok(msg.text.includes("✅"), "should contain ✅");
+    assert.ok(msg.text.includes("| 项目 | 详情 |"), "should have markdown table header");
   });
 
-  it("case-generated: title is first line without emoji", () => {
+  it("case-generated: title is heading without emoji/hash", () => {
     const msg = formatMessage("case-generated", { count: 1, file: "a.xmind" });
     assert.equal(msg.title, "用例生成完成");
   });
 
-  it("bug-report: includes reportFile and summary", () => {
-    const msg = formatMessage("bug-report", { reportFile: "report.html", summary: "3 issues" });
+  it("bug-report: includes reportFile, summary, and severity", () => {
+    const msg = formatMessage("bug-report", { reportFile: "report.html", summary: "3 issues", severity: "严重" });
     assert.ok(msg.text.includes("report.html"));
     assert.ok(msg.text.includes("3 issues"));
-    assert.ok(msg.text.startsWith("🐛"));
+    assert.ok(msg.text.includes("严重"));
+    assert.ok(msg.text.includes("🐛"));
   });
 
-  it("bug-report: title strips emoji", () => {
+  it("bug-report: title strips emoji and markdown heading", () => {
     const msg = formatMessage("bug-report", {});
     assert.equal(msg.title, "Bug 分析报告");
   });
@@ -54,7 +56,7 @@ describe("formatMessage", () => {
     const msg = formatMessage("conflict-analyzed", { reportFile: "conflicts.html", conflictCount: 5 });
     assert.ok(msg.text.includes("conflicts.html"));
     assert.ok(msg.text.includes("5"));
-    assert.ok(msg.text.startsWith("⚠️"));
+    assert.ok(msg.text.includes("⚠️"));
   });
 
   it("hotfix-case-generated: includes bugId, branch, file", () => {
@@ -62,41 +64,58 @@ describe("formatMessage", () => {
     assert.ok(msg.text.includes("BUG-123"));
     assert.ok(msg.text.includes("hotfix/fix"));
     assert.ok(msg.text.includes("case.xmind"));
-    assert.ok(msg.text.startsWith("🔧"));
+    assert.ok(msg.text.includes("🔧"));
   });
 
-  it("ui-test-completed: includes passed, failed, reportFile", () => {
+  it("ui-test-completed: includes passed, failed, reportFile, pass rate", () => {
     const msg = formatMessage("ui-test-completed", { passed: 10, failed: 2, reportFile: "ui-report.html" });
     assert.ok(msg.text.includes("10"));
     assert.ok(msg.text.includes("2"));
     assert.ok(msg.text.includes("ui-report.html"));
-    assert.ok(msg.text.startsWith("🧪"));
+    assert.ok(msg.text.includes("🧪"));
+    assert.ok(msg.text.includes("83%"), "should calculate pass rate");
+  });
+
+  it("ui-test-completed: shows red icon when failures exist", () => {
+    const msg = formatMessage("ui-test-completed", { passed: 5, failed: 3 });
+    assert.ok(msg.text.includes("🔴"), "should show red icon for failures");
+  });
+
+  it("ui-test-completed: shows green icon when all pass", () => {
+    const msg = formatMessage("ui-test-completed", { passed: 10, failed: 0 });
+    assert.ok(msg.text.includes("🟢"), "should show green icon for all pass");
   });
 
   it("archive-converted: includes fileCount and caseCount", () => {
     const msg = formatMessage("archive-converted", { fileCount: 3, caseCount: 120 });
     assert.ok(msg.text.includes("3"));
     assert.ok(msg.text.includes("120"));
-    assert.ok(msg.text.startsWith("📦"));
+    assert.ok(msg.text.includes("📦"));
   });
 
   it("workflow-failed: includes step and reason", () => {
     const msg = formatMessage("workflow-failed", { step: "writer", reason: "timeout" });
     assert.ok(msg.text.includes("writer"));
     assert.ok(msg.text.includes("timeout"));
-    assert.ok(msg.text.startsWith("❌"));
+    assert.ok(msg.text.includes("❌"));
   });
 
   it("unknown event: falls back to JSON dump", () => {
     const msg = formatMessage("custom-event", { foo: "bar" });
     assert.ok(msg.text.includes("custom-event"));
     assert.ok(msg.text.includes("bar"));
-    assert.ok(msg.text.startsWith("📢"));
+    assert.ok(msg.text.includes("📢"));
   });
 
   it("missing data fields show dash placeholder", () => {
     const msg = formatMessage("case-generated", {});
     assert.ok(msg.text.includes("-"), "should use - for missing fields");
+  });
+
+  it("all events include timestamp footer", () => {
+    const msg = formatMessage("case-generated", { count: 1 });
+    assert.ok(msg.text.includes("QAFlow"), "should have QAFlow footer");
+    assert.ok(msg.text.includes("🕐"), "should have timestamp icon");
   });
 });
 
@@ -257,7 +276,7 @@ describe("sendNotification dry-run", () => {
 
 describe("CLI --help", () => {
   it("--help exits with code 0 and shows usage", () => {
-    const result = execSync(`npx tsx "${SEND_TS}" --help`, {
+    const result = execSync(`bun run "${SEND_TS}" --help`, {
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -268,7 +287,7 @@ describe("CLI --help", () => {
 describe("CLI --dry-run", () => {
   it("outputs dry_run JSON to stdout", () => {
     const stdout = execSync(
-      `npx tsx "${SEND_TS}" --dry-run --event case-generated --data '{"count":1,"file":"test.xmind","duration":30}'`,
+      `bun run "${SEND_TS}" --dry-run --event case-generated --data '{"count":1,"file":"test.xmind","duration":30}'`,
       { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] },
     );
     const parsed = JSON.parse(stdout) as { dry_run: boolean; message: string };
@@ -278,7 +297,7 @@ describe("CLI --dry-run", () => {
 
   it("dry-run with workflow-failed event outputs correct message", () => {
     const stdout = execSync(
-      `npx tsx "${SEND_TS}" --dry-run --event workflow-failed --data '{"step":"writer","reason":"timeout"}'`,
+      `bun run "${SEND_TS}" --dry-run --event workflow-failed --data '{"step":"writer","reason":"timeout"}'`,
       { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] },
     );
     const parsed = JSON.parse(stdout) as { dry_run: boolean; message: string };

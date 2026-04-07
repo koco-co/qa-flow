@@ -12,10 +12,14 @@ const TMP_DIR = join(tmpdir(), `qa-flow-archive-test-${process.pid}`);
 
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("npx", ["tsx", ".claude/scripts/archive-gen.ts", ...args], {
-      cwd: REPO_ROOT,
-      encoding: "utf8",
-    });
+    const stdout = execFileSync(
+      "bun",
+      ["run", ".claude/scripts/archive-gen.ts", ...args],
+      {
+        cwd: REPO_ROOT,
+        encoding: "utf8",
+      },
+    );
     return { stdout, stderr: "", code: 0 };
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; status?: number };
@@ -44,7 +48,13 @@ after(() => {
 describe("archive-gen.ts convert — generates valid Markdown with front-matter", () => {
   it("exits with code 0 and outputs JSON result", () => {
     const output = join(TMP_DIR, "test-convert.md");
-    const { code, stdout, stderr } = run(["convert", "--input", FIXTURE, "--output", output]);
+    const { code, stdout, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const result = JSON.parse(stdout) as {
@@ -52,16 +62,31 @@ describe("archive-gen.ts convert — generates valid Markdown with front-matter"
       case_count: number;
       module_count: number;
     };
-    assert.ok(result.output_path.endsWith("test-convert.md"), "output_path should end with .md");
-    assert.ok(typeof result.case_count === "number", "case_count should be a number");
-    assert.ok(typeof result.module_count === "number", "module_count should be a number");
+    assert.ok(
+      result.output_path.endsWith("test-convert.md"),
+      "output_path should end with .md",
+    );
+    assert.ok(
+      typeof result.case_count === "number",
+      "case_count should be a number",
+    );
+    assert.ok(
+      typeof result.module_count === "number",
+      "module_count should be a number",
+    );
   });
 });
 
 describe("archive-gen.ts convert — correct suite_name in front-matter", () => {
   it("generated MD has suite_name matching meta.requirement_name", () => {
     const output = join(TMP_DIR, "test-suitename.md");
-    const { code, stderr } = run(["convert", "--input", FIXTURE, "--output", output]);
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const content = readFileSync(output, "utf8");
@@ -78,7 +103,13 @@ describe("archive-gen.ts convert — correct suite_name in front-matter", () => 
 describe("archive-gen.ts convert — correct case_count", () => {
   it("generated MD case_count matches total test cases in JSON (5)", () => {
     const output = join(TMP_DIR, "test-casecount.md");
-    const { code, stdout, stderr } = run(["convert", "--input", FIXTURE, "--output", output]);
+    const { code, stdout, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const result = JSON.parse(stdout) as { case_count: number };
@@ -87,14 +118,24 @@ describe("archive-gen.ts convert — correct case_count", () => {
 
     const content = readFileSync(output, "utf8");
     const { frontMatter } = parseFrontMatter(content);
-    assert.equal(frontMatter.case_count, 5, "front-matter case_count should be 5");
+    assert.equal(
+      frontMatter.case_count,
+      5,
+      "front-matter case_count should be 5",
+    );
   });
 });
 
 describe("archive-gen.ts convert — H2/H3/H4/H5 body structure", () => {
   it("generated MD body has correct heading hierarchy", () => {
     const output = join(TMP_DIR, "test-structure.md");
-    const { code, stderr } = run(["convert", "--input", FIXTURE, "--output", output]);
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const content = readFileSync(output, "utf8");
@@ -108,8 +149,16 @@ describe("archive-gen.ts convert — H2/H3/H4/H5 body structure", () => {
     // H4 — sub_group
     assert.match(body, /^#### 搜索筛选/m, "H4 sub_group heading missing");
     // H5 — test case with priority prefix
-    assert.match(body, /^##### 【P0】验证默认加载列表页/m, "H5 case with P0 prefix missing");
-    assert.match(body, /^##### 【P1】验证按问题类型筛选/m, "H5 case with P1 prefix missing");
+    assert.match(
+      body,
+      /^##### 【P0】验证默认加载列表页/m,
+      "H5 case with P0 prefix missing",
+    );
+    assert.match(
+      body,
+      /^##### 【P1】验证按问题类型筛选/m,
+      "H5 case with P1 prefix missing",
+    );
     assert.match(
       body,
       /^##### 【P0】验证填写完整表单后成功提交/m,
@@ -121,7 +170,13 @@ describe("archive-gen.ts convert — H2/H3/H4/H5 body structure", () => {
 describe("archive-gen.ts convert — step table format", () => {
   it("step tables have correct header format (| 编号 | 步骤 | 预期 |)", () => {
     const output = join(TMP_DIR, "test-table.md");
-    const { code, stderr } = run(["convert", "--input", FIXTURE, "--output", output]);
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const content = readFileSync(output, "utf8");
@@ -129,7 +184,10 @@ describe("archive-gen.ts convert — step table format", () => {
 
     // Table header must appear (multiple times, once per case)
     const tableHeaders = body.match(/\| 编号 \| 步骤 \| 预期 \|/g) ?? [];
-    assert.ok(tableHeaders.length > 0, "No step tables with correct header found");
+    assert.ok(
+      tableHeaders.length > 0,
+      "No step tables with correct header found",
+    );
 
     // Body has numbered rows starting with | 1 |
     assert.match(body, /\| 1 \|/, "Table row starting with | 1 | not found");
@@ -140,7 +198,13 @@ describe("archive-gen.ts convert — step table format", () => {
 
   it("precondition blocks appear before step tables", () => {
     const output = join(TMP_DIR, "test-precondition.md");
-    const { code, stderr } = run(["convert", "--input", FIXTURE, "--output", output]);
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const content = readFileSync(output, "utf8");
@@ -148,7 +212,11 @@ describe("archive-gen.ts convert — step table format", () => {
 
     // Precondition block should contain the text from the fixture
     assert.match(body, /> 前置条件/, "> 前置条件 label missing");
-    assert.match(body, /环境已部署/, "Precondition content '环境已部署' missing");
+    assert.match(
+      body,
+      /环境已部署/,
+      "Precondition content '环境已部署' missing",
+    );
   });
 });
 
@@ -201,9 +269,19 @@ origin: "xmind"
     }>;
     assert.ok(Array.isArray(results), "search output should be an array");
     assert.ok(results.length > 0, "should find at least one result");
-    assert.equal(results[0].suite_name, "质量问题台账", "suite_name should match");
-    assert.ok(results[0].path.includes("test-archive.md"), "path should reference the file");
-    assert.ok(typeof results[0].case_count === "number", "case_count should be a number");
+    assert.equal(
+      results[0].suite_name,
+      "质量问题台账",
+      "suite_name should match",
+    );
+    assert.ok(
+      results[0].path.includes("test-archive.md"),
+      "path should reference the file",
+    );
+    assert.ok(
+      typeof results[0].case_count === "number",
+      "case_count should be a number",
+    );
   });
 
   it("finds archive by tags keyword", () => {
@@ -284,18 +362,32 @@ origin: "xmind"
 
     const results = JSON.parse(stdout) as unknown[];
     assert.ok(Array.isArray(results), "result should be an array");
-    assert.equal(results.length, 0, "result should be empty for unknown keyword");
+    assert.equal(
+      results.length,
+      0,
+      "result should be empty for unknown keyword",
+    );
   });
 
   it("returns [] when archive directory is empty", () => {
     const emptyDir = join(TMP_DIR, "archive-empty");
     mkdirSync(emptyDir, { recursive: true });
 
-    const { code, stdout, stderr } = run(["search", "--query", "anything", "--dir", emptyDir]);
+    const { code, stdout, stderr } = run([
+      "search",
+      "--query",
+      "anything",
+      "--dir",
+      emptyDir,
+    ]);
     assert.equal(code, 0, `stderr: ${stderr}`);
 
     const results = JSON.parse(stdout) as unknown[];
-    assert.equal(results.length, 0, "empty directory should return empty results");
+    assert.equal(
+      results.length,
+      0,
+      "empty directory should return empty results",
+    );
   });
 });
 

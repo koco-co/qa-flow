@@ -1,10 +1,10 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * prd-frontmatter.ts — Normalize PRD front-matter fields.
  *
  * Usage:
- *   npx tsx .claude/scripts/prd-frontmatter.ts normalize --file <md-path> [--dry-run]
- *   npx tsx .claude/scripts/prd-frontmatter.ts --help
+ *   bun run .claude/scripts/prd-frontmatter.ts normalize --file <md-path> [--dry-run]
+ *   bun run .claude/scripts/prd-frontmatter.ts --help
  */
 
 import { readFileSync, writeFileSync } from "node:fs";

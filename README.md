@@ -1,31 +1,43 @@
 <div align="center">
 
-# QAFlow - 2.0
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/QAFlow-2.0-7C3AED?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTkgMTYuMTdMNC44MyAxMmwtMS40MiAxLjQxTDkgMTkgMjEgN2wtMS40MS0xLjQxeiIvPjwvc3ZnPg==&logoColor=white">
+  <img alt="QAFlow 2.0" src="https://img.shields.io/badge/QAFlow-2.0-7C3AED?style=for-the-badge&logoColor=white">
+</picture>
+
+# 🚀 QAFlow
 
 ### AI-Powered QA Workflow Engine
 
 <br />
 
-基于 **Claude Code Skills** 构建的智能 QA 工作流引擎
-从需求文档到测试用例，从 Bug 分析到 UI 自动化 —— 一站式覆盖 QA 日常场景
+**一句话说清**：把 PRD 丢给它，自动出用例；把报错丢给它，自动出报告。
+
+基于 **Claude Code Skills** 构建的智能 QA 工作流引擎，覆盖测试全链路。
 
 <br />
 
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-Skills-7C3AED?logo=anthropic&logoColor=white)](https://claude.com/claude-code)
-[![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](./package.json)
+🧪 测试用例生成 &nbsp;·&nbsp; 🐛 Bug 智能分析 &nbsp;·&nbsp; 📝 XMind 用例编辑 &nbsp;·&nbsp; 🤖 UI 自动化 &nbsp;·&nbsp; 📣 IM 通知
 
 <br />
 
-**[English](./README-EN.md)** | **Chinese**
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-Skills-7C3AED?style=flat-square&logo=anthropic&logoColor=white)](https://claude.com/claude-code)
+[![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?style=flat-square&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?style=flat-square)](./package.json)
+
+<br />
+
+**[English](./README-EN.md)** &nbsp;|&nbsp; **中文**
 
 <br />
 
 ```
-PRD  ──>  测试用例生成  ──>  XMind + Archive MD  ──>  UI 自动化验证
-报错日志     ──>  智能分析      ──>  HTML 报告 + IM 通知
+📄 PRD ─── /test-case-gen ──→ 🗺️ XMind + 📝 Archive MD ──→ 🤖 Playwright E2E
+🔥 报错 ─── /code-analysis ──→ 📊 HTML 报告 ────────────→ 📣 IM 通知
+🐛 禅道 ─── /code-analysis ──→ 🔧 Hotfix 验证用例
+📋 XMind ── /xmind-editor ──→ ✏️ 搜索 / 编辑 / 新增 / 删除
 ```
 
 </div>
@@ -103,7 +115,7 @@ cd qa-flow
 bun install
 
 # 3. 安装 Playwright skill（UI 自动化功能需要）
-npx skills add playwright-cli
+bunx skills add playwright-cli
 
 # 4. 创建环境配置
 cp .env.example .env
@@ -121,7 +133,7 @@ cp .env.example .env
 
 | 步骤 | 说明                                             |
 | ---- | ------------------------------------------------ |
-| 1    | 环境检测 — Node.js, npm, tsx 可用性              |
+| 1    | 环境检测 — Node.js、bun、核心脚本可用性          |
 | 2    | 工作区创建 — `workspace/` 子目录结构             |
 | 3    | 源码仓库配置 — 克隆 Git 仓库到 `.repos/`（可选） |
 | 4    | 插件配置 — 检测 `.env` 中的插件凭证（可选）      |
@@ -307,7 +319,7 @@ RS1: 确认 XMind → RS2: 解析 → RS3: 定位 Archive MD → RS4: 转换 →
 | 3    | **会话准备** | 通过 `session-login.ts` 检查/创建登录 session             |
 | 4    | **脚本生成** | 最多 5 个并行 Sub-Agents 生成 `.ts` 代码块                |
 | 5    | **合并脚本** | `merge-specs.ts` 合并为 `smoke.spec.ts` 和 `full.spec.ts` |
-| 6    | **执行测试** | `npx playwright test` with HTML reporter                  |
+| 6    | **执行测试** | `bunx playwright test` with HTML reporter                 |
 | 7    | **结果处理** | 失败用例触发 Bug Reporter Sub-Agents 生成报告             |
 | 8    | **发送通知** | 通过 Plugin 发送通过/失败摘要                             |
 
@@ -361,7 +373,7 @@ RS1: 确认 XMind → RS2: 解析 → RS3: 定位 Archive MD → RS4: 转换 →
     "test-case-gen:init": "input-adapter"
   },
   "commands": {
-    "fetch": "npx tsx plugins/my-plugin/fetch.ts --url {{url}} --output {{output_dir}}"
+    "fetch": "bun run plugins/my-plugin/fetch.ts --url {{url}} --output {{output_dir}}"
   },
   "url_patterns": ["example.com"]
 }
@@ -432,7 +444,7 @@ qa-flow/
 
 ## 脚本 CLI 参考
 
-所有脚本位于 `.claude/scripts/`，使用 `npx tsx` 执行：
+所有脚本位于 `.claude/scripts/`，使用 `bun run` 执行：
 
 | 脚本                 | 核心子命令                                     | 说明                               |
 | -------------------- | ---------------------------------------------- | ---------------------------------- |
@@ -509,7 +521,7 @@ bun run check
 # 4. 自动修复风格问题
 bun run check:fix
 
-# 5. 运行测试
+# 5. 运行核心脚本测试
 bun run test
 
 # 6. 提交 PR
@@ -526,14 +538,17 @@ bun run test
 ### 测试
 
 ```bash
-# 运行所有单元测试
+# 运行核心脚本单元测试
 bun run test
 
 # 监听模式
 bun run test:watch
+
+# 按需运行插件测试
+bun test ./plugins/zentao/__tests__/fetch.test.ts
 ```
 
-测试文件位于 `.claude/scripts/__tests__/`，覆盖率目标 80%+。
+核心脚本测试文件位于 `.claude/scripts/__tests__/`；插件测试位于 `plugins/*/__tests__/`，覆盖率目标 80%+。
 
 ---
 

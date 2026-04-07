@@ -126,7 +126,7 @@ transform 节点开始前，主 agent 已完成以下准备（你无需重复执
 ## 步骤 3：历史用例检索
 
 ```bash
-npx tsx .claude/scripts/archive-gen.ts search --query "{{模块关键词}}" --dir workspace/archive
+bun run .claude/scripts/archive-gen.ts search --query "{{模块关键词}}" --dir workspace/archive
 ```
 
 从返回的 `SearchResult[]` 中：

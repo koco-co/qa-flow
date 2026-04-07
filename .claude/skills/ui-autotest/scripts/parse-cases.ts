@@ -1,11 +1,11 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * parse-cases.ts — Archive MD 用例解析器
  *
  * 用法：
- *   npx tsx .claude/skills/ui-autotest/scripts/parse-cases.ts --file workspace/archive/202604/xxx.md
- *   npx tsx .claude/skills/ui-autotest/scripts/parse-cases.ts --file workspace/archive/202604/xxx.md --priority P0
- *   npx tsx .claude/skills/ui-autotest/scripts/parse-cases.ts --help
+ *   bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file workspace/archive/202604/xxx.md
+ *   bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file workspace/archive/202604/xxx.md --priority P0
+ *   bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --help
  */
 
 import { readFileSync } from "node:fs";

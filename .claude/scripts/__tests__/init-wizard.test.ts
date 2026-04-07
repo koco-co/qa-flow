@@ -10,7 +10,7 @@ function run(
   extraEnv: Record<string, string> = {},
 ): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("npx", ["tsx", SCRIPT, ...args], {
+    const stdout = execFileSync("bun", ["run", SCRIPT, ...args], {
       cwd: ROOT,
       encoding: "utf8",
       env: { ...process.env, ...extraEnv },
@@ -33,9 +33,16 @@ function run(
 describe("init-wizard scan", () => {
   it("exits 0 and outputs valid JSON", () => {
     const { stdout, code } = run(["scan"]);
-    assert.equal(code, 0, `expected exit 0, got stderr: ${run(["scan"]).stderr}`);
+    assert.equal(
+      code,
+      0,
+      `expected exit 0, got stderr: ${run(["scan"]).stderr}`,
+    );
     const result = JSON.parse(stdout) as unknown;
-    assert.ok(typeof result === "object" && result !== null, "output should be a JSON object");
+    assert.ok(
+      typeof result === "object" && result !== null,
+      "output should be a JSON object",
+    );
   });
 
   it("output has all required top-level fields", () => {
@@ -56,7 +63,10 @@ describe("init-wizard scan", () => {
     const { stdout } = run(["scan"]);
     const result = JSON.parse(stdout) as { node_version: string };
     assert.equal(typeof result.node_version, "string");
-    assert.ok(result.node_version.startsWith("v"), "node_version should start with v");
+    assert.ok(
+      result.node_version.startsWith("v"),
+      "node_version should start with v",
+    );
   });
 
   it("node_ok is a boolean", () => {
@@ -78,7 +88,11 @@ describe("init-wizard scan", () => {
     };
     for (const p of result.plugins) {
       assert.equal(typeof p.name, "string", "plugin.name should be a string");
-      assert.equal(typeof p.active, "boolean", "plugin.active should be a boolean");
+      assert.equal(
+        typeof p.active,
+        "boolean",
+        "plugin.active should be a boolean",
+      );
     }
   });
 
@@ -120,7 +134,9 @@ describe("init-wizard scan", () => {
       LANHU_COOKIE: "",
       // clear other plugin vars too so initEnv doesn't pick them up from .env
     });
-    const result = JSON.parse(stdout) as { plugins: Array<{ name: string; active: boolean }> };
+    const result = JSON.parse(stdout) as {
+      plugins: Array<{ name: string; active: boolean }>;
+    };
     const lanhu = result.plugins.find((p) => p.name === "lanhu");
     assert.ok(lanhu, "lanhu should be present");
     assert.equal(lanhu?.active, false);
@@ -128,7 +144,9 @@ describe("init-wizard scan", () => {
 
   it("lanhu is active when LANHU_COOKIE is set", () => {
     const { stdout } = run(["scan"], { LANHU_COOKIE: "session=test-cookie" });
-    const result = JSON.parse(stdout) as { plugins: Array<{ name: string; active: boolean }> };
+    const result = JSON.parse(stdout) as {
+      plugins: Array<{ name: string; active: boolean }>;
+    };
     const lanhu = result.plugins.find((p) => p.name === "lanhu");
     assert.ok(lanhu, "lanhu should be present");
     assert.equal(lanhu?.active, true);
@@ -149,9 +167,16 @@ describe("init-wizard verify", () => {
 
   it("output has checks array and all_pass boolean", () => {
     const { stdout } = run(["verify"]);
-    const result = JSON.parse(stdout) as { checks: unknown[]; all_pass: boolean };
+    const result = JSON.parse(stdout) as {
+      checks: unknown[];
+      all_pass: boolean;
+    };
     assert.ok(Array.isArray(result.checks), "checks should be an array");
-    assert.equal(typeof result.all_pass, "boolean", "all_pass should be a boolean");
+    assert.equal(
+      typeof result.all_pass,
+      "boolean",
+      "all_pass should be a boolean",
+    );
   });
 
   it("each check entry has name, status, and detail", () => {
@@ -165,7 +190,11 @@ describe("init-wizard verify", () => {
         ["pass", "fail", "skip"].includes(c.status),
         `check.status "${c.status}" should be pass/fail/skip`,
       );
-      assert.equal(typeof c.detail, "string", "check.detail should be a string");
+      assert.equal(
+        typeof c.detail,
+        "string",
+        "check.detail should be a string",
+      );
     }
   });
 
@@ -173,10 +202,22 @@ describe("init-wizard verify", () => {
     const { stdout } = run(["verify"]);
     const result = JSON.parse(stdout) as { checks: Array<{ name: string }> };
     const names = result.checks.map((c) => c.name);
-    assert.ok(names.some((n) => n.toLowerCase().includes("node")), "should have Node.js check");
-    assert.ok(names.some((n) => n.includes("依赖安装")), "should have deps check");
-    assert.ok(names.some((n) => n.includes("工作区")), "should have workspace check");
-    assert.ok(names.some((n) => n.includes(".env")), "should have .env check");
+    assert.ok(
+      names.some((n) => n.toLowerCase().includes("node")),
+      "should have Node.js check",
+    );
+    assert.ok(
+      names.some((n) => n.includes("依赖安装")),
+      "should have deps check",
+    );
+    assert.ok(
+      names.some((n) => n.includes("工作区")),
+      "should have workspace check",
+    );
+    assert.ok(
+      names.some((n) => n.includes(".env")),
+      "should have .env check",
+    );
   });
 
   it("checks array has at least 4 items", () => {

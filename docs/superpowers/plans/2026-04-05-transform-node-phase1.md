@@ -112,7 +112,7 @@ import { pluginsDir, repoRoot } from "./lib/paths.ts";
 
 ```bash
 cd /Users/poco/Documents/DTStack/qa-flow
-npx tsx .claude/scripts/config.ts
+bun run .claude/scripts/config.ts
 ```
 
 Expected: JSON output includes `"repo_profiles": { "岚图": { "repos": [...] } }`
@@ -136,7 +136,7 @@ git commit -m "feat: add repo_profiles to config.json and config.ts"
 Create `.claude/scripts/repo-profile.ts`:
 
 ```typescript
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * repo-profile.ts — Repo profile management for transform node.
  *
@@ -146,9 +146,9 @@ Create `.claude/scripts/repo-profile.ts`:
  *   list                         List all profiles
  *
  * Usage:
- *   npx tsx .claude/scripts/repo-profile.ts match --text "岚图/15525【内置规则丰富】"
- *   npx tsx .claude/scripts/repo-profile.ts save --name "岚图" --repos '[{"path":".repos/x","branch":"dev"}]'
- *   npx tsx .claude/scripts/repo-profile.ts list
+ *   bun run .claude/scripts/repo-profile.ts match --text "岚图/15525【内置规则丰富】"
+ *   bun run .claude/scripts/repo-profile.ts save --name "岚图" --repos '[{"path":".repos/x","branch":"dev"}]'
+ *   bun run .claude/scripts/repo-profile.ts list
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -303,7 +303,7 @@ program.parse(process.argv);
 
 ```bash
 cd /Users/poco/Documents/DTStack/qa-flow
-npx tsx .claude/scripts/repo-profile.ts match --text "岚图/15525【内置规则丰富】一致性"
+bun run .claude/scripts/repo-profile.ts match --text "岚图/15525【内置规则丰富】一致性"
 ```
 
 Expected:
@@ -322,7 +322,7 @@ Expected:
 - [ ] **Step 3: Test no-match scenario**
 
 ```bash
-npx tsx .claude/scripts/repo-profile.ts match --text "标准版需求"
+bun run .claude/scripts/repo-profile.ts match --text "标准版需求"
 ```
 
 Expected:
@@ -338,7 +338,7 @@ Expected:
 - [ ] **Step 4: Test save command**
 
 ```bash
-npx tsx .claude/scripts/repo-profile.ts save --name "标准版" --repos '[{"path":".repos/dt-center-assets","branch":"dev"}]'
+bun run .claude/scripts/repo-profile.ts save --name "标准版" --repos '[{"path":".repos/dt-center-assets","branch":"dev"}]'
 ```
 
 Expected: `config.json` now has both "岚图" and "标准版" profiles.
@@ -346,7 +346,7 @@ Expected: `config.json` now has both "岚图" and "标准版" profiles.
 - [ ] **Step 5: Test list command**
 
 ```bash
-npx tsx .claude/scripts/repo-profile.ts list
+bun run .claude/scripts/repo-profile.ts list
 ```
 
 Expected: JSON array with 2 entries.
@@ -411,7 +411,7 @@ program
       const groupName = parts.pop() ?? "";
 
       if (!existsSync(absolutePath)) {
-        errors.push({ error: `Repository not found at ${absolutePath}. Clone it first with: npx tsx .claude/scripts/repo-sync.ts --url <git-url> --branch ${repoRef.branch}`, step: "check-path" });
+        errors.push({ error: `Repository not found at ${absolutePath}. Clone it first with: bun run .claude/scripts/repo-sync.ts --url <git-url> --branch ${repoRef.branch}`, step: "check-path" });
         continue;
       }
 
@@ -462,7 +462,7 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 - [ ] **Step 2: Verify existing command still works**
 
 ```bash
-npx tsx .claude/scripts/repo-sync.ts --help
+bun run .claude/scripts/repo-sync.ts --help
 ```
 
 Expected: Shows both the default command options AND the new `sync-profile` subcommand.
@@ -470,7 +470,7 @@ Expected: Shows both the default command options AND the new `sync-profile` subc
 - [ ] **Step 3: Test sync-profile command (dry verification)**
 
 ```bash
-npx tsx .claude/scripts/repo-sync.ts sync-profile --name "不存在的profile"
+bun run .claude/scripts/repo-sync.ts sync-profile --name "不存在的profile"
 ```
 
 Expected: Error JSON with `"Profile \"不存在的profile\" not found"`.
@@ -496,18 +496,18 @@ The `state.ts` currently doesn't have a node enum — it accepts any string for 
 Update the file header comment (line 1-11):
 
 ```typescript
-#!/usr/bin/env npx tsx
+#!/usr/bin/env bun
 /**
  * state.ts — Breakpoint resume state management CLI.
  *
  * Node lifecycle: init → transform → enhance → analyze → write → review → output
  *
  * Usage:
- *   npx tsx .claude/scripts/state.ts init --prd workspace/prds/202604/xxx.md --mode normal
- *   npx tsx .claude/scripts/state.ts update --prd-slug xxx --node transform --data '{"confidence":0.85}'
- *   npx tsx .claude/scripts/state.ts resume --prd-slug xxx
- *   npx tsx .claude/scripts/state.ts clean --prd-slug xxx
- *   npx tsx .claude/scripts/state.ts --help
+ *   bun run .claude/scripts/state.ts init --prd workspace/prds/202604/xxx.md --mode normal
+ *   bun run .claude/scripts/state.ts update --prd-slug xxx --node transform --data '{"confidence":0.85}'
+ *   bun run .claude/scripts/state.ts resume --prd-slug xxx
+ *   bun run .claude/scripts/state.ts clean --prd-slug xxx
+ *   bun run .claude/scripts/state.ts --help
  */
 ```
 
@@ -517,9 +517,9 @@ No functional code changes needed — `state.ts` already accepts arbitrary node 
 
 ```bash
 cd /Users/poco/Documents/DTStack/qa-flow
-npx tsx .claude/scripts/state.ts init --prd workspace/prds/202604/test-transform.md --mode normal
-npx tsx .claude/scripts/state.ts update --prd-slug test-transform --node transform --data '{"confidence":0.85,"clarify_count":2}'
-npx tsx .claude/scripts/state.ts resume --prd-slug test-transform
+bun run .claude/scripts/state.ts init --prd workspace/prds/202604/test-transform.md --mode normal
+bun run .claude/scripts/state.ts update --prd-slug test-transform --node transform --data '{"confidence":0.85,"clarify_count":2}'
+bun run .claude/scripts/state.ts resume --prd-slug test-transform
 ```
 
 Expected: resume output shows `"current_node": "transform"` and `"node_outputs": { "transform": { "confidence": 0.85, "clarify_count": 2 } }`.
@@ -527,7 +527,7 @@ Expected: resume output shows `"current_node": "transform"` and `"node_outputs":
 - [ ] **Step 3: Clean up test state and commit**
 
 ```bash
-npx tsx .claude/scripts/state.ts clean --prd-slug test-transform
+bun run .claude/scripts/state.ts clean --prd-slug test-transform
 git add .claude/scripts/state.ts
 git commit -m "docs: update state.ts node lifecycle to include transform"
 ```
@@ -654,7 +654,7 @@ status: "已增强"
 # Test PRD
 EOF
 
-npx tsx .claude/scripts/prd-frontmatter.ts normalize --file /tmp/test-fm.md --dry-run
+bun run .claude/scripts/prd-frontmatter.ts normalize --file /tmp/test-fm.md --dry-run
 cat /tmp/test-fm.md
 ```
 
@@ -908,7 +908,7 @@ git commit -m "docs: add PRD template and CLARIFY protocol reference docs"
 - [ ] **Step 1: Verify config.ts outputs repo_profiles**
 
 ```bash
-npx tsx .claude/scripts/config.ts | python3 -c "import sys,json; d=json.load(sys.stdin); print('repo_profiles:', list(d.get('repo_profiles',{}).keys()))"
+bun run .claude/scripts/config.ts | python3 -c "import sys,json; d=json.load(sys.stdin); print('repo_profiles:', list(d.get('repo_profiles',{}).keys()))"
 ```
 
 Expected: `repo_profiles: ['岚图']`
@@ -916,7 +916,7 @@ Expected: `repo_profiles: ['岚图']`
 - [ ] **Step 2: Verify repo-profile match**
 
 ```bash
-npx tsx .claude/scripts/repo-profile.ts match --text "岚图/15525【内置规则丰富】"
+bun run .claude/scripts/repo-profile.ts match --text "岚图/15525【内置规则丰富】"
 ```
 
 Expected: `"matched": true, "profile_name": "岚图"`
@@ -924,11 +924,11 @@ Expected: `"matched": true, "profile_name": "岚图"`
 - [ ] **Step 3: Verify state lifecycle with transform node**
 
 ```bash
-npx tsx .claude/scripts/state.ts init --prd workspace/prds/202604/infra-test.md --mode normal
-npx tsx .claude/scripts/state.ts update --prd-slug infra-test --node transform --data '{"confidence":0.85}'
-npx tsx .claude/scripts/state.ts update --prd-slug infra-test --node enhance --data '{"health_score":90}'
-npx tsx .claude/scripts/state.ts resume --prd-slug infra-test | python3 -c "import sys,json; d=json.load(sys.stdin); print('nodes:', d['completed_nodes'])"
-npx tsx .claude/scripts/state.ts clean --prd-slug infra-test
+bun run .claude/scripts/state.ts init --prd workspace/prds/202604/infra-test.md --mode normal
+bun run .claude/scripts/state.ts update --prd-slug infra-test --node transform --data '{"confidence":0.85}'
+bun run .claude/scripts/state.ts update --prd-slug infra-test --node enhance --data '{"health_score":90}'
+bun run .claude/scripts/state.ts resume --prd-slug infra-test | python3 -c "import sys,json; d=json.load(sys.stdin); print('nodes:', d['completed_nodes'])"
+bun run .claude/scripts/state.ts clean --prd-slug infra-test
 ```
 
 Expected: `nodes: ['transform', 'enhance']`
@@ -949,7 +949,7 @@ status: "draft"
 # Test
 TESTEOF
 
-npx tsx .claude/scripts/prd-frontmatter.ts normalize --file /tmp/infra-test-fm.md
+bun run .claude/scripts/prd-frontmatter.ts normalize --file /tmp/infra-test-fm.md
 cat /tmp/infra-test-fm.md | head -12
 rm /tmp/infra-test-fm.md
 ```
