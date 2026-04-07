@@ -38,3 +38,7 @@ Thumbs.db
 
 # ── 保留 workspace 目录结构 ─────────────────────────────
 !workspace/.gitkeep
+
+
+ci-datasource-config.md
+
