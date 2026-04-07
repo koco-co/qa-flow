@@ -17,6 +17,10 @@ export interface MetaFlowResult {
   readonly syncComplete: boolean
 }
 
+function log(msg: string): void {
+  process.stderr.write(`${msg}\n`)
+}
+
 export async function metaFlow(
   client: DtStackClient,
   options: MetaFlowOptions,
@@ -28,15 +32,15 @@ export async function metaFlow(
   const syncTimeout = options.syncTimeout ?? 180_000
 
   // Step 1: Find project
-  console.log(`[meta-flow] Looking for project: ${projectName}`)
+  log(`[meta-flow] Looking for project: ${projectName}`)
   const project = await batchApi.findProject(projectName)
   if (!project) {
     throw new Error(`Project "${projectName}" not found in offline development`)
   }
-  console.log(`[meta-flow] Found project: ${project.projectName} (id=${project.id})`)
+  log(`[meta-flow] Found project: ${project.projectName} (id=${project.id})`)
 
   // Step 2: Find datasource in project
-  console.log(`[meta-flow] Looking for ${options.datasourceType} datasource...`)
+  log(`[meta-flow] Looking for ${options.datasourceType} datasource...`)
   const datasource = await batchApi.getProjectDatasource(
     project.id,
     options.datasourceType,
@@ -46,27 +50,27 @@ export async function metaFlow(
       `Datasource type "${options.datasourceType}" not found in project "${projectName}"`,
     )
   }
-  console.log(`[meta-flow] Found datasource: ${datasource.dataName} (id=${datasource.id})`)
+  log(`[meta-flow] Found datasource: ${datasource.dataName} (id=${datasource.id})`)
 
   // Step 3: Execute DDL for each table
   const tablesCreated: string[] = []
   for (const table of options.tables) {
-    console.log(`[meta-flow] Creating table: ${table.name}`)
+    log(`[meta-flow] Creating table: ${table.name}`)
     try {
       await batchApi.executeDDL(project.id, datasource, table.sql)
       tablesCreated.push(table.name)
-      console.log(`[meta-flow] Table ${table.name} created successfully`)
+      log(`[meta-flow] Table ${table.name} created successfully`)
     } catch (error) {
-      console.error(`[meta-flow] Failed to create table ${table.name}:`, (error as Error).message)
+      log(`[meta-flow] Failed to create table ${table.name}: ${(error as Error).message}`)
       throw error
     }
   }
 
   // Step 4: Import datasource to assets (if not already imported)
-  console.log(`[meta-flow] Checking if datasource is imported to assets...`)
+  log(`[meta-flow] Checking if datasource is imported to assets...`)
   const imported = await assetsApi.findImportedDatasource(datasource.dataName)
   if (!imported) {
-    console.log(`[meta-flow] Importing datasource to assets...`)
+    log(`[meta-flow] Importing datasource to assets...`)
     const unusedList = await assetsApi.listUnusedDatasources(datasource.dataName)
     const target = unusedList.find((ds) => {
       const dsName = ds.dtCenterSourceName ?? ds.dataSourceName ?? ds.name ?? ''
@@ -76,22 +80,22 @@ export async function metaFlow(
     if (target) {
       const centerId = target.dtCenterSourceId ?? target.id
       await assetsApi.importDatasource(centerId)
-      console.log(`[meta-flow] Datasource imported successfully`)
+      log(`[meta-flow] Datasource imported successfully`)
     } else {
-      console.warn(`[meta-flow] Datasource not found in unused list, may already be imported`)
+      log(`[meta-flow] WARN: Datasource not found in unused list, may already be imported`)
     }
   } else {
-    console.log(`[meta-flow] Datasource already imported (id=${imported.id})`)
+    log(`[meta-flow] Datasource already imported (id=${imported.id})`)
   }
 
   // Step 5: Trigger metadata sync and poll
-  console.log(`[meta-flow] Triggering metadata sync...`)
+  log(`[meta-flow] Triggering metadata sync...`)
   const metaSource = await assetsApi.findMetadataDatasource(datasource.dataName)
   let syncComplete = false
 
   if (metaSource) {
     await assetsApi.triggerSync(metaSource.dataSourceId, metaSource.dataSourceType)
-    console.log(`[meta-flow] Sync triggered, polling for completion...`)
+    log(`[meta-flow] Sync triggered, polling for completion...`)
 
     const expectedTableNames = options.tables.map((t) => t.name)
     syncComplete = await assetsApi.pollSyncComplete(
@@ -99,9 +103,9 @@ export async function metaFlow(
       expectedTableNames,
       syncTimeout,
     )
-    console.log(`[meta-flow] Sync ${syncComplete ? 'complete' : 'timed out (continuing)'}`)
+    log(`[meta-flow] Sync ${syncComplete ? 'complete' : 'timed out (continuing)'}`)
   } else {
-    console.warn(`[meta-flow] Metadata datasource not found, skipping sync`)
+    log(`[meta-flow] WARN: Metadata datasource not found, skipping sync`)
   }
 
   return {

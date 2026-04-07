@@ -146,7 +146,7 @@ export class AssetsApi {
       if (allFound) return true
     }
 
-    console.warn(`Sync poll timed out after ${timeoutMs}ms. Continuing anyway.`)
+    process.stderr.write(`[assets] WARN: Sync poll timed out after ${timeoutMs}ms. Continuing anyway.\n`)
     return false
   }
 }
