@@ -1,5 +1,5 @@
 {
-  "name": "dtstack-preconditions",
-  "description": "DTStack 平台前置条件 CLI — 封装离线建表、数据资产引入、元数据同步 API",
+  "name": "assets-sql-sync",
+  "description": "DTStack 平台前置条件插件 — Meta/非Meta 数据源建表、引入、元数据同步",
   "version": "0.1.0"
 }
