@@ -20,6 +20,13 @@ function toBase64(str: string): string {
   return Buffer.from(str, 'utf-8').toString('base64')
 }
 
+function splitStatements(sql: string): string[] {
+  return sql
+    .split(';')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+}
+
 function extractSchemaFromJdbcUrl(jdbcUrl: string): string | undefined {
   try {
     const afterProtocol = jdbcUrl.split('//')[1]
@@ -76,18 +83,21 @@ export class BatchApi {
       datasource.schema ??
       extractSchemaFromJdbcUrl(datasource.jdbcUrl ?? '')
 
-    const resp = await this.client.postWithProjectId(
-      '/api/rdos/batch/batchTableInfo/ddlCreateTableEncryption',
-      {
-        sql: toBase64(sql),
-        sourceId: datasource.id,
-        targetSchema: targetSchema ?? '',
-        syncTask: true,
-      },
-      projectId,
-    )
-    if (resp.code !== 1) {
-      throw new Error(`DDL execution failed: ${resp.message ?? 'unknown error'}`)
+    const statements = splitStatements(sql)
+    for (const stmt of statements) {
+      const resp = await this.client.postWithProjectId(
+        '/api/rdos/batch/batchTableInfo/ddlCreateTableEncryption',
+        {
+          sql: toBase64(stmt),
+          sourceId: datasource.id,
+          targetSchema: targetSchema ?? '',
+          syncTask: true,
+        },
+        projectId,
+      )
+      if (resp.code !== 1) {
+        throw new Error(`DDL execution failed: ${resp.message ?? 'unknown error'}`)
+      }
     }
   }
 }

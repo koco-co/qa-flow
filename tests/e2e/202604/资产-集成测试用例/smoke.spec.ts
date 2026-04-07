@@ -33,7 +33,8 @@
  */
 
 import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { test, expect } from '../../fixtures/step-screenshot'
 import {
   applyRuntimeCookies,
@@ -56,6 +57,8 @@ const BATCH_PROJECT = 'env_rebuild_test'
 const TS = Date.now().toString(36)
 
 // ─── SQL from files ──────────────────────────────────
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 const sqlDir = resolve(__dirname, 'sql')
 const SQL_BASE = readFileSync(resolve(sqlDir, 'base-tables.sql'), 'utf-8')
 const SQL_QUALITY = readFileSync(resolve(sqlDir, 'quality-tables.sql'), 'utf-8')
