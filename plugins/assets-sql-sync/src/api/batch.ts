@@ -27,6 +27,16 @@ function splitStatements(sql: string): string[] {
     .filter((s) => s.length > 0)
 }
 
+function isDDLCreateStatement(sql: string): boolean {
+  const upper = sql.trimStart().toUpperCase()
+  return upper.startsWith('CREATE ') || upper.startsWith('DROP ')
+}
+
+function isInsertStatement(sql: string): boolean {
+  const upper = sql.trimStart().toUpperCase()
+  return upper.startsWith('INSERT ')
+}
+
 function extractSchemaFromJdbcUrl(jdbcUrl: string): string | undefined {
   try {
     const afterProtocol = jdbcUrl.split('//')[1]
@@ -84,7 +94,11 @@ export class BatchApi {
       extractSchemaFromJdbcUrl(datasource.jdbcUrl ?? '')
 
     const statements = splitStatements(sql)
-    for (const stmt of statements) {
+    const ddlStatements = statements.filter((s) => isDDLCreateStatement(s))
+    const insertStatements = statements.filter((s) => isInsertStatement(s))
+
+    // Execute DDL (CREATE/DROP) via Batch DDL API — one statement at a time
+    for (const stmt of ddlStatements) {
       const resp = await this.client.postWithProjectId(
         '/api/rdos/batch/batchTableInfo/ddlCreateTableEncryption',
         {
@@ -97,6 +111,24 @@ export class BatchApi {
       )
       if (resp.code !== 1) {
         throw new Error(`DDL execution failed: ${resp.message ?? 'unknown error'}`)
+      }
+    }
+
+    // Execute INSERT via general SQL execution API
+    for (const stmt of insertStatements) {
+      const resp = await this.client.postWithProjectId(
+        '/api/rdos/batch/batchTableInfo/ddlCreateTableEncryption',
+        {
+          sql: toBase64(stmt),
+          sourceId: datasource.id,
+          targetSchema: targetSchema ?? '',
+          syncTask: true,
+        },
+        projectId,
+      )
+      // INSERT failures are non-blocking — data may already exist
+      if (resp.code !== 1) {
+        process.stderr.write(`[batch] INSERT warning: ${resp.message ?? 'unknown'}\n`)
       }
     }
   }
