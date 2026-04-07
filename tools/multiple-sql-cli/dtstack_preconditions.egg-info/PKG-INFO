@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: dtstack-preconditions
-Version: 0.1.0
-Summary: DTStack 平台前置条件 CLI — 离线建表 / 数据资产引入 / 元数据同步
-Requires-Python: >=3.10
-Requires-Dist: click>=8.0
-Requires-Dist: requests>=2.31
