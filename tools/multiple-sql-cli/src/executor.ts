@@ -1,10 +1,14 @@
 import { readFileSync } from 'fs'
 import type { ConnectionConfig, QueryResult, SqlDriver } from './drivers/types'
 import { MysqlDriver } from './drivers/mysql'
+import { HiveDriver } from './drivers/hive'
 
 function resolveDriver(type: string): SqlDriver {
   if (type === 'mysql' || type === 'doris') {
     return new MysqlDriver()
+  }
+  if (type === 'hive' || type === 'sparkthrift') {
+    return new HiveDriver()
   }
   throw new Error(`Unsupported driver type: ${type}`)
 }

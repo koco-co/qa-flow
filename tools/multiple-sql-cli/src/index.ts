@@ -1,5 +1,6 @@
 export { SqlExecutor } from './executor'
 export { MysqlDriver } from './drivers/mysql'
+export { HiveDriver } from './drivers/hive'
 export { loadDatasourceConfig, resolveConnection } from './config/schema'
 export type { ConnectionConfig, DriverType, QueryResult, SqlDriver } from './drivers/types'
 export type { DatasourceYamlConfig } from './config/schema'
