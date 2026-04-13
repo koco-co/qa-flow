@@ -401,3 +401,247 @@ describe("archive-gen.ts --help", () => {
     assert.match(output, /search/);
   });
 });
+
+// ─── tag inference ──────────────────────────────────────────────────────────
+
+describe("archive-gen.ts convert — tag inference from meta fields", () => {
+  it("includes module_key, version, module names, page names, sub_group names, and prd_id in tags", () => {
+    const output = join(TMP_DIR, "test-tags.md");
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const content = readFileSync(output, "utf8");
+    const { frontMatter } = parseFrontMatter(content);
+    const tags = frontMatter.tags as string[];
+
+    assert.ok(Array.isArray(tags), "tags should be an array");
+    assert.ok(tags.includes("data-assets"), "tags should include module_key");
+    assert.ok(tags.includes("v6.4.10"), "tags should include version");
+    assert.ok(
+      tags.includes("质量问题台账"),
+      "tags should include module name",
+    );
+    assert.ok(tags.includes("列表页"), "tags should include page name");
+    assert.ok(tags.includes("新增页"), "tags should include page name");
+    assert.ok(tags.includes("搜索筛选"), "tags should include sub_group name");
+    assert.ok(tags.includes("#10287"), "tags should include prd_id with # prefix");
+  });
+
+  it("extracts bracket content from requirement_name into tags", () => {
+    const bracketFixture = join(TMP_DIR, "bracket-req.json");
+    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
+    const meta = {
+      ...(data.meta as Record<string, unknown>),
+      requirement_name: "【数据质量】问题台账优化",
+    };
+    writeFileSync(bracketFixture, JSON.stringify({ ...data, meta }));
+
+    const output = join(TMP_DIR, "test-bracket-tags.md");
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      bracketFixture,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const content = readFileSync(output, "utf8");
+    const { frontMatter } = parseFrontMatter(content);
+    const tags = frontMatter.tags as string[];
+
+    assert.ok(
+      tags.includes("数据质量"),
+      "tags should include bracket-extracted content '数据质量'",
+    );
+    assert.ok(
+      tags.includes("问题台账优化"),
+      "tags should include text after brackets",
+    );
+  });
+
+  it("excludes '未分类' module/page names from tags", () => {
+    const unclassifiedFixture = join(TMP_DIR, "unclassified.json");
+    const data = {
+      meta: {
+        project_name: "测试项目",
+        requirement_name: "测试需求",
+        version: "v1.0",
+        module_key: "test-mod",
+      },
+      modules: [
+        {
+          name: "未分类",
+          pages: [
+            {
+              name: "未分类",
+              test_cases: [
+                {
+                  title: "测试用例",
+                  priority: "P0",
+                  steps: [{ step: "步骤1", expected: "预期1" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    writeFileSync(unclassifiedFixture, JSON.stringify(data));
+
+    const output = join(TMP_DIR, "test-unclassified-tags.md");
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      unclassifiedFixture,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const content = readFileSync(output, "utf8");
+    const { frontMatter } = parseFrontMatter(content);
+    const tags = frontMatter.tags as string[];
+
+    assert.ok(
+      !tags.includes("未分类"),
+      "tags should not include '未分类'",
+    );
+  });
+});
+
+// ─── case counting edge cases ───────────────────────────────────────────────
+
+describe("archive-gen.ts convert — case counting edge cases", () => {
+  it("counts only page-level test_cases when no sub_groups exist", () => {
+    const fixture = join(TMP_DIR, "page-only-cases.json");
+    const data = {
+      meta: {
+        project_name: "测试",
+        requirement_name: "仅页面用例",
+      },
+      modules: [
+        {
+          name: "模块A",
+          pages: [
+            {
+              name: "页面1",
+              test_cases: [
+                {
+                  title: "用例1",
+                  priority: "P0",
+                  steps: [{ step: "s1", expected: "e1" }],
+                },
+                {
+                  title: "用例2",
+                  priority: "P1",
+                  steps: [{ step: "s2", expected: "e2" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    writeFileSync(fixture, JSON.stringify(data));
+
+    const output = join(TMP_DIR, "page-only-out.md");
+    const { code, stdout, stderr } = run([
+      "convert",
+      "--input",
+      fixture,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const result = JSON.parse(stdout) as { case_count: number };
+    assert.equal(result.case_count, 2, "should count 2 page-level cases");
+  });
+
+  it("counts both sub_group and page-level test_cases", () => {
+    // The default fixture has 3 sub_group + 2 page-level = 5
+    const output = join(TMP_DIR, "mixed-count.md");
+    const { code, stdout, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const result = JSON.parse(stdout) as { case_count: number };
+    assert.equal(
+      result.case_count,
+      5,
+      "should count 3 sub_group + 1 page-level (列表页) + 1 page-level (新增页) = 5",
+    );
+  });
+});
+
+// ─── table cell escaping ────────────────────────────────────────────────────
+
+describe("archive-gen.ts convert — pipe and newline escaping in step tables", () => {
+  it("escapes pipe characters in step text to \\|", () => {
+    const fixture = join(TMP_DIR, "pipe-escape.json");
+    const data = {
+      meta: {
+        project_name: "测试",
+        requirement_name: "管道转义测试",
+      },
+      modules: [
+        {
+          name: "模块",
+          pages: [
+            {
+              name: "页面",
+              test_cases: [
+                {
+                  title: "含管道符的步骤",
+                  priority: "P0",
+                  steps: [
+                    {
+                      step: "输入 A|B|C",
+                      expected: "显示 X|Y",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    writeFileSync(fixture, JSON.stringify(data));
+
+    const output = join(TMP_DIR, "pipe-escape-out.md");
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      fixture,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const content = readFileSync(output, "utf8");
+    assert.ok(
+      content.includes("A\\|B\\|C"),
+      "pipe chars in step should be escaped",
+    );
+    assert.ok(
+      content.includes("X\\|Y"),
+      "pipe chars in expected should be escaped",
+    );
+  });
+});

@@ -31,6 +31,7 @@
     "MEDIUMINT",
     "monocart",
     "msgtype",
+    "myapp",
     "networkidle",
     "nodebuffer",
     "Popconfirm",
@@ -49,6 +50,7 @@
     "venv",
     "WECOM",
     "xmind",
+    "zdxx",
     "zenpms",
     "ZENTAO"
   ],

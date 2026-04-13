@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { after, before, beforeEach, describe, it } from "node:test";
 
 const TMP_DIR = join(tmpdir(), `qa-flow-state-test-${process.pid}`);
@@ -28,7 +28,7 @@ function runState(
       "bun",
       ["run", ".claude/scripts/state.ts", ...args],
       {
-        cwd: "/Users/poco/Documents/DTStack/qa-flow",
+        cwd: resolve(import.meta.dirname, "../../.."),
         encoding: "utf8",
         env: {
           ...process.env,
@@ -347,6 +347,83 @@ describe("state.ts resume", () => {
     assert.equal(code, 1);
     const result = JSON.parse(stdout) as { error: string };
     assert.equal(result.error, "State file not found");
+  });
+});
+
+describe("state.ts update — multiple sequential node transitions", () => {
+  it("tracks full lifecycle: init → transform → enhance → write", () => {
+    const slug = `lifecycle-${Date.now()}`;
+    const prd = `workspace/prds/202604/${slug}.md`;
+
+    runState(["init", "--prd", prd]);
+
+    runState([
+      "update",
+      "--prd-slug",
+      slug,
+      "--node",
+      "transform",
+      "--data",
+      '{"parsed":true}',
+    ]);
+
+    runState([
+      "update",
+      "--prd-slug",
+      slug,
+      "--node",
+      "enhance",
+      "--data",
+      '{"health_score":90}',
+    ]);
+
+    const { stdout } = runState([
+      "update",
+      "--prd-slug",
+      slug,
+      "--node",
+      "write",
+      "--data",
+      '{"file_count":3}',
+    ]);
+
+    const state = JSON.parse(stdout) as QaState;
+    assert.equal(state.current_node, "write");
+    assert.deepEqual(state.completed_nodes, [
+      "transform",
+      "enhance",
+      "write",
+    ]);
+
+    const transformOut = state.node_outputs.transform as { parsed: boolean };
+    assert.equal(transformOut.parsed, true);
+
+    const enhanceOut = state.node_outputs.enhance as { health_score: number };
+    assert.equal(enhanceOut.health_score, 90);
+
+    const writeOut = state.node_outputs.write as { file_count: number };
+    assert.equal(writeOut.file_count, 3);
+  });
+});
+
+describe("state.ts update — invalid JSON data", () => {
+  it("exits 1 when --data is not valid JSON", () => {
+    const slug = `bad-json-${Date.now()}`;
+    const prd = `workspace/prds/202604/${slug}.md`;
+
+    runState(["init", "--prd", prd]);
+
+    const { code, stderr } = runState([
+      "update",
+      "--prd-slug",
+      slug,
+      "--node",
+      "enhance",
+      "--data",
+      "{invalid json",
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /invalid --data JSON/);
   });
 });
 

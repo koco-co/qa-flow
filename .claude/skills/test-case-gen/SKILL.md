@@ -118,7 +118,7 @@ bun run .claude/scripts/history-convert.ts --path {{input_file}} --detect
 
 **⏳ Task**：将 `S2` 标记为 `in_progress`。
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/standardize.md`，对解析出的原始用例逐模块执行标准化重写：
+派发 `standardize-agent`（model: sonnet）对解析出的原始用例逐模块执行标准化重写：
 
 - 应用步骤三要素（操作位置 + 操作对象 + 操作动作）
 - 补充等待条件
@@ -136,7 +136,7 @@ bun run .claude/scripts/history-convert.ts --path {{input_file}} --detect
 
 **⏳ Task**：将 `S3` 标记为 `in_progress`。
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/reviewer.md`，对标准化后的 JSON 执行审查。
+派发 `reviewer-agent`（model: opus）对标准化后的 JSON 执行审查。
 质量门禁与普通模式一致（15% / 40%）。
 
 **✅ Task**：将 `S3` 标记为 `completed`（subject: `S3 质量审查 — 问题率 {{rate}}%`）。
@@ -333,7 +333,7 @@ bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
 
 ### 2.4 PRD 结构化转换（AI 任务）
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/transform.md`，执行：
+派发 `transform-agent`（model: sonnet），执行：
 
 - 蓝湖素材解析
 - 源码状态检测与分析（A/B 级）
@@ -396,7 +396,7 @@ bun run .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 
 ### 3.2 PRD 增强（AI 任务）
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/enhance.md`，对 PRD 执行：
+派发 `enhance-agent`（model: sonnet），对 PRD 执行：
 
 - 图片语义化描述
 - 页面要点提取
@@ -438,7 +438,7 @@ bun run .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir works
 
 ### 4.2 测试点清单生成（AI 任务）
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/analyze.md`，结合增强后 PRD + 历史用例，生成结构化测试点清单。
+派发 `analyze-agent`（model: opus），结合增强后 PRD + 历史用例，生成结构化测试点清单。
 
 --quick 模式下简化分析：跳过历史检索，直接从 PRD 提取测试点。
 
@@ -482,9 +482,7 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 
 ### 5.1 派发 Writer Sub-Agent
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/writer.md` 作为 Writer 提示词。
-
-为每个模块派发独立 Writer，输入包含：
+为每个模块派发独立 `writer-agent`（model: sonnet），输入包含：
 
 - 增强后 PRD 对应模块内容
 - 该模块已确认的测试点清单
@@ -521,7 +519,7 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node write --data 
 
 ### 6.1 质量审查（AI 任务）
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/reviewer.md` 作为 Reviewer 提示词。
+派发 `reviewer-agent`（model: opus）执行质量审查。
 
 质量阈值决策：
 
@@ -574,7 +572,7 @@ bun run .claude/scripts/archive-gen.ts convert \
 
 ### 6.5.2 格式合规检查（AI 任务）
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/format-checker.md` 作为 Format Checker 提示词。
+派发 `format-checker-agent`（model: haiku）执行格式检查。
 
 输入：
 - 临时 Archive MD 文件内容
@@ -613,7 +611,7 @@ bun run .claude/scripts/format-report-locator.ts print \
 1. 将偏差报告转为 `## FORMAT_ISSUES` 块
 2. 派发 Writer Sub-Agent 修正报告中列出的用例（仅修正偏差用例，其余原样保留）
 3. Writer 输出修正后的 JSON
-4. 读取 `${CLAUDE_SKILL_DIR}/prompts/reviewer.md` 对修正后的 JSON 执行 F07-F15 设计逻辑复审
+4. 派发 `reviewer-agent`（model: opus）对修正后的 JSON 执行 F07-F15 设计逻辑复审
 5. 回到 6.5.1 重新生成临时 Archive MD → 6.5.2 再检
 
 ### 6.5.6 更新状态

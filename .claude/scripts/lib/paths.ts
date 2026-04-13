@@ -45,6 +45,22 @@ export function currentYYYYMM(): string {
   return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
+export function validateFilePath(filePath: string, allowedRoots: string[]): string {
+  const resolved = resolve(filePath);
+  const isAbsolute = filePath.startsWith("/");
+  if (!isAbsolute) {
+    const isAllowed = allowedRoots.some((root) =>
+      resolved.startsWith(resolve(root)),
+    );
+    if (!isAllowed) {
+      throw new Error(
+        `Relative path "${filePath}" resolves outside allowed directories`,
+      );
+    }
+  }
+  return resolved;
+}
+
 export function parseGitUrl(url: string): { group: string; repo: string } {
   const cleaned = url.replace(/\.git$/, "").replace(/\/$/, "");
   const parts = cleaned.split("/");

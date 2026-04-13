@@ -7,20 +7,12 @@
  *   bun run .claude/scripts/config.ts --help
  */
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Command } from "commander";
 import { getEnv, initEnv } from "./lib/env.ts";
 import { pluginsDir, repoRoot } from "./lib/paths.ts";
-
-interface PluginJson {
-  description?: string;
-  commands?: Record<string, string>;
-  env_required?: string[];
-  env_required_any?: string[];
-  url_patterns?: string[];
-  [key: string]: unknown;
-}
+import { loadAllPlugins } from "./lib/plugin-utils.ts";
 
 interface PluginEntry {
   active: boolean;
@@ -46,66 +38,16 @@ interface ConfigOutput {
   repo_profiles: RepoProfiles;
 }
 
-function isPluginActive(plugin: PluginJson): boolean {
-  if (plugin.env_required && plugin.env_required.length > 0) {
-    return plugin.env_required.every((key) => {
-      const val = getEnv(key);
-      return val !== undefined && val !== "";
-    });
-  }
-  if (plugin.env_required_any && plugin.env_required_any.length > 0) {
-    return plugin.env_required_any.some((key) => {
-      const val = getEnv(key);
-      return val !== undefined && val !== "";
-    });
-  }
-  return true;
-}
-
 function scanPlugins(dir: string): Record<string, PluginEntry> {
+  const loaded = loadAllPlugins(dir);
   const plugins: Record<string, PluginEntry> = {};
-
-  if (!existsSync(dir)) {
-    process.stderr.write(`[config] plugins dir not found: ${dir}\n`);
-    return plugins;
-  }
-
-  let entries: string[];
-  try {
-    entries = readdirSync(dir, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name);
-  } catch (err) {
-    process.stderr.write(`[config] failed to read plugins dir: ${err}\n`);
-    return plugins;
-  }
-
-  for (const name of entries) {
-    const pluginJsonPath = join(dir, name, "plugin.json");
-    if (!existsSync(pluginJsonPath)) {
-      process.stderr.write(
-        `[config] skipping plugin "${name}": no plugin.json\n`,
-      );
-      continue;
-    }
-
-    let plugin: PluginJson;
-    try {
-      plugin = JSON.parse(readFileSync(pluginJsonPath, "utf8")) as PluginJson;
-    } catch (err) {
-      process.stderr.write(
-        `[config] failed to parse plugin.json for "${name}": ${err}\n`,
-      );
-      continue;
-    }
-
-    plugins[name] = {
-      active: isPluginActive(plugin),
-      description: plugin.description ?? "",
-      commands: plugin.commands ?? {},
+  for (const p of loaded) {
+    plugins[p.name] = {
+      active: p.active,
+      description: p.data.description ?? "",
+      commands: p.data.commands ?? {},
     };
   }
-
   return plugins;
 }
 

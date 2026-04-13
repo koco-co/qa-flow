@@ -405,6 +405,73 @@ describe("xmind-gen.ts <br> tag sanitization", () => {
   });
 });
 
+describe("xmind-gen.ts L1 title strips trailing (#id)", () => {
+  it("l1_title strips trailing (#23) from requirement_name", () => {
+    const fixture = join(TMP_DIR, "l1-strip.json");
+    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
+    const meta = {
+      ...(data.meta as Record<string, unknown>),
+      requirement_name: "质量问题台账(#23)",
+    };
+    writeFileSync(fixture, JSON.stringify({ ...data, meta }));
+
+    const output = join(TMP_DIR, "test-l1-strip.xmind");
+    const { code, stdout, stderr } = run([
+      "--input",
+      fixture,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const result = JSON.parse(stdout) as { l1_title: string };
+    assert.equal(
+      result.l1_title,
+      "质量问题台账",
+      "l1_title should strip trailing (#23)",
+    );
+  });
+
+  it("l1_title unchanged when no trailing (#id)", () => {
+    const output = join(TMP_DIR, "test-l1-no-strip.xmind");
+    const { code, stdout, stderr } = run([
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const result = JSON.parse(stdout) as { l1_title: string };
+    assert.equal(
+      result.l1_title,
+      "质量问题台账",
+      "l1_title should remain unchanged",
+    );
+  });
+});
+
+describe("xmind-gen.ts validation — missing requirement_name", () => {
+  it("exits with code 1 when meta.requirement_name is missing", () => {
+    const badFixture = join(TMP_DIR, "missing-req-name.json");
+    const data = JSON.parse(readFileSync(FIXTURE, "utf8")) as Record<
+      string,
+      unknown
+    >;
+    const meta = { ...(data.meta as Record<string, unknown>) };
+    delete meta.requirement_name;
+    writeFileSync(badFixture, JSON.stringify({ ...data, meta }));
+
+    const output = join(TMP_DIR, "bad-output-req.xmind");
+    const { code, stderr } = run(["--input", badFixture, "--output", output]);
+    assert.equal(code, 1);
+    assert.match(stderr, /requirement_name/);
+  });
+});
+
 describe("xmind-gen.ts replace mode", () => {
   it("replaces matching L1 node in existing .xmind", async () => {
     const output = join(TMP_DIR, "test-replace.xmind");

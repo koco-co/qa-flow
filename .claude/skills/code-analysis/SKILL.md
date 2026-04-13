@@ -61,9 +61,9 @@ argument-hint: "[报错日志 | 禅道链接 | 冲突代码]"
 
 ### 步骤
 
-**A1. 加载提示词**
+**A1. 派发分析 Agent**
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/backend-bug.md`，按其指令执行分析。
+派发 `backend-bug-agent`（model: sonnet），传入报错日志和源码上下文，由 Agent 独立完成分析并返回结构化 JSON。
 
 **A2. 源码确认与同步（强制，不可跳过）**
 
@@ -115,7 +115,7 @@ bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
 
 **A3. AI 分析**
 
-按 `prompts/backend-bug.md` 指令分析报错，生成报告 JSON。
+`backend-bug-agent` 返回报告 JSON 后，进入输出阶段。
 
 **A4. 输出 HTML 报告**
 
@@ -160,9 +160,9 @@ Bug 分析完成
 
 ### 步骤
 
-**B1. 加载提示词**
+**B1. 派发分析 Agent**
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/conflict.md`，按其指令执行分析。
+派发 `conflict-agent`（model: sonnet），传入冲突代码片段和分支信息，由 Agent 独立完成分析并返回结构化 JSON。
 
 **B2. 获取分支信息（可选）**
 
@@ -176,7 +176,7 @@ Bug 分析完成
 
 **B3. AI 分析**
 
-按 `prompts/conflict.md` 指令分析冲突块，生成报告 JSON。
+`conflict-agent` 返回报告 JSON 后，进入输出阶段。
 
 **B4. 输出 HTML 报告**
 
@@ -213,15 +213,15 @@ bun run .claude/scripts/plugin-loader.ts notify --event conflict-analyzed --data
 
 ### 步骤
 
-**C1. 加载提示词**
+**C1. 派发分析 Agent**
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/frontend-bug.md`，按其指令执行分析。
+派发 `frontend-bug-agent`（model: sonnet），传入前端报错信息和源码上下文，由 Agent 独立完成分析并返回结构化 JSON。
 
 **C2. 源码确认与同步（强制，不可跳过，流程同模式 A 的 A2）**
 
 **C3. AI 分析**
 
-按 `prompts/frontend-bug.md` 指令分析报错，生成报告 JSON。
+`frontend-bug-agent` 返回报告 JSON 后，进入输出阶段。
 
 **C4. 输出 HTML 报告**
 
@@ -301,7 +301,7 @@ bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{fix_branch}}
 
 **E3. AI 分析**
 
-读取 `${CLAUDE_SKILL_DIR}/prompts/hotfix-case.md`，结合禅道 Bug 信息和 git diff 生成测试用例 Markdown。
+派发 `hotfix-case-agent`（model: sonnet），传入禅道 Bug 信息和 git diff，由 Agent 独立完成分析并返回 Archive 格式 Markdown。
 
 **E4. 输出用例文件**
 

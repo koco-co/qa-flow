@@ -19,7 +19,7 @@ import { Command } from "commander";
 import JSZip from "jszip";
 import { buildMarkdown, todayString } from "./lib/frontmatter.ts";
 import { getEnv } from "./lib/env.ts";
-import { currentYYYYMM, repoRoot } from "./lib/paths.ts";
+import { currentYYYYMM, repoRoot, validateFilePath } from "./lib/paths.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1448,7 +1448,7 @@ program
       force?: boolean;
       split?: boolean;
     }) => {
-      const inputPath = resolve(opts.path);
+      const inputPath = validateFilePath(opts.path, [repoRoot()]);
       const detect = opts.detect === true;
       const force = opts.force === true;
       const noSplit = opts.split === false;

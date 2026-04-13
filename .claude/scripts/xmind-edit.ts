@@ -14,6 +14,7 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
+import { repoRoot, validateFilePath } from "./lib/paths.ts";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -309,7 +310,7 @@ async function cmdSearch(
 }
 
 async function cmdShow(opts: { file: string; title: string }): Promise<void> {
-  const filePath = resolve(opts.file);
+  const filePath = validateFilePath(opts.file, [repoRoot()]);
   const { sheets } = await readXmind(filePath);
   const matches = findTopics(sheets, opts.title, filePath);
 
@@ -330,7 +331,7 @@ async function cmdPatch(opts: {
   title: string;
   caseJson: string;
 }): Promise<void> {
-  const filePath = resolve(opts.file);
+  const filePath = validateFilePath(opts.file, [repoRoot()]);
   const { zip, sheets } = await readXmind(filePath);
 
   let patch: CaseData;
@@ -388,7 +389,7 @@ async function cmdAdd(opts: {
   parent: string;
   caseJson: string;
 }): Promise<void> {
-  const filePath = resolve(opts.file);
+  const filePath = validateFilePath(opts.file, [repoRoot()]);
   const { zip, sheets } = await readXmind(filePath);
 
   let caseData: CaseData;
@@ -443,7 +444,7 @@ async function cmdDelete(opts: {
   title: string;
   dryRun?: boolean;
 }): Promise<void> {
-  const filePath = resolve(opts.file);
+  const filePath = validateFilePath(opts.file, [repoRoot()]);
   const { zip, sheets } = await readXmind(filePath);
 
   const matches = findTopics(sheets, opts.title, filePath);

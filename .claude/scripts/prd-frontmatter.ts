@@ -15,6 +15,7 @@ import {
   parseFrontMatter,
   todayString,
 } from "./lib/frontmatter.ts";
+import { repoRoot, validateFilePath } from "./lib/paths.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,7 +55,7 @@ const normalizeCmd = program
   .requiredOption("--file <md-path>", "Path to the Markdown file")
   .option("--dry-run", "Output changes without writing")
   .action((opts: { file: string; dryRun?: boolean }) => {
-    const filePath = opts.file;
+    const filePath = validateFilePath(opts.file, [repoRoot()]);
     const dryRun = opts.dryRun === true;
 
     let content: string;

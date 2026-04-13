@@ -225,15 +225,16 @@ export function extractImageUrls(data: unknown): string[] {
 
 const MAX_IMAGE_DIMENSION = 2000;
 
-async function compressImage(
-  srcPath: string,
-  destPath: string,
-): Promise<void> {
+async function compressImage(srcPath: string, destPath: string): Promise<void> {
   const inputBuffer = readFileSync(srcPath);
   const metadata = await sharp(inputBuffer).metadata();
   const { width, height } = metadata;
 
-  if (!width || !height || (width <= MAX_IMAGE_DIMENSION && height <= MAX_IMAGE_DIMENSION)) {
+  if (
+    !width ||
+    !height ||
+    (width <= MAX_IMAGE_DIMENSION && height <= MAX_IMAGE_DIMENSION)
+  ) {
     if (srcPath !== destPath) {
       copyFileSync(srcPath, destPath);
     }
@@ -794,35 +795,27 @@ async function run(
     // Element images section — high-res UI components for field/control recognition
     if (elementImages.length > 0) {
       const elementImgMd = elementImages
-        .map(
-          (img, idx) => `![页面元素-${idx + 1}](images/${img.name})`,
-        )
+        .map((img, idx) => `![页面元素-${idx + 1}](images/${img.name})`)
         .join("\n\n");
       bodyParts.push(`## 页面元素截图\n\n${elementImgMd}`);
     }
 
     // Flowchart/Component text — UI control labels extracted from Axure
     if (parsedSections.componentText) {
-      bodyParts.push(
-        `## 控件文本\n\n${parsedSections.componentText}`,
-      );
+      bodyParts.push(`## 控件文本\n\n${parsedSections.componentText}`);
     }
 
     // Full-page screenshot — overall page layout reference
     if (fullpageImages.length > 0) {
       const fullpageImgMd = fullpageImages
-        .map(
-          (img, idx) => `![全页截图-${idx + 1}](images/${img.name})`,
-        )
+        .map((img, idx) => `![全页截图-${idx + 1}](images/${img.name})`)
         .join("\n\n");
       bodyParts.push(`## 整页截图\n\n${fullpageImgMd}`);
     }
 
     // Full page text — complete page text description
     if (parsedSections.fullText) {
-      bodyParts.push(
-        `## 页面完整文本\n\n${parsedSections.fullText}`,
-      );
+      bodyParts.push(`## 页面完整文本\n\n${parsedSections.fullText}`);
     }
 
     // Fallback: if no parsed sections, include raw bridge content

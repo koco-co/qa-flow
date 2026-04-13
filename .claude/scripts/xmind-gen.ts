@@ -21,6 +21,17 @@ import {
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
+import { repoRoot, validateFilePath } from "./lib/paths.ts";
+import { loadXmindPreferences } from "./lib/preferences.ts";
+import type {
+  IntermediateJson,
+  Meta,
+  Module,
+  Page,
+  SubGroup,
+  TestCase,
+  TestStep,
+} from "./lib/types.ts";
 import type { MarkerId, TopicBuilder } from "xmind-generator";
 import {
   Marker,
@@ -29,51 +40,6 @@ import {
   Workbook,
   writeLocalFile,
 } from "xmind-generator";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface TestStep {
-  step: string;
-  expected: string;
-}
-
-interface TestCase {
-  title: string;
-  priority: string;
-  preconditions?: string;
-  steps: TestStep[];
-}
-
-interface SubGroup {
-  name: string;
-  test_cases: TestCase[];
-}
-
-interface Page {
-  name: string;
-  sub_groups?: SubGroup[];
-  test_cases?: TestCase[];
-}
-
-interface Module {
-  name: string;
-  pages: Page[];
-}
-
-interface Meta {
-  project_name: string;
-  requirement_name: string;
-  version?: string;
-  module_key?: string;
-  requirement_id?: number;
-  requirement_ticket?: string;
-  description?: string;
-}
-
-interface IntermediateJson {
-  meta: Meta;
-  modules: Module[];
-}
 
 type WriteMode = "create" | "append" | "replace";
 
@@ -98,37 +64,6 @@ const PRIORITY_MAP: Record<string, MarkerId> = {
 };
 
 // ─── Preferences loader ──────────────────────────────────────────────────────
-
-interface XmindPreferences {
-  root_title_template: string;
-  iteration_id: string;
-}
-
-function loadPreferences(): XmindPreferences {
-  const defaults: XmindPreferences = {
-    root_title_template: "数据资产v{{prd_version}}迭代用例(#{{iteration_id}})",
-    iteration_id: "23",
-  };
-
-  try {
-    const prefPath = resolve(
-      dirname(new URL(import.meta.url).pathname),
-      "../../preferences/xmind-structure.md",
-    );
-    if (!existsSync(prefPath)) return defaults;
-
-    const content = readFileSync(prefPath, "utf-8");
-
-    const tmplMatch = content.match(/root_title_template:\s*`([^`]+)`/);
-    if (tmplMatch) defaults.root_title_template = tmplMatch[1];
-
-    const idMatch = content.match(/iteration_id:\s*(\S+)/);
-    if (idMatch) defaults.iteration_id = idMatch[1];
-  } catch {
-    // ignore
-  }
-  return defaults;
-}
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 
@@ -160,7 +95,7 @@ function normalizeVersion(version: string): string {
 
 function buildRootTitle(meta: Meta): string {
   if (meta.version) {
-    const prefs = loadPreferences();
+    const prefs = loadXmindPreferences();
     const ver = normalizeVersion(meta.version);
     return prefs.root_title_template
       .replace("{{prd_version}}", ver)
@@ -817,7 +752,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const inputPath = resolve(opts.input);
+  const inputPath = validateFilePath(opts.input, [repoRoot()]);
   const stat = statSync(inputPath);
 
   // Directory input → batch MD conversion

@@ -18,6 +18,17 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { repoRoot, validateFilePath } from "./lib/paths.ts";
+import { buildRootName } from "./lib/preferences.ts";
+import type {
+  IntermediateJson,
+  Meta,
+  Module,
+  Page,
+  SubGroup,
+  TestCase,
+  TestStep,
+} from "./lib/types.ts";
 import { Command } from "commander";
 import Handlebars from "handlebars";
 import {
@@ -27,93 +38,6 @@ import {
   serializeFrontMatter,
   todayString,
 } from "./lib/frontmatter.js";
-
-// ─── Root name builder ──────────────────────────────────────────────────────
-
-interface XmindPreferences {
-  root_title_template: string;
-  iteration_id: string;
-}
-
-function loadXmindPreferences(): XmindPreferences {
-  const defaults: XmindPreferences = {
-    root_title_template: "数据资产v{{prd_version}}迭代用例(#{{iteration_id}})",
-    iteration_id: "23",
-  };
-
-  try {
-    const prefPath = resolve(
-      dirname(new URL(import.meta.url).pathname),
-      "../preferences/xmind-structure.md",
-    );
-    if (!existsSync(prefPath)) return defaults;
-
-    const content = readFileSync(prefPath, "utf-8");
-
-    const tmplMatch = content.match(/root_title_template:\s*`([^`]+)`/);
-    if (tmplMatch) defaults.root_title_template = tmplMatch[1];
-
-    const idMatch = content.match(/iteration_id:\s*(\S+)/);
-    if (idMatch) defaults.iteration_id = idMatch[1];
-  } catch {
-    // ignore
-  }
-  return defaults;
-}
-
-function buildRootName(version?: string): string {
-  if (!version) return "";
-  const prefs = loadXmindPreferences();
-  const ver = version.replace(/^v/i, "");
-  return prefs.root_title_template
-    .replace("{{prd_version}}", ver)
-    .replace("{{iteration_id}}", prefs.iteration_id);
-}
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface TestStep {
-  step: string;
-  expected: string;
-}
-
-interface TestCase {
-  title: string;
-  priority: string;
-  preconditions?: string;
-  steps: TestStep[];
-}
-
-interface SubGroup {
-  name: string;
-  test_cases: TestCase[];
-}
-
-interface Page {
-  name: string;
-  sub_groups?: SubGroup[];
-  test_cases?: TestCase[];
-}
-
-interface Module {
-  name: string;
-  pages: Page[];
-}
-
-interface Meta {
-  project_name: string;
-  requirement_name: string;
-  version?: string;
-  module_key?: string;
-  requirement_id?: number;
-  requirement_ticket?: string;
-  description?: string;
-}
-
-interface IntermediateJson {
-  meta: Meta;
-  modules: Module[];
-}
 
 interface ConvertResult {
   output_path: string;
@@ -363,8 +287,8 @@ async function runConvert(opts: {
   output: string;
   template?: string;
 }): Promise<void> {
-  const inputPath = resolve(opts.input);
-  const outputPath = resolve(opts.output);
+  const inputPath = validateFilePath(opts.input, [repoRoot()]);
+  const outputPath = validateFilePath(opts.output, [repoRoot()]);
 
   let raw: unknown;
   try {
@@ -474,7 +398,7 @@ async function runSearch(opts: {
   dir: string;
   limit: number;
 }): Promise<void> {
-  const searchDir = resolve(opts.dir);
+  const searchDir = validateFilePath(opts.dir, [repoRoot()]);
   const files = collectMdFiles(searchDir);
 
   const results: SearchResult[] = [];

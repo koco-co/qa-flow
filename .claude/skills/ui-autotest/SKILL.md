@@ -173,12 +173,12 @@ bun run .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --outp
 
 - 单条测试用例数据（`id`, `title`, `priority`, `page`, `steps`, `preconditions`）
 - 目标 URL
-- 提示词：读取 `${CLAUDE_SKILL_DIR}/prompts/script-writer.md`
+- 派发 `script-writer-agent`（model: sonnet），每个 sub-agent 独立生成一条脚本
 - 参考资料：playwright-cli skill 的 references（获取 API 用法）
 
 **4.2 SQL 前置条件处理**
 
-当用例的 `preconditions` 包含 SQL 建表/数据准备时，sub-agent 必须在生成的脚本中使用 `setupPreconditions` API（来自 `assets-sql-sync` 插件），而非添加注释跳过。具体用法参见 `${CLAUDE_SKILL_DIR}/prompts/script-writer.md` 的「前置条件处理」章节。
+当用例的 `preconditions` 包含 SQL 建表/数据准备时，sub-agent 必须在生成的脚本中使用 `setupPreconditions` API（来自 `assets-sql-sync` 插件），而非添加注释跳过。具体用法参见 `script-writer-agent` 的「前置条件处理」章节。
 
 若用例同时包含多张表的 SQL，可将 SQL 文件放在 `tests/e2e/{{YYYYMM}}/{{suite_name}}/sql/` 目录下，脚本中通过 `readFileSync` 读取。
 
@@ -344,7 +344,7 @@ QA_SUITE_NAME="{{suite_name}}" bunx playwright test {{full_spec_path}} --project
 
 **8.2 存在失败**
 
-为每个失败的用例触发 bug-reporter sub-agent（读取 `${CLAUDE_SKILL_DIR}/prompts/bug-reporter.md`），输入：
+为每个失败的用例派发 `bug-reporter-agent`（model: haiku），输入：
 
 - 失败的测试用例数据
 - Playwright 错误信息

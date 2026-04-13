@@ -57,12 +57,45 @@ function readState(prdSlug: string): QaState | null {
 
 function writeState(prdSlug: string, state: QaState): void {
   const filePath = stateFilePath(prdSlug);
-  mkdirSync(dirname(filePath), { recursive: true });
-  writeFileSync(filePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+  const lockPath = `${filePath}.lock`;
+
+  if (!acquireLock(lockPath)) {
+    throw new Error(`Failed to acquire lock for ${filePath}`);
+  }
+
+  try {
+    mkdirSync(dirname(filePath), { recursive: true });
+    writeFileSync(filePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+  } finally {
+    releaseLock(lockPath);
+  }
 }
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+function acquireLock(lockPath: string, timeoutMs = 5000): boolean {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      writeFileSync(lockPath, `${process.pid}`, { flag: "wx" });
+      return true;
+    } catch {
+      // lock file exists, wait
+      const waitMs = 50 + Math.random() * 50;
+      Bun.sleepSync(waitMs);
+    }
+  }
+  return false;
+}
+
+function releaseLock(lockPath: string): void {
+  try {
+    if (existsSync(lockPath)) rmSync(lockPath);
+  } catch {
+    // ignore
+  }
 }
 
 const program = new Command();

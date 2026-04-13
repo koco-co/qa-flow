@@ -7,6 +7,10 @@
   "scripts": {
     "check": "biome check .",
     "check:fix": "biome check --fix .",
+    "lint": "biome check .",
+    "format": "biome check --fix .",
+    "type-check": "tsc --noEmit",
+    "ci": "bun run lint && bun run type-check && bun run test",
     "test": "bun test ./.claude/scripts/__tests__",
     "test:watch": "bun test --watch ./.claude/scripts/__tests__"
   },
