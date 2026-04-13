@@ -109,6 +109,34 @@ interface RawBugData {
   [key: string]: unknown;
 }
 
+function unwrapZentaoPayload(payload: unknown): RawBugData | null {
+  if (payload === null || payload === undefined) return null;
+
+  if (typeof payload === "string") {
+    try {
+      return unwrapZentaoPayload(JSON.parse(payload));
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof payload !== "object") return null;
+
+  const data = payload as Record<string, unknown>;
+  if (data.bug !== undefined) return unwrapZentaoPayload(data.bug);
+  if (data.data !== undefined) return unwrapZentaoPayload(data.data);
+
+  return data as RawBugData;
+}
+
+export function parseZentaoResponseText(text: string): RawBugData | null {
+  try {
+    return unwrapZentaoPayload(JSON.parse(text));
+  } catch {
+    return null;
+  }
+}
+
 function parseSeverity(raw: unknown): string | null {
   if (typeof raw !== "string" && typeof raw !== "number") return null;
   const s = String(raw).toLowerCase();
@@ -259,27 +287,19 @@ async function zentaoFetchBug(
     );
   }
 
+  const responseText = await response.text();
+  const parsed = parseZentaoResponseText(responseText);
+  if (parsed) return parsed;
+
   // Older zentao versions may return HTML even for .json URLs
   const contentType = response.headers.get("content-type") ?? "";
   if (contentType.includes("text/html")) {
-    // Graceful degradation: return minimal data
-    const htmlText = await response.text();
-    const titleMatch = htmlText.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const titleMatch = responseText.match(/<title[^>]*>([^<]+)<\/title>/i);
     const rawTitle = titleMatch ? titleMatch[1].trim() : null;
     return { title: rawTitle ?? undefined };
   }
 
-  let data: unknown;
-  try {
-    data = await response.json();
-  } catch {
-    throw Object.assign(new Error("禅道 API 返回了非 JSON 响应"), { code: "PARSE_ERROR" });
-  }
-
-  // Zentao often wraps response in { bug: {...} } or { data: {...} }
-  const d = data as Record<string, unknown>;
-  const bugData = (d.bug ?? d.data ?? d) as RawBugData;
-  return bugData;
+  throw Object.assign(new Error("禅道 API 返回了非 JSON 响应"), { code: "PARSE_ERROR" });
 }
 
 // ─── Main Logic ───────────────────────────────────────────────────────────────

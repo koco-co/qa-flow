@@ -13,7 +13,11 @@ import { join, resolve } from "node:path";
 import { afterEach, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { detectFixBranch, extractBugIdFromUrl } from "../fetch.ts";
+import {
+  detectFixBranch,
+  extractBugIdFromUrl,
+  parseZentaoResponseText,
+} from "../fetch.ts";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const FETCH_TS = resolve(__dirname, "../fetch.ts");
@@ -130,6 +134,50 @@ describe("detectFixBranch", () => {
       "hotfix_6.4.1_second",
     ]);
     assert.equal(branch, "hotfix_6.4.0_first");
+  });
+});
+
+// ─── parseZentaoResponseText ───────────────────────────────────────────────────
+
+describe("parseZentaoResponseText", () => {
+  it("parses wrapped success payload when data is a JSON string", () => {
+    const payload = JSON.stringify({
+      status: "success",
+      data: JSON.stringify({
+        title: "BUG #115497 元数据导出为空",
+        moduleName: "线上问题统计",
+        steps: "1. 进入页面\n2. 点击导出",
+      }),
+    });
+
+    const parsed = parseZentaoResponseText(payload);
+
+    assert.deepEqual(parsed, {
+      title: "BUG #115497 元数据导出为空",
+      moduleName: "线上问题统计",
+      steps: "1. 进入页面\n2. 点击导出",
+    });
+  });
+
+  it("parses nested bug objects", () => {
+    const payload = JSON.stringify({
+      bug: {
+        title: "BUG #100 测试",
+        severity: "2",
+      },
+    });
+
+    const parsed = parseZentaoResponseText(payload);
+
+    assert.deepEqual(parsed, {
+      title: "BUG #100 测试",
+      severity: "2",
+    });
+  });
+
+  it("returns null for html responses", () => {
+    const parsed = parseZentaoResponseText("<html><title>登录</title></html>");
+    assert.equal(parsed, null);
   });
 });
 
