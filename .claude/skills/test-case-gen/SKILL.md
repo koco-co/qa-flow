@@ -34,6 +34,57 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 
 ---
 
+## 任务可视化（Task 工具）
+
+> 全流程使用 `TaskCreate` / `TaskUpdate` 工具展示实时进度，让用户在终端看到全局视图。
+
+### 主流程（7 节点）
+
+workflow 启动时（节点 1 开始前），使用 `TaskCreate` 一次性创建 8 个任务（含 format-check），按顺序设置 `addBlockedBy` 依赖：
+
+| 任务 subject | activeForm |
+|---|---|
+| `init — 输入解析与环境准备` | `解析输入与检测断点` |
+| `transform — 源码分析与 PRD 结构化` | `分析源码与结构化 PRD` |
+| `enhance — PRD 增强` | `增强 PRD（图片识别、要点提取）` |
+| `analyze — 测试点规划` | `生成测试点清单` |
+| `write — 并行生成用例` | `派发 Writer 生成用例` |
+| `review — 质量审查` | `执行质量审查与修正` |
+| `format-check — 格式合规检查` | `检查格式合规性` |
+| `output — 产物生成` | `生成 XMind + Archive MD` |
+
+**状态推进规则**：
+- 进入节点时 → `TaskUpdate status: in_progress`
+- 节点完成时 → `TaskUpdate status: completed`，在 `subject` 末尾追加关键指标（如 `init — 已识别 PRD，普通模式`）
+- 节点失败时 → 保持 `in_progress`，不标记 `completed`
+
+### write 节点子任务
+
+进入 write 节点后，为每个模块额外创建子任务：
+- subject: `[write] {{模块名}}`
+- activeForm: `生成「{{模块名}}」用例`
+- 设置 `addBlockedBy` 指向 write 主任务
+
+Writer Sub-Agent 完成时更新：`[write] {{模块名}} — {{n}} 条用例`
+
+### format-check 循环子任务
+
+进入 format-check 节点后，为第 1 轮创建子任务：
+- subject: `[format-check] 第 1 轮`
+- activeForm: `执行第 1 轮格式检查`
+
+每轮完成时更新 subject 为 `[format-check] 第 {{n}} 轮 — {{偏差数}} 处偏差`，若需下一轮则创建新子任务。
+
+### 标准化归档流程子任务
+
+进入标准化归档流程时，创建 4 个任务（S1-S4），规则同上。
+
+### 反向同步流程子任务
+
+进入反向同步流程时，创建 5 个任务（RS1-RS5），规则同上。
+
+---
+
 ## 标准化归档流程（XMind / CSV 输入）
 
 > 当用户提供的输入是 `.xmind` 或 `.csv` 文件（而非 PRD）时，进入此流程。
@@ -42,6 +93,8 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 ### 触发条件
 
 用户输入文件扩展名为 `.xmind` 或 `.csv`，或包含触发词：标准化归档、归档用例、转化用例。
+
+**⏳ Task**：使用 `TaskCreate` 创建 4 个标准化归档任务（`S1 解析源文件`、`S2 标准化重写`、`S3 质量审查`、`S4 输出`），按顺序设置 `addBlockedBy` 依赖。将 `S1` 标记为 `in_progress`。
 
 ### 步骤 S1: 解析源文件
 
@@ -59,7 +112,11 @@ bun run .claude/scripts/history-convert.ts --path {{input_file}} --detect
 > **选项 1（标准化归档）**：AI 读取原始用例内容，按 `test-case-rules.md` 全部规则重写步骤、预期、前置条件，确保达到自动化可执行精度。原始 XMind/CSV 内容**不直接放入**产物中。
 > **选项 2（仅格式转换）**：调用 `history-convert.ts` 直接转换，不经过 AI 重写。
 
+**✅ Task**：将 `S1` 标记为 `completed`（subject: `S1 解析源文件 — {{count}} 条用例`）。
+
 ### 步骤 S2: AI 标准化重写（仅选项 1）
+
+**⏳ Task**：将 `S2` 标记为 `in_progress`。
 
 读取 `${CLAUDE_SKILL_DIR}/prompts/standardize.md`，对解析出的原始用例逐模块执行标准化重写：
 
@@ -73,12 +130,20 @@ bun run .claude/scripts/history-convert.ts --path {{input_file}} --detect
 
 输出中间 JSON 格式（与 writer 输出一致）。
 
+**✅ Task**：将 `S2` 标记为 `completed`（subject: `S2 标准化重写 — 完成`）。
+
 ### 步骤 S3: 质量审查
+
+**⏳ Task**：将 `S3` 标记为 `in_progress`。
 
 读取 `${CLAUDE_SKILL_DIR}/prompts/reviewer.md`，对标准化后的 JSON 执行审查。
 质量门禁与普通模式一致（15% / 40%）。
 
+**✅ Task**：将 `S3` 标记为 `completed`（subject: `S3 质量审查 — 问题率 {{rate}}%`）。
+
 ### 步骤 S4: 输出
+
+**⏳ Task**：将 `S4` 标记为 `in_progress`。
 
 > **路径规则**：标准化产物（含 `-standardized` 后缀的 MD 和 XMind）属于中间产物，必须输出到 archive 下的 `tmp/` 子目录，不得直接放在 archive 或 xmind 根目录下。
 >
@@ -97,6 +162,8 @@ bun run .claude/scripts/xmind-gen.ts --input {{final_json}} --output {{xmind_tmp
 # 通知
 bun run .claude/scripts/plugin-loader.ts notify --event archive-converted --data '{"fileCount":1,"caseCount":{{count}}}'
 ```
+
+**✅ Task**：将 `S4` 标记为 `completed`（subject: `S4 输出 — {{count}} 条用例已归档`）。
 
 ### 交互点 — 完成确认（使用 AskUserQuestion 工具）
 
@@ -172,6 +239,8 @@ bun run .claude/scripts/history-convert.ts --path {{xmind_file}}
 
 **目标**：解析用户输入、检查插件、检测断点、确认运行参数。
 
+**⏳ Task**：使用 `TaskCreate` 创建 8 个主流程任务（见「任务可视化」章节），然后将 `init` 任务标记为 `in_progress`。
+
 ### 1.1 断点续传检测
 
 ```bash
@@ -203,13 +272,15 @@ bun run .claude/scripts/state.ts init --prd {{prd_path}} --mode {{mode}}
 - 选项 2：切换为快速模式
 - 选项 3：指定其他 PRD 文件
 
-等待用户选择后进入节点 2（transform）。
+等待用户选择后，将 `init` 任务标记为 `completed`（subject 更新为 `init — 已识别 PRD，{{mode}} 模式`），进入节点 2。
 
 ---
 
 ## 节点 2: transform — 源码分析与 PRD 结构化
 
 **目标**：交叉分析蓝湖素材 + 源码 + 归档用例，产出结构化测试增强 PRD。
+
+**⏳ Task**：将 `transform` 任务标记为 `in_progress`。
 
 ### 2.1 源码配置匹配
 
@@ -304,11 +375,15 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node transform --d
 }
 ```
 
+**✅ Task**：将 `transform` 任务标记为 `completed`（subject 更新为 `transform — 置信度 {{confidence}}，{{clarify_count}} 项待确认`）。
+
 ---
 
 ## 节点 3: enhance — PRD 增强
 
 **目标**：图片识别、frontmatter 规范化、页面要点提取、需求澄清。
+
+**⏳ Task**：将 `enhance` 任务标记为 `in_progress`。
 
 > fetch 阶段已从 Axure 资源中提取独立元素图片（高清）+ 整页截图（全貌参考），
 > 无需再做图片压缩。images/ 目录中 `N-uXXX.png` 为独立元素，`N-fullpage-*.png` 为整页截图。
@@ -334,6 +409,8 @@ bun run .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node enhance --data '{{json}}'
 ```
 
+**✅ Task**：将 `enhance` 任务标记为 `completed`（subject 更新为 `enhance — {{n}} 张图片，{{m}} 个要点`）。
+
 ### 交互点 B（--quick 模式跳过，使用 AskUserQuestion 工具）
 
 使用 AskUserQuestion 工具向用户展示：
@@ -348,6 +425,8 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node enhance --dat
 ## 节点 4: analyze — 历史检索与测试点规划
 
 **目标**：检索历史用例、QA 头脑风暴、生成测试点清单 JSON。
+
+**⏳ Task**：将 `analyze` 任务标记为 `in_progress`。
 
 ### 4.1 历史用例检索
 
@@ -368,6 +447,8 @@ bun run .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir works
 ```bash
 bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --data '{{json}}'
 ```
+
+**✅ Task**：将 `analyze` 任务标记为 `completed`（subject 更新为 `analyze — {{n}} 个模块，{{m}} 条测试点`）。
 
 ### 交互点 C（--quick 模式跳过，使用 AskUserQuestion 工具）
 
@@ -397,6 +478,8 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 
 **目标**：按模块并行派发 Writer Sub-Agent，生成结构化用例 JSON。
 
+**⏳ Task**：将 `write` 任务标记为 `in_progress`。然后为每个模块创建子任务（subject: `[write] {{模块名}}`，activeForm: `生成「{{模块名}}」用例`）。
+
 ### 5.1 派发 Writer Sub-Agent
 
 读取 `${CLAUDE_SKILL_DIR}/prompts/writer.md` 作为 Writer 提示词。
@@ -418,6 +501,8 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node analyze --dat
 - 空声明（"无阻断项"）→ 正常继续
 - 有阻断项 → 执行 BLOCKED 中转协议（见下文）
 
+**✅ Task**：每个 Writer Sub-Agent 完成时，将对应子任务标记为 `completed`（subject 更新为 `[write] {{模块名}} — {{n}} 条用例`）。所有 Writer 完成后，将 `write` 主任务标记为 `completed`（subject 更新为 `write — {{total}} 条用例，{{module_count}} 个模块`）。
+
 ### 5.3 更新状态
 
 每个 Writer 完成后更新状态：
@@ -431,6 +516,8 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node write --data 
 ## 节点 6: review — 质量审查与修正
 
 **目标**：对 Writer 产出执行质量审查，按阈值自动决策。
+
+**⏳ Task**：将 `review` 任务标记为 `in_progress`。
 
 ### 6.1 质量审查（AI 任务）
 
@@ -458,6 +545,8 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node write --data 
 bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data '{{json}}'
 ```
 
+**✅ Task**：将 `review` 任务标记为 `completed`（subject 更新为 `review — {{n}} 条用例，问题率 {{rate}}%`）。
+
 ### 交互点 D（使用 AskUserQuestion 工具）
 
 使用 AskUserQuestion 工具向用户展示：
@@ -472,6 +561,8 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node review --data
 ## 节点 6.5: format-check — 格式合规检查闭环
 
 **目标**：确保 Writer 产出的用例在格式层面严格符合 R01-R11 编写规范，零偏差才放行。
+
+**⏳ Task**：将 `format-check` 任务标记为 `in_progress`。创建第 1 轮子任务（subject: `[format-check] 第 1 轮`，activeForm: `执行第 1 轮格式检查`）。
 
 ### 6.5.1 生成临时 Archive MD
 
@@ -511,8 +602,10 @@ bun run .claude/scripts/format-report-locator.ts print \
 
 ### 6.5.4 Verdict 判定
 
-- `verdict === "pass"` → 进入节点 7（output）
-- `verdict === "fail"` 且 `round < max_rounds` → 进入修正循环（6.5.5）
+**✅ Task**：将当前轮子任务标记为 `completed`（subject 更新为 `[format-check] 第 {{n}} 轮 — {{偏差数}} 处偏差`）。
+
+- `verdict === "pass"` → 将 `format-check` 主任务标记为 `completed`（subject: `format-check — 通过（第 {{n}} 轮）`），进入节点 7（output）
+- `verdict === "fail"` 且 `round < max_rounds` → 创建下一轮子任务（subject: `[format-check] 第 {{n+1}} 轮`），进入修正循环（6.5.5）
 - `verdict === "fail"` 且 `round >= max_rounds` → 交互点 D2（超限决策）
 
 ### 6.5.5 修正循环
@@ -561,6 +654,8 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --node format-check 
 
 **目标**：生成 XMind + Archive MD，发送通知，清理状态。
 
+**⏳ Task**：将 `output` 任务标记为 `in_progress`。
+
 > **产物路径规则**（严格遵守）：
 >
 > - XMind → `workspace/xmind/{{YYYYMM}}/{{需求名称}}.xmind`
@@ -594,6 +689,8 @@ notify_data 必需字段：`count`、`file`、`duration`。
 ```bash
 bun run .claude/scripts/state.ts clean --prd-slug {{slug}}
 ```
+
+**✅ Task**：将 `output` 任务标记为 `completed`（subject 更新为 `output — {{n}} 条用例，XMind + Archive MD 已生成`）。
 
 ### 交互点 E — 完成确认（使用 AskUserQuestion 工具）
 

@@ -6,6 +6,50 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 
 # UI 自动化测试 Skill
 
+## 任务可视化（Task 工具）
+
+> 全流程使用 `TaskCreate` / `TaskUpdate` 工具展示实时进度。
+
+### 主流程（9 步）
+
+workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建 9 个任务，按顺序设置 `addBlockedBy` 依赖：
+
+| 任务 subject | activeForm |
+|---|---|
+| `步骤 1 — 解析输入` | `解析用例文件` |
+| `步骤 2 — 交互确认` | `确认执行范围` |
+| `步骤 3 — 登录态准备` | `准备登录 session` |
+| `步骤 4 — 脚本生成` | `生成 Playwright 脚本` |
+| `步骤 5 — 逐条自测` | `执行自测验证` |
+| `步骤 6 — 合并脚本` | `合并验证通过的脚本` |
+| `步骤 7 — 执行测试` | `执行全量回归` |
+| `步骤 8 — 处理结果` | `处理测试结果` |
+| `步骤 9 — 发送通知` | `发送完成通知` |
+
+**状态推进规则**：
+- 进入步骤时 → `TaskUpdate status: in_progress`
+- 步骤完成时 → `TaskUpdate status: completed`，在 `subject` 末尾追加关键指标
+
+### 步骤 5 逐条自测子任务
+
+进入步骤 5 后，为每条待验证用例创建独立子任务：
+- subject: `[自测] [{{priority}}] {{title}}`
+- activeForm: `验证「{{title}}」`
+
+每条用例状态更新：
+- 开始执行 → `in_progress`（activeForm: `验证「{{title}}」— 第 {{n}} 轮`）
+- 修复重试 → 更新 subject 为 `[自测] [{{priority}}] {{title}} — 第 {{n}} 轮修复中`
+- 验证通过 → `completed`（subject: `[自测] [{{priority}}] {{title}} — 通过`）
+- 3 轮仍失败 → `completed`（subject: `[自测] [{{priority}}] {{title}} — 失败（{{原因}}）`）
+
+### 步骤 4 脚本生成子任务
+
+进入步骤 4 后，为每条用例创建子任务：
+- subject: `[脚本] [{{priority}}] {{title}}`
+- Sub-Agent 完成时标记 `completed`
+
+---
+
 ## 前置说明
 
 本 Skill 依赖外部 `playwright-cli` skill（单独安装）。执行前检查是否已安装：若未安装，提示用户执行 `/playwright-cli` 安装后再继续。
@@ -15,6 +59,8 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 ---
 
 ## 步骤 1：解析输入
+
+**⏳ Task**：创建 9 个主流程任务（见「任务可视化」章节），将 `步骤 1` 标记为 `in_progress`。
 
 **1.1 参数提取**
 
@@ -59,7 +105,11 @@ bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 
 ---
 
+**✅ Task**：将 `步骤 1` 标记为 `completed`（subject: `步骤 1 — 解析完成，{{total}} 条用例`）。
+
 ## 步骤 2：交互确认
+
+**⏳ Task**：将 `步骤 2` 标记为 `in_progress`。
 
 向用户展示配置摘要并选择执行范围：
 
@@ -82,7 +132,11 @@ bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 
 ---
 
+**✅ Task**：将 `步骤 2` 标记为 `completed`（subject: `步骤 2 — {{scope}} 模式，{{n}} 条用例`）。
+
 ## 步骤 3：登录态准备
+
+**⏳ Task**：将 `步骤 3` 标记为 `in_progress`。
 
 **3.1 检查已有 session**
 
@@ -105,7 +159,11 @@ bun run .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --outp
 
 ---
 
+**✅ Task**：将 `步骤 3` 标记为 `completed`（subject: `步骤 3 — 登录态就绪`）。
+
 ## 步骤 4：脚本生成（Sub-Agent 并发）
+
+**⏳ Task**：将 `步骤 4` 标记为 `in_progress`。为每条用例创建脚本生成子任务（见「任务可视化」章节）。
 
 **4.1 分发任务**
 
@@ -142,9 +200,13 @@ import { test, expect } from "@playwright/test";
 
 ---
 
+**✅ Task**：所有 Sub-Agent 完成后，将 `步骤 4` 标记为 `completed`（subject: `步骤 4 — {{n}} 条脚本已生成`）。
+
 ## 步骤 5：逐条自测与修复（强制，不可跳过）
 
 > **⚠️ 强制规则：每条脚本必须单独执行验证通过后才能进入合并阶段。仅编译通过不代表验证通过，未经实际执行验证的脚本禁止交付。**
+
+**⏳ Task**：将 `步骤 5` 标记为 `in_progress`。为每条待验证用例创建自测子任务（见「任务可视化」章节的步骤 5 逐条自测子任务规则）。
 
 **5.1 逐条执行验证**
 
@@ -197,7 +259,11 @@ bunx playwright test workspace/.temp/ui-blocks/{{id}}.ts --project=chromium --ti
 
 ---
 
+**✅ Task**：所有用例自测完成后，将 `步骤 5` 标记为 `completed`（subject: `步骤 5 — {{passed}}/{{total}} 通过`）。
+
 ## 步骤 6：合并脚本
+
+**⏳ Task**：将 `步骤 6` 标记为 `in_progress`。
 
 > 仅合并步骤 5 中**验证通过**的脚本。
 
@@ -225,7 +291,11 @@ bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
 
 ---
 
+**✅ Task**：将 `步骤 6` 标记为 `completed`（subject: `步骤 6 — 合并 {{n}} 条脚本`）。
+
 ## 步骤 7：执行测试（全量回归）
+
+**⏳ Task**：将 `步骤 7` 标记为 `in_progress`。
 
 > 此步骤为合并后的全量回归验证，因步骤 5 已逐条验证通过，此处预期全部通过。
 
@@ -247,7 +317,11 @@ QA_SUITE_NAME="{{suite_name}}" bunx playwright test tests/e2e/{{YYYYMM}}/{{suite
 
 ---
 
+**✅ Task**：将 `步骤 7` 标记为 `completed`（subject: `步骤 7 — 回归完成，{{passed}}/{{total}} 通过`）。
+
 ## 步骤 8：处理结果
+
+**⏳ Task**：将 `步骤 8` 标记为 `in_progress`。
 
 **输出模板中的变量说明：**
 
@@ -299,7 +373,11 @@ QA_SUITE_NAME="{{suite_name}}" bunx playwright test {{full_spec_path}} --project
 
 ---
 
+**✅ Task**：将 `步骤 8` 标记为 `completed`（subject: `步骤 8 — 结果已处理`）。
+
 ## 步骤 9：发送通知
+
+**⏳ Task**：将 `步骤 9` 标记为 `in_progress`。
 
 ```bash
 bun run .claude/scripts/plugin-loader.ts notify \
@@ -312,6 +390,8 @@ bun run .claude/scripts/plugin-loader.ts notify \
     "duration": "{{duration}}"
   }'
 ```
+
+**✅ Task**：将 `步骤 9` 标记为 `completed`（subject: `步骤 9 — 通知已发送`）。
 
 ---
 
