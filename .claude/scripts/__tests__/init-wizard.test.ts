@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 
-const ROOT = "/Users/poco/Documents/DTStack/qa-flow";
+const ROOT = join(import.meta.dirname, "../../..");
 const SCRIPT = ".claude/skills/setup/scripts/init-wizard.ts";
 
 function run(

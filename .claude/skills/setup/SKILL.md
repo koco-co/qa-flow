@@ -200,6 +200,7 @@ bun run .claude/skills/setup/scripts/init-wizard.ts verify
 | 源码仓库   | 已配置仓库均可 git fetch（或标注为跳过）     |
 | 插件凭证   | 已配置插件的环境变量非空                     |
 | 脚本可执行 | init-wizard.ts 等核心脚本可被 `bun run` 调用 |
+| 硬编码检查 | 脚本和测试中无硬编码绝对路径或凭证（详见 CLAUDE.md「禁止硬编码规则」） |
 
 ### 5.2 展示汇总表
 

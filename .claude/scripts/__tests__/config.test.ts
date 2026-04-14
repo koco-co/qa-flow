@@ -15,6 +15,8 @@ function makePlugin(name: string, json: Record<string, unknown>): void {
   writeFileSync(join(dir, "plugin.json"), JSON.stringify(json), "utf8");
 }
 
+const REPO_ROOT = join(import.meta.dirname, "../../..");
+
 function runConfig(extraEnv: Record<string, string> = {}): {
   stdout: string;
   stderr: string;
@@ -22,7 +24,7 @@ function runConfig(extraEnv: Record<string, string> = {}): {
 } {
   try {
     const stdout = execFileSync("bun", ["run", ".claude/scripts/config.ts"], {
-      cwd: "/Users/poco/Documents/DTStack/qa-flow",
+      cwd: REPO_ROOT,
       encoding: "utf8",
       env: {
         ...process.env,
@@ -81,7 +83,7 @@ describe("config.ts — output structure", () => {
     }
     try {
       const stdout = execFileSync("bun", ["run", ".claude/scripts/config.ts"], {
-        cwd: "/Users/poco/Documents/DTStack/qa-flow",
+        cwd: REPO_ROOT,
         encoding: "utf8",
         env: spawnEnv,
       });
@@ -205,7 +207,7 @@ describe("config.ts — plugin active detection logic", () => {
   it("--help flag exits successfully", () => {
     try {
       execFileSync("bun", ["run", ".claude/scripts/config.ts", "--help"], {
-        cwd: "/Users/poco/Documents/DTStack/qa-flow",
+        cwd: REPO_ROOT,
         encoding: "utf8",
       });
       // commander exits 0 for --help

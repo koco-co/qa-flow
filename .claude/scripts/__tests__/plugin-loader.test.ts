@@ -11,6 +11,8 @@ import { after, before, describe, it } from "node:test";
 
 const TMP_DIR = join(tmpdir(), `qa-flow-plugin-loader-test-${process.pid}`);
 
+const REPO_ROOT = join(import.meta.dirname, "../../..");
+
 function runPluginLoader(
   args: string[],
   extraEnv: Record<string, string> = {},
@@ -20,7 +22,7 @@ function runPluginLoader(
       "bun",
       ["run", ".claude/scripts/plugin-loader.ts", ...args],
       {
-        cwd: "/Users/poco/Documents/DTStack/qa-flow",
+        cwd: REPO_ROOT,
         encoding: "utf8",
         env: {
           ...process.env,
@@ -362,7 +364,7 @@ describe("plugin-loader.ts --help", () => {
         "bun",
         ["run", ".claude/scripts/plugin-loader.ts", "--help"],
         {
-          cwd: "/Users/poco/Documents/DTStack/qa-flow",
+          cwd: REPO_ROOT,
           encoding: "utf8",
         },
       );
