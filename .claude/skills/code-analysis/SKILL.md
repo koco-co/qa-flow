@@ -272,32 +272,36 @@ bun run plugins/zentao/fetch.ts --url "{{ZENTAO_BASE_URL}}/zentao/bug-view-{{bug
 
 若返回 `partial: true`（API 不可达），则跳过 E2，直接用 URL 中的 Bug ID 继续后续步骤。
 
-**E2. 源码确认与同步（强制，不可跳过，流程同模式 A 的 A2）**
+**E2. 源码同步（自动优先，必要时才确认）**
 
-> **⚠️ 强制规则：必须通过 AskUserQuestion 工具向用户确认源码仓库和分支后，才能进入 E3 分析步骤。禁止跳过此步骤直接生成用例。**
+根据 fix_branch 是否可用，分两种路径：
 
-通过 AskUserQuestion 工具向用户展示：
+**路径 A — fix_branch 已获取（自动执行，无需用户确认）：**
 
-```
-开始生成 Hotfix 用例前，请确认源码参考信息：
-
-  仓库：{{推断的 repo_name}}
-  路径：{{workspace/.repos/ 下的实际路径}}
-  分支：{{fix_branch 或推断的分支}}
-
-可选仓库列表：
-{{逐行列出 config.repos 中所有仓库名称}}
-
-以上信息是否正确？如需调整请告知仓库名和分支名。
-```
-
-用户确认或纠正后，执行同步：
+1. 从 fix_branch 名称中推断仓库（匹配 config.repos 中已有的仓库，或根据分支前缀、Bug 所属产品推断）
+2. 直接执行同步，不询问用户：
 
 ```bash
 bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{fix_branch}}
 ```
 
-若用户提供了新仓库或纠正了分支，按模式 A 的 A2 步骤 4 反向写入 `.env`。
+3. 同步完成后输出一行确认信息即可：`源码已同步：{{repo_name}} @ {{fix_branch}}`
+
+**路径 B — fix_branch 为 null（需要用户确认）：**
+
+通过 AskUserQuestion 工具询问仓库和分支：
+
+```
+禅道未返回修复分支信息，请提供：
+
+  仓库：{{推断的 repo_name 或 "待确认"}}
+  分支：{{待确认}}
+
+可选仓库列表：
+{{逐行列出 config.repos 中所有仓库名称}}
+```
+
+用户确认后执行同步，若提供了新仓库或分支，按模式 A 的 A2 步骤 4 反向写入 `.env`。
 
 **E3. AI 分析**
 

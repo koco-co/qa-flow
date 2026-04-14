@@ -171,7 +171,19 @@ function extractBugFields(data: RawBugData): Omit<BugOutput, "bug_id" | "output_
     ? data.comments.map((c) => c.content ?? c.text ?? "").filter(Boolean)
     : [];
 
+  // Include git branch custom fields from Zentao (gitBranch1~6, gitProjectBranch)
+  const gitBranchCandidates = [
+    data.gitBranch1,
+    data.gitBranch2,
+    data.gitBranch3,
+    data.gitBranch4,
+    data.gitBranch5,
+    data.gitBranch6,
+    data.gitProjectBranch,
+  ].filter((v): v is string => typeof v === "string" && v.length > 0);
+
   const fix_branch = detectFixBranch([
+    ...gitBranchCandidates,
     data.resolvedBuild,
     data.resolution,
     data.steps,
