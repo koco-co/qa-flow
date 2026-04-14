@@ -94,6 +94,9 @@ function normalizeVersion(version: string): string {
 }
 
 function buildRootTitle(meta: Meta, project?: string): string {
+  if (meta.root_name) {
+    return meta.root_name;
+  }
   if (meta.version) {
     const prefs = loadXmindPreferences(project);
     const ver = normalizeVersion(meta.version);
@@ -699,6 +702,10 @@ function archiveToJson(
     project_name: resolvedProject,
     requirement_name: suiteName,
   };
+
+  if (typeof fm.root_name === "string") {
+    meta.root_name = fm.root_name;
+  }
 
   if (resolvedVersion) {
     meta.version = resolvedVersion;

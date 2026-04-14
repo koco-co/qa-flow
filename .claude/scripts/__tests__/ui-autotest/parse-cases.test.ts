@@ -230,6 +230,14 @@ describe("parseArchiveMd", () => {
     assert.ok(firstTask.steps.length > 0, "steps 不应为空");
   });
 
+  it("保留 Archive MD 的 B 格式标题并单独提取优先级", () => {
+    const result = parseArchiveMd(FIXTURE_MD, "test.md");
+    const secondTask = result.tasks[1];
+    assert.ok(secondTask, "应解析出第二条用例");
+    assert.equal(secondTask.title, "【P1】验证按问题类型筛选");
+    assert.equal(secondTask.priority, "P1");
+  });
+
   it("用例步骤包含 step 和 expected", () => {
     const result = parseArchiveMd(FIXTURE_MD, "test.md");
     const firstTask = result.tasks[0];
