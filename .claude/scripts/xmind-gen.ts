@@ -93,9 +93,9 @@ function normalizeVersion(version: string): string {
   return version.replace(/^v/i, "");
 }
 
-function buildRootTitle(meta: Meta): string {
+function buildRootTitle(meta: Meta, project?: string): string {
   if (meta.version) {
-    const prefs = loadXmindPreferences();
+    const prefs = loadXmindPreferences(project);
     const ver = normalizeVersion(meta.version);
     return prefs.root_title_template
       .replace("{{prd_version}}", ver)
@@ -259,6 +259,7 @@ function buildTopicTree(modules: Module[]): {
 async function createXmind(
   data: IntermediateJson,
   outputPath: string,
+  project?: string,
 ): Promise<void> {
   if (existsSync(outputPath)) {
     throw new Error(
@@ -266,7 +267,7 @@ async function createXmind(
     );
   }
 
-  const rootTitle = buildRootTitle(data.meta);
+  const rootTitle = buildRootTitle(data.meta, project);
   const l1Title = buildL1Title(data.meta);
   const { topics: l2Topics, promoted } = buildTopicTree(data.modules);
 
@@ -416,14 +417,15 @@ function buildRawL1Node(data: IntermediateJson): XMindTopicNode {
 async function appendXmind(
   data: IntermediateJson,
   outputPath: string,
+  project?: string,
 ): Promise<void> {
   if (!existsSync(outputPath)) {
-    await createXmind(data, outputPath);
+    await createXmind(data, outputPath, project);
     return;
   }
 
   const [sheets, zip] = await readXmindSheets(outputPath);
-  const rootTitle = buildRootTitle(data.meta);
+  const rootTitle = buildRootTitle(data.meta, project);
 
   const sheet =
     sheets.find((s) => s.rootTopic?.title === rootTitle) ?? sheets[0];
@@ -449,14 +451,15 @@ async function appendXmind(
 async function replaceXmind(
   data: IntermediateJson,
   outputPath: string,
+  project?: string,
 ): Promise<void> {
   if (!existsSync(outputPath)) {
-    await createXmind(data, outputPath);
+    await createXmind(data, outputPath, project);
     return;
   }
 
   const [sheets, zip] = await readXmindSheets(outputPath);
-  const rootTitle = buildRootTitle(data.meta);
+  const rootTitle = buildRootTitle(data.meta, project);
   const l1Title = buildL1Title(data.meta);
 
   const sheet =
@@ -814,11 +817,11 @@ async function main(): Promise<void> {
 
   try {
     if (mode === "create") {
-      await createXmind(data, outputPath);
+      await createXmind(data, outputPath, opts.project);
     } else if (mode === "append") {
-      await appendXmind(data, outputPath);
+      await appendXmind(data, outputPath, opts.project);
     } else {
-      await replaceXmind(data, outputPath);
+      await replaceXmind(data, outputPath, opts.project);
     }
   } catch (err) {
     process.stderr.write(`[xmind-gen] Error: ${err}\n`);
@@ -828,7 +831,7 @@ async function main(): Promise<void> {
   const result: OutputResult = {
     output_path: outputPath,
     mode,
-    root_title: buildRootTitle(data.meta),
+    root_title: buildRootTitle(data.meta, opts.project),
     l1_title: buildL1Title(data.meta),
     case_count: countCases(data.modules),
   };
@@ -869,11 +872,11 @@ async function processMdFile(
 
   try {
     if (mode === "create") {
-      await createXmind(data, xmindPath);
+      await createXmind(data, xmindPath, project);
     } else if (mode === "append") {
-      await appendXmind(data, xmindPath);
+      await appendXmind(data, xmindPath, project);
     } else {
-      await replaceXmind(data, xmindPath);
+      await replaceXmind(data, xmindPath, project);
     }
   } catch (err) {
     process.stderr.write(`[xmind-gen] Error processing ${mdPath}: ${err}\n`);
