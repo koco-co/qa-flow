@@ -391,6 +391,153 @@ origin: "xmind"
   });
 });
 
+describe("archive-gen.ts search — --project resolves to workspace/<project>/archive", () => {
+  it("uses workspace/<project>/archive when --project is provided", () => {
+    // Create a project-scoped archive directory under workspace
+    const projectArchiveDir = join(
+      REPO_ROOT,
+      "workspace",
+      "testProject",
+      "archive",
+    );
+    mkdirSync(projectArchiveDir, { recursive: true });
+    const archiveFile = join(projectArchiveDir, "project-scoped.md");
+    writeFileSync(
+      archiveFile,
+      `---
+suite_name: "项目级归档"
+description: "项目级归档测试"
+product: "data-assets"
+project: "testProject"
+tags:
+  - "项目级"
+create_at: "2026-04-14"
+status: "草稿"
+case_count: 1
+origin: "xmind"
+---
+
+## 项目级归档
+
+##### 【P0】验证项目级搜索
+`,
+      "utf8",
+    );
+
+    try {
+      const { code, stdout, stderr } = run([
+        "search",
+        "--query",
+        "项目级归档",
+        "--project",
+        "testProject",
+      ]);
+      assert.equal(code, 0, `stderr: ${stderr}`);
+
+      const results = JSON.parse(stdout) as Array<{
+        path: string;
+        suite_name: string;
+      }>;
+      assert.ok(results.length > 0, "should find project-scoped archive");
+      assert.equal(results[0].suite_name, "项目级归档");
+      assert.ok(
+        results[0].path.includes("testProject/archive"),
+        "path should contain project-scoped archive dir",
+      );
+    } finally {
+      // Clean up the created project archive directory
+      rmSync(join(REPO_ROOT, "workspace", "testProject"), {
+        recursive: true,
+        force: true,
+      });
+    }
+  });
+
+  it("--dir overrides --project when both are provided", () => {
+    const archiveDir = join(TMP_DIR, "archive-dir-override");
+    mkdirSync(archiveDir, { recursive: true });
+    writeFileSync(
+      join(archiveDir, "override-test.md"),
+      `---
+suite_name: "Dir覆盖测试"
+description: "测试"
+product: "test"
+tags:
+  - "override"
+create_at: "2026-04-14"
+status: "草稿"
+case_count: 1
+origin: "xmind"
+---
+
+## Dir覆盖
+
+##### 【P0】覆盖验证
+`,
+      "utf8",
+    );
+
+    const { code, stdout, stderr } = run([
+      "search",
+      "--query",
+      "Dir覆盖测试",
+      "--project",
+      "nonExistentProject",
+      "--dir",
+      archiveDir,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const results = JSON.parse(stdout) as Array<{ suite_name: string }>;
+    assert.ok(results.length > 0, "--dir should override --project");
+    assert.equal(results[0].suite_name, "Dir覆盖测试");
+  });
+});
+
+describe("archive-gen.ts convert — --project injects project field into front-matter", () => {
+  it("includes project in front-matter when --project is provided", () => {
+    const output = join(TMP_DIR, "test-project-fm.md");
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+      "--project",
+      "dataAssets",
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const content = readFileSync(output, "utf8");
+    const { frontMatter } = parseFrontMatter(content);
+    assert.equal(
+      frontMatter.project,
+      "dataAssets",
+      "front-matter should contain project field",
+    );
+  });
+
+  it("omits project from front-matter when --project is not provided", () => {
+    const output = join(TMP_DIR, "test-no-project-fm.md");
+    const { code, stderr } = run([
+      "convert",
+      "--input",
+      FIXTURE,
+      "--output",
+      output,
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const content = readFileSync(output, "utf8");
+    const { frontMatter } = parseFrontMatter(content);
+    assert.equal(
+      frontMatter.project,
+      undefined,
+      "front-matter should not contain project field when not provided",
+    );
+  });
+});
+
 describe("archive-gen.ts --help", () => {
   it("outputs usage information", () => {
     const { stdout, stderr, code } = run(["--help"]);

@@ -4,8 +4,8 @@
  * and searches existing archives.
  *
  * Usage:
- *   bun run .claude/scripts/archive-gen.ts convert --input <json> --output <path> [--template templates/archive.md.hbs]
- *   bun run .claude/scripts/archive-gen.ts search --query <keywords> [--dir workspace/archive] [--limit 20]
+ *   bun run .claude/scripts/archive-gen.ts convert --input <json> --output <path> [--project <name>] [--template templates/archive.md.hbs]
+ *   bun run .claude/scripts/archive-gen.ts search --query <keywords> [--project <name>] [--dir <path>] [--limit 20]
  *   bun run .claude/scripts/archive-gen.ts --help
  */
 
@@ -203,7 +203,10 @@ function buildBodyFromModules(modules: Module[]): string {
 
 // ─── Built-in template renderer ───────────────────────────────────────────────
 
-function renderBuiltIn(data: IntermediateJson): string {
+function renderBuiltIn(
+  data: IntermediateJson,
+  project?: string,
+): string {
   const { meta, modules } = data;
   const caseCount = countCasesInModules(modules);
   const rootName = buildRootName(meta.version);
@@ -217,6 +220,7 @@ function renderBuiltIn(data: IntermediateJson): string {
       : {}),
     ...(meta.version ? { prd_version: meta.version } : {}),
     product: meta.module_key ?? "",
+    ...(project ? { project } : {}),
     tags: inferTags(meta, modules),
     create_at: todayString(),
     status: "草稿",
@@ -247,6 +251,7 @@ function registerHandlebarsHelpers(): void {
 function renderWithTemplate(
   data: IntermediateJson,
   templatePath: string,
+  project?: string,
 ): string {
   registerHandlebarsHelpers();
 
@@ -265,6 +270,7 @@ function renderWithTemplate(
       : {}),
     ...(meta.version ? { prd_version: meta.version } : {}),
     product: meta.module_key ?? "",
+    ...(project ? { project } : {}),
     tags: inferTags(meta, modules),
     create_at: todayString(),
     status: "草稿",
@@ -285,6 +291,7 @@ function renderWithTemplate(
 async function runConvert(opts: {
   input: string;
   output: string;
+  project?: string;
   template?: string;
 }): Promise<void> {
   const inputPath = validateFilePath(opts.input, [repoRoot()]);
@@ -310,9 +317,9 @@ async function runConvert(opts: {
   let markdown: string;
   try {
     if (opts.template) {
-      markdown = renderWithTemplate(data, opts.template);
+      markdown = renderWithTemplate(data, opts.template, opts.project);
     } else {
-      markdown = renderBuiltIn(data);
+      markdown = renderBuiltIn(data, opts.project);
     }
   } catch (err) {
     process.stderr.write(`[archive-gen] Render error: ${err}\n`);
@@ -427,12 +434,18 @@ async function main(): Promise<void> {
     .description("Convert intermediate JSON test cases to Archive Markdown")
     .requiredOption("--input <path>", "Path to input JSON file")
     .requiredOption("--output <path>", "Path to output Markdown file")
+    .option("--project <name>", "Project name (e.g. dataAssets)")
     .option(
       "--template <path>",
       "Path to Handlebars template (uses built-in if omitted)",
     )
     .action(
-      async (opts: { input: string; output: string; template?: string }) => {
+      async (opts: {
+        input: string;
+        output: string;
+        project?: string;
+        template?: string;
+      }) => {
         await runConvert(opts);
       },
     );
@@ -441,15 +454,31 @@ async function main(): Promise<void> {
     .command("search")
     .description("Search archive Markdown files by keyword")
     .requiredOption("--query <keywords>", "Search keyword(s)")
-    .option("--dir <path>", "Archive directory to search", "workspace/archive")
+    .option("--project <name>", "Project name (e.g. dataAssets)")
+    .option(
+      "--dir <path>",
+      "Archive directory to search (overrides project default)",
+    )
     .option("--limit <n>", "Maximum results to return", "20")
-    .action(async (opts: { query: string; dir: string; limit: string }) => {
-      await runSearch({
-        query: opts.query,
-        dir: opts.dir,
-        limit: Number.parseInt(opts.limit, 10) || 20,
-      });
-    });
+    .action(
+      async (opts: {
+        query: string;
+        project?: string;
+        dir?: string;
+        limit: string;
+      }) => {
+        const searchDir =
+          opts.dir ??
+          (opts.project
+            ? resolve(repoRoot(), "workspace", opts.project, "archive")
+            : resolve(repoRoot(), "workspace", "archive"));
+        await runSearch({
+          query: opts.query,
+          dir: searchDir,
+          limit: Number.parseInt(opts.limit, 10) || 20,
+        });
+      },
+    );
 
   program.parse(process.argv);
 }
