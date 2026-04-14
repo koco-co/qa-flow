@@ -1,7 +1,27 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { describe, it } from "node:test";
-import { currentYYYYMM, parseGitUrl, repoRoot, scriptsDir, skillsDir } from "../../lib/paths.ts";
+import {
+  currentYYYYMM,
+  parseGitUrl,
+  projectDir,
+  projectPath,
+  xmindDir,
+  xmindPath,
+  archiveDir,
+  prdsDir,
+  issuesDir,
+  reportsDir,
+  testsDir,
+  reposDir,
+  tempDir,
+  projectPreferencesDir,
+  listProjects,
+  repoRoot,
+  scriptsDir,
+  skillsDir,
+} from "../../lib/paths.ts";
 
 describe("parseGitUrl", () => {
   it("extracts group and repo from http gitlab URL with .git suffix", () => {
@@ -18,15 +38,11 @@ describe("parseGitUrl", () => {
 
   it("handles URL with trailing slash", () => {
     const result = parseGitUrl("https://gitlab.com/team/service/");
-    // trailing slash removed, so parts = ["https:", "", "gitlab.com", "team", "service"]
-    // pop() => "service" (repo), pop() => "team" (group)
     assert.equal(result.group, "team");
     assert.equal(result.repo, "service");
   });
 
-  it("extracts from ssh git URL", () => {
-    const result = parseGitUrl("git@github.com:dtstack/taier.git");
-    // ssh: split by "/" gives ["git@github.com:dtstack", "taier"]
+  it("extracts from https git URL with .git suffix", () => {
     const result2 = parseGitUrl("https://github.com/dtstack/taier.git");
     assert.equal(result2.group, "dtstack");
     assert.equal(result2.repo, "taier");
@@ -94,5 +110,109 @@ describe("skillsDir", () => {
   it("points to .claude/skills inside the repo root", () => {
     const dir = skillsDir();
     assert.ok(dir.endsWith(".claude/skills"), `Expected to end with .claude/skills, got: ${dir}`);
+  });
+});
+
+describe("projectDir", () => {
+  it("returns workspace/{project} under repoRoot", () => {
+    const dir = projectDir("dataAssets");
+    const root = repoRoot();
+    assert.equal(dir, join(root, "workspace", "dataAssets"));
+  });
+
+  it("works with different project names", () => {
+    const dir = projectDir("xyzh");
+    assert.ok(dir.endsWith("workspace/xyzh"));
+  });
+});
+
+describe("projectPath", () => {
+  it("joins segments under project dir", () => {
+    const p = projectPath("dataAssets", "prds", "202604");
+    assert.ok(p.endsWith("workspace/dataAssets/prds/202604"));
+  });
+});
+
+describe("xmindDir", () => {
+  it("returns workspace/{project}/xmind", () => {
+    const dir = xmindDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/xmind"));
+  });
+});
+
+describe("xmindPath", () => {
+  it("joins segments under xmind dir", () => {
+    const p = xmindPath("dataAssets", "202604", "test.xmind");
+    assert.ok(p.endsWith("workspace/dataAssets/xmind/202604/test.xmind"));
+  });
+});
+
+describe("archiveDir", () => {
+  it("returns workspace/{project}/archive", () => {
+    const dir = archiveDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/archive"));
+  });
+});
+
+describe("prdsDir", () => {
+  it("returns workspace/{project}/prds", () => {
+    const dir = prdsDir("xyzh");
+    assert.ok(dir.endsWith("workspace/xyzh/prds"));
+  });
+});
+
+describe("issuesDir", () => {
+  it("returns workspace/{project}/issues", () => {
+    const dir = issuesDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/issues"));
+  });
+});
+
+describe("reportsDir", () => {
+  it("returns workspace/{project}/reports", () => {
+    const dir = reportsDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/reports"));
+  });
+});
+
+describe("testsDir", () => {
+  it("returns workspace/{project}/tests", () => {
+    const dir = testsDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/tests"));
+  });
+});
+
+describe("reposDir", () => {
+  it("returns workspace/{project}/.repos", () => {
+    const dir = reposDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/.repos"));
+  });
+});
+
+describe("tempDir", () => {
+  it("returns workspace/{project}/.temp", () => {
+    const dir = tempDir("xyzh");
+    assert.ok(dir.endsWith("workspace/xyzh/.temp"));
+  });
+});
+
+describe("projectPreferencesDir", () => {
+  it("returns workspace/{project}/preferences", () => {
+    const dir = projectPreferencesDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/preferences"));
+  });
+});
+
+describe("listProjects", () => {
+  it("returns an array", () => {
+    const projects = listProjects();
+    assert.ok(Array.isArray(projects));
+  });
+
+  it("does not include dot-prefixed directories", () => {
+    const projects = listProjects();
+    for (const p of projects) {
+      assert.ok(!p.startsWith("."), `${p} should not start with dot`);
+    }
   });
 });

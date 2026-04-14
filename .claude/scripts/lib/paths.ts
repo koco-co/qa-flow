@@ -1,9 +1,9 @@
+import { readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getEnv } from "./env.ts";
 
 export function repoRoot(): string {
-  // lib/ is at .claude/scripts/lib/, so 3 levels up
   return resolve(fileURLToPath(import.meta.url), "../../../..");
 }
 
@@ -12,8 +12,57 @@ export function workspaceDir(): string {
   return resolve(repoRoot(), dir);
 }
 
+/** @deprecated Use project-scoped functions instead. Will be removed once all callers are migrated. */
 export function workspacePath(...segments: string[]): string {
   return join(workspaceDir(), ...segments);
+}
+
+export function projectDir(project: string): string {
+  return join(workspaceDir(), project);
+}
+
+export function projectPath(project: string, ...segments: string[]): string {
+  return join(projectDir(project), ...segments);
+}
+
+export function xmindDir(project: string): string {
+  return join(projectDir(project), "xmind");
+}
+
+export function xmindPath(project: string, ...segments: string[]): string {
+  return join(xmindDir(project), ...segments);
+}
+
+export function archiveDir(project: string): string {
+  return join(projectDir(project), "archive");
+}
+
+export function prdsDir(project: string): string {
+  return join(projectDir(project), "prds");
+}
+
+export function issuesDir(project: string): string {
+  return join(projectDir(project), "issues");
+}
+
+export function reportsDir(project: string): string {
+  return join(projectDir(project), "reports");
+}
+
+export function testsDir(project: string): string {
+  return join(projectDir(project), "tests");
+}
+
+export function reposDir(project: string): string {
+  return join(projectDir(project), ".repos");
+}
+
+export function tempDir(project: string): string {
+  return join(projectDir(project), ".temp");
+}
+
+export function projectPreferencesDir(project: string): string {
+  return join(projectDir(project), "preferences");
 }
 
 export function scriptsDir(): string {
@@ -30,14 +79,6 @@ export function templatesDir(): string {
 
 export function skillsDir(): string {
   return resolve(repoRoot(), ".claude/skills");
-}
-
-export function xmindDir(): string {
-  return join(workspaceDir(), "xmind");
-}
-
-export function xmindPath(...segments: string[]): string {
-  return join(xmindDir(), ...segments);
 }
 
 export function currentYYYYMM(): string {
@@ -67,4 +108,21 @@ export function parseGitUrl(url: string): { group: string; repo: string } {
   const repo = parts.pop() ?? "";
   const group = parts.pop() ?? "";
   return { group, repo };
+}
+
+export function listProjects(): string[] {
+  const wsDir = workspaceDir();
+  try {
+    return readdirSync(wsDir)
+      .filter((name) => {
+        if (name.startsWith(".")) return false;
+        try {
+          return statSync(join(wsDir, name)).isDirectory();
+        } catch {
+          return false;
+        }
+      });
+  } catch {
+    return [];
+  }
 }
