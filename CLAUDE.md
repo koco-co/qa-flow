@@ -38,7 +38,7 @@ workspace/
 
 - 脚本通过 `--project` 参数指定项目，路径函数见 `paths.ts`
 - `config.json` 按 `projects.{name}` 组织配置
-- 偏好加载顺序：全局 `preferences/` → 项目级 `workspace/{project}/preferences/`（后者覆盖前者）
+- 偏好优先级：用户当前指令 > 项目级 `workspace/{project}/preferences/` > 全局 `preferences/` > skill 内置规则
 
 ## 核心约束
 
