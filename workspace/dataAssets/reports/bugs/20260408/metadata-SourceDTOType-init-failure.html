@@ -1,0 +1,311 @@
+<!--
+  禅道富文本编辑器兼容模板
+  - 全部使用 inline style，无 <style> 块
+  - 使用 table 布局替代 flexbox/grid
+  - 无 CSS 变量、伪元素、渐变
+  - 兼容禅道 CKEditor / UEditor 渲染
+-->
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:900px;border-collapse:collapse;font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.6;color:#1a202c;">
+
+  <!-- Header -->
+  <tr>
+    <td style="padding:20px 24px;background:#1e293b;color:#fff;border-radius:6px 6px 0 0;">
+      <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">Metadata SourceDTOType 初始化失败导致元数据接口 500</div>
+      <div style="font-size:12px;color:#cbd5e1;">
+        2026-04-08 15:19
+        &nbsp;&nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#ef4444;">严重</span>
+        &nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#8b5cf6;">混合</span>
+        &nbsp;&nbsp;CI78 172.16.124.78
+      </div>
+    </td>
+  </tr>
+
+  <!-- Summary -->
+  <tr>
+    <td style="padding:16px 24px;background:#fef2f2;border-left:4px solid #ef4444;">
+      <strong>根因概述：</strong>metadata 在构造 ISourceDTO 时装载 datasourcex 的 SourceDTOType 失败，根因更像 datasourcex-client 版本或运行时类路径不一致，不是 assets 页面逻辑错误。
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 请求信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            请求信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">方法</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">POST</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">URL</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">http://172.16.124.78/dmetadata/v1/dataDb/realTimeDbList</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">关键参数</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">dataSourceId&#x3D;3, useStatus&#x3D;1；同链路的 /dmetadata/v1/dataTable/queryCreateTableSql 也报错</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应状态</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">500</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应预览</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">java.lang.NoClassDefFoundError: Could not initialize class com.dtstack.dtcenter.common.convert.enums.SourceDTOType</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 异常堆栈解析 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            异常堆栈解析
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常类型</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">java.lang.NoClassDefFoundError</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常消息</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">Could not initialize class com.dtstack.dtcenter.common.convert.enums.SourceDTOType</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">触发处理器</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">com.dtstack.metadata.controller.data.DataTableController.queryCreateTableSql(DataTableController.java:1328)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">根因帧</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">com.dtstack.dtcenter.common.convert.load.SourceLoaderService.buildSourceDTO(SourceLoaderService.java:188)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">说明</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">realTimeDbList 与 queryCreateTableSql 都会经过 AbstractDbInitService.getSourceDTO，再进入 SourceLoaderService.buildSourceDTO，因此属于同一根因。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- 调用链 -->
+  <tr>
+    <td style="padding:16px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            调用链（从入口到根因）
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;font-family:Consolas,Monaco,monospace;">
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >com.dtstack.metadata.controller.data.DataDbController</strong>.realTimeDbList (line 133)
+                  <br><span style="color:#64748b;font-size:12px;">实时获取数据库列表入口</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >com.dtstack.metadata.service.data.DataDbService</strong>.realTimeDbList (line 322)
+                  <br><span style="color:#64748b;font-size:12px;">调用 dbInitAdapterService 获取真实库列表</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >com.dtstack.metadata.service.data.init.AbstractDbInitService</strong>.getDbNameList (line 590)
+                  <br><span style="color:#64748b;font-size:12px;">构造 ISourceDTO 后调用底层 client 查询数据库</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong style="color:#ef4444">com.dtstack.dtcenter.common.convert.load.SourceLoaderService</strong>.buildSourceDTO (line 188)
+                  <br><span style="color:#64748b;font-size:12px;">调用 SourceDTOType.getSourceDTO 时触发类初始化失败</span>
+                  <br><span style="color:#ef4444;font-size:12px;">NoClassDefFoundError</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 根因代码定位 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            根因代码定位
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:8px;word-break:break-all;">
+              <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">dt-center-metadata/service/.../DataDbService.java + AbstractDbInitService.java + datasourcex-client/.../SourceLoaderService.java + pom.xml</code>
+            </p>
+            <pre style="background:#1e293b;color:#e2e8f0;padding:14px 16px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">DataDbService.realTimeDbList:
+  List&lt;String&gt; dbNameList &#x3D; dbInitAdapterService.getDbNameList(dataSource, param.getCatalog());
+
+AbstractDbInitService.getDbNameList:
+  ISourceDTO sourceDTO &#x3D; getSourceDTO(dataSource);
+
+SourceLoaderService.buildSourceDTO:
+  sftpPrepare(configDTO, sourceInfoDTO);
+  kerberosPrepare(configDTO, sourceInfoDTO);
+  expandConfigPrepare(configDTO, sourceInfoDTO);
+  ISourceDTO sourceDTO &#x3D; SourceDTOType.getSourceDTO(sourceInfoDTO.getDataJson(), sourceInfoDTO.getType(), configDTO);
+
+metadata pom:
+  &lt;datasourcex-client.version&gt;6.3.3.6-SNAPSHOT&lt;/datasourcex-client.version&gt;
+assets pom:
+  &lt;datasourcex.client.version&gt;6.3.3.6-SNAPSHOT&lt;/datasourcex.client.version&gt;
+datasourcex release_6.3.x:
+  &lt;revision&gt;6.3.3.8-SNAPSHOT&lt;/revision&gt;</pre>
+            <p style="font-size:14px;font-weight:bold;margin-top:16px;">问题分析：</p>
+            <p style="font-size:13px;color:#64748b;margin-top:4px;">metadata 的业务入口本身只是调用公共转换器，真实炸点在 datasourcex 的 SourceDTOType 类装载。两个上层仓库仍锁定 6.3.3.6-SNAPSHOT，而当前 datasourcex release_6.3.x 已到 6.3.3.8-SNAPSHOT，版本错位会让运行时出现旧 client、旧 common 或旧 sdk core 混装，从而在类初始化阶段直接失败。</p>
+            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;margin-top:16px;">
+              <strong style="color:#b45309;">环境证据：</strong> assets 仓库没有 realTimeDbList 的直接实现；queryCreateTableSql 也是 assets 调 metadata SDK 代理。说明 assets 不是根因，只是部分场景的转发层。
+              <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;margin-top:8px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">assets DataTableThirdService.queryCreateTableSql:
+  return dataTableApiClient.queryCreateTableSql(queryCreateTableSqlParam).getData();
+
+metadata DataTableService.initCreateTableSql:
+  return dbInitAdapterService.getCreateTableSql(dataSource, dataTable);</pre>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 修复建议 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            修复建议
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px;">以下建议基于 AI 分析，仅供参考。</p>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fef2f2;color:#ef4444;">P1 高</span>
+                    &nbsp;<strong style="font-size:14px;">统一 datasourcex 依赖版本并重建</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> dt-center-metadata/pom.xml, dt-center-assets/pom.xml, datasourcex release_6.3.x</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 将 metadata 和 assets 中的 datasourcex-client 升级到与 datasourcex 当前分支一致的版本，或统一改为同一 BOM/同一 revision 后重新构建部署。</p>
+                  <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:8px 0;">建议至少对齐到 datasourcex release_6.3.x 当前 revision 对应版本，并确保 metadata/assets 使用同一套产物。</pre>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 当前两个上层仓库固定 6.3.3.6-SNAPSHOT，而当前 datasourcex 分支已经到 6.3.3.8-SNAPSHOT，属于高风险版本错位。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fffbeb;color:#b45309;">P2 中</span>
+                    &nbsp;<strong style="font-size:14px;">清理部署包中的旧 datasourcex jar</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> metadata/assets 部署产物 lib 目录和构建缓存</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 确认最终包里只有一组 datasourcex-client、datasourcex-common、dt-insight-sdk-core；删除旧 SNAPSHOT 缓存后重新打包部署。</p>
+                  <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:8px 0;">如果是通过制品库拉取 SNAPSHOT，需强制刷新依赖并排查服务器上是否残留旧 jar。</pre>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> NoClassDefFoundError 的典型根因是同名 jar 混装或旧 SNAPSHOT 未刷新，仅同步源码不会修复已部署依赖。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#f0fdf4;color:#15803d;">P3 低</span>
+                    &nbsp;<strong style="font-size:14px;">为 metadata 补充依赖异常兜底日志</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> DataTableService.initCreateTableSql, DataDbService.realTimeDbList 或 MetadataTemplate</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 对 NoClassDefFoundError 和 ExceptionInInitializerError 增加明确日志并返回可读错误，例如提示 datasourcex 依赖未对齐。</p>
+                  <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:8px 0;">当前只对 DtLoaderException 做了业务化处理，依赖初始化异常会直接抛成 500。</pre>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 即使根因在依赖层，接口也应输出可定位的信息，避免排查时只能看到通用 500。</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 环境信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            环境信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">JDK 版本</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">1.8</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">框架</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">Spring Boot / Spring MVC</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">部署环境</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">CI78 172.16.124.78</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">源码参考</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;">datasourcex@ae2b48c11 release_6.3.x; metadata@159fb3545 release_6.3.x; assets@f806640d1 release_6.3.x</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="padding:20px 0;text-align:center;font-size:11px;color:#9ca3af;">
+      Generated by qa-flow code-analysis skill &middot; 2026-04-08 15:19
+    </td>
+  </tr>
+
+</table>

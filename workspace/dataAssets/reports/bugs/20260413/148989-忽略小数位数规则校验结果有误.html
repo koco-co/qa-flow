@@ -1,0 +1,264 @@
+<!--
+  禅道富文本编辑器兼容模板
+  - 全部使用 inline style，无 <style> 块
+  - 使用 table 布局替代 flexbox/grid
+  - 无 CSS 变量、伪元素、渐变
+  - 兼容禅道 CKEditor / UEditor 渲染
+-->
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:900px;border-collapse:collapse;font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.6;color:#1a202c;">
+
+  <!-- Header -->
+  <tr>
+    <td style="padding:20px 24px;background:#1e293b;color:#fff;border-radius:6px 6px 0 0;">
+      <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">#148989 忽略小数位数规则校验结果有误</div>
+      <div style="font-size:12px;color:#cbd5e1;">
+        2026-04-13 16:28
+        &nbsp;&nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#ea580c;">一般</span>
+        &nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#3b82f6;">代码问题</span>
+        &nbsp;&nbsp;test_6.3.x_ltqc_v6.4.10_1
+      </div>
+    </td>
+  </tr>
+
+  <!-- Summary -->
+  <tr>
+    <td style="padding:16px 24px;background:#fef2f2;border-left:4px solid #ef4444;">
+      <strong>根因概述：</strong>“忽略小数位数 N 位”被实现成 round(..., N)，语义从“忽略 N 位”变成了“保留 N 位”，导致本应通过的数据判失败。
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 请求信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            请求信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">方法</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">POST</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">URL</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">/dassets/v1/valid/monitorRecord/getFormatTableResult</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">关键参数</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">一致性规则开启 compare detail：忽略小数位数 2 位；截图样例包含 67.551 vs 67.523、76.501 vs 76.511。</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应预览</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">明细页把 score 列判为不一致，预期应通过。</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 异常堆栈解析 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            异常堆栈解析
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">触发处理器</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">MultiTableDataUniformityFunctionServiceImpl.buildColumnWhereSQLs</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">根因帧</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">MultiTableSettingEnum.generateNumberWhereSQL(MultiTableSettingEnum.java:64-65)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">说明</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">该缺陷没有运行时异常，属于 compare detail 的数值 SQL 语义实现错误。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- 调用链 -->
+  <tr>
+    <td style="padding:16px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            调用链（从入口到根因）
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;font-family:Consolas,Monaco,monospace;">
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MultiTableDataUniformityFunctionServiceImpl</strong>.buildWhereConditions (line 253)
+                  <br><span style="color:#64748b;font-size:12px;">为每个校验字段构建比对条件。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MultiTableDataUniformityFunctionServiceImpl</strong>.buildColumnWhereSQLs (line 345)
+                  <br><span style="color:#64748b;font-size:12px;">根据 compare detail 选择数值型 SQL 生成器。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong style="color:#ef4444">MultiTableSettingEnum</strong>.generateNumberWhereSQL (line 64)
+                  <br><span style="color:#64748b;font-size:12px;">把“忽略小数位数”实现成 round(..., N)，与产品语义不一致。</span>
+                  
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 根因代码定位 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            根因代码定位
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:8px;word-break:break-all;">
+              <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">common/src/main/java/com/dtstack/assets/common/enums/MultiTableSettingEnum.java</code>
+            </p>
+            <pre style="background:#1e293b;color:#e2e8f0;padding:14px 16px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">public static String generateNumberWhereSQL(String key, String value, String leftField, String rightField){
+    if (DIVERSERATIO.getKey().equals(key)) {
+        return String.format(&quot;( round(%s, 1) &lt;&#x3D; (round(%s, 1) * %s) OR round(%s, 1) &lt; (round(%s, 1) * %s) )&quot;,
+                leftField, rightField, value, rightField, leftField, Double.parseDouble(value) / 100.0);
+    }
+    if (DIVERSE_ABSOLUTE.getKey().equals(key)) {
+        return String.format(&quot;( abs(round(%s, 1) - round(%s, 1)) &lt;&#x3D; %s OR abs(round(%s, 1) - round(%s, 1)) &lt;&#x3D; %s )&quot;,
+                leftField, rightField, value, rightField, leftField, value);
+    }
+    if (DECIMAL_RETAIN.getKey().equals(key)) {
+        return String.format(&quot;round(%s, %s) &#x3D;&#x3D; round(%s, %s)&quot;, leftField, value, rightField, value);
+    }
+    return &quot; &quot;;
+}</pre>
+            <p style="font-size:14px;font-weight:bold;margin-top:16px;">问题分析：</p>
+            <p style="font-size:13px;color:#64748b;margin-top:4px;">前端文案明确写的是“忽略小数位数 N 位”，而代码却把 N 当成 round 的保留位数。以截图中的 67.551 和 67.523 为例，忽略 2 位应比较到 1 位小数后通过，但 round 到 2 位会得到 67.55 和 67.52，结果被误判为不一致。</p>
+            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;margin-top:16px;">
+              <strong style="color:#b45309;">环境证据：</strong> 产品文案和后端实现的语义不一致，当前实现更像“保留 N 位小数”，而不是“忽略 N 位小数”。
+              <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;margin-top:8px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">O: &#x27;对比表之间的数值型数据时，忽略小数位数&#x27;,
+P: &#x27;位&#x27;</pre>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 修复建议 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            修复建议
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px;">以下建议基于 AI 分析，仅供参考。</p>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fef2f2;color:#ef4444;">P1 最高</span>
+                    &nbsp;<strong style="font-size:14px;">按“忽略 N 位小数”重写 DECIMAL_RETAIN 逻辑</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> MultiTableSettingEnum.generateNumberWhereSQL</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 不要直接使用 round(..., N)；应按“去掉末尾 N 位小数”或等价的截断语义生成 SQL。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 当前实现把 N 解释成保留位数，和页面文案及测试预期相反。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fffbeb;color:#b45309;">P2 高</span>
+                    &nbsp;<strong style="font-size:14px;">用截图中的样例补数值回归用例</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> functionId&#x3D;45 compare detail 数值规则测试</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 至少覆盖 67.551 vs 67.523、76.501 vs 76.511、不同小数位长度三类样本。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 该缺陷属于典型语义偏差，必须靠样例测试锁住。</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 环境信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            环境信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">框架</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">Spring / React</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">部署环境</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">test_6.3.x_ltqc_v6.4.10_1</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">源码参考</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;">dt-center-assets@test_6.3.x_ltqc_v6.4.10_1 (4144eec95); dt-insight-studio@dataAssets/test_6.3.x_ltqc_v6410 (724ef9411c)</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="padding:20px 0;text-align:center;font-size:11px;color:#9ca3af;">
+      Generated by qa-flow code-analysis skill &middot; 2026-04-13 16:28
+    </td>
+  </tr>
+
+</table>

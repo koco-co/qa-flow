@@ -1,0 +1,260 @@
+<!--
+  禅道富文本编辑器兼容模板
+  - 全部使用 inline style，无 <style> 块
+  - 使用 table 布局替代 flexbox/grid
+  - 无 CSS 变量、伪元素、渐变
+  - 兼容禅道 CKEditor / UEditor 渲染
+-->
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:900px;border-collapse:collapse;font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.6;color:#1a202c;">
+
+  <!-- Header -->
+  <tr>
+    <td style="padding:20px 24px;background:#1e293b;color:#fff;border-radius:6px 6px 0 0;">
+      <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">#148905 多表一致性校验的分区设置未生效</div>
+      <div style="font-size:12px;color:#cbd5e1;">
+        2026-04-13 16:28
+        &nbsp;&nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#ea580c;">一般</span>
+        &nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#3b82f6;">代码问题</span>
+        &nbsp;&nbsp;test_6.3.x_ltqc_v6.4.10_1
+      </div>
+    </td>
+  </tr>
+
+  <!-- Summary -->
+  <tr>
+    <td style="padding:16px 24px;background:#fef2f2;border-left:4px solid #ef4444;">
+      <strong>根因概述：</strong>前端已把主表/对比表分区写入 DTO，但 function 45 生成 SQL 时完全没有消费 partition、tablePartitionType 和 dynamicPartitionInfo。
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 请求信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            请求信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">关键参数</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">主表分区 dt&#x3D;2025-11-05，对比表分区 dt&#x3D;2025-11-05；截图预期为校验通过，实际仍按全表比对。</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应预览</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">分区配置对结果无影响。</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 异常堆栈解析 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            异常堆栈解析
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">触发处理器</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">MultiTableDataUniformityFunctionServiceImpl.generatorSQL</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">根因帧</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">MultiTableDataUniformityFunctionServiceImpl.appendJoinClauses(MultiTableDataUniformityFunctionServiceImpl.java:148-160)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">说明</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">该缺陷属于 SQL 生成遗漏，不会抛业务异常，但会让结果始终按全表比对。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- 调用链 -->
+  <tr>
+    <td style="padding:16px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            调用链（从入口到根因）
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;font-family:Consolas,Monaco,monospace;">
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MultiTableDataUniformityFunctionServiceImpl</strong>.generatorSQL (line 103)
+                  <br><span style="color:#64748b;font-size:12px;">读取主表和 compare table 的配置 DTO。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MultiTableDataUniformityFunctionServiceImpl</strong>.appendJoinClauses (line 148)
+                  <br><span style="color:#64748b;font-size:12px;">只按表名拼 FULL OUTER JOIN，没有追加任何分区过滤。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong style="color:#ef4444">MultiTableDataUniformityFunctionServiceImpl</strong>.appendWhereClause (line 196)
+                  <br><span style="color:#64748b;font-size:12px;">WHERE 仅处理主键与字段比对，同样没有消费 partition 配置。</span>
+                  
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 根因代码定位 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            根因代码定位
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:8px;word-break:break-all;">
+              <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">service/src/main/java/com/dtstack/assets/service/valid/function/Impl/MultiTableDataUniformityFunctionServiceImpl.java</code>
+            </p>
+            <pre style="background:#1e293b;color:#e2e8f0;padding:14px 16px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">String completeTableName &#x3D; schemaTableUtil.wrapTable(functionBO.getSource().getType(),
+        functionBO.getCatalogName(), functionBO.getSchemaName(), mainTableName, true);
+
+for (MultiTableDataUniformityDTO multiTableDTO : multiTableDTOS) {
+    String relationTableName &#x3D; schemaTableUtil.wrapTable(
+        functionBO.getSource().getType(),
+        functionBO.getCatalogName(),
+        functionBO.getSchemaName(),
+        multiTableDTO.getTableName(),
+        true
+    );
+
+    sql.append(&quot; FULL OUTER JOIN &quot;)
+       .append(relationTableName)
+       .append(&quot; &quot;)
+       .append(multiTableDTO.getTableName())
+       .append(&quot; ON &quot;);
+}</pre>
+            <p style="font-size:14px;font-weight:bold;margin-top:16px;">问题分析：</p>
+            <p style="font-size:13px;color:#64748b;margin-top:4px;">function 45 只用了表名，没有把 DTO 中的 partition、tablePartitionType、dynamicPartitionInfo 组装进 SQL，所以主表和对比表最终都按全表参与比较。</p>
+            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;margin-top:16px;">
+              <strong style="color:#b45309;">环境证据：</strong> 同仓库其他多表规则已经统一通过 filterWithPartition 消费分区配置，function 45 是明显漏接。
+              <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;margin-top:8px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">String whereFilter &#x3D; filterWithPartition(sqlOperator,dataSource,verifyTable.getPartition(),completeTableName,columnMetas);
+String mainTableFilter &#x3D; filterWithPartition(sqlOperator,dataSource,mainTable.getPartition(),originTableNameCompleteName,functionBO.getColumnMetas());</pre>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 修复建议 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            修复建议
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px;">以下建议基于 AI 分析，仅供参考。</p>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fef2f2;color:#ef4444;">P1 最高</span>
+                    &nbsp;<strong style="font-size:14px;">在 function 45 中接入主表和对比表分区过滤</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> MultiTableDataUniformityFunctionServiceImpl.generatorSQL / appendJoinClauses / appendWhereClause</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 参照 MultiTableRowsFunctionServiceImpl 或 IntegralityMultiTableContentServiceImpl，为主表和每个 compare table 拼接 filterWithPartition。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 当前 DTO 已有完整分区字段，但 SQL 生成链路完全没消费。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fffbeb;color:#b45309;">P2 高</span>
+                    &nbsp;<strong style="font-size:14px;">补手动分区、已有分区、动态分区三类回归</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> functionId&#x3D;45 分区测试</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 覆盖主表和多个 compare table 同时设置分区的场景，验证结果和脏数据明细都按分区生效。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 这类缺陷只看最终 count 很容易漏掉，需要直接校验 SQL 生效范围。</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 环境信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            环境信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">框架</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">Spring / DataAssets 规则服务</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">部署环境</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">test_6.3.x_ltqc_v6.4.10_1</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">源码参考</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;">dt-center-assets@test_6.3.x_ltqc_v6.4.10_1 (4144eec95)</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="padding:20px 0;text-align:center;font-size:11px;color:#9ca3af;">
+      Generated by qa-flow code-analysis skill &middot; 2026-04-13 16:28
+    </td>
+  </tr>
+
+</table>

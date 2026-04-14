@@ -1,0 +1,361 @@
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:900px;border-collapse:collapse;font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.6;color:#1a202c;">
+
+  <!-- Header -->
+  <tr>
+    <td style="padding:20px 24px;background:#1e293b;color:#fff;">
+      <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">queryCreateTableSql 触发 SourceDTOType 初始化失败</div>
+      <div style="font-size:12px;color:#cbd5e1;">
+        2026-04-08 10:02
+        &nbsp;&nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#ef4444;">严重</span>
+        &nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#22c55e;">环境问题</span>
+        &nbsp;&nbsp;dt-center-metadata + datasourcex / CI78
+      </div>
+    </td>
+  </tr>
+
+  <!-- Summary -->
+  <tr>
+    <td style="padding:16px 24px;background:#fef2f2;border-left:4px solid #ef4444;">
+      <strong>根因概述：</strong>
+      本次 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">tableId=13</code> 的建表 SQL 请求已经落到 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">Dori2DbInitHandlerServiceImpl</code>，但在真正访问 Doris2 前，
+      metadata 服务先通过 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">AbstractDbInitService.getSourceDTO()</code> 构建数据源 DTO；此时
+      <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">SourceLoaderService.buildSourceDTO()</code> 触发 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">SourceDTOType</code> 类初始化失败。
+      结合源码与版本信息，最高概率是 metadata 节点上的 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">datasourcex-client</code> 与
+      <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">datasourcex-common</code> / loader / plugin Jar 未成套部署或残留旧包。
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 请求信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            请求信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">方法</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">POST</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">URL</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">/dassets/v1/dataTable/queryCreateTableSql</code> -&gt; <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">/dmetadata/v1/dataTable/queryCreateTableSql</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">关键参数</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">tableId=13，metadata 侧识别为 Doris2 建表 SQL 处理链路</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">环境</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">CI78 / 172.16.124.78，metadata 线程：<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">http-nio-8875-exec-8</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">项目</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">X-Valid-Project-ID=1，租户=DT_demo，DataAssets 返回状态码 1011</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 异常堆栈解析 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            异常堆栈解析
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常类型</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">java.lang.NoClassDefFoundError</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常消息</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">Could not initialize class com.dtstack.dtcenter.common.convert.enums.SourceDTOType</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">触发处理器</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">Dori2DbInitHandlerServiceImpl.getCreateTableSql(DataSource, DataTable)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">根因帧</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">SourceLoaderService.buildSourceDTO(SourceLoaderService.java:188)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">说明</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">异常早于 Doris2 客户端真正发起 JDBC/HTTP 查询，因此不是网络、账号或表结构问题。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- 调用链 -->
+  <tr>
+    <td style="padding:16px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            调用链（从入口到根因）
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;font-family:Consolas,Monaco,monospace;">
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong>DataTableThirdService</strong>.queryCreateTableSql (line 1011)
+                  <br><span style="color:#64748b;font-size:12px;">assets 侧通过 metadata SDK 透传请求</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong>DataTableService</strong>.queryCreateTableSql (line 2181)
+                  <br><span style="color:#64748b;font-size:12px;">命中 metadata 的查询建表语句接口</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong>DataTableService</strong>.initCreateTableSql (line 2200)
+                  <br><span style="color:#64748b;font-size:12px;">进入建表 SQL 初始化逻辑</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong>DbInitAdapterService</strong>.getCreateTableSql (line 246)
+                  <br><span style="color:#64748b;font-size:12px;">按数据源类型路由到具体 handler</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong>Dori2DbInitHandlerServiceImpl</strong>.getCreateTableSql (line 49)
+                  <br><span style="color:#64748b;font-size:12px;">Doris2 handler 先调用 getSourceDTO(dataSource)</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong>AbstractDbInitService</strong>.getSourceDTO (line 115)
+                  <br><span style="color:#64748b;font-size:12px;">委托 SourceLoaderService 构建 ISourceDTO</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong style="color:#ef4444">SourceLoaderService</strong>.buildSourceDTO (line 188) [NoClassDefFoundError]
+                  <br><span style="color:#ef4444;font-size:12px;">访问 SourceDTOType 时类初始化失败</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 根因代码定位 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            根因代码定位
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:8px;word-break:break-all;">
+              <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">dt-center-metadata/service/src/main/java/com/dtstack/metadata/service/data/init/impl/Dori2DbInitHandlerServiceImpl.java</code>
+            </p>
+            <pre style="background:#1e293b;color:#e2e8f0;padding:14px 16px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;"><span style="color:#64748b;">47</span>  @Override
+<span style="color:#64748b;">48</span>  public String getCreateTableSql(DataSource dataSource, DataTable dataTable) {
+<span style="background:rgba(239,68,68,0.25);display:block;border-left:3px solid #ef4444;padding-left:12px;"><span style="color:#64748b;">49</span>      RdbmsSourceDTO sourceDTO = ((RdbmsSourceDTO) getSourceDTO(dataSource));  // &lt;- 在这里进入 SourceLoaderService</span>
+<span style="color:#64748b;">50</span>      sourceDTO.setSchema(dataTable.getDbName());
+<span style="color:#64748b;">56</span>      IClient client = ClientCache.getClient(dataSource.getDataSourceType());
+<span style="color:#64748b;">58</span>      return client.getCreateTableSql(sourceDTO, sqlQueryDTO);
+<span style="color:#64748b;">59</span>  }</pre>
+
+            <p style="font-size:14px;font-weight:bold;margin-top:16px;">问题分析：</p>
+            <p style="font-size:13px;color:#64748b;margin-top:4px;">
+              Doris2 handler 本身没有先做任何业务计算，而是第一步就调用 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">getSourceDTO(dataSource)</code>。
+              metadata 原始日志显示异常在 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">SourceLoaderService.buildSourceDTO()</code> 第 188 行抛出，
+              即 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">SourceDTOType.getSourceDTO(...)</code> 访问阶段类初始化失败。
+              这意味着问题发生在 datasourcex 运行时装载，而不是发生在 Doris2 查询 SQL 或连接过程。
+            </p>
+
+            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;margin-top:16px;">
+              <strong style="color:#b45309;">环境证据：</strong> <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">SourceDTOType</code> 当前已依赖后续新增的数据源常量和 DTO，
+              如 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">HOLOGRES</code>、<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">SCOPE</code>、<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">VESTORE</code>。若 metadata 节点只更新了较新的
+              <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">datasourcex-client</code>，而 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">datasourcex-common</code>、loader 或 plugin Jar 仍是旧版本，
+              会因为缺 DTO 类或缺 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">DataSourceType</code> 枚举值把整个枚举类初始化打挂。
+              <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;margin-top:8px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;"><span style="color:#64748b;">1701</span> HOLOGRES(DataSourceType.HOLOGRES.getVal()) {
+<span style="color:#64748b;">1711</span> SCOPE(DataSourceType.SCOPE.getVal()) {
+<span style="color:#64748b;">1725</span> VESTORE(DataSourceType.VESTORE.getVal()) {
+
+<span style="color:#64748b;">  25</span> dt-center-metadata/pom.xml: datasourcex-client.version = 6.3.3.0-SNAPSHOT
+<span style="color:#64748b;">  19</span> datasourcex/pom.xml: revision = 6.3.3.8-SNAPSHOT</pre>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 修复建议 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            修复建议
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px;">以下建议基于 AI 分析，仅供参考。</p>
+
+            <!-- P1 #1 -->
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fef2f2;color:#ef4444;">P1 必修</span>
+                    &nbsp;<strong style="font-size:14px;">统一 metadata 节点上的 datasourcex Jar 套件</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> metadata 服务部署目录 / 启动镜像</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 核对并成套替换 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">datasourcex-client</code>、<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">datasourcex-common</code>、loader 相关 Jar 和新增 plugin Jar，确认全部来自同一 revision</p>
+                  <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:8px 0;">建议排查项：
+1. 导出 Jar 文件名、版本号、md5
+2. 检查是否残留旧版 datasourcex-common / loader Jar
+3. 检查是否缺少 scope / hologres / vestore 对应插件或公共包</pre>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 当前异常属于类初始化失败，最常见原因就是新旧 Jar 混装，而不是单个接口入参错误。</p>
+                </td>
+              </tr>
+            </table>
+
+            <!-- P1 #2 -->
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fef2f2;color:#ef4444;">P1 必修</span>
+                    &nbsp;<strong style="font-size:14px;">补抓第一次初始化失败的最内层异常</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> metadata 完整启动日志 / 运行日志</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 搜索最早的 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">ExceptionInInitializerError</code>、<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">ClassNotFoundException</code>、<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">NoSuchFieldError</code>、<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">NoClassDefFoundError</code></p>
+                  <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:8px 0;">检索关键词：
+SourceDTOType
+ExceptionInInitializerError
+ClassNotFoundException
+NoSuchFieldError
+Could not initialize class</pre>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 现在看到的是后续复现时的结果异常；第一条初始化日志能直接指出缺的是 DTO 类、枚举字段还是依赖包。</p>
+                </td>
+              </tr>
+            </table>
+
+            <!-- P2 -->
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fffbeb;color:#b45309;">P2 建议修复</span>
+                    &nbsp;<strong style="font-size:14px;">按同一发布线重新构建并全量替换 metadata 依赖</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> metadata 发布流程</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 不要只覆盖单个 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">datasourcex-client</code> Jar，建议按同一条发布线重新构建 metadata 服务并清理旧包后重启</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 当前源码已存在 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">6.3.3.0-SNAPSHOT</code> 与 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">6.3.3.8-SNAPSHOT</code> 的漂移信号，仅替换局部依赖很容易再次出现类装载失败。</p>
+                </td>
+              </tr>
+            </table>
+
+            <!-- P3 -->
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:0;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#f0fdf4;color:#15803d;">P3 可选优化</span>
+                    &nbsp;<strong style="font-size:14px;">启动阶段增加 datasourcex 类加载自检</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> metadata 服务启动逻辑 / 健康检查</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 启动时主动触发 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">SourceDTOType.values()</code> 或校验关键 DTO、<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">DataSourceType</code> 枚举能否被加载</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 能在服务启动阶段提前暴露 classpath 问题，避免用户通过接口流量首次触发。</p>
+                </td>
+              </tr>
+            </table>
+
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 环境信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            环境信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">JDK 版本</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">JDK 8（推断自 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">sun.reflect.DelegatingMethodAccessorImpl</code> 与 <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">java.lang.Thread.run(Thread.java:750)</code>）</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">框架</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">Spring MVC + Spring AOP + CGLIB + metadata SDK + datasourcex loader</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">部署环境</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">CI78 / 172.16.124.78，metadata 端口 8875，assets 端口 8876</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">源码参考</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;">datasourcex / release_6.3.x (ae2b48c11)，dt-center-metadata 本地快照 c0b59aa12，dt-center-assets 当前快照仅用于调用链确认</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="padding:20px 0;text-align:center;font-size:11px;color:#9ca3af;">
+      Generated by qa-flow code-analysis skill &middot; 2026-04-08 10:02
+    </td>
+  </tr>
+
+</table>

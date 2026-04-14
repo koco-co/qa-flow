@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>测试报告 - Bug #134507 Hotfix 验证</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif; background: #f5f6fa; color: #333; line-height: 1.6; }
+  .container { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+  .report-header { background: linear-gradient(135deg, #2c3e50, #34495e); color: #fff; padding: 32px; border-radius: 8px 8px 0 0; }
+  .report-header h1 { font-size: 22px; margin-bottom: 8px; }
+  .report-header .meta { font-size: 13px; opacity: 0.85; }
+  .report-header .meta span { margin-right: 20px; }
+  .section { background: #fff; padding: 24px 32px; border-bottom: 1px solid #eee; }
+  .section:last-child { border-radius: 0 0 8px 8px; border-bottom: none; }
+  .section h2 { font-size: 17px; color: #2c3e50; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid #3498db; display: inline-block; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+  th { background: #f0f3f8; text-align: left; padding: 10px 12px; font-weight: 600; border: 1px solid #ddd; }
+  td { padding: 10px 12px; border: 1px solid #ddd; vertical-align: top; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; margin-right: 6px; }
+  .tag-pass { background: #e8f8f0; color: #27ae60; }
+  .tag-severity { background: #fef3e2; color: #e67e22; }
+  .tag-hotfix { background: #eaf0fb; color: #2980b9; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 12px 0; }
+  .summary-card { background: #f8f9fc; border-radius: 6px; padding: 16px; text-align: center; }
+  .summary-card .number { font-size: 28px; font-weight: 700; color: #2c3e50; }
+  .summary-card .label { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
+  .card-pass .number { color: #27ae60; }
+  .card-total .number { color: #2980b9; }
+  .card-fail .number { color: #e74c3c; }
+  .card-block .number { color: #f39c12; }
+  .step-table td:first-child { width: 50px; text-align: center; }
+  .result-pass { color: #27ae60; font-weight: 600; }
+  .result-pending { color: #95a5a6; }
+  .risk-item { padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+  .risk-item:last-child { border-bottom: none; }
+  .risk-level { display: inline-block; width: 40px; text-align: center; padding: 1px 0; border-radius: 3px; font-size: 11px; color: #fff; margin-right: 8px; }
+  .risk-high { background: #e74c3c; }
+  .risk-medium { background: #f39c12; }
+  .risk-low { background: #27ae60; }
+  .conclusion-box { background: #f0f8f0; border-left: 4px solid #27ae60; padding: 16px 20px; border-radius: 0 6px 6px 0; margin: 12px 0; }
+  .footer { text-align: center; padding: 20px; font-size: 12px; color: #95a5a6; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ====== 报告头部 ====== -->
+<div class="report-header">
+  <h1>Hotfix 测试报告 - Bug #134507</h1>
+  <p style="font-size:15px; margin-bottom:12px; opacity:0.95;">离线开发 - 数据同步任务等待提交(Connection to jobmanager failed)</p>
+  <div class="meta">
+    <span>报告日期: 2026-04-07</span>
+    <span>测试人员: xianglin</span>
+    <span>修复分支: hotfix_6.0.x_134507</span>
+    <span>版本: 6.0.x</span>
+  </div>
+</div>
+
+<!-- ====== 1. 缺陷概要 ====== -->
+<div class="section">
+  <h2>1. 缺陷概要</h2>
+  <table>
+    <tr><th style="width:120px;">Bug ID</th><td>#134507</td><th style="width:120px;">严重程度</th><td><span class="tag tag-severity">一般 (S3)</span></td></tr>
+    <tr><th>Bug 标题</th><td colspan="3">上游没有依赖的凌晨的数据同步任务，一直等待提交，控制台等待原因 Connection to jobmanager failed</td></tr>
+    <tr><th>所属产品</th><td>线上问题统计</td><th>缺陷类型</th><td>参数调优</td></tr>
+    <tr><th>提交人</th><td>guxi</td><th>修复人</th><td>dujie1</td></tr>
+    <tr><th>修复方案</th><td colspan="3">新增 resetSessionClient/resetClusterClient 机制：JobManager 连接失败时自动关闭旧 client 重建新连接；Session 健康检查将连接失败标记为 UNHEALTHY 触发恢复</td></tr>
+    <tr><th>修复分支</th><td><span class="tag tag-hotfix">hotfix_6.0.x_134507</span></td><th>状态</th><td>in process</td></tr>
+    <tr><th>变更范围</th><td colspan="3">11 files, +78/-1 (base/session, flink112, flink116)</td></tr>
+  </table>
+</div>
+
+<!-- ====== 2. 根因分析 ====== -->
+<div class="section">
+  <h2>2. 根因分析与代码变更</h2>
+  <table>
+    <tr><th style="width:80px;">序号</th><th>根因描述</th><th style="width:240px;">代码修复措施</th></tr>
+    <tr>
+      <td style="text-align:center;">1</td>
+      <td>JobManager 连接失败（Connection to jobmanager failed）后，原有逻辑未重置 session client，导致后续任务持续使用失效的连接，一直处于"等待提交"状态</td>
+      <td>FlinkClient.java / YarnSessionProvider.java: 在 catch 异常块中，当 clientManager 为 SessionClientManager 时调用 resetClusterClient(null) 重置连接</td>
+    </tr>
+    <tr>
+      <td style="text-align:center;">2</td>
+      <td>Session 健康检查中，即使 judgeSlotsResult 返回 "Connection to jobmanager failed"，仍将 session 状态标记为 HEALTHY，未触发 session 恢复机制</td>
+      <td>YarnFlinkSessionStateService.java: 当 reason 包含 "Connection to jobmanager failed" 时返回 UNHEALTHY 状态，触发 session 自动恢复</td>
+    </tr>
+    <tr>
+      <td style="text-align:center;">3</td>
+      <td>缺少 session client 重建机制，旧 client 连接断开后无法自动创建新连接</td>
+      <td>AbstractHaSessionClientService.java: 新增 resetSessionClient() 方法（synchronized），先 close 旧 client 再调用 getSessionClient() 创建新连接。同时在 SessionClientService 接口、IClientManager 接口层同步增加方法定义</td>
+    </tr>
+  </table>
+
+  <h3 style="font-size:14px; margin:16px 0 8px; color:#34495e;">变更文件清单（11 files, +78/-1）</h3>
+  <table style="font-size:13px;">
+    <tr><th>文件路径</th><th>变更类型</th><th style="width:60px;">行数</th></tr>
+    <tr><td>base/.../AbstractHaSessionClientService.java</td><td>新增 resetSessionClient() 方法；优化错误日志信息</td><td>+24/-1</td></tr>
+    <tr><td>base/.../SessionClientService.java</td><td>接口新增 default resetSessionClient()</td><td>+4</td></tr>
+    <tr><td>flink112/.../FlinkClient.java</td><td>Connection to jobmanager failed 时重置 client</td><td>+3</td></tr>
+    <tr><td>flink112/.../IClientManager.java</td><td>接口新增 resetClusterClient()</td><td>+2</td></tr>
+    <tr><td>flink112/.../AbstractClientManager.java</td><td>默认实现 resetClusterClient()</td><td>+5</td></tr>
+    <tr><td>flink112/.../SessionClientManager.java</td><td>实现 resetClusterClient() 委托 resetSessionClient()</td><td>+12</td></tr>
+    <tr><td>flink112/.../YarnFlinkSessionStateService.java</td><td>健康检查：连接失败返回 UNHEALTHY</td><td>+3</td></tr>
+    <tr><td>flink116/.../IClientManager.java</td><td>接口新增 resetClusterClient()（含 Javadoc）</td><td>+8</td></tr>
+    <tr><td>flink116/.../AbstractClientManager.java</td><td>默认实现 resetClusterClient()</td><td>+5</td></tr>
+    <tr><td>flink116/.../YarnSessionProvider.java</td><td>Connection to jobmanager failed 时重置 client</td><td>+4</td></tr>
+    <tr><td>flink116/.../SessionClientManager.java</td><td>实现 resetClusterClient() 委托 resetSessionClient()</td><td>+9</td></tr>
+  </table>
+</div>
+
+<!-- ====== 3. 测试范围与用例统计 ====== -->
+<div class="section">
+  <h2>3. 测试范围与用例统计</h2>
+  <div class="summary-grid">
+    <div class="summary-card card-total"><div class="number">4</div><div class="label">用例总数</div></div>
+    <div class="summary-card card-pass"><div class="number">0</div><div class="label">通过</div></div>
+    <div class="summary-card card-fail"><div class="number">0</div><div class="label">失败</div></div>
+    <div class="summary-card card-block"><div class="number">4</div><div class="label">待执行</div></div>
+  </div>
+  <table>
+    <tr><th>用例编号</th><th>用例名称</th><th>优先级</th><th>状态</th></tr>
+    <tr>
+      <td>TC-134507-01</td>
+      <td>验证 JobManager 连接失败时 Session Client 自动重置并恢复任务提交</td>
+      <td>P0 - 核心验证</td>
+      <td><span class="result-pending">待执行</span></td>
+    </tr>
+    <tr>
+      <td>TC-134507-02</td>
+      <td>验证 Session 健康检查正确识别 JobManager 连接失败为 UNHEALTHY 状态</td>
+      <td>P0 - 核心验证</td>
+      <td><span class="result-pending">待执行</span></td>
+    </tr>
+    <tr>
+      <td>TC-134507-03</td>
+      <td>验证修复后正常场景下 Session Client 和任务调度不受影响</td>
+      <td>P1 - 回归验证</td>
+      <td><span class="result-pending">待执行</span></td>
+    </tr>
+    <tr>
+      <td>TC-134507-04</td>
+      <td>验证 Flink 112 和 Flink 116 两个版本均已修复</td>
+      <td>P1 - 补充验证</td>
+      <td><span class="result-pending">待执行</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ====== 4. 测试用例详情 ====== -->
+<div class="section">
+  <h2>4. 测试用例详情</h2>
+
+  <h3 style="font-size:15px; margin:16px 0 8px; color:#34495e;">TC-134507-01: 验证 JobManager 连接失败时 Session Client 自动重置并恢复任务提交</h3>
+  <p style="font-size:13px; color:#7f8c8d; margin-bottom:8px;"><strong>前置条件：</strong>已部署包含 hotfix_6.0.x_134507 修复的 engine-plugins；Flink Session 模式正常运行；存在上游无依赖的数据同步任务</p>
+  <p style="font-size:12px; color:#95a5a6; margin-bottom:8px;"><strong>代码映射：</strong>FlinkClient.java / YarnSessionProvider.java catch 块中 resetClusterClient() 调用 -> AbstractHaSessionClientService.resetSessionClient() 关闭旧 client 重建新连接</p>
+  <table class="step-table">
+    <tr><th>步骤</th><th>操作</th><th>预期结果</th><th style="width:80px;">结果</th></tr>
+    <tr><td>1</td><td>进入【离线开发】-【任务运维】页面，找到上游无依赖的数据同步任务</td><td>页面正常加载，任务列表正常展示</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>2</td><td>模拟 JobManager 连接异常场景（凌晨时段运行或临时中断 JobManager 网络后恢复），触发任务运行</td><td>任务正常进入调度队列</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>3</td><td>观察任务运行状态：首次连接失败后是否自动重置 session client 并重新建立连接</td><td>任务短暂异常后自动恢复提交，不会长时间停留在"等待提交"；日志中出现 "get session client failed" 后重新获取 client 的记录</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>4</td><td>查看 engine 日志，搜索 "Connection to jobmanager failed" 和 "resetClusterClient" 关键字</td><td>日志中出现 resetClusterClient 调用记录</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>5</td><td>等待任务运行完成，检查最终状态</td><td>任务运行成功，数据同步结果正确</td><td><span class="result-pending">--</span></td></tr>
+  </table>
+
+  <h3 style="font-size:15px; margin:24px 0 8px; color:#34495e;">TC-134507-02: 验证 Session 健康检查正确识别 JobManager 连接失败为 UNHEALTHY 状态</h3>
+  <p style="font-size:13px; color:#7f8c8d; margin-bottom:8px;"><strong>前置条件：</strong>已部署修复版本；Flink Session 模式正常运行</p>
+  <p style="font-size:12px; color:#95a5a6; margin-bottom:8px;"><strong>代码映射：</strong>YarnFlinkSessionStateService.java - judgeSlotsResult.getReason().contains("Connection to jobmanager failed") 时返回 SessionState.UNHEALTHY（修复前返回 HEALTHY）</p>
+  <table class="step-table">
+    <tr><th>步骤</th><th>操作</th><th>预期结果</th><th style="width:80px;">结果</th></tr>
+    <tr><td>1</td><td>Flink Session 正常运行时，观察 session 健康检查日志</td><td>session 状态为 HEALTHY，任务正常调度</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>2</td><td>模拟 JobManager 连接不可用（如 JobManager 进程异常重启），等待 session check 周期触发</td><td>session check 检测到 "Connection to jobmanager failed"，将状态标记为 UNHEALTHY</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>3</td><td>观察 UNHEALTHY 状态后的 session 恢复流程</td><td>session 恢复机制自动触发，重新建立 JobManager 连接；日志有 resetSessionClient 记录</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>4</td><td>恢复完成后提交新的数据同步任务</td><td>任务正常提交并运行成功</td><td><span class="result-pending">--</span></td></tr>
+  </table>
+
+  <h3 style="font-size:15px; margin:24px 0 8px; color:#34495e;">TC-134507-03: 验证修复后正常场景下 Session Client 和任务调度不受影响（回归）</h3>
+  <p style="font-size:13px; color:#7f8c8d; margin-bottom:8px;"><strong>前置条件：</strong>已部署修复版本；Flink Session 模式正常运行，JobManager 连接正常</p>
+  <table class="step-table">
+    <tr><th>步骤</th><th>操作</th><th>预期结果</th><th style="width:80px;">结果</th></tr>
+    <tr><td>1</td><td>进入【离线开发】-【任务运维】页面</td><td>页面正常加载</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>2</td><td>选择有上游依赖的数据同步任务，手动触发运行</td><td>任务正常等待上游完成后提交运行，最终运行成功</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>3</td><td>选择非数据同步类型的离线任务（如 SQL 任务），手动触发运行</td><td>任务正常提交并运行成功</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>4</td><td>检查 Flink Session 持续运行稳定性</td><td>Session 保持 HEALTHY 状态，不出现异常 resetSessionClient 调用</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>5</td><td>查看 yarn 上 Flink Session application 数量</td><td>session 数量符合预期，无多余 session 被意外创建或销毁</td><td><span class="result-pending">--</span></td></tr>
+  </table>
+
+  <h3 style="font-size:15px; margin:24px 0 8px; color:#34495e;">TC-134507-04: 验证 Flink 112 和 Flink 116 两个版本均已修复</h3>
+  <p style="font-size:13px; color:#7f8c8d; margin-bottom:8px;"><strong>前置条件：</strong>已部署修复版本；分别配置 Flink 112 和 Flink 116 的 Session 集群</p>
+  <p style="font-size:12px; color:#95a5a6; margin-bottom:8px;"><strong>代码映射：</strong>修复覆盖 flink112 (FlinkClient) 和 flink116 (YarnSessionProvider) 两个版本的连接重置逻辑</p>
+  <table class="step-table">
+    <tr><th>步骤</th><th>操作</th><th>预期结果</th><th style="width:80px;">结果</th></tr>
+    <tr><td>1</td><td>在 Flink 112 Session 集群上提交数据同步任务，模拟 JobManager 连接异常</td><td>resetClusterClient 逻辑正常触发，任务恢复提交</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>2</td><td>在 Flink 116 Session 集群上提交数据同步任务，模拟 JobManager 连接异常</td><td>resetClusterClient 逻辑正常触发，任务恢复提交</td><td><span class="result-pending">--</span></td></tr>
+    <tr><td>3</td><td>对比两个版本的 engine 日志</td><td>两个版本均出现 resetClusterClient 调用和 session 恢复记录，行为一致</td><td><span class="result-pending">--</span></td></tr>
+  </table>
+</div>
+
+<!-- ====== 5. 风险与关注点 ====== -->
+<div class="section">
+  <h2>5. 风险与关注点</h2>
+  <div class="risk-item"><span class="risk-level risk-high">高</span>resetSessionClient() 使用 synchronized(lock) 保证线程安全，但高并发场景下需观察锁竞争对任务提交延迟的影响</div>
+  <div class="risk-item"><span class="risk-level risk-medium">中</span>Session 状态从 HEALTHY 改为 UNHEALTHY 后会触发恢复流程，需确认恢复过程中的任务排队行为是否符合预期</div>
+  <div class="risk-item"><span class="risk-level risk-medium">中</span>resetClusterClient 在 close 旧 client 时仅 warn 级别记录异常（catch ignore），极端情况下可能遗漏资源泄漏</div>
+  <div class="risk-item"><span class="risk-level risk-low">低</span>Flink 112 和 116 两个版本的修复逻辑略有差异（112 在 FlinkClient, 116 在 YarnSessionProvider），需确认行为一致性</div>
+</div>
+
+<!-- ====== 6. 测试环境 ====== -->
+<div class="section">
+  <h2>6. 测试环境</h2>
+  <table>
+    <tr><th style="width:120px;">环境项</th><th>详情</th></tr>
+    <tr><td>修复分支</td><td>hotfix_6.0.x_134507 (engine-plugins)</td></tr>
+    <tr><td>合并目标</td><td>release_6.3.x / release_6.4.x / release_7.0.x</td></tr>
+    <tr><td>Flink 模式</td><td>Session 模式（Flink 112 + Flink 116）</td></tr>
+    <tr><td>代码变更</td><td>11 files, +78/-1 lines; 核心：AbstractHaSessionClientService, FlinkClient, YarnSessionProvider, YarnFlinkSessionStateService, SessionClientManager</td></tr>
+    <tr><td>辅助参数</td><td>heartbeat.timeout=240000, akka.ask.timeout=60000（环境配置，非代码修复）</td></tr>
+    <tr><td>参考文档</td><td>https://dtstack.yuque.com/rd-center/sm6war/wkgc0fxfpxe6</td></tr>
+  </table>
+</div>
+
+<!-- ====== 7. 测试结论 ====== -->
+<div class="section">
+  <h2>7. 测试结论</h2>
+  <div class="conclusion-box">
+    <p><strong>测试状态：待执行</strong></p>
+    <p style="margin-top:8px;">本报告基于 Bug #134507 的 hotfix 分支实际代码变更（11 files, +78/-1）生成，共设计 4 条测试用例（2 条核心验证 + 1 条回归验证 + 1 条补充验证）。用例覆盖了修复涉及的核心场景：Session Client 连接重置机制（resetSessionClient/resetClusterClient）、Session 健康检查 UNHEALTHY 状态识别、Flink 112/116 双版本一致性。待部署修复分支后执行验证。</p>
+  </div>
+</div>
+
+<div class="footer">
+  <p>Generated by qa-flow | Bug #134507 Hotfix Test Report | 2026-04-07</p>
+</div>
+
+</div>
+</body>
+</html>

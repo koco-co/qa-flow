@@ -1,0 +1,298 @@
+<!--
+  禅道富文本编辑器兼容模板
+  - 全部使用 inline style，无 <style> 块
+  - 使用 table 布局替代 flexbox/grid
+  - 无 CSS 变量、伪元素、渐变
+  - 兼容禅道 CKEditor / UEditor 渲染
+-->
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:900px;border-collapse:collapse;font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.6;color:#1a202c;">
+
+  <!-- Header -->
+  <tr>
+    <td style="padding:20px 24px;background:#1e293b;color:#fff;border-radius:6px 6px 0 0;">
+      <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">#148824 多表一致性质量报告详情页返回业务异常</div>
+      <div style="font-size:12px;color:#cbd5e1;">
+        2026-04-13 16:28
+        &nbsp;&nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#ea580c;">一般</span>
+        &nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#3b82f6;">代码问题</span>
+        &nbsp;&nbsp;test_6.3.x_ltqc_v6.4.10_1
+      </div>
+    </td>
+  </tr>
+
+  <!-- Summary -->
+  <tr>
+    <td style="padding:16px 24px;background:#fef2f2;border-left:4px solid #ef4444;">
+      <strong>根因概述：</strong>quality report detail 在按 relationRange 归类 function 45 时发生空拆箱；function 45 的增量 SQL 未给 assets_dq_function 写 relation_range，导致 line 1046 直接 NPE。
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 请求信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            请求信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">方法</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">POST</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">URL</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">/dassets/v1/valid/monitorReportRecord/reportRecordDetail</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">关键参数</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">id&#x3D;&quot;33779&quot;</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应预览</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">reportRecordDetail 调用触发 NullPointerException，前端表现为业务异常</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 异常堆栈解析 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            异常堆栈解析
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常类型</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">java.lang.NullPointerException</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常消息</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">null</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">触发处理器</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">MonitorReportRecordController.reportRecordDetail -&gt; MonitorReportDetailService.getMonitorReportRecordDetail</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">根因帧</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">MonitorReportDetailService.getMonitorReportRecordDetail(MonitorReportDetailService.java:1046)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">说明</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">用户补充的后端堆栈已把异常行精确定位到 line 1046，curl 请求体为 id&#x3D;33779。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- 调用链 -->
+  <tr>
+    <td style="padding:16px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            调用链（从入口到根因）
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;font-family:Consolas,Monaco,monospace;">
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MonitorReportRecordController</strong>.reportRecordDetail (line 114)
+                  <br><span style="color:#64748b;font-size:12px;">质量报告详情页初始化直接进入 reportRecordDetail 接口。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MonitorReportRecordService</strong>.getReportRecordDetail (line 163)
+                  <br><span style="color:#64748b;font-size:12px;">服务层直接委托 MonitorReportDetailService 组装整页报告详情。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MonitorReportDetailService</strong>.getMonitorReportRecordDetail (line 966)
+                  <br><span style="color:#64748b;font-size:12px;">先从 FUNCTION_ID_MAP 读取 functionId&#x3D;45 的函数元数据。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong style="color:#ef4444">MonitorReportDetailService</strong>.getMonitorReportRecordDetail (line 1046)
+                  <br><span style="color:#64748b;font-size:12px;">relationRange 为 Integer，但这里直接赋给 int；当 function 45 的 relation_range 为 null 时发生自动拆箱 NPE。</span>
+                  
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 根因代码定位 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            根因代码定位
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:8px;word-break:break-all;">
+              <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">service/src/main/java/com/dtstack/assets/service/valid/impl/MonitorReportDetailService.java</code>
+            </p>
+            <pre style="background:#1e293b;color:#e2e8f0;padding:14px 16px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">}else {
+    reportRuleRecordItemDTO.setFunctionName(function.getNameZc());
+    reportRuleRecordItemDTO.setFunctionType(function.getType());
+}
+int relationRange &#x3D; functionNotEmpty
+        ? function.getRelationRange()
+        : monitorRuleCustom.getRelationRange();
+if (FunctionRelationRangeType.MULTI_TABLE.getType() &#x3D;&#x3D; relationRange) {
+    recordRuleResultDTO.getMultiTableRule().add(reportRuleRecordItemDTO);
+}</pre>
+            <p style="font-size:14px;font-weight:bold;margin-top:16px;">问题分析：</p>
+            <p style="font-size:13px;color:#64748b;margin-top:4px;">这里把 Integer 类型的 relationRange 直接赋给 primitive int。用户提供的堆栈精确落在 line 1046，说明不是前面的扩展解析报错，而是 relationRange 为空时触发了自动拆箱 NPE。function 45 正是新增规则，其元数据来自 assets_dq_function。</p>
+            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;margin-top:16px;">
+              <strong style="color:#b45309;">环境证据：</strong> Function.relationRange 在模型中本身就是可空 Integer，而 function 45 的增量 SQL 没给 assets_dq_function 写 relation_range，因此测试环境很容易得到 null。
+              <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;margin-top:8px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">private Integer relationRange;
+public Integer getRelationRange() {
+    return relationRange;
+}
+
+INSERT INTO assets_dq_function
+(id,name_en, name_zc, &#x60;level&#x60;, gmt_create, gmt_modified, is_deleted, have_dirty, is_multiple_support, &#x60;type&#x60;, sort)
+VALUES (45,&#x27;multi_table_uniformity&#x27;, &#x27;多表数据一致性比对&#x27;, 0, &#x27;2018-04-23 20:00:18&#x27;, &#x27;2018-04-23 20:00:18&#x27;, 0, 1, 1, 7, 5);</pre>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 修复建议 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            修复建议
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px;">以下建议基于 AI 分析，仅供参考。</p>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fef2f2;color:#ef4444;">P1 最高</span>
+                    &nbsp;<strong style="font-size:14px;">补齐 function 45 的 relation_range 元数据</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> sql/increment/202603251520_v6.3.x.sql 与已升级环境的 assets_dq_function</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 把 function 45 的 assets_dq_function 增量改为写入 relation_range&#x3D;1，并对测试环境已存在数据执行回填。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 质量报告详情按 Function.relationRange 分组，多表规则必须具备 relation_range 才能正常归类。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fffbeb;color:#b45309;">P2 高</span>
+                    &nbsp;<strong style="font-size:14px;">为 relationRange 增加空值保护</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> MonitorReportDetailService.getMonitorReportRecordDetail line 1046</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 不要直接拆箱 Integer；为空时应兜底成明确错误或降级使用 FunctionRelationRangeType.MULTI_TABLE。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 即使环境元数据缺失，也不应让 reportRecordDetail 直接以 NPE 方式失败。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#f0fdf4;color:#15803d;">P3 中</span>
+                    &nbsp;<strong style="font-size:14px;">补质量报告详情回归用例</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> monitorReportRecord/reportRecordDetail 测试</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 覆盖 function 45 在 relation_range 正常、缺失两种数据态下的详情接口行为。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 这条链路当前既依赖 SQL 初始化数据，也依赖服务层归类逻辑，回归必须同时兜住。</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 环境信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            环境信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">框架</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">Spring / React</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">部署环境</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">test_6.3.x_ltqc_v6.4.10_1</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">源码参考</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;">dt-center-assets@test_6.3.x_ltqc_v6.4.10_1 (4144eec95); dt-insight-studio@dataAssets/test_6.3.x_ltqc_v6410 (724ef9411c)</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="padding:20px 0;text-align:center;font-size:11px;color:#9ca3af;">
+      Generated by qa-flow code-analysis skill &middot; 2026-04-13 16:28
+    </td>
+  </tr>
+
+</table>

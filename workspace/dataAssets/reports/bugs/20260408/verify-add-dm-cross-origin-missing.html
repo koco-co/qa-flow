@@ -1,0 +1,300 @@
+<!--
+  禅道富文本编辑器兼容模板
+  - 全部使用 inline style，无 <style> 块
+  - 使用 table 布局替代 flexbox/grid
+  - 无 CSS 变量、伪元素、渐变
+  - 兼容禅道 CKEditor / UEditor 渲染
+-->
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:900px;border-collapse:collapse;font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.6;color:#1a202c;">
+
+  <!-- Header -->
+  <tr>
+    <td style="padding:20px 24px;background:#1e293b;color:#fff;border-radius:6px 6px 0 0;">
+      <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">Verify 新增在 DM 环境触发 SQL 语法错误</div>
+      <div style="font-size:12px;color:#cbd5e1;">
+        2026-04-08 17:49
+        &nbsp;&nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#ef4444;">严重</span>
+        &nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#3b82f6;">代码问题</span>
+        
+      </div>
+    </td>
+  </tr>
+
+  <!-- Summary -->
+  <tr>
+    <td style="padding:16px 24px;background:#fef2f2;border-left:4px solid #ef4444;">
+      <strong>根因概述：</strong>DM Oracle 专用 verify insert 映射少了 crossOrigin 占位，导致新增校验时生成的 SQL 列值数量不匹配。
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 请求信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            请求信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">方法</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">POST</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">URL</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">http://172.16.124.78/dassets/v1/valid/verify/add</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">关键参数</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">origin.dataSourceType&#x3D;119, target.dataSourceType&#x3D;1, crossOrigin&#x3D;1, executeType&#x3D;0, ruleName&#x3D;hhh</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应状态</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">500</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应预览</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">dm.jdbc.driver.DMException: line 7, column 27, nearby [?] has error: Syntax error</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 异常堆栈解析 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            异常堆栈解析
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常类型</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">dm.jdbc.driver.DMException</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常消息</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">line 7, column 27, nearby [?] has error: Syntax error</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">触发处理器</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">com.dtstack.assets.controller.valid.VerifyController.add(VerifyController.java:211)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">根因帧</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">com.dtstack.assets.service.valid.impl.VerifyService.add(VerifyService.java:684)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">说明</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">最内层数据库报错发生在 DmdbPreparedStatement.prepareSql；结合 release_6.3.x 的 DM Oracle Mapper，业务触发点是 verifyDao.insert(verifyVO)。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- 调用链 -->
+  <tr>
+    <td style="padding:16px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            调用链（从入口到根因）
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;font-family:Consolas,Monaco,monospace;">
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >VerifyController</strong>.add (line 211)
+                  <br><span style="color:#64748b;font-size:12px;">校验新增接口入口，接收 /dassets/v1/valid/verify/add 请求</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >VerifyService</strong>.add (line 684)
+                  <br><span style="color:#64748b;font-size:12px;">构造 VerifyVO 后调用 verifyDao.insert 保存校验规则</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >VerifyMapper</strong>.insert (line 153)
+                  <br><span style="color:#64748b;font-size:12px;">MyBatis 映射到 dmOracleMapper/valid/verify-mapper.xml 的 insert 语句</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong style="color:#ef4444">DmdbPreparedStatement</strong>.prepareSql (line 269)
+                  <br><span style="color:#64748b;font-size:12px;">DM 在预编译 SQL 时发现语法错误，报错位置靠近缺失值后的占位符</span>
+                  
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 根因代码定位 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            根因代码定位
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:8px;word-break:break-all;">
+              <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">dao/src/main/resources/dmOracleMapper/valid/verify-mapper.xml</code>
+            </p>
+            <pre style="background:#1e293b;color:#e2e8f0;padding:14px 16px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">&lt;insert id&#x3D;&quot;insert&quot; parameterType&#x3D;&quot;com.dtstack.assets.model.valid.Verify&quot;&gt;
+    INSERT INTO assets_dq_verify
+    (id, tenant_id, project_id, origin_table_name, origin_partition, target_table_name, target_partition, content,
+     execute_type, schedule_conf, task_params, modify_user_id, create_user_id, monitor_id, schema_name,cross_origin)
+    VALUES (seq_assets_dq_verify.NEXTVAL, #{tenantId}, #{projectId}, #{originTableName}, #{originPartition},
+            #{targetTableName}, #{targetPartition}, #{content}, #{executeType}, #{scheduleConf}, #{taskParams},
+            #{modifyUserId}, #{createUserId}, #{monitorId}, #{schemaName})
+&lt;/insert&gt;</pre>
+            <p style="font-size:14px;font-weight:bold;margin-top:16px;">问题分析：</p>
+            <p style="font-size:13px;color:#64748b;margin-top:4px;">列清单包含 cross_origin，但 VALUES 只提供到 schema_name，缺少 #{crossOrigin}。DM 在预编译时会把后续占位符解析到错误位置，最终抛出 SQL 语法错误。</p>
+            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;margin-top:16px;">
+              <strong style="color:#b45309;">环境证据：</strong> 默认 MySQL Mapper 已经携带 crossOrigin 值，占位数量正确；问题只出现在 DM Oracle 专用 Mapper。
+              <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;margin-top:8px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">&lt;insert id&#x3D;&quot;insert&quot; parameterType&#x3D;&quot;com.dtstack.assets.model.valid.Verify&quot; useGeneratedKeys&#x3D;&quot;true&quot; keyProperty&#x3D;&quot;id&quot;&gt;
+    INSERT INTO assets_dq_verify
+    (tenant_id, project_id, origin_table_name, origin_partition, target_table_name, target_partition, content,
+     execute_type, schedule_conf, task_params, modify_user_id, create_user_id, monitor_id, schema_name, cross_origin)
+    VALUES (#{tenantId}, #{projectId}, #{originTableName}, #{originPartition}, #{targetTableName},
+            #{targetPartition}, #{content}, #{executeType}, #{scheduleConf}, #{taskParams}, #{modifyUserId},
+            #{createUserId}, #{monitorId}, #{schemaName}, #{crossOrigin})
+&lt;/insert&gt;</pre>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 修复建议 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            修复建议
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px;">以下建议基于 AI 分析，仅供参考。</p>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fef2f2;color:#ef4444;">P1 立即修复</span>
+                    &nbsp;<strong style="font-size:14px;">补齐 DM Oracle Verify insert 的 crossOrigin 参数</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> dao/src/main/resources/dmOracleMapper/valid/verify-mapper.xml:153</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 在 VALUES 尾部补上 #{crossOrigin}，与 cross_origin 列保持一一对应。</p>
+                  <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:8px 0;">VALUES (..., #{modifyUserId}, #{createUserId}, #{monitorId}, #{schemaName}, #{crossOrigin})</pre>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 当前列和值数量不匹配，这是本次 DMException 的直接原因。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fffbeb;color:#b45309;">P2 回归校验</span>
+                    &nbsp;<strong style="font-size:14px;">补一条 VerifyDao.insert 的 DM 场景回归测试</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> 对应 DAO 或集成测试目录</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 新增包含 crossOrigin 的新增校验用例，至少覆盖 DM_ORACLE mapper 装载后的 SQL 编译或接口新增流程。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> default mapper 已经修好，但 DM 专用 mapper 漏同步，说明当前回归未覆盖多数据库 mapper 差异。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#f0fdf4;color:#15803d;">P3 防止再次遗漏</span>
+                    &nbsp;<strong style="font-size:14px;">建立多数据库 mapper 字段一致性检查</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> dao/src/main/resources/mapper/valid/ 与 dmOracleMapper/valid/ 对应文件</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 对基础 mapper 和 DM 专用 mapper 的 insert/update 字段清单做差异检查，字段变更时同步更新。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 该问题本质上是多套 mapper 并行维护导致的配置漂移。</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 环境信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            环境信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">JDK 版本</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">Java 8</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">框架</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">Spring MVC / Spring Transaction / MyBatis / MyBatis-Plus / Druid</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">源码参考</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;">dt-center-assets origin/release_6.3.x remote snapshot; local checkout blocked by untracked files in workspace/.repos/dt-insight-web/dt-center-assets</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="padding:20px 0;text-align:center;font-size:11px;color:#9ca3af;">
+      Generated by qa-flow code-analysis skill &middot; 2026-04-08 17:49
+    </td>
+  </tr>
+
+</table>

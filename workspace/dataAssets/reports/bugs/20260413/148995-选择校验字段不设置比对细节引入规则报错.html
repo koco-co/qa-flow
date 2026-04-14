@@ -1,0 +1,314 @@
+<!--
+  禅道富文本编辑器兼容模板
+  - 全部使用 inline style，无 <style> 块
+  - 使用 table 布局替代 flexbox/grid
+  - 无 CSS 变量、伪元素、渐变
+  - 兼容禅道 CKEditor / UEditor 渲染
+-->
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:900px;border-collapse:collapse;font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;line-height:1.6;color:#1a202c;">
+
+  <!-- Header -->
+  <tr>
+    <td style="padding:20px 24px;background:#1e293b;color:#fff;border-radius:6px 6px 0 0;">
+      <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">#148995 多表一致性校验未设置比对细节时保存报错</div>
+      <div style="font-size:12px;color:#cbd5e1;">
+        2026-04-13 16:28
+        &nbsp;&nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#ef4444;">严重</span>
+        &nbsp;
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:bold;color:#fff;background:#3b82f6;">代码问题</span>
+        &nbsp;&nbsp;test_6.3.x_ltqc_v6.4.10_1
+      </div>
+    </td>
+  </tr>
+
+  <!-- Summary -->
+  <tr>
+    <td style="padding:16px 24px;background:#fef2f2;border-left:4px solid #ef4444;">
+      <strong>根因概述：</strong>规则保存前把空 verifySettingDTO 误判为“无匹配规则”，拦截了本应走字段直接等值比对的场景。
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 请求信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            请求信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">方法</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">POST</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">URL</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">/dassets/v1/valid/monitor/add</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">关键参数</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">functionId&#x3D;45, primaryKey&#x3D;[&quot;id&quot;], columnNames&#x3D;[&quot;score&quot;], multiTableDTOS&#x3D;[student1], verifySettingDTO&#x3D;[]</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应状态</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">500</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">响应预览</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">业务异常：一致性比对规则，配置的字段没有符合的规则</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 异常堆栈解析 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            异常堆栈解析
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常类型</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">com.dtstack.lang.exception.BizException</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">异常消息</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">一致性比对规则，配置的字段没有符合的规则</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">触发处理器</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">MonitorRuleService.concatSqlV1 -&gt; FunctionWrapper.generatorVerifySQL</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">根因帧</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;"><code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:13px;">MultiTableDataUniformityFunctionServiceImpl.checkColumnTypeAndSetting(MultiTableDataUniformityFunctionServiceImpl.java:292)</code></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">说明</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">用户提供的 curl 与堆栈表明，保存规则时在 SQL 生成前的字段设置校验阶段直接抛错。</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- 调用链 -->
+  <tr>
+    <td style="padding:16px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            调用链（从入口到根因）
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;font-family:Consolas,Monaco,monospace;">
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MonitorRuleService</strong>.concatSqlV1 (line 1467)
+                  <br><span style="color:#64748b;font-size:12px;">引入规则时为 functionId&#x3D;45 生成校验 SQL。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MultiTableDataUniformityFunctionServiceImpl</strong>.generatorSQL (line 117)
+                  <br><span style="color:#64748b;font-size:12px;">进入 WHERE 条件拼装。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MultiTableDataUniformityFunctionServiceImpl</strong>.buildWhereConditions (line 246)
+                  <br><span style="color:#64748b;font-size:12px;">在生成字段比对 SQL 之前执行字段类型与设置校验。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e2e8f0;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong >MultiTableDataUniformityFunctionServiceImpl</strong>.checkColumnTypeAndSetting (line 283)
+                  <br><span style="color:#64748b;font-size:12px;">遍历 verifySettingDTOList 寻找与字段类型匹配的规则。</span>
+                  
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;width:24px;vertical-align:top;text-align:center;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;"></span>
+                </td>
+                <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">
+                  <strong style="color:#ef4444">MultiTableDataUniformityFunctionServiceImpl</strong>.checkColumnTypeAndSetting (line 292)
+                  <br><span style="color:#64748b;font-size:12px;">当 verifySettingDTOList 为空时，empty 一直为 true，直接抛 BizException。</span>
+                  
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 根因代码定位 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            根因代码定位
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:8px;word-break:break-all;">
+              <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;">service/src/main/java/com/dtstack/assets/service/valid/function/Impl/MultiTableDataUniformityFunctionServiceImpl.java</code>
+            </p>
+            <pre style="background:#1e293b;color:#e2e8f0;padding:14px 16px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">private void checkColumnTypeAndSetting(FunctionBO functionBO, Map&lt;String, String&gt; columnNameTypeMap,
+                                       List&lt;MultiTableSettingDTO&gt; verifySettingDTOList){
+    boolean empty &#x3D; true;
+    for (String columnName : functionBO.getColumnNameList()) {
+        String columnType &#x3D; columnNameTypeMap.get(columnName);
+        boolean isNumberType &#x3D; DataType.SUPPORT_NUMBER_COLUMN_TYPE.contains(columnType.toUpperCase());
+        boolean isStringType &#x3D; DataType.SUPPORT_STRING_COLUMN_TYPE.contains(columnType.toUpperCase());
+        if (!isNumberType &amp;&amp; !isStringType){
+            continue;
+        }
+        for (MultiTableSettingDTO settingDTO : verifySettingDTOList) {
+            Boolean settingIsNumber &#x3D; MultiTableSettingEnum.isNumber(settingDTO.getKey());
+            if (settingIsNumber.equals(isNumberType) || !settingIsNumber.equals(isStringType)){
+                empty &#x3D; false;
+                break;
+            }
+        }
+    }
+    if (CollectionUtils.isNotEmpty(functionBO.getColumnNameList()) &amp;&amp; empty){
+        throw new BizException(&quot;一致性比对规则，配置的字段没有符合的规则&quot;);
+    }
+}</pre>
+            <p style="font-size:14px;font-weight:bold;margin-top:16px;">问题分析：</p>
+            <p style="font-size:13px;color:#64748b;margin-top:4px;">这段前置校验把“有校验字段但比对细节为空”直接当成非法输入，而没有把它视为默认等值比对。异常不是因为缺少实现，而是校验顺序提前把合法场景拦掉了。</p>
+            <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;margin-top:16px;">
+              <strong style="color:#b45309;">环境证据：</strong> 同一个类下方已经实现了 verifySettingDTO 为空时的默认等值比对，说明根因是前置校验与默认分支互相冲突。
+              <pre style="background:#1e293b;color:#e2e8f0;padding:12px 14px;margin-top:8px;font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">if (CollectionUtils.isEmpty(verifySettingDTOList)) {
+    List&lt;String&gt; fieldSqlList &#x3D; Lists.newArrayList();
+    for (MultiTableDataUniformityDTO table : multiTableDTOS) {
+        String rightField &#x3D; table.getColumnNames().get(columnIndex);
+        String rightFullField &#x3D; table.getTableName() + &quot;.&quot; + rightField;
+        uniqueSettingKeys.add(rightFullField);
+        fieldSqlList.add(String.format(&quot; %s &#x3D; %s&quot;, leftField, rightFullField));
+    }
+    columnSqlList.add(&quot;(&quot; + String.join(SQL_AND, fieldSqlList) + &quot;)&quot;);
+    primaryKeySelect.addAll(uniqueSettingKeys);
+    return columnSqlList;
+}</pre>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 修复建议 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            修复建议
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <p style="font-size:12px;color:#64748b;margin-bottom:12px;">以下建议基于 AI 分析，仅供参考。</p>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fef2f2;color:#ef4444;">P1 最高</span>
+                    &nbsp;<strong style="font-size:14px;">空比对细节时跳过规则匹配校验</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> MultiTableDataUniformityFunctionServiceImpl.checkColumnTypeAndSetting</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 在 verifySettingDTOList 为空时直接 return，或仅在列表非空时执行类型与规则的匹配校验。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 需求要求“有校验字段 + 不设置比对细节”走字段默认一致性比对，当前前置校验与需求相反。</p>
+                </td>
+              </tr>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;margin-bottom:12px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="margin-bottom:8px;">
+                    <span style="display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:bold;background:#fffbeb;color:#b45309;">P2 高</span>
+                    &nbsp;<strong style="font-size:14px;">为默认等值比对补回归用例</strong>
+                  </div>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>位置：</strong> MultiTableDataUniformityFunctionServiceImpl.buildWhereConditions / buildColumnWhereSQLs</p>
+                  <p style="font-size:13px;color:#64748b;margin-bottom:4px;"><strong>修改：</strong> 增加空 verifySettingDTO 下的数值字段、字符串字段、新建规则和引入规则四类测试。</p>
+                  
+                  <p style="font-size:13px;color:#64748b;margin-bottom:0;"><strong>原因：</strong> 同类缺陷同时影响新建、编辑、引入多个入口，单点修复后需要回归保证不会再次被前置校验拦截。</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><td style="height:16px;"></td></tr>
+
+  <!-- 环境信息 -->
+  <tr>
+    <td style="padding:0;">
+      <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-collapse:collapse;">
+        <tr>
+          <td colspan="2" style="padding:12px 16px;font-size:15px;font-weight:bold;background:#f8fafc;border-bottom:2px solid #3b82f6;">
+            环境信息
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">框架</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">Spring / DataAssets 规则服务</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">部署环境</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;">test_6.3.x_ltqc_v6.4.10_1</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;width:100px;font-weight:bold;color:#64748b;border-bottom:1px solid #e2e8f0;white-space:nowrap;">源码参考</td>
+          <td style="padding:8px 16px;border-bottom:1px solid #e2e8f0;word-break:break-all;">dt-center-assets@test_6.3.x_ltqc_v6.4.10_1 (4144eec95)</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="padding:20px 0;text-align:center;font-size:11px;color:#9ca3af;">
+      Generated by qa-flow code-analysis skill &middot; 2026-04-13 16:28
+    </td>
+  </tr>
+
+</table>

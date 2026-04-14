@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bug 分析报告 — BatchLifeCycleApiClient.getByDataSourceAndTable 触发 NullPointerException</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a202c;
+    --text-secondary: #64748b;
+    --primary: #3b82f6;
+    --critical: #ef4444;
+    --warning: #f59e0b;
+    --success: #22c55e;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+    --highlight: #fef3c7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  .header h1 { font-size: 22px; margin-bottom: 12px; font-weight: 600; }
+  .header-meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; opacity: 0.85; }
+  .header-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .badge-critical { background: var(--critical); }
+  .badge-normal { background: var(--warning); }
+  .badge-code { background: var(--primary); }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon { font-size: 18px; }
+
+  /* Summary */
+  .summary-box {
+    background: #fef2f2;
+    border-left: 4px solid var(--critical);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 20px;
+    font-size: 15px;
+  }
+
+  /* Code block */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "Fira Code", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 12px 0;
+  }
+  .line-highlight {
+    background: rgba(239, 68, 68, 0.25);
+    display: block;
+    margin: 0 -16px;
+    padding: 0 16px;
+    border-left: 3px solid var(--critical);
+  }
+  .line-num {
+    color: #64748b;
+    display: inline-block;
+    width: 32px;
+    text-align: right;
+    margin-right: 16px;
+    user-select: none;
+  }
+
+  /* Call chain */
+  .chain { list-style: none; }
+  .chain li {
+    position: relative;
+    padding: 10px 16px 10px 32px;
+    border-left: 2px solid var(--border);
+    font-size: 13px;
+    font-family: monospace;
+  }
+  .chain li:last-child { border-left-color: var(--critical); }
+  .chain li::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 14px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 2px solid var(--card);
+  }
+  .chain li:last-child::before { background: var(--critical); }
+  .chain li.entry::before { background: var(--primary); }
+
+  /* Fix suggestions */
+  .fix-item {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: box-shadow 0.2s;
+  }
+  .fix-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .fix-item h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fix-item p { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+  .priority-tag {
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .p1 { background: #fef2f2; color: var(--critical); }
+  .p2 { background: #fffbeb; color: #b45309; }
+  .p3 { background: #f0fdf4; color: #15803d; }
+
+  /* Request info */
+  .req-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .req-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .req-table td:first-child {
+    font-weight: 600;
+    width: 100px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .req-table td:last-child { word-break: break-all; }
+
+  /* Secondary risk */
+  .risk-box {
+    background: #fffbeb;
+    border-left: 4px solid var(--warning);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  .risk-box strong { color: #b45309; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>BatchLifeCycleApiClient.getByDataSourceAndTable 触发 NullPointerException</h1>
+    <div class="header-meta">
+      <span>2026-04-07 09:45</span>
+      <span><span class="badge badge-critical">严重</span></span>
+      <span><span class="badge badge-code">代码问题</span></span>
+      <span>dt-center-ide / test_6.3.x_zdxx_0323</span>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-box">
+    <strong>根因概述：</strong>
+    <code>BatchLifeCycleApiClient.getByDataSourceAndTable()</code> 第 59 行空值判断存在缺陷——当 RPC 返回的 <code>ApiResponse</code> 对象非空但其 <code>getData()</code> 为 null 时，直接调用 <code>.getLifeDay()</code> 触发 NPE。
+  </div>
+
+  <!-- Request Info -->
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 请求信息</div>
+    <table class="req-table">
+      <tr><td>方法</td><td>POST（推断，含 --data-raw）</td></tr>
+      <tr><td>URL</td><td><code>/api/rdos/common/project/dealIntrinsicTable</code></td></tr>
+      <tr>
+        <td>关键参数</td>
+        <td>
+          sourceId=120, dataSourceType=119, catalogueId=7, identity="doris"<br>
+          addTableNames: doris_lineage_dwd, doris_lineage_mid, doris_lineage_src, doris_manual_downstream, doris_manual_field_dst, doris_manual_field_src, doris_manual_upstream
+        </td>
+      </tr>
+      <tr><td>环境</td><td>shuzhan63-zdxx.k8s.dtstack.cn（数智信息测试环境）</td></tr>
+      <tr><td>项目</td><td>X-Project-ID: 60，租户: 指标测试 (tenant_id=20)</td></tr>
+    </table>
+  </div>
+
+  <!-- Stack Trace -->
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 异常堆栈解析</div>
+    <table class="req-table" style="margin-bottom:16px">
+      <tr><td>异常类型</td><td><code>java.lang.NullPointerException</code></td></tr>
+      <tr><td>异常消息</td><td>null（JDK 8 不输出 NPE 详细信息）</td></tr>
+      <tr><td>触发表</td><td>tableId=685, tableName=ks_test_liu2</td></tr>
+      <tr><td>线程</td><td>tableInfo-pool-15-thread-53（线程池异步任务）</td></tr>
+    </table>
+
+    <h4 style="font-size:14px; margin-bottom:8px;">调用链（从入口到根因）</h4>
+    <ul class="chain">
+      <li class="entry"><strong>BatchTableSizeService</strong>.batchCheckTableInfos λ (line 156)<br><span style="color:#64748b;font-size:12px">线程池提交异步任务，遍历表信息</span></li>
+      <li><strong>BatchTableSizeService</strong>.updateHiveTableSize (line 246)<br><span style="color:#64748b;font-size:12px">统计 Hive 表大小后调用 updateSizeAndFileCount</span></li>
+      <li><strong>BatchTableInfoService</strong>.updateSizeAndFileCount (line 5558)<br><span style="color:#64748b;font-size:12px">更新后调用 tableInfoDao.getOne() 查询最新数据</span></li>
+      <li><strong>LifeCycleEnhanceAspect</strong>.enhanceQueryLifeCycle (line 61)<br><span style="color:#64748b;font-size:12px">AOP @EnhanceLifeCycleQuery 切面拦截 getOne()</span></li>
+      <li><strong>LifeCycleEnhanceAspect</strong>.enhanceSingleTableInfo (line 80)<br><span style="color:#64748b;font-size:12px">增强单个表的生命周期字段</span></li>
+      <li><strong style="color:#ef4444">BatchLifeCycleApiClient</strong>.getByDataSourceAndTable (line 59) [NPE]<br><span style="color:#ef4444;font-size:12px">NPE 发生在此处：result.getData() 为 null</span></li>
+    </ul>
+  </div>
+
+  <!-- Code Location -->
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 根因代码定位</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
+      <code>batch-rpc/src/main/java/com/dtstack/batch/rpc/pubservice/BatchLifeCycleApiClient.java</code>
+    </p>
+    <pre><span class="line-num">57</span>public Integer getByDataSourceAndTable(QueryTableLifeParam queryTableLifeParam) {
+<span class="line-num">58</span>    ApiResponse&lt;LcTableLifeParam&gt; result = lifeCycleApiClient.getByDataSourceAndTable(
+<span class="line-num">  </span>        queryTableLifeParam.getDataSourceId(), queryTableLifeParam.getDbSchema(),
+<span class="line-num">  </span>        queryTableLifeParam.getTableName());
+<span class="line-highlight"><span class="line-num">59</span>    if (result == null || result.getData().getLifeDay() == null) {  // ← NPE: getData() 为 null</span>
+<span class="line-num">60</span>        throw new RdosDefineException("调用/.../getByDataSourceAndTable 出错");
+<span class="line-num">61</span>    }
+<span class="line-num">62</span>    return result.getData().getLifeDay();
+<span class="line-num">63</span>}</pre>
+
+    <p style="font-size:14px;margin-top:16px;"><strong>问题分析：</strong></p>
+    <p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">
+      第 59 行的短路求值条件 <code>result == null || result.getData().getLifeDay() == null</code> 遗漏了 <code>result.getData() == null</code> 的情况。
+      当 public-service 接口返回响应体非空（result ≠ null），但 data 字段为 null（表不存在生命周期记录）时，直接调用 <code>result.getData().getLifeDay()</code> 触发 NPE。
+    </p>
+
+    <div class="risk-box" style="margin-top:16px;">
+      <strong>次级风险：</strong> <code>LifeCycleEnhanceAspect.buildQueryLifeCycleParam()</code> 第 181 行存在同类隐患——当 <code>projectEngine</code> 为 null 时仅输出 warn 日志，但未 return/throw，继续执行 <code>projectEngine.getEngineIdentity()</code> 也会 NPE。
+<pre style="margin-top:8px"><span class="line-num">181</span>if (projectEngine == null) {
+<span class="line-num">182</span>    logger.warn("can not get project ref multiEngine by table:{}", tableInfo.getId());
+<span class="line-num">183</span>}
+<span class="line-num">184</span>// ↓ 未 return/throw，projectEngine 为 null 时此处也会 NPE
+<span class="line-num">185</span>param.setDbSchema(projectEngine.getEngineIdentity());</pre>
+    </div>
+  </div>
+
+  <!-- Fix Suggestions -->
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 修复建议</div>
+
+    <div class="fix-item">
+      <h4><span class="priority-tag p1">P1 必修</span> 修复 BatchLifeCycleApiClient 空值判断</h4>
+      <p><strong>位置：</strong> <code>BatchLifeCycleApiClient.java:59</code></p>
+      <p><strong>修改：</strong> 在短路条件中增加 <code>result.getData() == null</code> 判断</p>
+      <pre>// 修复前
+if (result == null || result.getData().getLifeDay() == null) {
+
+// 修复后
+if (result == null || result.getData() == null || result.getData().getLifeDay() == null) {</pre>
+      <p><strong>原因：</strong> 当 public-service 返回的 data 为 null（目标表无生命周期记录）时，避免 NPE，统一走 RdosDefineException 异常路径。</p>
+    </div>
+
+    <div class="fix-item">
+      <h4><span class="priority-tag p2">P2 建议修复</span> 修复 buildQueryLifeCycleParam 空指针隐患</h4>
+      <p><strong>位置：</strong> <code>LifeCycleEnhanceAspect.java:181-185</code></p>
+      <p><strong>修改：</strong> projectEngine 为 null 时提前返回或抛出异常，而非仅打 warn 日志后继续执行</p>
+      <pre>if (projectEngine == null) {
+    logger.warn("can not get project ref multiEngine by table:{}", tableInfo.getId());
+    <span style="color:#22c55e">throw new RdosDefineException("找不到表 " + tableInfo.getId() + " 的引擎配置");</span>
+}</pre>
+      <p><strong>原因：</strong> 防止后续 <code>projectEngine.getEngineIdentity()</code> 触发 NPE，同时提供明确的错误信息辅助排查。</p>
+    </div>
+
+    <div class="fix-item">
+      <h4><span class="priority-tag p3">P3 可选优化</span> 确认 ks_test_liu2 表的引擎类型和数据源配置</h4>
+      <p><strong>位置：</strong> 数据层面排查</p>
+      <p><strong>修改：</strong> 检查 tableId=685（ks_test_liu2）的 tableType 对应的数据源是否正确配置了生命周期服务</p>
+      <p><strong>原因：</strong> 该表可能为测试表或手动创建的表，其对应的数据源/引擎在 public-service 中没有生命周期记录，属于正常场景但代码未做防护。</p>
+    </div>
+  </div>
+
+  <!-- Environment -->
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 环境信息</div>
+    <table class="req-table">
+      <tr><td>JDK 版本</td><td>JDK 8（推断自 <code>sun.reflect.DelegatingMethodAccessorImpl</code> 和 <code>java.lang.Thread.run(Thread.java:750)</code>）</td></tr>
+      <tr><td>框架</td><td>Spring AOP + CGLIB 代理 + JDK 动态代理</td></tr>
+      <tr><td>部署环境</td><td>shuzhan63-zdxx.k8s.dtstack.cn（K8s 测试环境）</td></tr>
+      <tr><td>仓库分支</td><td>dt-center-ide / test_6.3.x_zdxx_0323 (commit: e48aa8e3a8)</td></tr>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Generated by qa-flow code-analysis skill · 2026-04-07 10:05
+  </div>
+
+</div>
+</body>
+</html>

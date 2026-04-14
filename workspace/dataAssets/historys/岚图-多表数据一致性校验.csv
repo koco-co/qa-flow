@@ -1,0 +1,2563 @@
+"用例编号","所属产品","所属模块","相关需求","用例标题","前置条件","步骤","预期","实际情况","关键词","优先级","用例类型","适用阶段","用例状态","B","R","S","结果","由谁创建","创建日期","最后修改者","修改日期","用例版本","相关用例"
+"182425","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」新增「一致性校验」规则类型","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 点击【添加规则】按钮
+4. 选择「一致性校验」规则","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 新增「一致性校验」规则
+4. 选择成功，页面显示「一致性校验」规则配置区域","1. 
+2. 
+3. 
+4.","","1","功能测试","功能测试阶段","正常","0","1","4","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182424","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」区域详情正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 点击【添加规则】按钮，选择「一致性校验」规则
+4. 查看配置区域详情","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 选择成功，页面显示「一致性校验」规则配置区域
+4. 包含：
+1）「校验类型」，可选择多表数据一致性比对
+2）「选择校验字段」，可选择数据表下所有字段
+3）「选择校验表主键」，可选择数据表下所有字段
+4）「选择对比表」，选择数据库下所有表，可配置多个对比表
+5）「输入分区」，可配置「选择已有分区/动态分区/手动输入分区」
+6）「数据预览」，可预览全表数据及分区数据
+7）「选择对比表主键」，可选择对比表下所有字段
+8）「比对字段设置」，展示「选择校验字段」
+9）「强弱规则」，可选择「强/弱规则」
+10）「规则描述」，可输入内容
+11）「保存」、「取消」、「对比细节设置」按钮","1. 
+2. 
+3. 
+4.","","2","功能测试","功能测试阶段","正常","0","1","4","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182423","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「一个对比表」校验通过功能","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为「校验表-user_name-->对比表-user_name；校验表-age-->对比表-age」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看实例详情及质量报告","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果通过，且实例详情展示正确，质量报告展示正确","1. 
+2. 
+3. 
+4. 
+5.","","1","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182422","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「一个对比表」校验不通过功能","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为「校验表-user_name-->对比表-age；校验表-age-->对比表-name」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看实例详情及质量报告","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果不通过，且实例详情展示正确，质量报告展示正确","1. 
+2. 
+3. 
+4. 
+5.","","1","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182421","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「多个对比表」校验通过功能","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表1」为「${TABLE}」
+「选择对比表1主键」为「id1」
+「选择对比表2」为「${TABLE}」
+「选择对比表2主键」为「id2」
+「比对字段设置」配置为
+「校验表-user_name-->对比表1-user_name，对比表2-user_name；校验表-age-->对比表1-age，对比表2-age」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看实例详情及质量报告","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果通过，且实例详情展示正确，质量报告展示正确","1. 
+2. 
+3. 
+4. 
+5.","","2","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182420","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「多个对比表」校验不通过功能","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表1」为「${TABLE}」
+「选择对比表1主键」为「id1」
+「选择对比表2」为「${TABLE}」
+「选择对比表2主键」为「id2」
+「比对字段设置」配置为
+「校验表-user_name-->对比表1-age，对比表2-user_name；校验表-age-->对比表1-user_name，对比表2-age」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看实例详情及质量报告","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果不通过，且实例详情展示正确，质量报告展示正确","1. 
+2. 
+3. 
+4. 
+5.","","1","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182419","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「未选择校验字段」校验通过功能","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+不配置「选择校验字段」
+「选择校验表主键」选择为「id，name」
+「选择对比表」为「${TABLE}」
+配置「输入分区-选择已有分区」
+「选择对比表主键」为「id，name」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看实例详情及质量报告","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果通过，且实例详情展示正确，质量报告展示正确","1. 
+2. 
+3. 
+4. 
+5.","","2","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182418","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「未选择校验字段」校验不通过功能","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+不配置「选择校验字段」
+「选择校验表主键」选择为「id，name」
+「选择对比表」为「${TABLE}」
+配置「输入分区-动态输入分区」
+「选择对比表主键」为「age，id」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看实例详情及质量报告","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果不通过，且实例详情展示正确，质量报告展示正确","1. 
+2. 
+3. 
+4. 
+5.","","2","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182417","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「比对规则」内容正确","无","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 正确配置「监控规则」，点击「比对细节设置」按钮
+4. 查看「比对规则」内容
+5. 鼠标hover“？”","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 弹出「比对规则」内容配置
+4. 可勾选：
+1）数值差异百分比，对比表之间的数值型数据时，差距百分比小于等于xx%时候，计为成功匹配
+2）数值差异绝对值，对比表之间的数值型数据时，差距绝对值小于等于xx时候，计为成功匹配
+3）数值对比忽略小数点，忽略小数点后xx位
+4）字符不区分大小写，对比左右表的字符串型数据时，不区分大小写
+5）空值与NULL等价，对比左右表的数据时，认为空值与NULL值是相等的
+5. 悬浮提示：“若不勾选配置具体规则细节，则正常按照主键校验数据是否存在差异，只要存在差异判断校验不通过。”","1. 
+2. 
+3. 
+4. 
+5.","","3","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182416","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「设置比对细节」校验通过功能","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为「校验表-user_name-->对比表-user_name；校验表-age-->对比表-age」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+配置「对比细节设置」为「数值差异百分比-小于等于80%」、「数值差异绝对值-小于等于80」、「数值对比忽略小数点-忽略小数点后2位」、「字符不区分大小写」、「空值与NULL等价」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看实例详情及质量报告","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果通过，且实例详情展示正确，质量报告展示正确","1. 
+2. 
+3. 
+4. 
+5.","","2","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182415","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「内置规则」-「一致性校验」-「多表数据一致性比对」-「设置比对细节」校验不通过功能","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为「校验表-user_name-->对比表-user_name；校验表-age-->对比表-age」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+配置「对比细节设置」为「数值差异百分比-小于等于0%」、「数值差异绝对值-小于等于0」、「数值对比忽略小数点-忽略小数点后2位」、「字符不区分大小写」、「空值与NULL等价」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看实例详情及质量报告","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果不通过，且实例详情展示正确，质量报告展示正确","1. 
+2. 
+3. 
+4. 
+5.","","2","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182414","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」区域配置交互正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 点击【添加规则】按钮，选择「一致性校验」规则
+4. 查看「选择校验字段」的“？”
+5. 查看「选择校验字段」
+6. 查看「选择校验表主键」
+7. 查看「选择对比表主键」
+8. 不配置「选择校验字段」","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 选择成功，页面显示「一致性校验」规则配置区域
+4. 悬浮提示“若不选择校验字段则只判断主键的一致性”
+5. 非必填，可多选
+6. 必填，可多选
+7. 必填，可多选
+8. 下方不显示「比对字段设置」列表","1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+7. 
+8.","","3","功能测试","功能测试阶段","正常","0","1","8","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182413","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」-「选择校验字段」限制个数正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 点击【添加规则】按钮，选择「一致性校验」规则
+4. 配置10个「选择校验字段」
+5. 配置11个「选择校验字段」","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 选择成功，页面显示「一致性校验」规则配置区域
+4. 配置成功
+5. 提示最多配置10个校验字段","1. 
+2. 
+3. 
+4. 
+5.","","3","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182412","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」-「选择对比表」限制个数正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 点击【添加规则】按钮，选择「一致性校验」规则
+4. 配置10个「对比表」
+5. 配置11个「对比表」","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 选择成功，页面显示「一致性校验」规则配置区域
+4. 配置成功
+5. 提示最多配置10个对比表","1. 
+2. 
+3. 
+4. 
+5.","","3","功能测试","功能测试阶段","正常","0","1","5","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182411","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」任务通过结果详情正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为「校验表-user_name-->对比表-user_name；校验表-age-->对比表-age」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则
+6. 查看实例详情
+7. 点击【监控报告】tab
+8. 点击【表级报告】tab","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果符合预期
+6. 抽屉式展开详情，页面包含：
+任务名称、监控报告tab、表级报告tab
+7. 包含「一致性校验」-「多表数据一致性比对」配置的详情、比对字段设置详情、比对规则详情（仅展示勾选的）
+8. 包含
+1）数据表信息汇总（表名、总分区数量、数据源、数据源类型、数据库），空白时显示“--”；
+2）表级统计（记录数、报警数），空白时显示“--”；
+3）最近30次综合报告（记录数平均波动率、平均记录数、日平均告警数、平均告警数）；
+4）最近30次表级统计；
+5）最近30次表数据波动图","1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+7. 
+8.","","2","功能测试","功能测试阶段","正常","0","1","8","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182410","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」任务不通过/失败 结果详情正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为「校验表-user_name-->对比表-age；校验表-age-->对比表-name」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则
+6. 查看不通过的实例详情
+7. 点击【监控报告】tab
+8. 点击【表级报告】tab
+9. 查看运行失败的示例详情","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果符合预期
+6. 抽屉式展开详情，页面包含：
+任务名称、监控报告tab、表级报告tab
+7. 1）都展示「一致性校验」-「多表数据一致性比对」配置的详情；
+2）校验未通过的规则支持查看明细
+8. 包含：
+1）数据表信息汇总（表名、总分区数量、数据源、数据源类型、数据库），空白时显示“--”；
+2）表级统计（记录数、报警数），空白时显示“--”；
+3）最近30次综合报告（记录数平均波动率、平均记录数、日平均告警数、平均告警数）；
+4）最近30次表级统计；
+5）最近30次表数据波动图
+9. 1）展示「一致性校验」-「多表数据一致性比对」配置的详情；
+2）运行失败的规则支持查看日志","1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+7. 
+8. 
+9.","","2","功能测试","功能测试阶段","正常","0","1","9","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182409","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」不通过任务查看明细正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+1）（选择校验字段且不配置对比细节：）
+「监控规则1」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为
+「校验表-user_name-->对比表-age；校验表-age-->对比表-user_name」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+2）（选择校验字段且配置对比细节：）
+「监控规则2」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「phone 」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为
+「校验表-phone -->对比表-age」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+配置「对比细节设置」为「数值差异百分比-小于等于0%」
+3）（不选择校验字段：）
+「监控规则3」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+不配置「选择校验字段」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则
+6. 点击查看不通过明细
+7. 点击【下载明细】按钮","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 实例运行结果不通过
+6. 1）标题显示为“查看“一致性校验-多表数据一致性比对”明细”
+2）记录所有不符合规则的数据
+3）列表显示，表头为规则校验的「表.主键」、「表.字段」
+4）不做标红处理
+7. 支持下载明细，内容正确","1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+7.","","2","功能测试","功能测试阶段","正常","0","1","7","通过","听筠","2026-02-28","","0000-00-00","1","",""
+"182408","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」任务通过质量报告正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为「校验表-user_name-->对比表-user_name；校验表-age-->对比表-age」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看质量报告
+6. 查看「质量评估汇总」区域
+7. 查看「规则校验明细」区域","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 页面包含：
+1）报告进入目录
+2）质量评估汇总区域
+3）规则校验明细区域
+6. 显示为：
+1）规则名：「test_rule」
+2）数据源：「${DATASOURCE}」
+3）数据库：「${DATABASE}」
+4）检测数据范围：--
+5）表行数：「${表行数}」
+6）抽样行数：--
+7）字段数：「${字段数}」
+8）车辆数：「${车辆数}」
+9）校验规则数：1
+10）校验通过率：100%
+7. 显示为：
+1）规则类型：一致性校验
+2）规则名称：多表数据一致性校验
+3）字段名称：user_name;age
+4）字段类型：STRING;TINYINT
+5）质验结果：校验通过
+6）未通过原因：--
+7）详情说明：对比表为「${TABLE}」，校验字段的数据一致性符合规则
+8）最近一次校验结束时间：「${校验结束时间}」
+9）操作：--","1. 
+2. 
+3. 
+4. 
+5. 查看报错
+6. 
+7.","","1","功能测试","功能测试阶段","正常","0","1","7","失败","听筠","2026-02-28","","0000-00-00","1","",""
+"182407","数据资产_STD(#23)","/版本迭代测试用例/v6.4.10/【内置规则丰富】一致性，多表数据一致性校验(#10353)","【岚图】【内置规则丰富】一致性，多表数据一致性校验(#15525)","验证「监控规则」-「一致性校验」-「多表数据一致性比对」任务不通过质量报告正确","已存在spark表A
+CREATE TABLE IF NOT EXISTS
+tableA (
+create_date DATE COMMENT &#039;日期类型&#039;,
+update_datetime TIMESTAMP COMMENT &#039;日期时间类型（替代原DATETIME）&#039;,
+work_time STRING COMMENT &#039;时间类型（Spark无TIME类型，用STRING存储HH:mm:ss）&#039;,
+sync_timestamp TIMESTAMP COMMENT &#039;时间戳类型&#039;,
+date_str_ymd STRING COMMENT &#039;字符串日期(yyyy-MM-dd)，强转DATE&#039;,
+date_str_ymd_hms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss)，强转TIMESTAMP&#039;,
+date_str_mdy STRING COMMENT &#039;字符串时间(HH:mm:ss)，强转STRING（Spark无TIME类型）&#039;,
+date_str_ymd_hms_ms STRING COMMENT &#039;字符串日期时间(yyyy-MM-dd HH:mm:ss.SSS)，强转TIMESTAMP&#039;,
+date_str_irregular STRING COMMENT &#039;字符串日期(非标准格式，如20260204)，强转DATE&#039;,
+id INT COMMENT &#039;主键ID&#039;,
+user_name STRING COMMENT &#039;用户名（Spark中VARCHAR等价于STRING）&#039;,
+age TINYINT COMMENT &#039;年龄&#039;,
+phone BIGINT COMMENT &#039;手机号&#039;,
+email STRING COMMENT &#039;邮箱&#039;,
+salary DECIMAL(10, 2) COMMENT &#039;薪资&#039;,
+is_active BOOLEAN COMMENT &#039;是否激活&#039;,
+address STRING COMMENT &#039;地址&#039;,
+score FLOAT COMMENT &#039;评分&#039;,
+total_amount DOUBLE COMMENT &#039;总金额&#039;
+) COMMENT &#039;时效性校验表&#039;;
+
+INSERT INTO tableA (
+create_date,
+update_datetime,
+work_time,
+sync_timestamp,
+date_str_ymd,
+date_str_ymd_hms,
+date_str_mdy,
+date_str_ymd_hms_ms,
+date_str_irregular,
+id,
+user_name,
+age,
+phone,
+email,
+salary,
+is_active,
+address,
+score,
+total_amount
+)
+VALUES
+(
+DATE &#039;2026-02-26&#039;,
+TIMESTAMP &#039;2026-02-26 09:45:17&#039;,
+&#039;08:30:00&#039;,
+CURRENT_TIMESTAMP(),
+&#039;2026-02-26&#039;,
+&#039;2026-02-26 09:45:17&#039;,
+&#039;18:20:30&#039;,
+&#039;2026-02-26 09:45:17.123&#039;,
+&#039;20260226&#039;,
+1,
+&#039;zhangsan&#039;,
+25,
+13800138000,
+&#039;zhangsan@example.com&#039;,
+15000.50,
+TRUE,
+&#039;北京市海淀区中关村&#039;,
+95.5,
+123456.789
+),
+(
+DATE &#039;2026-01-01&#039;,
+TIMESTAMP &#039;2026-12-31 23:59:59&#039;,
+&#039;23:59:59&#039;,
+TIMESTAMP &#039;2026-02-26 12:00:00&#039;,
+&#039;2026-01-01&#039;,
+&#039;2026-12-31 23:59:59&#039;,
+&#039;00:00:00&#039;,
+&#039;2026-02-26 12:34:56.789&#039;,
+&#039;20260101&#039;,
+2,
+&#039;lisi&#039;,
+30,
+13900139000,
+&#039;lisi@example.com&#039;,
+20000.00,
+FALSE,
+&#039;上海市浦东新区陆家嘴&#039;,
+88.8,
+987654.321
+),
+(
+DATE &#039;1970-01-01&#039;,
+TIMESTAMP &#039;1970-01-01 00:00:00&#039;,
+&#039;&#039;,
+NULL,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;&#039;,
+&#039;20260204&#039;,
+3,
+&#039;&#039;,
+0,
+0,
+&#039;&#039;,
+0.00,
+NULL,
+&#039;&#039;,
+0.0,
+0.0
+);","1. 进入「资产-数据质量-规则任务配置-监控对象」页面
+2. 「规则名称」输入「test_rule」
+「选择数据源」选择「${DATASOURCE}」
+「选择数据库」选择「${DATABASE}」
+「选择数据表」选择「${TABLE}」
+3. 「监控规则」配置如下：
+「监控规则」新增「一致性校验」
+「校验类型」选择为「多表数据一致性比对」
+「选择校验字段」选择为「user_name；age」
+「选择校验表主键」选择为「id」
+「选择对比表」为「${TABLE}」
+「选择对比表主键」为「id」
+「比对字段设置」配置为「校验表-user_name-->对比表-age；校验表-age-->对比表-user_name」
+「强弱规则」选择「弱规则」
+「规则描述」输入「测试规则」
+不配置「对比细节设置」
+4. 配置「调度属性」，保存规则，且「调度属性」中配置「规则报告」为最新结果
+5. 临时运行规则，查看质量报告
+6. 查看「质量评估汇总」区域
+7. 查看「规则校验明细」区域
+8. 点击「查看详情」按钮","1. 页面正常打开
+2. 监控对象配置成功；
+进入「监控规则」配置页
+3. 监控规则配置完成；
+进入「调度属性」页面
+4. 规则保存成功
+5. 页面包含：
+1）报告进入目录
+2）质量评估汇总区域
+3）规则校验明细区域
+6. 显示为：
+1）规则名：「test_rule」
+2）数据源：「${DATASOURCE}」
+3）数据库：「${DATABASE}」
+4）检测数据范围：--
+5）表行数：「${表行数}」
+6）抽样行数：--
+7）字段数：「${字段数}」
+8）车辆数：「${车辆数}」
+9）校验规则数：2
+10）校验通过率：50%
+7. 显示为：
+1）规则类型：一致性校验
+2）规则名称：多表数据一致性校验
+3）字段名称：user_name;age
+4）字段类型：STRING;TINYINT
+5）质验结果：校验未通过
+6）未通过原因：多表数据一致性校验未通过
+7）详情说明：对比表为「${TABLE}」，逻辑主键未匹配的共0条数据，逻辑主键匹配，但数据不匹配的共2条数据
+8）最近一次校验结束时间：「${校验结束时间}」
+9）操作：查看详情
+8. 显示不通过的明细数据","1. 
+2. 
+3. 
+4. 
+5. 查看报错
+6. 
+7. 
+8.","","1","功能测试","功能测试阶段","正常","0","1","8","失败","听筠","2026-02-28","","0000-00-00","1","",""

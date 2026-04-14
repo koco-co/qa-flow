@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bug 分析报告 — queryCreateTableSql 触发 SourceDTOType 初始化失败</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a202c;
+    --text-secondary: #64748b;
+    --primary: #3b82f6;
+    --critical: #ef4444;
+    --warning: #f59e0b;
+    --success: #22c55e;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+    --highlight: #fef3c7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  .header h1 { font-size: 22px; margin-bottom: 12px; font-weight: 600; }
+  .header-meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; opacity: 0.85; }
+  .header-meta span { display: flex; align-items: center; gap: 6px; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .badge-critical { background: var(--critical); }
+  .badge-normal { background: var(--warning); }
+  .badge-code { background: var(--primary); }
+  .badge-env { background: var(--success); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon { font-size: 18px; }
+
+  .summary-box {
+    background: #fef2f2;
+    border-left: 4px solid var(--critical);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 20px;
+    font-size: 15px;
+  }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "Fira Code", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 12px 0;
+  }
+  .line-highlight {
+    background: rgba(239, 68, 68, 0.25);
+    display: block;
+    margin: 0 -16px;
+    padding: 0 16px;
+    border-left: 3px solid var(--critical);
+  }
+  .line-num {
+    color: #64748b;
+    display: inline-block;
+    width: 32px;
+    text-align: right;
+    margin-right: 16px;
+    user-select: none;
+  }
+
+  .chain { list-style: none; }
+  .chain li {
+    position: relative;
+    padding: 10px 16px 10px 32px;
+    border-left: 2px solid var(--border);
+    font-size: 13px;
+    font-family: monospace;
+  }
+  .chain li:last-child { border-left-color: var(--critical); }
+  .chain li::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 14px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    border: 2px solid var(--card);
+  }
+  .chain li:last-child::before { background: var(--critical); }
+  .chain li.entry::before { background: var(--primary); }
+
+  .fix-item {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: box-shadow 0.2s;
+  }
+  .fix-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .fix-item h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fix-item p { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+  .priority-tag {
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .p1 { background: #fef2f2; color: var(--critical); }
+  .p2 { background: #fffbeb; color: #b45309; }
+  .p3 { background: #f0fdf4; color: #15803d; }
+
+  .req-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .req-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .req-table td:first-child {
+    font-weight: 600;
+    width: 100px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .req-table td:last-child { word-break: break-all; }
+
+  .risk-box {
+    background: #fffbeb;
+    border-left: 4px solid var(--warning);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  .risk-box strong { color: #b45309; }
+
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>queryCreateTableSql 触发 SourceDTOType 初始化失败</h1>
+    <div class="header-meta">
+      <span>2026-04-08 10:02</span>
+      <span><span class="badge badge-critical">严重</span></span>
+      <span><span class="badge badge-env">环境问题</span></span>
+      <span>dt-center-metadata + datasourcex / CI78</span>
+    </div>
+  </div>
+
+  <div class="summary-box">
+    <strong>根因概述：</strong>
+    本次 <code>tableId=13</code> 的建表 SQL 请求已经落到 <code>Dori2DbInitHandlerServiceImpl</code>，但在真正访问 Doris2 前，
+    metadata 服务先通过 <code>AbstractDbInitService.getSourceDTO()</code> 构建数据源 DTO；此时
+    <code>SourceLoaderService.buildSourceDTO()</code> 触发 <code>SourceDTOType</code> 类初始化失败。
+    结合源码与版本信息，最高概率是 metadata 节点上的 <code>datasourcex-client</code> 与
+    <code>datasourcex-common</code> / loader / plugin Jar 未成套部署或残留旧包。
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 请求信息</div>
+    <table class="req-table">
+      <tr><td>方法</td><td>POST</td></tr>
+      <tr><td>URL</td><td><code>/dassets/v1/dataTable/queryCreateTableSql</code> -> <code>/dmetadata/v1/dataTable/queryCreateTableSql</code></td></tr>
+      <tr><td>关键参数</td><td>tableId=13，metadata 侧识别为 Doris2 建表 SQL 处理链路</td></tr>
+      <tr><td>环境</td><td>CI78 / 172.16.124.78，metadata 线程：<code>http-nio-8875-exec-8</code></td></tr>
+      <tr><td>项目</td><td>X-Valid-Project-ID=1，租户=DT_demo，DataAssets 返回状态码 1011</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 异常堆栈解析</div>
+    <table class="req-table" style="margin-bottom:16px">
+      <tr><td>异常类型</td><td><code>java.lang.NoClassDefFoundError</code></td></tr>
+      <tr><td>异常消息</td><td><code>Could not initialize class com.dtstack.dtcenter.common.convert.enums.SourceDTOType</code></td></tr>
+      <tr><td>触发处理器</td><td><code>Dori2DbInitHandlerServiceImpl.getCreateTableSql(DataSource, DataTable)</code></td></tr>
+      <tr><td>根因帧</td><td><code>SourceLoaderService.buildSourceDTO(SourceLoaderService.java:188)</code></td></tr>
+      <tr><td>说明</td><td>异常早于 Doris2 客户端真正发起 JDBC/HTTP 查询，因此不是网络、账号或表结构问题。</td></tr>
+    </table>
+
+    <h4 style="font-size:14px; margin-bottom:8px;">调用链（从入口到根因）</h4>
+    <ul class="chain">
+      <li class="entry"><strong>DataTableThirdService</strong>.queryCreateTableSql (line 1011)<br><span style="color:#64748b;font-size:12px">assets 侧通过 metadata SDK 透传请求</span></li>
+      <li><strong>DataTableService</strong>.queryCreateTableSql (line 2181)<br><span style="color:#64748b;font-size:12px">命中 metadata 的查询建表语句接口</span></li>
+      <li><strong>DataTableService</strong>.initCreateTableSql (line 2200)<br><span style="color:#64748b;font-size:12px">进入建表 SQL 初始化逻辑</span></li>
+      <li><strong>DbInitAdapterService</strong>.getCreateTableSql (line 246)<br><span style="color:#64748b;font-size:12px">按数据源类型路由到具体 handler</span></li>
+      <li><strong>Dori2DbInitHandlerServiceImpl</strong>.getCreateTableSql (line 49)<br><span style="color:#64748b;font-size:12px">Doris2 handler 先调用 getSourceDTO(dataSource)</span></li>
+      <li><strong>AbstractDbInitService</strong>.getSourceDTO (line 115)<br><span style="color:#64748b;font-size:12px">委托 SourceLoaderService 构建 ISourceDTO</span></li>
+      <li><strong style="color:#ef4444">SourceLoaderService</strong>.buildSourceDTO (line 188) [NoClassDefFoundError]<br><span style="color:#ef4444;font-size:12px">访问 SourceDTOType 时类初始化失败</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 根因代码定位</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
+      <code>dt-center-metadata/service/src/main/java/com/dtstack/metadata/service/data/init/impl/Dori2DbInitHandlerServiceImpl.java</code>
+    </p>
+    <pre><span class="line-num">47</span>@Override
+<span class="line-num">48</span>public String getCreateTableSql(DataSource dataSource, DataTable dataTable) {
+<span class="line-highlight"><span class="line-num">49</span>    RdbmsSourceDTO sourceDTO = ((RdbmsSourceDTO) getSourceDTO(dataSource));  // ← 在这里进入 SourceLoaderService</span>
+<span class="line-num">50</span>    sourceDTO.setSchema(dataTable.getDbName());
+<span class="line-num">56</span>    IClient client = ClientCache.getClient(dataSource.getDataSourceType());
+<span class="line-num">58</span>    return client.getCreateTableSql(sourceDTO, sqlQueryDTO);
+<span class="line-num">59</span>}</pre>
+
+    <p style="font-size:14px;margin-top:16px;"><strong>问题分析：</strong></p>
+    <p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">
+      Doris2 handler 本身没有先做任何业务计算，而是第一步就调用 <code>getSourceDTO(dataSource)</code>。
+      metadata 原始日志显示异常在 <code>SourceLoaderService.buildSourceDTO()</code> 第 188 行抛出，
+      即 <code>SourceDTOType.getSourceDTO(...)</code> 访问阶段类初始化失败。
+      这意味着问题发生在 datasourcex 运行时装载，而不是发生在 Doris2 查询 SQL 或连接过程。
+    </p>
+
+    <div class="risk-box" style="margin-top:16px;">
+      <strong>环境证据：</strong> <code>SourceDTOType</code> 当前已依赖后续新增的数据源常量和 DTO，
+      如 <code>HOLOGRES</code>、<code>SCOPE</code>、<code>VESTORE</code>。若 metadata 节点只更新了较新的
+      <code>datasourcex-client</code>，而 <code>datasourcex-common</code>、loader 或 plugin Jar 仍是旧版本，
+      会因为缺 DTO 类或缺 <code>DataSourceType</code> 枚举值把整个枚举类初始化打挂。
+<pre style="margin-top:8px"><span class="line-num">1701</span>HOLOGRES(DataSourceType.HOLOGRES.getVal()) {
+<span class="line-num">1711</span>SCOPE(DataSourceType.SCOPE.getVal()) {
+<span class="line-num">1725</span>VESTORE(DataSourceType.VESTORE.getVal()) {
+<span class="line-num">  </span>
+<span class="line-num">25</span>dt-center-metadata/pom.xml: datasourcex-client.version = 6.3.3.0-SNAPSHOT
+<span class="line-num">19</span>datasourcex/pom.xml: revision = 6.3.3.8-SNAPSHOT</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 修复建议</div>
+    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">以下建议基于 AI 分析，仅供参考。</p>
+
+    <div class="fix-item">
+      <h4><span class="priority-tag p1">P1 必修</span> 统一 metadata 节点上的 datasourcex Jar 套件</h4>
+      <p><strong>位置：</strong> metadata 服务部署目录 / 启动镜像</p>
+      <p><strong>修改：</strong> 核对并成套替换 <code>datasourcex-client</code>、<code>datasourcex-common</code>、loader 相关 Jar 和新增 plugin Jar，确认全部来自同一 revision</p>
+      <pre>建议排查项：
+1. 导出 Jar 文件名、版本号、md5
+2. 检查是否残留旧版 datasourcex-common / loader Jar
+3. 检查是否缺少 scope / hologres / vestore 对应插件或公共包</pre>
+      <p><strong>原因：</strong> 当前异常属于类初始化失败，最常见原因就是新旧 Jar 混装，而不是单个接口入参错误。</p>
+    </div>
+
+    <div class="fix-item">
+      <h4><span class="priority-tag p1">P1 必修</span> 补抓第一次初始化失败的最内层异常</h4>
+      <p><strong>位置：</strong> metadata 完整启动日志 / 运行日志</p>
+      <p><strong>修改：</strong> 搜索最早的 <code>ExceptionInInitializerError</code>、<code>ClassNotFoundException</code>、<code>NoSuchFieldError</code>、<code>NoClassDefFoundError</code></p>
+      <pre>检索关键词：
+SourceDTOType
+ExceptionInInitializerError
+ClassNotFoundException
+NoSuchFieldError
+Could not initialize class</pre>
+      <p><strong>原因：</strong> 现在看到的是后续复现时的结果异常；第一条初始化日志能直接指出缺的是 DTO 类、枚举字段还是依赖包。</p>
+    </div>
+
+    <div class="fix-item">
+      <h4><span class="priority-tag p2">P2 建议修复</span> 按同一发布线重新构建并全量替换 metadata 依赖</h4>
+      <p><strong>位置：</strong> metadata 发布流程</p>
+      <p><strong>修改：</strong> 不要只覆盖单个 <code>datasourcex-client</code> Jar，建议按同一条发布线重新构建 metadata 服务并清理旧包后重启</p>
+      <p><strong>原因：</strong> 当前源码已存在 <code>6.3.3.0-SNAPSHOT</code> 与 <code>6.3.3.8-SNAPSHOT</code> 的漂移信号，仅替换局部依赖很容易再次出现类装载失败。</p>
+    </div>
+
+    <div class="fix-item">
+      <h4><span class="priority-tag p3">P3 可选优化</span> 启动阶段增加 datasourcex 类加载自检</h4>
+      <p><strong>位置：</strong> metadata 服务启动逻辑 / 健康检查</p>
+      <p><strong>修改：</strong> 启动时主动触发 <code>SourceDTOType.values()</code> 或校验关键 DTO、<code>DataSourceType</code> 枚举能否被加载</p>
+      <p><strong>原因：</strong> 能在服务启动阶段提前暴露 classpath 问题，避免用户通过接口流量首次触发。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">#</span> 环境信息</div>
+    <table class="req-table">
+      <tr><td>JDK 版本</td><td>JDK 8（推断自 <code>sun.reflect.DelegatingMethodAccessorImpl</code> 与 <code>java.lang.Thread.run(Thread.java:750)</code>）</td></tr>
+      <tr><td>框架</td><td>Spring MVC + Spring AOP + CGLIB + metadata SDK + datasourcex loader</td></tr>
+      <tr><td>部署环境</td><td>CI78 / 172.16.124.78，metadata 端口 8875，assets 端口 8876</td></tr>
+      <tr><td>源码参考</td><td>datasourcex / release_6.3.x (ae2b48c11)，dt-center-metadata 本地快照 c0b59aa12，dt-center-assets 当前快照仅用于调用链确认</td></tr>
+    </table>
+  </div>
+
+  <div class="footer">
+    Generated by qa-flow code-analysis skill · 2026-04-08 10:02
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,413 @@
+所属模块,用例标题,前置条件,步骤,预期,优先级,用例类型,适用阶段
+主流程v6.3(#10426),资产盘点 验证已接入数据源统计数据正确,无,"1. 进入资产-【资产盘点】页面
+2. 查看“已接入数据源”
+3. 查看统计数据：昨日新增表数、源数、库数、表数以及存储量","1. 进入成功
+2. 显示截止前一天为止接入的数据源类型的统计卡片
+3. 统计数据为对应数据源类型下前一天的统计数据",1,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 数据地图 首页【资产类型】功能验证 验证【数据表】表数量统计正确,页面： 当前位于资产【数据地图】一级页面<br>----<br>${DataSourceType}数据源下存在表 table1,"1. 1. 新增元数据同步-周期同步任务
+2. 选择${DataSourceType}数据源，选择catalog||schema||database
+3. 选择数据表-table1
+4. 勾选【全部内容】
+5. 点击【临时同步】按钮
+2. 任务运行完成,实例运行成功
+3. 数据地图选择table1，删除元表","1. 元数据同步任务创建成功，任务状态-运行中(实例状态运行中)
+2. 【数据表】统计数量+1
+3. 【数据表】统计数量-1",1,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 数据地图 首页【资产类型】功能验证 验证【离线任务】任务数量统计正确,页面： 当前位于资产【数据地图】一级页面<br>----<br>${DataSourceType}数据源下存在表 table1,"1. 1. 离线平台新增SQL 建表任务
+2. 临时运行/提交",1. 【离线任务】任务统计数量+1,1,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 数据地图 【数据地图】-二级页面【筛选过滤】功能验证 验证筛选条件组合查询功能正常,页面： 当前位于资产【数据地图】二级页面,"1. 选择【查询结果类型】为【数据表】
+2. 选择【数据源类型】为${DATASOURCE_TYPE}
+3. 选择【数据源】为${DATASOURCE_NAME}
+4. 选择【数据库】为${DATABASE}
+5. 选择【负责人】为${TABLE_OWNER}
+6. 选择【表标签】为${TABLE_TAG}
+7. 设置完所有筛选条件后，筛选","1. 选择成功
+2. 1. 筛选框展示资产平台引入的所有数据源类型
+2. 数据源类型数量统计正确
+3. 选择成功
+3. 1. 展示资产平台已引入${DATASOURCE_TYPE}类型的所有数据源名称
+2. 选择成功
+4. 1. 如果当前数据源-数据库下没有同步任何表到资产平台，则展示为空
+2. 如果当前数据源-数据库下已经同步${TABLE_NAME}到资产平台，则【数据库】选择${DATABASE}成功
+5. 1. 如果存在表指定负责人，则【负责人】选择${TABLE_OWNER}成功
+2. 如果没有表指定负责人，则【负责人】展示为空
+6. 1. 如果存在表设置表标签，则【表标签】选择${TABLE_TAG}成功
+2. 如果没有表设置表标签，则【表标签】展示为空
+7. 1. 过滤出所有符合组合条件的数据
+2. 没有匹配条件的数据则展示“暂无数据”缺省页",1,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 数据地图 【数据地图】-【数据表】详情页面功能验证 验证【表结构】-【建表语句】模块功能正常,"页面： 当前位于资产【数据地图】数据表详情页<br>----<br>create table if not exists test_table(id int COMMENT '主键' ,name varchar(255) COMMENT '姓名',info varchar(255) COMMENT '信息');<br>insert into test_table values(1,'one','desc 1');<br>insert into test_table values(2,'two','desc 2');<br>insert into test_table values(3,'three','desc 3');","1. 点击【建表语句】按钮
+2. 复制建表语句，去底层执行SQL","1. 建表语句显示正确
+2. 执行成功",2,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 数据地图 【数据地图】-【数据表】详情页面功能验证 验证【血缘关系】功能正常,"页面： 当前位于资产【数据地图】数据表详情页<br>----<br>1. 当前离线项目已存在血缘SQL<br><br>CREATE TABLE  wwz_001 (<br>    id INT COMMENT ""用户ID"",<br>    name VARCHAR(50) COMMENT ""用户姓名""<br>)<br>DISTRIBUTED BY HASH(id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br><br>CREATE TABLE  wwz_002 (<br>    id INT COMMENT ""用户ID"",<br>    name VARCHAR(50) COMMENT ""用户姓名""<br>)<br>DISTRIBUTED BY HASH(id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br><br>CREATE TABLE  wwz_003 (<br>    id INT COMMENT ""用户ID"",<br>    name VARCHAR(50) COMMENT ""用户姓名""<br>)<br>DISTRIBUTED BY HASH(id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br><br>--样例一 需先执行wwz_001、wwz_002建表<br>-- insert into ... select<br>insert into wwz_001 select id,name from wwz_002;<br><br>--样例二 需先执行wwz_002建表<br>-- create as ... select <br>create table wwz_001 DISTRIBUTED BY HASH(id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>) as select * from wwz_002;<br><br>--样例三  需先执行wwz_001、wwz_002、wwz_003建表<br>-- insert into ... select union all <br>insert into wwz_001 select * from wwz_002 union all  select * from wwz_003;<br><br>--样例四  需先执行wwz_001、wwz_002、wwz_003建表<br>-- insert overwrite ... select ... union all<br>insert OVERWRITE table wwz_001 select * from wwz_002 union all  select * from wwz_003;<br><br>--样例五  需先执行wwz_001、wwz_002、wwz_003建表<br>-- insert into ... select + 子查询<br>insert into wwz_001 select id,name from wwz_002 where id in (select id from wwz_003 where id>1);<br><br>--样例六  需先执行wwz_001、wwz_002建表<br>-- insert into ... with as ...<br>INSERT INTO wwz_001 (id, name) WITH wwz_003 AS (SELECT id, name FROM wwz_002) SELECT id, name FROM wwz_003;<br>INSERT INTO wwz_001 (id, name) WITH wwz_003 AS (SELECT * FROM wwz_002) SELECT * FROM wwz_003;<br><br>drop table wwz_001;<br>drop table wwz_002;<br>drop table wwz_003;","1. 点击表详情【血缘关系】按钮
+2. 点击【表级血缘】按钮
+3. 点击中央【表按钮】
+4. 表详情弹窗内容校验
+5. 输入存在的字段名称，字段中文名，点击搜索
+6. 输入不存在的字段名称，字段中文名，点击搜索
+7. 点击分页，切换pagesize
+8. 点击【字段级血缘】
+9. 点击【字段名称】
+10. 点击【展示文字信息】按钮
+11. 点击【居中】按钮
+12. 点击【放大】按钮
+13. 点击【放小】按钮
+14. 点击【下载】按钮
+15. 点击【展示/隐藏】按钮","1. 展示【表级血缘】【字段级血缘】【展示文字信息】【资产类型】【导航器】【表按钮】
+2. 展示当前表的上下游表
+3. 弹表详情弹窗
+4. 展示“表名””复制按钮”“技术属性模块”“业务属性模块“字段信息”“非分区字段”“分区字段””字段名称字段中文名搜索框“
+5. 返回匹配的字段信息
+6. 展示“暂无数据”
+7. pagesize切换成功，数据展示正确，跳转正确
+8. 展示当前表所有字段及血缘关系
+9. 存在血缘字段时，弹血缘字段，没有血缘字段时，提示“字段血缘关系为空”
+10. 展示当前表全名
+11. 图居中展示
+12. 图放大
+13. 图放小
+14. 下载血缘PNG成功，查看内容正确
+15. 展示/不展示导航器",1,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 元数据同步 验证元数据同步任务创建流程正常,无,"1. 1）点击【元数据】-【元数据同步】-【新增周期同步任务】
+2）选择数据源${DATASOURCE_TYPE}
+3）选择数据库${DATABASE}
+4）选择数据表${TABLE}
+5）依次点击【添加】_【下一步】_【新增】按钮",1. “新增周期同步任务”成功，任务列表展示同步任务，列信息正确，同步状态展示正常,1,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 元模型管理 验证通用业务属性-新增功能-逻辑正常,无,"1. 新增枚举属性：
+1）属性类型为“枚举”
+2）输入表单内容
+3）点击【确定】
+2. 新增string类型文本框属性：
+1）属性类型为“文本框”，字段类型为“string”
+2）输入表单内容
+3）点击【确定】
+3. 新增bigint类型文本框属性：
+1）属性类型为“文本框”，字段类型为“bigint”
+2）输入表单内容
+3）点击【确定】
+4. 新增树形目录属性：
+1）属性类型为“树形目录”
+2）输入表单内容
+3）点击【确定】
+5. 进入${DATASOURCE_TYPE}数据源类型的数据表详情页，查看「业务属性」","1. 列表中显示新建的业务属性，且数据正确
+2. 列表中显示新建的业务属性，且数据正确
+3. 列表中显示新建的业务属性，且数据正确
+4. 列表中显示新建的业务属性，且数据正确
+5. 显示此新增的业务属性名",2,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 元模型管理 验证通用业务属性-删除功能-逻辑正常,无,"1. 删除业务属性${SX}
+2. 进入${DATASOURCE_TYPE}数据源类型的数据表详情页，查看「业务属性」","1. 列表不显示业务属性${SX}
+2. 该业务属性不显示",2,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 元数据管理 验证数据表列表-数据展示正确,无,"1. 位置：元数据-元数据管理-${DATASOURCE _TYPE}数据源-某数据库
+查看列表","1. 列表展示当前数据库下数据表+视图信息正确（数据与表详情页一直即可）：
+		表名、表中文名、创建时间、存储大小、更新时间",1,功能测试,功能测试阶段
+主流程v6.3(#10426),元数据 元数据管理 验证数据库列表-生命周期应用功能正确,无,"1. tableB（未同步至资产）所属数据源和所属数据库为：datasourceB、schemaB
+只配置datasourceB的生命周期为3天；schemaB未设置生命周期；
+将tableB同步至资产；
+查看tableB的生命周期
+2. tableC（未同步至资产）所属数据源和所属数据库为：datasourceC、schemaC
+datasourceC未设置生命周期；schemaC设置生命周期为10天；
+将tableC同步至资产；
+查看tableC的生命周期
+3. tableA（未同步至资产）所属数据源和所属数据库为：datasourceA、schemaA
+先配置datasourceA的生命周期为3天；后配置schemaA的生命周期为10天；
+将tableA同步至资产；
+查看tableA的生命周期","1. tableB的生命周期为3天
+2. tableC的生命周期为10天
+3. tableA的生命周期为10天",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准管理 标准定义 验证数据标准-新建标准,无,"1. 1）点击新建标准
+2）输入合格的所有业务属性值和所有技术属性值，点击【保存】|【上线】
+2. 1）点击新建标准
+2）输入合格的所有业务属性值和所有技术属性值，点击【取消】","1. 1）页面跳转至数据标准列表页
+2）列表刷新展示新建的数据标准，且状态为“待上线”|""已上线""
+2. 页面跳转至数据标准列表页",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准管理 标准定义 验证数据标准-查看详情,无,1. 点击标准的标准名称,"1. 1）右侧标准详情抽屉的弹出
+2）头部显示标准中文名、发布状态、创建时间、最近发布时间、最近发布用户
+3）tab页显示“标准信息”和“版本变更”",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准管理 标准映射 验证标准映射-创建标准映射功能正常,"准备表：<br>create table active_users (<br>    user_id bigint NOT NULL COMMENT '用户ID',<br>    name string NOT NULL COMMENT '用户姓名',<br>    email string NULL COMMENT '邮箱地址',<br>    address string NULL COMMENT '住址（邮寄地址）',<br>    age tinyint NULL COMMENT '用户年龄',<br>    sex tinyint NULL COMMENT '用户性别（男/女）',<br>    last_active datetime COMMENT '最近活跃时间 最近登陆时间',<br>    property0 tinyint NOT NULL,<br>    property1 tinyint NOT NULL,<br>    property2 tinyint NOT NULL,<br>    property3 tinyint NOT NULL<br>)<br>DISTRIBUTED BY HASH(`user_id`)<br>PROPERTIES(<br>    ""replication_num"" = ""1""<br>);<br><br><br>准备数据标准：<br>email（邮箱地址）","1. 1）点击【标准映射】
+2）查看创建标准映射弹窗
+2. “数据源类型”选择${DATASOURCE_TYPE}数据源类型
+3. “数据源”选择${DATASOURCE_TYPE}数据源类型下的数据源
+4. 1）选择数据库
+2）点击【添加】
+3）点击【确定】","1. 
+2. “数据源”下拉项显示${DATASOURCE_TYPE}数据源类型下的数据源
+3. “数据库”下拉项显示所选数据源下所有已同步的数据库
+4. 创建标准映射成功",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准管理 标准映射 验证标准映射-标准映射字段绑功能正常,无,"1. 1）点击邮箱地址的【字段映射】；
+2）查看字段绑定弹窗
+2. “数据源类型”选择${DATASOURCE_TYPE}数据源类型
+3. “数据源”选择${DATASOURCE_TYPE}数据源类型下的数据源
+4. “数据库”选择数据库
+5. 选择“数据表”，点击【确定】
+6. 查看对数据标准的“映射记录”","1. 
+2. “数据源”下拉项显示${DATASOURCE_TYPE}数据源类型下的数据源
+3. “数据库”下拉项显示所选数据源下所有已同步的数据库
+4. “数据表”选择所选库下所有已同步的数据表
+5. 字段绑定成功
+6. 映射记录显示新绑定字段",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准基础 词根管理 验证词根管理-新建,无,"1. 点击新建词根
+2. 填写内容，点击确定","1. 弹出新建词根弹窗
+2. 1）新增词根成功！
+2）词根列表新增该词根",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准基础 词根管理 验证词根管理-删除,无,1. 点击删除并二次确认,"1. 1）提示删除成功；
+2）词根列表删除该词根",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准基础 码表管理 验证码表管理-新建,无,"1. 点击新建代码
+2. 填写内容，点击确定","1. 弹出新建代码弹窗
+2. 1）提示新增代码成功！
+2）代码列表新增该代码",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准基础 数据库拾取 验证数据库拾取-拾取流程,无,"1. 点击数据库拾取页面的新建拾取icon
+2. 点击拾取来源下拉框
+3. 1）拾取类型选择词根管理
+2）拾取来源选择${DATASOURCE_TYPE}数据源类型下的数据源
+3）填写拾取条件
+4）点击确定
+4. 1）拾取类型选择数据标准
+2）拾取来源选择${DATASOURCE_TYPE}数据源类型下的数据源
+3）填写拾取条件
+4）点击确定
+5. 1）等待拾取完成
+2）查看拾取","1. 弹出新建拾取弹窗
+2. 新增数据源类型下拉项
+3. 全局提示：新建拾取成功；拾取列表新增该拾取
+4. 全局提示：新建拾取成功；拾取列表新增该拾取
+5. 1）拾取成功
+2）拾取列表数据正确",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据标准 标准基础 数据库拾取 验证数据库拾取-批量引用功能正常,准备词根拾取以及数据标准拾取,"1. 位置：数据标准-标准基础-数据库拾取；
+选择‘词根管理’类型，点击【查看拾取】；
+点击【批量引用】，二次确认
+2. 位置：数据标准-标准基础-数据库拾取；
+选择‘数据标准’类型，点击【查看拾取】；
+点击【批量引用】，二次确认","1. 当前页面所选词根变为“已引用”状态；
+勾选的词根均可在‘词根管理’菜单中查询到；
+2. 当前页面所选标准变为“已引用”状态；
+勾选的标准均可在‘数据标准’菜单中查询到；",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据模型 建表 验证创建不同类型sparkThrift表功能正常,无,"1. 创建Hive PARQUET非事务内部表：
+	- “表类型”选择“内部表”
+	- “hdfs存储路径”为空
+2. 创建Hive ORC非事务内部表：
+	- “表类型”选择“内部表”
+	- “hdfs存储路径”为空
+3. 创建Hive TEXTFILE非事务内部表：
+	- “表类型”选择“内部表”
+	- “hdfs存储路径”为指定路径（非默认路径）
+4. 创建Hive外部表：
+	- “表类型”选择“外部表”
+	- “hdfs存储路径”为指定路径（非默认路径）
+5. 创建Hive分区表","1. 生成的建表语句正确；
+PARQUET表创建成功；
+2. 生成的建表语句正确；
+ORC表创建成功；
+3. 生成的建表语句正确；
+TEXTFILE表创建成功；
+4. 生成的建表语句正确；
+事务表创建成功；
+该表存储路径正确
+5. 生成的建表语句正确；
+分区表创建成功；
+该表分区字段正确",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据模型 建表 验证建表语句解析功能正确,"建表语句如下<br>CREATE TABLE IF NOT EXISTS `batch_test_v53x_new_asset`.`ods_bu_par4_df` (<br>`busine_line_id` STRING COMMENT '业务线ID',<br>`busine_line` INT COMMENT '业务线',<br>`bu_id` STRING COMMENT '事业 部ID',<br>`bu_name` STRING COMMENT '事业部',<br>`busi_team` STRING COMMENT '隶属商务团队',<br>`busi_team_date` STRING COMMENT '隶属时间',<br>`load_dt` TIMESTAMP COMMENT '隶属时间'<br>)<br>COMMENT 'dim维度表_新核心业务线'<br>PARTITIONED BY (<br>`data_dt` STRING COMMENT '数据时间',<br>`is_save` INT COMMENT '数据是否保留：0-否，1-是'<br>)<br>STORED AS PARQUET<br>TBLPROPERTIES ('transactional'='true');","1. 主键表建表语句解析
+2. 范围分区表语句解析
+3. 各数据类型字段解析","1. 字段名、字段中文名、字段类型、字符长度、数值长度、字段精度、主键、分区字段、分区类型等解析成功
+2. 1）字段名、字段中文名、字段类型、字符长度、数值长度、字段精度、主键、分区字段、分区类型等解析成功
+2）范围分区信息解析成功
+3. 所有支持的字段类型均解析",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据模型 建表 验证「规范设计」-新增数仓层级功能正常,无,"1. 进入「资产」-「数据模型」-「规范建表」页面
+2. 点击「规范设计」按钮
+3. 点击「新增数据层级」按钮
+4. 「中文名称」输入「新增层级」
+「英文名称」输入「add_catalog」
+「描述」输入「test _ desc」
+5. 点击「确定」按钮
+6. 选择「新增层级」，点击「规范设计」按钮
+7. 「模型元素」配置「业务系统」「主题域」，点击「确定」按钮
+8. 进入「建表」页面，「数仓层级」选择「新增层级」
+9. 新增表流程结束
+10. 查看表所属数仓层级","1. 进入成功
+2. 进入「规范设计」页面成功
+3. 弹「新增数据层级」弹窗
+4. 配置完成
+5. 新增数仓层级成功
+6. 弹「规范设计」弹窗
+7. 配置成功
+8. 展示「新增层级」下的「规范设计内容」
+9. 新增表成功
+10. 该表存储在「新增层级」下",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据模型 建表 验证数据模型-审批功能,无,"1. 数据开发角色用户，进入数据模型-新建表，选择doris数据源、数据库、数仓层级、模型元素
+表名：自定义内容：「T_doris_A」
+中文名：doris表A
+数据模型类型：【主键表】
+2）点击下一步
+2. 新增多个字段，其中包含字段ID
+字段id勾选主键，分区字段，动态分区，分桶字段(分桶数1)，编辑动态分区配置：同前置条件
+3. 点击【生成建表语句】按钮，建表
+4. 管理员用户进入「审批中心」，审批拒绝
+5. 管理员用户进入「审批中心」，审批通过","1. 1）进入数据模型新建页面
+2）进入表结构页面
+2. 新增成功
+3. 1）提示：提交审批成功
+2）我的模型-已审批页面记录新增一条记录为审批中
+4. 1）表未新建，数据模型新增一条记录，为未建表状态
+2）数据开发用户，我的模型-已审批页面记录状态变为已拒绝
+5. 1）数据模型新增一条记录，为已建表状态
+2）表详情正确
+3）数据开发用户，我的模型-已审批页面记录状态变为已通过",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 验证单表校验-【完整性校验-字段级-单字段】结果正确,无,"1. 新建单表规则，选择doris表
+规则选择完整性校验-字段级，分别创建空值数、空值率、空串数、空串率的子规则，配置使校验通过
+2. 立即运行查看结果
+3. 修改规则，配置使其都校验不通过
+4. 立即运行查看结果","1. 新建成功
+2. 结果正确
+3. 编辑成功
+4. 结果正确",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 验证单表校验-【准确性校验】结果正确,无,"1. 新建单表规则，选择doris表
+规则选择准确性校验，分别创建求和、求平均、负值比、零值比、正值比的子规则，配置使校验通过
+2. 立即运行查看结果
+3. 修改规则，配置使其都校验不通过
+4. 立即运行查看结果","1. 新建成功
+2. 结果正确
+3. 编辑成功
+4. 结果正确",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 验证单表校验-【规范性校验】结果正确,无,"1. 新建单表规则，选择doris表
+规则选择规范性校验，分别创建取值范围、枚举范围、枚举个数、身份证号、手机号、邮箱、最大长度、最小长度、字符串长度、数据精度、空值数、重复数、枚举值的子规则，配置使校验通过
+2. 立即运行查看结果
+3. 修改规则，配置使其都校验不通过
+4. 立即运行查看结果","1. 新建成功
+2. 结果正确
+3. 编辑成功
+4. 结果正确",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 验证单表校验-【唯一性校验】结果正确,无,"1. 新建单表规则，选择doris表
+规则选择唯一性校验，分别创建重复数、重复率、非重复个数、非重复占比的子规则，配置使校验通过
+2. 立即运行查看结果
+3. 修改规则，配置使其都校验不通过
+4. 立即运行查看结果","1. 新建成功
+2. 结果正确
+3. 编辑成功
+4. 结果正确",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 验证单表校验-【自定义sql-单表逻辑】结果正确,"doris数据源已存在表<br>DROP TABLE IF EXISTS doris_test;<br>CREATE TABLE IF NOT EXISTS doris_test (<br>    id INT,<br>    name STRING,<br>    age INT<br>)<br>DISTRIBUTED BY HASH(id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br>insert into doris_test values(1,'qq',11);<br>select * from doris_test;<br><br><br>样例一：<br>select * from doris<br><br>样例二：<br>select id,name,age from doris<br><br>样例三：<br>select id,name from doris<br><br>样例四：<br>select id,name,1 from doris<br><br>样例五：<br>select SUM(id) from doris","1. 新建单表规则，选择前置中的doris表
+规则选择自定义sql，输入样例sql，固定值<10000
+2. 立即运行查看结果
+3. 修改规则，配置使其校验不通过
+4. 立即运行查看结果","1. 新建成功
+2. 结果正确
+3. 编辑成功
+4. 结果正确",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 验证【规则集】功能正常,"1、doris数据源已存在表：<br>建表语句：<br>drop table if exists doris_demo_data_types_source;<br>CREATE TABLE IF NOT EXISTS doris_demo_data_types_source (<br>    user_id BIGINT COMMENT ""用户ID"",<br>    created_date DATE COMMENT ""创建日期"",<br>    name VARCHAR(50) COMMENT ""姓名"",<br>    age TINYINT COMMENT ""年龄"",<br>    status SMALLINT COMMENT ""状态码"",<br>    price DECIMAL(10, 2) COMMENT ""价格"",<br>    weight FLOAT COMMENT ""重量"",<br>    rating DOUBLE COMMENT ""评分"",<br>    description STRING COMMENT ""描述信息"",<br>    gender VARCHAR(10) COMMENT ""性别"",<br>    department VARCHAR(20) COMMENT ""部门"",<br>    created_time DATETIME COMMENT ""创建时间"",<br>    birth_date DATE COMMENT ""出生日期"",<br>    is_active BOOLEAN COMMENT ""是否激活"",<br>    tags VARCHAR(100) COMMENT ""标签"",<br>    total_amount BIGINT COMMENT ""总金额"",<br>    order_count INT COMMENT ""订单数量""<br>)<br>ENGINE=olap<br>DUPLICATE KEY(user_id, created_date, name)<br>DISTRIBUTED BY HASH(user_id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br><br>-- 插入示例数据<br>INSERT INTO doris_demo_data_types_source VALUES<br>(<br>    1001, '2024-01-15', '张三', 25, 1,<br>    99.99, 65.5, 4.5,<br>    '技术部员工', '男', '技术部',<br>    '2024-01-15 10:30:00', '1998-05-20',<br>    true, '科技,财经', 1500, 5<br>),<br>(<br>    1002, '2024-01-16', '李四', 30, 2,<br>    199.50, 55.2, 4.8,<br>    '市场部经理', '女', '市场部',<br>    '2024-01-16 14:20:00', '1993-12-10',<br>    true, '娱乐', 2500, 8<br>),<br>(<br>    1003, '2024-01-17', '王五', 22, 0,<br>    49.99, 70.1, 3.9,<br>    '销售专员', '其他', '销售部',<br>    '2024-01-17 16:45:00', '2001-08-25',<br>    false, '科技,体育', 800, 3<br>);<br><br>规则集sql：<br><br>1）select * from doris_demo_data_types_source；<br>2）select user_id，name from doris_demo_data_types_source；<br>3）select * from doris_demo_data_types_source where user_id >1005;<br>4)select 1 from doris_demo_data_types_source;","1. 新建规则集，选择前置的doris表，点击下一步
+2. 下载规则模板，填写前置中的规则sql，上传
+3. 配置周期调度，点击创建
+4. 立即执行，查看运行结果","1. 进入规则配置
+2. 上传成功,规则导入正确
+3. 创建成功
+4. 运行结果正确",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 验证【多表-同源比对】功能正常,"doris数据源已存在表doris_demo_data_types_source、doris_demo1_data_types_source<br><br>建表语句：<br>drop table if exists doris_demo_data_types_source;<br>CREATE TABLE IF NOT EXISTS doris_demo_data_types_source (<br>    user_id BIGINT COMMENT ""用户ID"",<br>    created_date DATE COMMENT ""创建日期"",<br>    name VARCHAR(50) COMMENT ""姓名"",<br>    age TINYINT COMMENT ""年龄"",<br>    status SMALLINT COMMENT ""状态码"",<br>    price DECIMAL(10, 2) COMMENT ""价格"",<br>    weight FLOAT COMMENT ""重量"",<br>    rating DOUBLE COMMENT ""评分"",<br>    description STRING COMMENT ""描述信息"",<br>    gender VARCHAR(10) COMMENT ""性别"",<br>    department VARCHAR(20) COMMENT ""部门"",<br>    created_time DATETIME COMMENT ""创建时间"",<br>    birth_date DATE COMMENT ""出生日期"",<br>    is_active BOOLEAN COMMENT ""是否激活"",<br>    tags VARCHAR(100) COMMENT ""标签"",<br>    total_amount BIGINT COMMENT ""总金额"",<br>    order_count INT COMMENT ""订单数量""<br>)<br>ENGINE=olap<br>DUPLICATE KEY(user_id, created_date, name)<br>DISTRIBUTED BY HASH(user_id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br><br>-- 插入示例数据<br>INSERT INTO doris_demo_data_types_source VALUES<br>(<br>    1001, '2024-01-15', '张三', 25, 1,<br>    99.99, 65.5, 4.5,<br>    '技术部员工', '男', '技术部',<br>    '2024-01-15 10:30:00', '1998-05-20',<br>    true, '科技,财经', 1500, 5<br>),<br>(<br>    1002, '2024-01-16', '李四', 30, 2,<br>    199.50, 55.2, 4.8,<br>    '市场部经理', '女', '市场部',<br>    '2024-01-16 14:20:00', '1993-12-10',<br>    true, '娱乐', 2500, 8<br>),<br>(<br>    1003, '2024-01-17', '王五', 22, 0,<br>    49.99, 70.1, 3.9,<br>    '销售专员', '其他', '销售部',<br>    '2024-01-17 16:45:00', '2001-08-25',<br>    false, '科技,体育', 800, 3<br>);<br><br><br><br><br><br>drop table if exists doris_demo1_data_types_source;<br>CREATE TABLE IF NOT EXISTS doris_demo1_data_types_source (<br>    user_id BIGINT COMMENT ""用户ID"",<br>    created_date VARCHAR(20) COMMENT ""创建日期"",<br>    name VARCHAR(50) COMMENT ""姓名"",<br>    age INT COMMENT ""年龄"",<br>    status INT COMMENT ""状态码"",<br>    price VARCHAR(20) COMMENT ""价格"",<br>    weight VARCHAR(20) COMMENT ""重量"",<br>    rating VARCHAR(20) COMMENT ""评分"",<br>    description VARCHAR(500) COMMENT ""描述信息"",<br>    gender VARCHAR(10) COMMENT ""性别"",<br>    department VARCHAR(20) COMMENT ""部门"",<br>    created_time VARCHAR(30) COMMENT ""创建时间"",<br>    birth_date VARCHAR(20) COMMENT ""出生日期"",<br>    is_active VARCHAR(10) COMMENT ""是否激活"",<br>    tags VARCHAR(100) COMMENT ""标签"",<br>    total_amount INT COMMENT ""总金额"",<br>    order_count INT COMMENT ""订单数量""<br>)<br>ENGINE=olap<br>DUPLICATE KEY(user_id, created_date, name)<br>DISTRIBUTED BY HASH(user_id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br><br>-- 插入示例数据<br>INSERT INTO doris_demo_data_types_source VALUES<br>(<br>    1001, '2024-01-15', '张三', 25, 1,<br>    99, 65, 4,<br>    '技术部员工', '男', '技术部',<br>    '2024-01-15 10:30:00', '1998-05-20',<br>    'true', '科技,财经', 1500, 5<br>),<br>(<br>    1002, '2024-01-16', '李四', 30, 2,<br>    199, 55, 4,<br>    '市场部经理', '女', '市场部',<br>    '2024-01-16 14:20:00', '1993-12-10',<br>    'true', '娱乐', 2500, 8<br>)","1. 新建多表比对，左表选择前置中的表doris_demo_data_types_source
+2. 右表选择前置中的表doris_demo1_data_types_source，点击下一步
+3. 同名映射
+4. 勾选user_id为主键
+5. 勾选【记录数百分比差异】-0%
+6. 创建规则
+7. 立即运行规则，查看结果
+8. 编辑规则，修改【记录数百分比差异】-100%
+9. 立即运行规则，查看结果","1. 右表数据源默认回填左表选择的数据源，置灰不可修改
+2. 进入选择字段步骤
+3. 1）字段类型一致的进行映射
+2）不一致的不映射并提示：主表与对照表字段类型不一致，无法比对
+4. 勾选成功
+5. 勾选成功
+6. 创建成功
+7. 质量实例校验不通过
+8. 修改成功
+9. 质量实例校验通过",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 验证【多表-doris-mysql跨源比对】功能正常,"1、doris数据源已存在表<br>建表语句：<br>drop table if exists doris_demo_data_types_source;<br>CREATE TABLE IF NOT EXISTS doris_demo_data_types_source (<br>    user_id BIGINT COMMENT ""用户ID"",<br>    created_date DATE COMMENT ""创建日期"",<br>    name VARCHAR(50) COMMENT ""姓名"",<br>    age TINYINT COMMENT ""年龄"",<br>    status SMALLINT COMMENT ""状态码"",<br>    price DECIMAL(10, 2) COMMENT ""价格"",<br>    weight FLOAT COMMENT ""重量"",<br>    rating DOUBLE COMMENT ""评分"",<br>    description STRING COMMENT ""描述信息"",<br>    gender VARCHAR(10) COMMENT ""性别"",<br>    department VARCHAR(20) COMMENT ""部门"",<br>    created_time DATETIME COMMENT ""创建时间"",<br>    birth_date DATE COMMENT ""出生日期"",<br>    is_active BOOLEAN COMMENT ""是否激活"",<br>    tags VARCHAR(100) COMMENT ""标签"",<br>    total_amount BIGINT COMMENT ""总金额"",<br>    order_count INT COMMENT ""订单数量""<br>)<br>ENGINE=olap<br>DUPLICATE KEY(user_id, created_date, name)<br>DISTRIBUTED BY HASH(user_id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br><br>-- 插入示例数据<br>INSERT INTO doris_demo_data_types_source VALUES<br>(<br>    1001, '2024-01-15', '张三', 25, 1,<br>    99.99, 65.5, 4.5,<br>    '技术部员工', '男', '技术部',<br>    '2024-01-15 10:30:00', '1998-05-20',<br>    true, '科技,财经', 1500, 5<br>),<br>(<br>    1002, '2024-01-16', '李四', 30, 2,<br>    199.50, 55.2, 4.8,<br>    '市场部经理', '女', '市场部',<br>    '2024-01-16 14:20:00', '1993-12-10',<br>    true, '娱乐', 2500, 8<br>),<br>(<br>    1003, '2024-01-17', '王五', 22, 0,<br>    49.99, 70.1, 3.9,<br>    '销售专员', '其他', '销售部',<br>    '2024-01-17 16:45:00', '2001-08-25',<br>    false, '科技,体育', 800, 3<br>);<br><br><br>2、mysql数据源已存在表：<br>-- 删除已存在的表（如果存在）<br>DROP TABLE IF EXISTS mysql_demo_data_types_source;<br>CREATE TABLE IF NOT EXISTS mysql_demo_data_types_source (<br>    user_id VARCHAR(20) COMMENT '用户ID',<br>    created_date VARCHAR(20) COMMENT '创建日期',<br>    name VARCHAR(50) COMMENT '姓名',<br>    age VARCHAR(10) COMMENT '年龄',<br>    status VARCHAR(10) COMMENT '状态码',<br>    price VARCHAR(20) COMMENT '价格',<br>    weight VARCHAR(20) COMMENT '重量',<br>    rating VARCHAR(20) COMMENT '评分',<br>    description VARCHAR(500) COMMENT '描述信息',<br>    gender VARCHAR(10) COMMENT '性别',<br>    department VARCHAR(20) COMMENT '部门',<br>    created_time VARCHAR(30) COMMENT '创建时间',<br>    birth_date VARCHAR(20) COMMENT '出生日期',<br>    is_active VARCHAR(10) COMMENT '是否激活(是/否)',<br>    tags VARCHAR(100) COMMENT '标签',<br>    total_amount VARCHAR(20) COMMENT '总金额',<br>    order_count VARCHAR(10) COMMENT '订单数量',<br>    PRIMARY KEY (user_id)<br>) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MySQL数据源表';<br><br>INSERT INTO mysql_demo_data_types_source VALUES<br>('1001', '2024-01-15', '张三', '25', '1', '99.99', '65.5', '4.5', '技术部员工', '男', '技术部', '2024-01-15 10:30:00', '1998-05-20', '是', '科技,财经', '1500', '5'),<br>('1002', '2024-01-16', '李四', '30', '2', '199.50', '55.2', '4.8', '市场部经理', '女', '市场部', '2024-01-16 14:20:00', '1993-12-10', '是', '娱乐', '2500', '8')","1. 新建多表比对，左表选择前置中的表doris_demo_data_types_source,过滤条件为part_date='${utc0yyyy_MM_dd_1d}'
+2. 右表选择前置中的表mysql_demo_data_types_source，点击下一步
+3. 同名映射
+4. 勾选user_id为主键
+5. 勾选【记录数百分比差异】-0%
+6. 创建规则
+7. 立即运行规则，查看结果
+8. 编辑规则，修改【记录数百分比差异】-50%
+9. 立即运行规则，查看结果","1. 右表数据源不会默认回填左表选择的数据源，下拉框允许选择所有授权给质量项目的数据源
+2. 
+3. 1）字段类型一致的进行映射
+2）不一致的不映射并提示：主表与对照表字段类型不一致，无法比对
+4. 勾选成功
+5. 勾选成功
+6. 创建成功
+7. 质量实例校验不通过
+8. 修改成功
+9. 质量实例校验通过",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 规则任务配置 【联动】验证质量和离线绑定，单规则包-【表行数-强规则-校验不通过】结果正确,"1、doris数据源已存在表<br>建表语句：<br>drop table if exists doris1;<br>CREATE TABLE IF NOT EXISTS doris_demo_data_types_source (<br>    user_id BIGINT COMMENT ""用户ID"",<br>    created_date DATE COMMENT ""创建日期"",<br>    name VARCHAR(50) COMMENT ""姓名"",<br>    age TINYINT COMMENT ""年龄"",<br>    status SMALLINT COMMENT ""状态码"",<br>    price DECIMAL(10, 2) COMMENT ""价格"",<br>    weight FLOAT COMMENT ""重量"",<br>    rating DOUBLE COMMENT ""评分"",<br>    description STRING COMMENT ""描述信息"",<br>    gender VARCHAR(10) COMMENT ""性别"",<br>    department VARCHAR(20) COMMENT ""部门"",<br>    created_time DATETIME COMMENT ""创建时间"",<br>    birth_date DATE COMMENT ""出生日期"",<br>    is_active BOOLEAN COMMENT ""是否激活"",<br>    tags VARCHAR(100) COMMENT ""标签"",<br>    total_amount BIGINT COMMENT ""总金额"",<br>    order_count INT COMMENT ""订单数量""<br>)<br>ENGINE=olap<br>DUPLICATE KEY(user_id, created_date, name)<br>DISTRIBUTED BY HASH(user_id) BUCKETS 10<br>PROPERTIES (<br>    ""replication_num"" = ""1""<br>);<br><br>-- 插入示例数据<br>INSERT INTO doris1 VALUES<br>(<br>    1001, '2024-01-15', '张三', 25, 1,<br>    99.99, 65.5, 4.5,<br>    '技术部员工', '男', '技术部',<br>    '2024-01-15 10:30:00', '1998-05-20',<br>    true, '科技,财经', 1500, 5<br>),<br>(<br>    1002, '2024-01-16', '李四', 30, 2,<br>    199.50, 55.2, 4.8,<br>    '市场部经理', '女', '市场部',<br>    '2024-01-16 14:20:00', '1993-12-10',<br>    true, '娱乐', 2500, 8<br>),<br>(<br>    1003, '2024-01-17', '王五', 22, 0,<br>    49.99, 70.1, 3.9,<br>    '销售专员', '其他', '销售部',<br>    '2024-01-17 16:45:00', '2001-08-25',<br>    false, '科技,体育', 800, 3<br>);<br><br>2、离线已存在doris2doris数据同步任务：doris1-->doris2 覆盖<br><br>3、doris2为空表，doris1中有3条表数据，覆盖模式","1. 修改质量规则，固定值>3,强规则
+2. 等待离线实例运行，查看质量实例
+3. 运行结束后，查看离线和质量实例的运行结果
+4. 进入「离线开发-运维中心-周期任务」，对doris2doris任务补当前数据及下游，查看结果","1. 新建成功
+2. 质量新增一条实例，状态为运行中
+3. 1）质量实例：校验未通过，查看明细展示doris1中的三条数据
+2）离线实例：运行失败，失败原因：上游质量任务失败
+4. 1）补数据质量工作流中有1个规则包，离线任务运行失败，报错质量任务校验不通过
+2）质量生成一条实例，校验不通过",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据质量 项目管理 项目信息 验证项目增删改查功能,无,"1. 点击「创建项目」按钮，配置如下
+「项目名称」输入「超64字符文本」
+「项目标识」输入「超64字符文本&特殊字符」
+「管理员」不选择
+「项目描述」输入「测试项目描述信息」
+点击「确定」按钮
+2. 点击「创建项目」按钮，配置如下
+「项目名称」输入「测试项目」
+「项目标识」输入「测试项目标识」
+「管理员」选择${已引入到资产平台的用户,例如admin@dtstack.com}
+「项目描述」输入「测试项目描述信息」
+点击「确定」按钮
+3. 选择新增项目，点击「置顶」按钮
+4. 删除项目，二次确认","1. 提示「项目名称」输入框64字符限制；
+提示「项目标识」输入框64字符限制以及特殊字符不支持提示；
+「管理员」必填项未填提示；
+2. 质量项目创建成功
+3. 项目置顶成功，提示“操作成功”
+4. 项目删除成功",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据安全 数据权限管理 验证数据权限-新增功能正常,无,"1. 「权限范围选择」：
+添加第一条记录：数据库（schema1），数据表（s1_table1、s1_table2、s1_table3）
+添加第二条记录：数据库（schema2），数据表（s2_table1）
+
+「数据权限配置」：
+1）选择“表级权限”：DDL、DML、DQL；
+2）选择“有效期配置”：2023-10-20；
+3）开启“是否开启行列权限配置”
+
+「行列权限配置」：
+配置s1_table1以及s2_table1的行级权限和列级权限
+
+「权限生效用户」：
+1）选择“用户组”；
+2）选择“用户”
+
+点击【新增权限策略】","1. 1）提示新增数据成功
+2）页面跳转至列表页，列表新增1条数据（新增的数据显示在最前面）；
+3）「安全审计」新增审计日志：
+		- 操作模块：数据安全-数据权限分配
+		- 动作：新增权限
+		- 详细内容：新增了权限策略，新增了${数据源名称}数据源下的权限信息，生效于XX等共XX个用户，权限有效期为2023-10-20",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据安全 数据脱敏管理doris/sparkThrift 验证表脱敏功能正常,无,"1. 1）准备“全部脱敏”类型规则
+2）“全部脱敏”脱敏应用XX表的username字段；
+3）查看该表数据预览
+2. 1）准备“部分脱敏”类型规则
+2）“部分脱敏”脱敏应用XX表的username字段；
+3）查看该表数据预览","1. 该表username字段数据全脱敏
+2. 该表username字段数据部分脱敏",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据安全 数据分级分类 级别管理 验证分级分类生效,准备L1、L2、L3三个等级的用户,"1. 1）配置“保密”级别，“开放用户等级”为L2；
+2）【自动分级】中为SparkThrift2.x类型配置“字段名识别”referrer_url，级别为：保密；
+3）【立即生效】；
+4）生效成功后，L1、L2、L3用户分别进入SparkThrift2.x表（包含referrer_url字段）的表详情页-数据预览","1. 1）L1用户无权限查看到表referrer_url字段数据
+2）L2用户有权限查看到表referrer_url字段数据
+3）L3用户有权限查看到表referrer_url字段数据
+4）离线校验",1,功能测试,功能测试阶段
+主流程v6.3(#10426),数据安全 数据分级分类 自动分级 验证自动分级-添加流程正确,无,"1. 点击自动分级页面的「添加」icon
+2. 填写必填内容，点击下一步
+3. 选择${DATASOURCE_TYPE}数据源类型，填写其他必填内容，点击立即生效","1. 跳转至添加规则的基础信息页面
+2. 跳转至配置规则页面
+3. 该数据源类型的符合识别规则的字段被分级成功",2,功能测试,功能测试阶段
+主流程v6.3(#10426),数据安全 数据分级分类 分级数据 验证手动分级-添加功能正确,无,"1. 点击手动分级，进入添加手动分级页面
+2. 查看分类下拉项
+3. 检查“数据源类型”、“数据源”、“数据库”，以及手动分级栏中数据表、字段选项的级联查询
+4. 1）输入分类
+2）添加若干组分级和表、字段
+3）点击发布","1. 
+2. 展示所有未删除的分类
+3. 级联查询功能正常
+4. 添加手动分级成功",2,功能测试,功能测试阶段
