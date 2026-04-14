@@ -32,10 +32,11 @@ if (baseUrl) process.env.UI_AUTOTEST_BASE_URL = baseUrl;
 // 通过环境变量 QA_SUITE_NAME 传入需求名称，默认 report
 const yyyymm = new Date().toISOString().slice(0, 7).replace(/-/g, ""); // YYYYMM
 const suiteName = process.env.QA_SUITE_NAME ?? "report";
-const reportDir = `workspace/reports/playwright/${yyyymm}/${suiteName}`;
+const project = process.env.QA_PROJECT ?? "dataAssets";
+const reportDir = `workspace/${project}/reports/playwright/${yyyymm}/${suiteName}`;
 
 export default defineConfig({
-  testMatch: "tests/e2e/**/*.spec.ts",
+  testMatch: `workspace/${project}/tests/**/*.spec.ts`,
   timeout: 60000,
   reporter: [
     ["line"],
