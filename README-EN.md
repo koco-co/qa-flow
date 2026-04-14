@@ -24,8 +24,10 @@ From requirements to test cases, from bug analysis to UI automation — all-in-o
 <br />
 
 ```
-PRD  ──>  Test Case Generation  ──>  XMind + Archive MD  ──>  UI Automation
-Error Logs   ──>  Intelligent Analysis  ──>  HTML Reports + IM Notifications
+PRD / Lanhu / historical cases ── /test-case-gen ──> XMind (A) + Archive MD (B)
+Error logs / conflicts / Zentao ─ /code-analysis ──> HTML reports / Hotfix cases
+Existing XMind ────────────────── /xmind-editor ────> Preview → Confirm → Write
+Archive MD + URL ──────────────── /ui-autotest ─────> Self-healing regression → Reports / Notifications
 ```
 
 </div>
@@ -55,31 +57,34 @@ Error Logs   ──>  Intelligent Analysis  ──>  HTML Reports + IM Notificat
 
 ## Features
 
-| Feature                  | Description                                                                                               |
-| ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| **7-Node Pipeline**      | PRD &rarr; Transform &rarr; Enhance &rarr; Analyze &rarr; Write &rarr; Review &rarr; Output               |
-| **Multi-Agent Parallel** | Writer Sub-Agents generate test cases per module in parallel, boosting efficiency for large requirements  |
-| **Plugin System**        | Lanhu PRD import, Zentao bug integration, IM notifications — enable on demand without touching core logic |
-| **Interactive Flow**     | Each key node offers recommended options + free input, supports `--quick` mode and breakpoint resume      |
-| **Preference Learning**  | User feedback automatically persists to `preferences/` directory, refining generation style over time     |
-| **Full QA Toolchain**    | Test case generation + Bug analysis + XMind editing + Playwright UI automation                            |
+| Feature                        | Description                                                                                                      |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| **7 Skills / 5 Core Workflows** | `qa-flow` Router + `setup` + 5 primary execution workflows from initialization to delivery                      |
+| **13-Agent Architecture**      | Specialized agents declare model/tools in frontmatter and are dispatched by Skills based on task complexity     |
+| **Project-Scoped Workspace**   | All artifacts are written into `workspace/&lt;project&gt;/...`, keeping projects isolated                        |
+| **A/B Artifact Contract**      | XMind / intermediate artifacts use Contract A; Archive MD / display titles use Contract B                       |
+| **Preview-before-Write**       | XMind `patch` / `add` / `delete` always run `--dry-run` first, then require confirmation                        |
+| **Self-healing UI Regression** | UI automation verifies each script individually, repairs up to 3 rounds, and can emit bug reports or fix hints |
+| **Plugin Hooks**               | Lanhu import, Zentao integration, and IM notifications are attached via lifecycle hooks                         |
+| **Safety Gates**               | Read-only source repos, explicit side-effect confirmation, and separate reference vs writeback gates            |
 
 ---
 
 ## Architecture Overview
 
-![Overall Architecture](assets/diagrams/architecture.png)
+![Overall Architecture](assets/diagrams/architecture.svg)
 
 <details>
 <summary><b>Architecture Description</b></summary>
 
-qa-flow uses a **Skill Router + Plugin Hooks** architecture:
+qa-flow uses a **Router + Skill + Agent + Plugin Hook** architecture:
 
-- **qa-flow Router** — Entry routing layer that dispatches user input to the corresponding Skill by keywords or number
-- **5 Core Skills** — `setup` / `test-case-gen` / `code-analysis` / `xmind-editor` / `ui-autotest`
-- **Plugin System** — Non-invasive integration via lifecycle hooks (`*:init` / `*:output`)
-- **Cross-cutting Concerns** — State management (breakpoint resume), preference learning, and IM notifications span the entire workflow
-- **Output** — Unified output to `workspace/` directory, supporting XMind / Archive MD / HTML reports
+- **qa-flow Router** — Entry routing layer; first-run, no-project, or `/qa-flow init` requests are routed to `setup`
+- **7 Skills** — `qa-flow` / `setup` / `test-case-gen` / `code-analysis` / `xmind-editor` / `ui-autotest` / `playwright-cli`
+- **5 primary user workflows** — `setup`, `test-case-gen`, `code-analysis`, `xmind-editor`, `ui-autotest`
+- **13 standalone agents** — Each agent declares its model/tools in frontmatter and is orchestrated by a Skill
+- **Cross-cutting capabilities** — project-level preferences, breakpoint resume, read-only source repos, and plugin hooks span the workflow
+- **Project-scoped output** — artifacts are written to `workspace/<project>/`, including XMind, Archive MD, HTML reports, and Playwright assets
 
 </details>
 
@@ -111,27 +116,35 @@ cp .env.example .env
 
 ### Initialize
 
-In Claude Code, type:
+In Claude Code, start with:
 
 ```
-/setup
+/qa-flow init
 ```
 
-A 5-step interactive wizard will guide you through:
+`/setup` still works as a direct alias, but `/qa-flow init` is the recommended unified entrypoint.
+
+A 6-step interactive wizard will guide you through:
 
 | Step | Description                                                              |
 | ---- | ------------------------------------------------------------------------ |
-| 1    | Environment detection — Node.js, Bun, and core script availability       |
-| 2    | Workspace creation — `workspace/` subdirectory structure                 |
-| 3    | Source repo configuration — Clone git repos into `.repos/` (optional)    |
-| 4    | Plugin configuration — Check for plugin credentials in `.env` (optional) |
-| 5    | Environment verification — Comprehensive validation of all config items  |
+| 1    | Environment detection — Node.js, Bun, config files, and core scripts    |
+| 2    | Project management — Select an existing project or create a new one      |
+| 3    | Workspace setup — Create the standard `workspace/<project>/` structure   |
+| 4    | Source repo configuration — Clone Git repos into `workspace/<project>/.repos/` (optional) |
+| 5    | Plugin configuration — Check for plugin credentials in `.env` (optional) |
+| 6    | Environment verification — Comprehensive validation of all config items  |
 
 ### Quick Commands
+
+The current user-facing trigger phrases are Chinese-first; the examples below are the actual commands used in Claude Code.
 
 ```bash
 # Show feature menu
 /qa-flow
+
+# Initialize the workspace
+/qa-flow init
 
 # Generate test cases from PRD
 为 {{requirement_name}} 生成测试用例
@@ -148,8 +161,14 @@ A 5-step interactive wizard will guide you through:
 # Edit existing XMind cases
 修改用例 "Verify export only exports filtered results"
 
+# Standardize legacy XMind / CSV into Archive MD
+标准化归档 workspace/<project>/historys/legacy-cases.xmind
+
 # UI automation test
 UI自动化测试 {{requirement_name}} https://your-app.example.com
+
+# Switch active project
+切换项目
 ```
 
 ---
@@ -162,19 +181,19 @@ Transforms PRD / Story documents into structured XMind and Archive Markdown test
 
 #### Pipeline
 
-![Test Case Generation Pipeline](assets/diagrams/test-case-gen.png)
+![Test Case Generation Pipeline](assets/diagrams/test-case-gen.svg)
 
 #### 7 Nodes
 
-| Node | Name          | Description                                                                    | Key Scripts                               |
-| ---- | ------------- | ------------------------------------------------------------------------------ | ----------------------------------------- |
-| 1    | **init**      | Parse input, detect breakpoints, load plugins                                  | `state.ts`, `plugin-loader.ts`            |
-| 2    | **transform** | Source code analysis + PRD structuring, with CLARIFY protocol (up to 3 rounds) | `repo-profile.ts`, `repo-sync.ts`         |
-| 3    | **enhance**   | Image recognition, frontmatter normalization, page highlight extraction        | `image-compress.ts`, `prd-frontmatter.ts` |
-| 4    | **analyze**   | Historical case retrieval + QA brainstorming &rarr; test point checklist       | `archive-gen.ts search`                   |
-| 5    | **write**     | Split by module into parallel Writer Sub-Agents for case generation            | Parallel sub-agents                       |
-| 6    | **review**    | Quality gate review (threshold < 15% / 15-40% / > 40%), up to 2 rounds         | Quality gate                              |
-| 7    | **output**    | Generate XMind + Archive MD, send IM notifications, clean state                | `xmind-gen.ts`, `archive-gen.ts`          |
+| Node | Name          | Description                                                                 | Key Scripts                               |
+| ---- | ------------- | --------------------------------------------------------------------------- | ----------------------------------------- |
+| 1    | **init**      | Parse input, restore state, and load project/plugin context                 | `state.ts`, `plugin-loader.ts`            |
+| 2    | **transform** | Source code analysis + PRD structuring, with structured `clarify_envelope`  | `repo-profile.ts`, `repo-sync.ts`         |
+| 3    | **enhance**   | Image recognition, frontmatter normalization, and health pre-check          | `image-compress.ts`, `prd-frontmatter.ts` |
+| 4    | **analyze**   | Historical case retrieval + QA brainstorming &rarr; test point checklist    | `archive-gen.ts search`                   |
+| 5    | **write**     | Parallel Writer Sub-Agents generate Contract A cases by module              | Parallel sub-agents                       |
+| 6    | **review**    | Quality-gate review (threshold < 15% / 15-40% / > 40%), up to 2 rounds      | Quality gate                              |
+| 7    | **output**    | Generate XMind (A) + Archive MD (B), send notifications, and clean state    | `xmind-gen.ts`, `archive-gen.ts`          |
 
 #### Quality Gate (Review Node)
 
@@ -216,10 +235,10 @@ S1: Parse source file → S2: AI standardize rewrite → S3: Quality review → 
 <details>
 <summary><b>Reverse Sync Flow</b> (XMind → Archive MD)</summary>
 
-Reverse-sync XMind test cases into Archive Markdown:
+Reverse-sync XMind test cases into Archive Markdown with preview / confirm / write controls:
 
 ```
-RS1: Confirm XMind → RS2: Parse → RS3: Locate Archive MD → RS4: Convert → RS5: Confirm
+RS1: Confirm XMind → RS2: Parse → RS3: Locate Archive MD → RS4: Preview or Write → RS5: Report
 ```
 
 </details>
@@ -232,7 +251,7 @@ Transforms error logs, merge conflicts, or Zentao bug links into structured HTML
 
 #### Routing
 
-![Code Analysis Routing](assets/diagrams/code-analysis.png)
+![Code Analysis Routing](assets/diagrams/code-analysis.svg)
 
 #### 5 Modes (Priority-based)
 
@@ -247,8 +266,11 @@ Transforms error logs, merge conflicts, or Zentao bug links into structured HTML
 #### Processing Pipeline
 
 ```
-Signal Detection → Mode Routing → [Source Sync] → AI Analysis → Report Generation → IM Notification
+Signal detection → Mode routing → reference/sync confirmation → AI analysis → report / Hotfix output → optional notification
 ```
+
+- **Gate 1** — Confirm repo / branch / path before source reference or repo sync
+- **Gate 2** — If `.env` or branch mapping should be written back, preview it and confirm separately
 
 #### Usage
 
@@ -264,25 +286,25 @@ Signal Detection → Mode Routing → [Source Sync] → AI Analysis → Report G
 
 | Type             | Path                                    |
 | ---------------- | --------------------------------------- |
-| Bug Reports      | `workspace/reports/bugs/YYYYMMDD/`      |
-| Conflict Reports | `workspace/reports/conflicts/YYYYMMDD/` |
-| Hotfix Cases     | `workspace/issues/YYYYMM/`              |
+| Bug Reports      | `workspace/<project>/reports/bugs/YYYYMMDD/`      |
+| Conflict Reports | `workspace/<project>/reports/conflicts/YYYYMMDD/` |
+| Hotfix Cases     | `workspace/<project>/issues/YYYYMM/`              |
 
 ---
 
 ### 3. XMind Editor (`/xmind-editor`)
 
-Perform local edits on existing XMind files without re-reading PRDs. Triggers preference learning after modifications.
+Perform local edits on existing XMind files without re-reading PRDs. All write operations now follow **preview-first**: `--dry-run` preview, user confirmation, then real write. Preference learning runs after the write is confirmed.
 
 #### Operations
 
-| Operation | Command                                    | Script                                                         |
-| --------- | ------------------------------------------ | -------------------------------------------------------------- |
-| Search    | `搜索用例 "export"`                        | `xmind-edit.ts search "keyword"`                               |
-| Show      | `查看用例 "Verify list page default load"` | `xmind-edit.ts show --file X --title "Y"`                      |
-| Modify    | `修改用例 "Verify export filters"`         | `xmind-edit.ts patch --file X --title "Y" --case-json '{...}'` |
-| Add       | `新增用例 到 "Rule List Page" 分组`        | `xmind-edit.ts add --file X --parent "Y" --case-json '{...}'`  |
-| Delete    | `删除用例 "Verify xxx"`                    | `xmind-edit.ts delete --file X --title "Y"`                    |
+| Operation | Command                                    | Preview / execution flow                                                              |
+| --------- | ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Search    | `搜索用例 "export"`                        | `xmind-edit.ts search "keyword"`                                                      |
+| Show      | `查看用例 "Verify list page default load"` | `xmind-edit.ts show --file X --title "Y"`                                             |
+| Modify    | `修改用例 "Verify export filters"`         | `xmind-edit.ts patch --file X --title "Y" --case-json '{...}' --dry-run` → confirm   |
+| Add       | `新增用例 到 "Rule List Page" 分组`        | `xmind-edit.ts add --file X --parent "Y" --case-json '{...}' --dry-run` → confirm    |
+| Delete    | `删除用例 "Verify xxx"`                    | `xmind-edit.ts delete --file X --title "Y" --dry-run` → confirm                       |
 
 #### Preference Learning
 
@@ -296,20 +318,21 @@ Transforms Archive MD test cases into Playwright TypeScript scripts, executes by
 
 #### Pipeline
 
-![UI Automation Pipeline](assets/diagrams/ui-autotest.png)
+![UI Automation Pipeline](assets/diagrams/ui-autotest.svg)
 
-#### 8 Steps
+#### 9 Steps
 
-| Step | Name                    | Description                                                        |
-| ---- | ----------------------- | ------------------------------------------------------------------ |
-| 1    | **Parse Input**         | Extract `md_path` and `url`, parse cases via `parse-cases.ts`      |
-| 2    | **Interactive Confirm** | User selects scope: smoke (P0) / full (P0+P1+P2) / custom          |
-| 3    | **Session Prep**        | Check/create login session via `session-login.ts`                  |
-| 4    | **Script Generation**   | Up to 5 parallel Sub-Agents generate `.ts` code blocks             |
-| 5    | **Merge Scripts**       | `merge-specs.ts` assembles `smoke.spec.ts` and `full.spec.ts`      |
-| 6    | **Execute Tests**       | `bunx playwright test` with HTML reporter                          |
-| 7    | **Process Results**     | Failed cases trigger Bug Reporter Sub-Agents for report generation |
-| 8    | **Send Notifications**  | Plugin sends pass/fail summary via IM                              |
+| Step | Name                  | Description                                                                          |
+| ---- | --------------------- | ------------------------------------------------------------------------------------ |
+| 1    | **Parse Input**       | Extract `md_path` and `url`, parse Archive MD via `parse-cases.ts`                  |
+| 2    | **Select Scope**      | Only prompt when scope is unclear: smoke / full / custom                            |
+| 3    | **Session Prep**      | Check/create login session via `session-login.ts`                                   |
+| 4    | **Script Generation** | Up to 5 parallel Sub-Agents generate `.ts` code blocks                              |
+| 5    | **Per-case Verify**   | Each script is executed individually and self-healed for up to 3 rounds             |
+| 6    | **Merge Specs**       | `merge-specs.ts` assembles `smoke.spec.ts` and `full.spec.ts`                       |
+| 7    | **Run Regression**    | `bunx playwright test` executes the merged smoke / full specs                       |
+| 8    | **Process Results**   | Generate Playwright reports, bug reports, and Archive MD correction suggestions      |
+| 9    | **Send Notifications**| Plugin sends pass/fail summary via IM                                               |
 
 #### Test Scope
 
@@ -321,16 +344,18 @@ Transforms Archive MD test cases into Playwright TypeScript scripts, executes by
 
 #### Output
 
-| Type               | Path                                     |
-| ------------------ | ---------------------------------------- |
-| E2E Specs          | `tests/e2e/YYYYMM/<suite_name>/`         |
-| Playwright Reports | `workspace/reports/playwright/YYYYMMDD/` |
+| Type                 | Path                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| Temporary UI blocks  | `workspace/<project>/.temp/ui-blocks/`                        |
+| E2E specs            | `workspace/<project>/tests/YYYYMM/<suite_name>/`              |
+| Playwright reports   | `workspace/<project>/reports/playwright/YYYYMM/<suite_name>/` |
+| Bug reports          | `workspace/<project>/reports/bugs/YYYYMM/`                    |
 
 ---
 
 ## Plugin System
 
-![Plugin System](assets/diagrams/plugin-system.png)
+![Plugin System](assets/diagrams/plugin-system.svg)
 
 ### Built-in Plugins
 
@@ -374,6 +399,7 @@ Create a `plugin.json` under `plugins/<plugin-name>/`:
 ```text
 qa-flow/
 ├── .claude/
+│   ├── agents/                   # 13 standalone agent definitions
 │   ├── scripts/                  # Core TypeScript CLI scripts
 │   │   ├── state.ts              # Breakpoint/resume state management
 │   │   ├── xmind-gen.ts          # XMind file generation
@@ -385,32 +411,37 @@ qa-flow/
 │   │   ├── image-compress.ts     # Image compression (>2000px auto-resize)
 │   │   ├── prd-frontmatter.ts    # PRD frontmatter normalization
 │   │   ├── config.ts             # Environment config reader
-│   │   └── __tests__/            # Unit tests (80%+ coverage)
+│   │   ├── lib/                  # Shared helpers and types
+│   │   └── __tests__/            # Unit tests
 │   └── skills/
 │       ├── qa-flow/              # Entry menu router
-│       ├── setup/                # 5-step initialization wizard
-│       ├── test-case-gen/        # Test case generation (core pipeline)
-│       │   ├── prompts/          # AI prompts per pipeline node
+│       ├── setup/                # 6-step initialization wizard
+│       ├── test-case-gen/        # Test case generation orchestrator
 │       │   └── references/       # Format specs & protocols
-│       ├── code-analysis/        # Bug / conflict analysis
-│       │   ├── prompts/          # Mode-specific prompts
-│       │   └── references/       # Env vs code guide
-│       ├── xmind-editor/         # XMind case editing
-│       ├── ui-autotest/          # Playwright UI automation
-│       │   ├── scripts/          # parse-cases / merge-specs / session-login
-│       │   └── prompts/          # Script writer & bug reporter prompts
+│       ├── code-analysis/        # Bug / conflict analysis orchestrator
+│       │   └── references/       # Env vs code guidance
+│       ├── xmind-editor/         # Local XMind editing
+│       ├── ui-autotest/          # Playwright UI automation orchestrator
+│       │   └── scripts/          # parse-cases / merge-specs / session-login
 │       └── playwright-cli/       # Playwright CLI integration
 ├── plugins/
 │   ├── lanhu/                    # Lanhu PRD import plugin
 │   ├── zentao/                   # Zentao Bug integration plugin
 │   └── notify/                   # IM notification plugin
-├── workspace/                    # Runtime output directory
-│   ├── prds/                     # PRD / Story documents
-│   ├── xmind/                    # Generated XMind files (YYYYMM/)
-│   ├── archive/                  # Archive Markdown test cases (YYYYMM/)
-│   ├── issues/                   # Hotfix test cases
-│   ├── reports/                  # Bug / conflict / Playwright reports
-│   └── .repos/                   # Cloned source repos (read-only)
+├── workspace/                    # Multi-project runtime workspace
+│   ├── dataAssets/
+│   │   ├── prds/                 # PRD / Story documents
+│   │   ├── xmind/                # Generated XMind files
+│   │   ├── archive/              # Archive Markdown test cases
+│   │   ├── issues/               # Hotfix test cases
+│   │   ├── historys/             # Legacy CSV / XMind inputs
+│   │   ├── reports/              # Bug / conflict / Playwright reports
+│   │   ├── tests/                # Generated Playwright specs
+│   │   ├── preferences/          # Project-level overrides
+│   │   ├── .repos/               # Cloned source repos (read-only)
+│   │   └── .temp/                # Temporary state and UI blocks
+│   └── xyzh/
+│       └── ...                   # Same project structure as above
 ├── preferences/                  # User preference rules (auto-written)
 │   ├── case-writing.md           # Test case writing conventions
 │   ├── data-preparation.md       # Test data preparation rules
