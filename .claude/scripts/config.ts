@@ -31,11 +31,15 @@ interface RepoProfile {
 
 type RepoProfiles = Record<string, RepoProfile>;
 
+interface ProjectConfig {
+  repo_profiles: RepoProfiles;
+}
+
 interface ConfigOutput {
   workspace_dir: string;
   source_repos: string[];
   plugins: Record<string, PluginEntry>;
-  repo_profiles: RepoProfiles;
+  projects: Record<string, ProjectConfig>;
 }
 
 function scanPlugins(dir: string): Record<string, PluginEntry> {
@@ -51,12 +55,12 @@ function scanPlugins(dir: string): Record<string, PluginEntry> {
   return plugins;
 }
 
-function readRepoProfiles(): RepoProfiles {
+function readProjectConfigs(): Record<string, ProjectConfig> {
   const configPath = join(repoRoot(), "config.json");
   if (!existsSync(configPath)) return {};
   try {
     const raw = JSON.parse(readFileSync(configPath, "utf8")) as Record<string, unknown>;
-    return (raw.repo_profiles ?? {}) as RepoProfiles;
+    return (raw.projects ?? {}) as Record<string, ProjectConfig>;
   } catch (err) {
     process.stderr.write(`[config] failed to parse config.json: ${err}\n`);
     return {};
@@ -74,13 +78,13 @@ function buildConfig(): ConfigOutput {
     .filter((s) => s.length > 0);
 
   const plugins = scanPlugins(pluginsDir());
-  const repoProfiles = readRepoProfiles();
+  const projects = readProjectConfigs();
 
   return {
     workspace_dir: workspaceDir,
     source_repos: sourceRepos,
     plugins,
-    repo_profiles: repoProfiles,
+    projects,
   };
 }
 

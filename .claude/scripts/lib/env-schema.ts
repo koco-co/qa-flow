@@ -9,6 +9,7 @@ interface EnvRule {
 const ENV_SCHEMA: EnvRule[] = [
   { key: "WORKSPACE_DIR", required: false, description: "Workspace directory path" },
   { key: "SOURCE_REPOS", required: false, description: "Comma-separated list of source repo URLs" },
+  { key: "PROJECT_NAME", required: false, description: "Default project name (e.g. dataAssets)" },
 ];
 
 export function validateEnv(requiredKeys?: string[]): { valid: boolean; missing: string[] } {

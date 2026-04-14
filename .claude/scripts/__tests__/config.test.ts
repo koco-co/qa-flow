@@ -73,6 +73,7 @@ describe("config.ts — output structure", () => {
     assert.ok("workspace_dir" in cfg, "should have workspace_dir");
     assert.ok("source_repos" in cfg, "should have source_repos");
     assert.ok("plugins" in cfg, "should have plugins");
+    assert.ok("projects" in cfg, "should have projects");
   });
 
   it("workspace_dir defaults to 'workspace' when env var is not set", () => {
@@ -215,6 +216,30 @@ describe("config.ts — plugin active detection logic", () => {
       const e = err as { status?: number };
       // Some commander versions exit 0, some exit non-zero — just check it ran
       assert.ok(e.status === 0 || e.status === undefined);
+    }
+  });
+});
+
+describe("config.ts — project-keyed structure", () => {
+  it("output contains projects top-level key", () => {
+    const { stdout } = runConfig();
+    const cfg = JSON.parse(stdout) as Record<string, unknown>;
+    assert.ok("projects" in cfg, "should have projects key");
+  });
+
+  it("projects contains dataAssets key from config.json", () => {
+    const { stdout } = runConfig();
+    const cfg = JSON.parse(stdout) as { projects: Record<string, unknown> };
+    assert.ok("dataAssets" in cfg.projects, "should have dataAssets project");
+  });
+
+  it("each project has repo_profiles", () => {
+    const { stdout } = runConfig();
+    const cfg = JSON.parse(stdout) as {
+      projects: Record<string, { repo_profiles: Record<string, unknown> }>;
+    };
+    for (const [name, proj] of Object.entries(cfg.projects)) {
+      assert.ok("repo_profiles" in proj, `project ${name} should have repo_profiles`);
     }
   });
 });
