@@ -29,6 +29,7 @@ export interface Module {
 export interface Meta {
   project_name: string;
   requirement_name: string;
+  root_name?: string;
   version?: string;
   module_key?: string;
   requirement_id?: number;

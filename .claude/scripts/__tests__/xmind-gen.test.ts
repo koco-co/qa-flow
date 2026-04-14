@@ -117,6 +117,57 @@ describe("xmind-gen.ts create mode", () => {
     assert.equal(second.code, 1);
     assert.match(second.stderr, /already exists/);
   });
+
+  it("uses frontmatter root_name before CLI project name for md input", async () => {
+    const input = join(TMP_DIR, "root-name-precedence.md");
+    const output = join(TMP_DIR, "root-name-precedence.xmind");
+    const archiveMd = `---
+suite_name: "质量问题台账"
+root_name: "自定义 Root 节点"
+prd_version: "v6.4.10"
+---
+
+## 质量问题台账
+
+### 列表页
+
+#### 搜索筛选
+
+##### 【P1】验证按问题类型筛选
+
+> 前置条件
+
+\`\`\`
+已准备测试数据
+\`\`\`
+
+> 用例步骤
+
+| 编号 | 步骤 | 预期 |
+| ---- | ---- | ---- |
+| 1 | 进入【数据质量 → 质量问题台账】页面 | 页面正常加载 |
+`;
+    writeFileSync(input, archiveMd, "utf8");
+
+    const { code, stdout, stderr } = run([
+      "--input",
+      input,
+      "--output",
+      output,
+      "--project",
+      "CLI项目名",
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+    assert.ok(
+      stdout.includes("自定义 Root 节点") || existsSync(output),
+      "xmind-gen should finish and create the output file",
+    );
+
+    const sheets = (await readContentJson(output)) as {
+      rootTopic?: { title?: string };
+    }[];
+    assert.equal(sheets[0]?.rootTopic?.title, "自定义 Root 节点");
+  });
 });
 
 describe("xmind-gen.ts validation", () => {
