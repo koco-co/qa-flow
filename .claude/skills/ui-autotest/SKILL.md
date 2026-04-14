@@ -33,24 +33,37 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 ### 步骤 5 逐条自测子任务
 
 进入步骤 5 后，为每条待验证用例创建独立子任务：
-- subject: `[自测] [{{priority}}] {{title}}`
-- activeForm: `验证「{{title}}」`
+- subject: `[自测] {{title}}`
+- activeForm: `执行「{{title}}」`
 
 每条用例状态更新：
-- 开始执行 → `in_progress`（activeForm: `验证「{{title}}」— 第 {{n}} 轮`）
-- 修复重试 → 更新 subject 为 `[自测] [{{priority}}] {{title}} — 第 {{n}} 轮修复中`
-- 验证通过 → `completed`（subject: `[自测] [{{priority}}] {{title}} — 通过`）
-- 3 轮仍失败 → `completed`（subject: `[自测] [{{priority}}] {{title}} — 失败（{{原因}}）`）
+- 开始执行 → `in_progress`（activeForm: `执行「{{title}}」— 第 {{n}} 轮`）
+- 修复重试 → 更新 subject 为 `[自测] {{title}} — 第 {{n}} 轮修复中`
+- 验证通过 → `completed`（subject: `[自测] {{title}} — 通过`）
+- 3 轮仍失败 → `completed`（subject: `[自测] {{title}} — 失败（{{原因}}）`）
 
 ### 步骤 4 脚本生成子任务
 
 进入步骤 4 后，为每条用例创建子任务：
-- subject: `[脚本] [{{priority}}] {{title}}`
+- subject: `[脚本] {{title}}`
 - Sub-Agent 完成时标记 `completed`
 
 ---
 
 ## 前置说明
+
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 本 Skill 消费的是 Archive MD（Contract B）。
+> `parse-cases.ts` 会保留原始 H5 标题到 `title`（如 `【P1】验证xxx`），并单独提取 `priority=P1`；示例与任务命名必须按此契约书写。
 
 本 Skill 依赖外部 `playwright-cli` skill（单独安装）。执行前检查是否已安装：若未安装，提示用户执行 `/playwright-cli` 安装后再继续。
 
@@ -109,7 +122,7 @@ bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
   "tasks": [
     {
       "id": "t1",
-      "title": "验证xxx",
+      "title": "【P0】验证xxx",
       "priority": "P0",
       "page": "列表页",
       "steps": [{ "step": "进入【xxx】页面", "expected": "页面正常加载" }],
@@ -119,6 +132,8 @@ bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
   "stats": { "total": 20, "P0": 5, "P1": 10, "P2": 5 }
 }
 ```
+
+其中 `title` 保留 Archive MD 原始 H5 标题（Contract B），`priority` 为从该标题中额外提取出的结构化字段。
 
 ---
 
@@ -210,7 +225,7 @@ workspace/{{project}}/.temp/ui-blocks/{{id}}.ts
 代码块格式：
 
 ```typescript
-// META: {"id":"t1","priority":"P0","title":"验证xxx"}
+// META: {"id":"t1","priority":"P0","title":"【P0】验证xxx"}
 import { test, expect } from "@playwright/test";
 // ... Playwright test code
 ```

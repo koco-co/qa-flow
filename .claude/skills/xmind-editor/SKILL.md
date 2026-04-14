@@ -25,9 +25,26 @@ argument-hint: "[操作] [用例标题或关键词]"
 
 ### 偏好上下文
 
-按优先级加载偏好（后者覆盖前者）：
+按读取顺序加载偏好（后者覆盖前者）：
 1. 全局 `preferences/` 目录下所有 `.md` 文件
 2. 项目级 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件
+
+<precedence>
+用户当前指令 > 项目级 preferences > 全局 preferences > 本文件
+</precedence>
+
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 本 Skill 写入 XMind 时必须使用 Contract A：`case-json.title` 保持裸标题 `验证xxx`，`priority` 单独存储。
+> 若用户提供的是 Archive MD / 展示标题 `【P1】验证xxx`，写入前必须先拆分为 `title=验证xxx` + `priority=P1`。
 
 ---
 
@@ -132,7 +149,7 @@ bun run .claude/scripts/xmind-edit.ts delete \
 
 ```json
 {
-  "title": "验证xxx（可选，patch 时可省略）",
+  "title": "验证xxx（Contract A，可选，patch 时可省略）",
   "priority": "P0|P1|P2（可选）",
   "preconditions": "前置条件（可选）",
   "steps": [{ "step": "操作描述", "expected": "预期结果" }]
@@ -141,6 +158,7 @@ bun run .claude/scripts/xmind-edit.ts delete \
 
 - `patch` 时只写需变更的字段
 - `add` 时 `title` 必填
+- `title` 不得包含 `【P0】` / `【P1】` / `【P2】` 前缀；带前缀的显示标题仅属于 Archive MD / 其他展示面
 
 ---
 

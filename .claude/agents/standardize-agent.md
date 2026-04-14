@@ -19,13 +19,26 @@ model: sonnet
 - `${CLAUDE_SKILL_DIR}/references/test-case-rules.md` — 完整用例编写规范
 - `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` — 中间 JSON 格式规范
 
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 标准化 Agent 输出的是中间 JSON，必须遵循 Contract A：`title` 保持 `验证xxx`，`priority` 单独输出。
+> 仅在最终 Archive MD / 展示渲染时，才使用 Contract B 的 `【P1】验证xxx`。
+
 ## 步骤
 
 ### 步骤 1：读取原始用例数据
 
 从任务提示指定的路径读取 history-convert.ts 输出的解析数据，理解原始用例结构：
 
-- 用例标题（可能无优先级前缀）
+- 用例标题（可能是裸标题，也可能是 `【P1】验证xxx` 这类展示标题）
 - 步骤描述（可能模糊、缺少三要素）
 - 预期结果（可能不可断言）
 - 前置条件（可能缺失或笼统）
@@ -44,11 +57,12 @@ model: sonnet
 
 #### 标题标准化
 
-- 添加优先级前缀：根据用例重要性判定 P0/P1/P2
+- 根据用例重要性判定 `priority=P0/P1/P2`
   - P0：核心业务流程、数据完整性、权限控制
   - P1：常规功能验证、表单校验、列表操作
   - P2：边界值、兼容性、UI 细节
-- 统一格式为 `【P0/P1/P2】验证xxx`
+- 中间 JSON / XMind 标题统一为裸标题 `验证xxx`
+- 最终 Archive MD / 展示渲染时，再组合为 `【P0/P1/P2】验证xxx`
 - 原始标题中的信息保留但重新措辞
 
 #### 步骤标准化（三要素强制）
@@ -131,7 +145,7 @@ model: sonnet
 
 ## 输出格式
 
-输出中间 JSON 格式，结构与 Writer 输出一致（见 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md`）。
+输出中间 JSON 格式，结构与 Writer 输出一致（见 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md`），标题字段遵循 Contract A。
 
 ```json
 {
@@ -149,7 +163,7 @@ model: sonnet
           "name": "页面名称",
           "test_cases": [
             {
-              "title": "【P1】验证xxx",
+              "title": "验证xxx",
               "priority": "P1",
               "preconditions": "1、xxx\n2、xxx",
               "steps": [

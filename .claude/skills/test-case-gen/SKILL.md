@@ -14,11 +14,27 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 
 <!-- 前置加载 -->
 
-执行前按优先级加载偏好（后者覆盖前者）：
+执行前收集偏好上下文（读取顺序如下；冲突时按 precedence 裁决）：
 1. 全局 `preferences/` 目录下所有 `.md` 文件
 2. 项目级 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件
 
-偏好优先级：用户当前指令 > 项目级偏好 > 全局偏好 > 本 skill 内置规则（references/）。
+<precedence>
+用户当前指令 > 项目级 preferences > 全局 preferences > 本文件
+</precedence>
+
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 本文件引用的 `references/` 属于本 skill 的内置规则，一并受上述 precedence 约束。
+> Contract A 适用于 Writer / Standardize / Reviewer 的中间 JSON 与 XMind 节点；Contract B 仅适用于 Archive MD 与其他展示面。
+
 读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
 全程遵守 `.claude/rules/test-case-writing.md` 用例编写规范。
 
