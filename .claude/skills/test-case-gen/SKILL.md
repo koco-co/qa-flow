@@ -152,11 +152,11 @@ bun run .claude/scripts/history-convert.ts --path {{input_file}} --detect
 - 补充等待条件
 - 预期结果可断言化
 - 前置条件操作化
-- 标题格式统一为 `【P0/P1/P2】验证xxx`
+- 标题与优先级遵循 Contract A：`title=验证xxx`，`priority` 独立存放
 - 模糊步骤具体化、占位数据替换为真实业务数据
 - 合并符合条件的正向用例
 
-输出中间 JSON 格式（与 writer 输出一致）。
+输出中间 JSON 格式（与 writer 输出一致，使用 Contract A；如需 `【P1】验证xxx`，仅在 Archive MD / 展示面按 Contract B 组装）。
 
 **✅ Task**：将 `S2` 标记为 `completed`（subject: `S2 标准化重写 — 完成`）。
 
