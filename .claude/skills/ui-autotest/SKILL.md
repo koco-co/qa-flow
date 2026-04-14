@@ -530,6 +530,6 @@ bun run .claude/scripts/plugin-loader.ts notify \
 | -------------------- | ---------------------------------------------------- |
 | 临时代码块           | `workspace/{{project}}/.temp/ui-blocks/`             |
 | E2E spec 文件        | `workspace/{{project}}/tests/YYYYMM/{{suite_name}}/` |
-| Playwright HTML 报告 | `workspace/{{project}}/reports/playwright/YYYYMMDD/` |
-| Bug 报告             | `workspace/{{project}}/reports/bugs/YYYYMMDD/`       |
+| Playwright HTML 报告 | `workspace/{{project}}/reports/playwright/YYYYMM/{{suite_name}}/` |
+| Bug 报告             | `workspace/{{project}}/reports/bugs/YYYYMM/ui-autotest-{{suite_name}}.html` |
 | Session 文件         | `.auth/session.json`                                 |

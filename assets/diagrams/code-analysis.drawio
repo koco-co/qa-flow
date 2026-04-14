@@ -1,89 +1,144 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="cli-anything" agent="cli-anything-drawio/1.0.0" version="24.0.0">
-  <diagram id="diagram_1775495574402564" name="Page-1">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="720" math="0" shadow="0">
+  <diagram id="code-analysis-refresh" name="Page-1">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="input" value="Error Input&#xa;报错输入" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
-          <mxGeometry x="500.0" y="30.0" width="160.0" height="50.0" as="geometry" />
+        <mxCell id="input_container" value="Signals / 输入信号" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;strokeWidth=1.5;fontColor=#0F172A;fontStyle=1;align=left;verticalAlign=top;spacingLeft=14;spacingTop=10;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1520" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="detect" value="Signal Detection&#xa;信号检测" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1">
-          <mxGeometry x="480.0" y="130.0" width="200.0" height="80.0" as="geometry" />
+        <mxCell id="routing_container" value="Priority Routing / 优先级路由" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;strokeWidth=1.5;fontColor=#0F172A;fontStyle=1;align=left;verticalAlign=top;spacingLeft=14;spacingTop=10;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="190" width="1520" height="220" as="geometry" />
         </mxCell>
-        <mxCell id="hotfix" value="E: Hotfix 用例&#xa;禅道 Bug URL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" vertex="1" parent="1">
-          <mxGeometry x="50.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        <mxCell id="exec_container" value="Execution Gates / 执行门禁" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;strokeWidth=1.5;fontColor=#0F172A;fontStyle=1;align=left;verticalAlign=top;spacingLeft=14;spacingTop=10;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="1520" height="180" as="geometry" />
         </mxCell>
-        <mxCell id="conflict" value="B: 合并冲突&#xa;&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="260.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        <mxCell id="output_container" value="Outputs / 产物" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;strokeWidth=1.5;fontColor=#0F172A;fontStyle=1;align=left;verticalAlign=top;spacingLeft=14;spacingTop=10;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="650" width="1520" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="backend" value="A: 后端 Bug&#xa;Java stack trace" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="470.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+
+        <mxCell id="input_bug" value="Error logs&#xa;报错日志" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#22C55E;strokeWidth=1.5;fontColor=#14532D;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="72" width="220" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="frontend" value="C: 前端 Bug&#xa;TypeError / Chunk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
-          <mxGeometry x="680.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        <mxCell id="input_conflict" value="Merge conflict&#xa;&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.5;fontColor=#1D4ED8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="72" width="220" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="insufficient" value="D: 信息不足&#xa;补料清单" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
-          <mxGeometry x="890.0" y="280.0" width="170.0" height="60.0" as="geometry" />
+        <mxCell id="input_hotfix" value="Zentao bug URL&#xa;禅道链接" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;strokeWidth=1.5;fontColor=#5B21B6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="72" width="220" height="56" as="geometry" />
         </mxCell>
-        <mxCell id="sync" value="源码同步&#xa;repo-sync.ts" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
-          <mxGeometry x="350.0" y="410.0" width="150.0" height="50.0" as="geometry" />
+        <mxCell id="detect" value="Signal detection &amp; mode routing&#xa;信号检测 / 模式识别" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;strokeWidth=1.5;fontColor=#92400E;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="58" width="240" height="84" as="geometry" />
         </mxCell>
-        <mxCell id="analyze_ai" value="AI 分析&#xa;+ Prompt" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
-          <mxGeometry x="550.0" y="410.0" width="150.0" height="50.0" as="geometry" />
+        <mxCell id="routing_note" value="5 modes&#xa;Hotfix / Conflict / Backend / Frontend / Need context" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1.2;fontColor=#334155;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="64" width="200" height="72" as="geometry" />
         </mxCell>
-        <mxCell id="html_report" value="HTML 报告" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
-          <mxGeometry x="350.0" y="520.0" width="140.0" height="50.0" as="geometry" />
+
+        <mxCell id="hotfix" value="P1 Hotfix case&#xa;Hotfix 用例" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;strokeWidth=1.6;shadow=1;fontColor=#5B21B6;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="80" y="275" width="240" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="md_case" value="MD 测试用例" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
-          <mxGeometry x="550.0" y="520.0" width="140.0" height="50.0" as="geometry" />
+        <mxCell id="conflict" value="P2 Conflict&#xa;合并冲突分析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.6;shadow=1;fontColor=#1D4ED8;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="380" y="275" width="240" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="notify_node" value="IM 通知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" vertex="1" parent="1">
-          <mxGeometry x="750.0" y="520.0" width="140.0" height="50.0" as="geometry" />
+        <mxCell id="backend" value="P3 Backend bug&#xa;后端 Bug 分析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.6;shadow=1;fontColor=#1D4ED8;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="680" y="275" width="240" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495638712580" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="input" target="detect">
+        <mxCell id="frontend" value="P4 Frontend bug&#xa;前端 Bug 分析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.6;shadow=1;fontColor=#1D4ED8;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="980" y="275" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="need_context" value="P5 Need context&#xa;补料清单" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;strokeWidth=1.6;shadow=1;fontColor=#991B1B;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="275" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gate1" value="Gate 1&#xa;allow reference / repo sync" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;strokeWidth=1.5;fontColor=#92400E;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="390" y="480" width="180" height="82" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_sync" value="Read-only source sync&#xa;repo-sync.ts / workspace/&lt;project&gt;/.repos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1.4;fontColor=#334155;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="640" y="486" width="220" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="ai_analyze" value="AI analyzers&#xa;backend / frontend / conflict agents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#CBD5E1;strokeWidth=1.4;fontColor=#334155;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="930" y="486" width="220" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="gate2" value="Gate 2 (optional)&#xa;preview .env / branch mapping writeback" style="shape=note;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F97316;strokeWidth=1.2;fontColor=#9A3412;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="474" width="240" height="96" as="geometry" />
+        </mxCell>
+
+        <mxCell id="out_hotfix" value="Hotfix case&#xa;workspace/&lt;project&gt;/issues/YYYYMM/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;strokeWidth=1.5;fontColor=#5B21B6;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="90" y="705" width="250" height="74" as="geometry" />
+        </mxCell>
+        <mxCell id="out_html" value="HTML reports&#xa;bugs / conflicts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.5;fontColor=#1D4ED8;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="400" y="705" width="220" height="74" as="geometry" />
+        </mxCell>
+        <mxCell id="out_need" value="Need-more-context&#xa;补料请求 / checklist" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;strokeWidth=1.5;fontColor=#991B1B;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="680" y="705" width="220" height="74" as="geometry" />
+        </mxCell>
+        <mxCell id="out_workspace" value="workspace/&lt;project&gt;/reports &amp; issues" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=18;fillColor=#FFFFFF;strokeColor=#7C3AED;strokeWidth=1.8;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="970" y="694" width="300" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="out_notify" value="IM notify&#xa;通知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#22C55E;strokeWidth=1.5;fontColor=#14532D;fontStyle=1;arcSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="705" width="150" height="74" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_bug_detect" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="input_bug" target="detect">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495638840171" value="P1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="hotfix">
+        <mxCell id="e_conflict_detect" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="input_conflict" target="detect">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495638969423" value="P2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="conflict">
+        <mxCell id="e_hotfix_detect" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="input_hotfix" target="detect">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495639100431" value="P3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="backend">
+
+        <mxCell id="e_detect_hotfix" value="P1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="detect" target="hotfix">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495639224403" value="P4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="frontend">
+        <mxCell id="e_detect_conflict" value="P2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="detect" target="conflict">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495639358314" value="P5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="detect" target="insufficient">
+        <mxCell id="e_detect_backend" value="P3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="detect" target="backend">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495649889953" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="hotfix" target="md_case">
+        <mxCell id="e_detect_frontend" value="P4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="detect" target="frontend">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495650020012" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="conflict" target="sync">
+        <mxCell id="e_detect_need" value="P5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="detect" target="need_context">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495650181673" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="backend" target="sync">
+
+        <mxCell id="e_hotfix_out" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="hotfix" target="out_hotfix">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495650311916" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="frontend" target="sync">
+        <mxCell id="e_conflict_gate1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="conflict" target="gate1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495650548172" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="sync" target="analyze_ai">
+        <mxCell id="e_backend_gate1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="backend" target="gate1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495650832853" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="analyze_ai" target="html_report">
+        <mxCell id="e_frontend_gate1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="frontend" target="gate1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495651226186" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="analyze_ai" target="md_case">
+        <mxCell id="e_gate1_sync" value="allow reference" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="gate1" target="repo_sync">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495651376813" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="html_report" target="notify_node">
+        <mxCell id="e_sync_ai" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="repo_sync" target="ai_analyze">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_1775495651520231" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="md_case" target="notify_node">
+        <mxCell id="e_ai_html" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="ai_analyze" target="out_html">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ai_gate2" value="optional writeback" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F97316;strokeWidth=1.2;dashed=1;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="ai_analyze" target="gate2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_need_out" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="need_context" target="out_need">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_hotfix_ws" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="out_hotfix" target="out_workspace">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_html_ws" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="out_html" target="out_workspace">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ws_notify" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94A3B8;strokeWidth=1.4;endArrow=block;endFill=1;html=1;" edge="1" parent="1" source="out_workspace" target="out_notify">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
