@@ -51,13 +51,14 @@ program
   .description("Clone or update a source code repository to a local directory")
   .option("--url <git-url>", "Git repository URL")
   .option("--branch <branch>", "Branch to check out")
+  .option("--project <name>", "Project name")
   .option(
     "--base-dir <dir>",
-    "Base directory for repositories",
-    "workspace/.repos",
+    "Base directory for repositories (overrides project default)",
   )
-  .action((opts: { url?: string; branch?: string; baseDir: string }) => {
-    const { url, branch, baseDir } = opts;
+  .action((opts: { url?: string; branch?: string; project?: string; baseDir?: string }) => {
+    const { url, branch } = opts;
+    const baseDir = opts.baseDir ?? (opts.project ? `workspace/${opts.project}/.repos` : "workspace/.repos");
 
     if (!url || !branch) {
       const out: ErrorOutput = {

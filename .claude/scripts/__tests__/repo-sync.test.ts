@@ -35,6 +35,7 @@ describe("repo-sync --help", () => {
     assert.match(output, /repo-sync|Clone|update/i);
     assert.match(output, /--url/);
     assert.match(output, /--branch/);
+    assert.match(output, /--project/);
     assert.match(output, /--base-dir/);
   });
 });
@@ -64,17 +65,28 @@ describe("repo-sync URL parsing (via parseGitUrl)", () => {
 });
 
 describe("repo-sync target directory calculation", () => {
-  it("constructs expected target path from URL and base-dir", () => {
-    // We can verify by looking at what parseGitUrl returns
+  it("constructs expected target path from URL and default base-dir", () => {
     const url = "http://gitlab.dtstack.com/customItem/dt-center-assets.git";
     const { group, repo } = parseGitUrl(url);
 
-    // The script would produce: {base-dir}/{group}/{repo}
+    // Without --project, base-dir defaults to workspace/.repos
     const expectedSuffix = `customItem/dt-center-assets`;
     const computedPath = `workspace/.repos/${group}/${repo}`;
     assert.ok(
       computedPath.endsWith(expectedSuffix),
       `Expected path ending with ${expectedSuffix}, got: ${computedPath}`,
+    );
+  });
+
+  it("constructs project-scoped target path when --project is provided", () => {
+    const url = "http://gitlab.dtstack.com/customItem/dt-center-assets.git";
+    const { group, repo } = parseGitUrl(url);
+
+    // With --project dataAssets, base-dir becomes workspace/dataAssets/.repos
+    const computedPath = `workspace/dataAssets/.repos/${group}/${repo}`;
+    assert.equal(
+      computedPath,
+      "workspace/dataAssets/.repos/customItem/dt-center-assets",
     );
   });
 });
@@ -87,6 +99,8 @@ describe("repo-sync git operation failure", () => {
       "https://invalid.example.com/no-such/repo.git",
       "--branch",
       "main",
+      "--project",
+      "dataAssets",
       "--base-dir",
       "/tmp/qa-flow-repo-sync-test-invalid",
     ]);
