@@ -3,7 +3,7 @@
  * xmind-edit.ts — Search, view, patch, add, and delete test cases in existing .xmind files.
  *
  * Usage:
- *   bun run .claude/scripts/xmind-edit.ts search <query> [--dir <dir>] [--limit 20]
+ *   bun run .claude/scripts/xmind-edit.ts search <query> [--project <name>] [--dir <dir>] [--limit 20]
  *   bun run .claude/scripts/xmind-edit.ts show --file <xmind> --title <query>
  *   bun run .claude/scripts/xmind-edit.ts patch --file <xmind> --title <query> --case-json '<json>'
  *   bun run .claude/scripts/xmind-edit.ts add --file <xmind> --parent <query> --case-json '<json>'
@@ -276,9 +276,11 @@ function mergeCaseIntoTopic(
 
 async function cmdSearch(
   query: string,
-  opts: { dir?: string; limit?: number },
+  opts: { dir?: string; project?: string; limit?: number },
 ): Promise<void> {
-  const dir = resolve(opts.dir ?? "workspace/xmind");
+  const dir = resolve(
+    opts.dir ?? (opts.project ? `workspace/${opts.project}/xmind` : "workspace/xmind"),
+  );
   const limit = opts.limit ?? 20;
 
   const xmindFiles = collectXmindFiles(dir);
@@ -494,11 +496,13 @@ async function main(): Promise<void> {
     .description(
       "Search for test cases by keyword across all .xmind files in a directory",
     )
-    .option("--dir <dir>", "Directory to search in", "workspace/xmind")
+    .option("--project <name>", "Project name (e.g. dataAssets)")
+    .option("--dir <dir>", "Directory to search in (overrides project default)")
     .option("--limit <n>", "Maximum number of results", "20")
-    .action(async (query: string, opts: { dir?: string; limit?: string }) => {
+    .action(async (query: string, opts: { project?: string; dir?: string; limit?: string }) => {
       await cmdSearch(query, {
         dir: opts.dir,
+        project: opts.project,
         limit: Number(opts.limit ?? 20),
       });
     });
@@ -506,6 +510,7 @@ async function main(): Promise<void> {
   program
     .command("show")
     .description("Show full details of a test case in a specific .xmind file")
+    .option("--project <name>", "Project name (unused, for consistency)")
     .requiredOption("--file <path>", "Path to the .xmind file")
     .requiredOption("--title <query>", "Title query to find the test case")
     .action(async (opts: { file: string; title: string }) => {
@@ -515,6 +520,7 @@ async function main(): Promise<void> {
   program
     .command("patch")
     .description("Patch a test case (merge provided fields, keep others)")
+    .option("--project <name>", "Project name (unused, for consistency)")
     .requiredOption("--file <path>", "Path to the .xmind file")
     .requiredOption("--title <query>", "Title query to find the test case")
     .requiredOption("--case-json <json>", "JSON with fields to update")
@@ -525,6 +531,7 @@ async function main(): Promise<void> {
   program
     .command("add")
     .description("Add a new test case under a parent topic")
+    .option("--project <name>", "Project name (unused, for consistency)")
     .requiredOption("--file <path>", "Path to the .xmind file")
     .requiredOption("--parent <query>", "Title query to find the parent topic")
     .requiredOption("--case-json <json>", "JSON of the new test case")
@@ -537,6 +544,7 @@ async function main(): Promise<void> {
   program
     .command("delete")
     .description("Delete a test case from a .xmind file")
+    .option("--project <name>", "Project name (unused, for consistency)")
     .requiredOption("--file <path>", "Path to the .xmind file")
     .requiredOption("--title <query>", "Title query to find the test case")
     .option(
