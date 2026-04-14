@@ -42,6 +42,7 @@ import {
 } from "xmind-generator";
 
 type WriteMode = "create" | "append" | "replace";
+type RootAwareMeta = Meta & { root_name?: string };
 
 interface OutputResult {
   output_path: string;
@@ -93,7 +94,10 @@ function normalizeVersion(version: string): string {
   return version.replace(/^v/i, "");
 }
 
-function buildRootTitle(meta: Meta, project?: string): string {
+function buildRootTitle(meta: RootAwareMeta, project?: string): string {
+  if (meta.root_name) {
+    return meta.root_name;
+  }
   if (meta.version) {
     const prefs = loadXmindPreferences(project);
     const ver = normalizeVersion(meta.version);
@@ -695,10 +699,14 @@ function archiveToJson(
 
   const modules = parseArchiveBody(body);
 
-  const meta: Meta = {
+  const meta: RootAwareMeta = {
     project_name: resolvedProject,
     requirement_name: suiteName,
   };
+
+  if (typeof fm.root_name === "string") {
+    meta.root_name = fm.root_name;
+  }
 
   if (resolvedVersion) {
     meta.version = resolvedVersion;

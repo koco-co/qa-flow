@@ -3,6 +3,19 @@
 > 本文件定义 Writer、Reviewer 与输出脚本之间的数据交换格式（中间 JSON Schema）。
 > 所有 Subagent 输出均应符合此格式；`xmind-converter` 和 `archive-converter` 以此为输入。
 
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 本文件定义的是 Contract A：中间 JSON 与 XMind 节点 title 始终保持裸标题 `验证xxx`。
+> Contract B 仅用于 Archive MD / 展示面渲染，不回写到本 JSON 的 `title` 字段。
+
 ---
 
 ## 顶层结构
@@ -27,7 +40,7 @@
 | `requirement_id`     | `number` | 否   | 需求 ID（整数），写入 XMind L1 labels，对应 Archive frontmatter `prd_id`      |
 | `requirement_ticket` | `string` | 否   | 需求编号（如 `"#10287"`），追加到 XMind L1 标题                               |
 | `description`        | `string` | 否   | 一句话描述（≤60字），写入 Archive frontmatter `description`                   |
-| `prd_path`           | `string` | 否   | 关联 PRD 文件的相对路径，如 `"workspace/prds/202604/【模块名称】需求标题.md"` |
+| `prd_path`           | `string` | 否   | 关联 PRD 文件的相对路径，如 `"workspace/{{project}}/prds/202604/【模块名称】需求标题.md"` |
 
 ### meta 示例
 
@@ -41,7 +54,7 @@
     "requirement_id": 10287,
     "requirement_ticket": "#10287",
     "description": "支持商品多维度搜索、批量导出及状态管理",
-    "prd_path": "workspace/prds/202604/【商品管理】功能优化需求.md"
+    "prd_path": "workspace/{{project}}/prds/202604/【商品管理】功能优化需求.md"
   }
 }
 ```
@@ -83,7 +96,7 @@
 | 字段            | 类型                   | 必填 | 说明                                                                           |
 | --------------- | ---------------------- | ---- | ------------------------------------------------------------------------------ |
 | `title`         | `string`               | 是   | 用例标题，**必须**以「验证」开头，不含优先级前缀（由 `priority` 字段单独存储） |
-| `priority`      | `"P0" \| "P1" \| "P2"` | 是   | 优先级；输出时格式化为 `【P0】验证xxx`                                         |
+| `priority`      | `"P0" \| "P1" \| "P2"` | 是   | 优先级；Archive MD / display 渲染时格式化为 `【P0】验证xxx`，XMind 节点仍保留裸 `title` |
 | `preconditions` | `string`               | 否   | 前置条件文本；含多条时用换行分隔                                               |
 | `steps`         | `StepObject[]`         | 是   | 步骤列表（至少包含一个步骤）                                                   |
 
@@ -93,6 +106,7 @@
 - `title` 不得含有优先级括号（如 `【P0】`），优先级统一由 `priority` 字段表达
 - `steps[0].step` 必须以「进入【」开头（即第一步为导航步骤）
 - `priority` 仅允许 `"P0"`、`"P1"`、`"P2"` 三个值
+- `【P1】验证xxx` 仅可出现在 Archive MD / 展示面，不得作为中间 JSON / XMind 节点 `title`
 
 ---
 

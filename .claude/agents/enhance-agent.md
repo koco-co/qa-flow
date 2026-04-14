@@ -11,7 +11,7 @@ model: sonnet
 
 ## 输入
 
-任务提示中会指定 transform 输出的结构化 PRD 文件路径（例如：`workspace/prds/202604/xxx.md`）。读取该文件获取：
+任务提示中会指定 transform 输出的结构化 PRD 文件路径（例如：`workspace/{{project}}/prds/202604/xxx.md`）。读取该文件获取：
 
 - PRD 正文及所有图片引用
 - PRD 所在目录下的 `images/` 子目录中的图片文件

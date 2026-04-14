@@ -52,7 +52,7 @@ model: sonnet
 
 任务提示中会指定以下路径：
 
-- **增强后的 PRD 路径**（例如：`workspace/prds/202604/xxx.md`）
+- **增强后的 PRD 路径**（例如：`workspace/{{project}}/prds/202604/xxx.md`）
 - **测试点清单路径或内容**（来自 analyze-agent 的输出 JSON）
 - **writer_id**（例如：`module-a`）— 标识本 Writer 负责的模块
 
@@ -66,14 +66,28 @@ model: sonnet
 6. **历史用例参考**（可选）：若测试点清单中有 `historical_coverage` 引用的归档文件，读取对应文件参考格式和数据模式
 7. **源码上下文**（可选）：PRD 中 🔵 标注的内容即来自源码分析，其中的按钮名称、字段名称、表单结构、导航路径等信息**优先级最高**，必须严格采用
 
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 你输出的是中间 JSON，因此必须遵循 Contract A：`title` 仅写 `验证xxx`，`priority` 单独存储。
+> 只有最终 Archive MD / 展示渲染时，才将同一条用例显示为 `【P1】验证xxx`。
+
 ## 硬性规则
 
 以下规则为强制执行项，违反任何一条将导致审查不通过。完整规则详见 `${CLAUDE_SKILL_DIR}/references/test-case-rules.md`。
 
-### R01: 用例标题格式
+### R01: 用例标题契约
 
-- 必须以优先级前缀开头：`【P0】`、`【P1】`、`【P2】`
-- 紧跟「验证」二字：`【P0】验证商品列表页默认加载`
+- 中间 JSON / XMind 标题字段必须使用 Contract A：`title=验证xxx`
+- `priority` 字段单独填写：`P0` / `P1` / `P2`
+- 仅在最终 Archive MD / display render 时，才组合为 `【P0】验证商品列表页默认加载`
 - 标题概括测试目的，不包含具体操作步骤
 
 ### R02: 首步格式 + 步骤精度
@@ -282,7 +296,7 @@ model: sonnet
           "name": "搜索筛选",
           "test_cases": [
             {
-              "title": "【P1】验证单条件搜索商品名称返回正确结果",
+              "title": "验证单条件搜索商品名称返回正确结果",
               "priority": "P1",
               "type": "positive",
               "preconditions": [

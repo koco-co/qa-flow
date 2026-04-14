@@ -12,7 +12,7 @@ model: sonnet
 <inputs>
 - 任务提示中的原始 PRD 文件路径
 - PRD frontmatter 中的 `repos` 仓库信息
-- `workspace/.repos/` 下的只读源码副本
+- `workspace/{{project}}/.repos/` 下的只读源码副本
 - `preferences/` 偏好规则与 `references/prd-template.md`
 </inputs>
 
@@ -51,7 +51,7 @@ model: sonnet
 
 ## 输入
 
-任务提示中会指定 PRD 文件路径（例如：`workspace/prds/202604/xxx.md`）。读取该文件并获取：
+任务提示中会指定 PRD 文件路径（例如：`workspace/{{project}}/prds/202604/xxx.md`）。读取该文件并获取：
 
 - PRD frontmatter 中的 `repos` 字段 — 源码仓库路径和分支信息
 - PRD 正文中的蓝湖原始素材
@@ -59,7 +59,7 @@ model: sonnet
 同时读取：
 
 - 运行 `bun run .claude/scripts/config.ts` 获取项目配置
-- `workspace/.repos/` 下的源码仓库（只读）
+- `workspace/{{project}}/.repos/` 下的源码仓库（只读）
 - `preferences/` 目录下的偏好规则文件
 
 ## 步骤
@@ -137,7 +137,7 @@ model: sonnet
 
 **注意**：
 
-- 源码仓库位于 `workspace/.repos/` 下，为只读，禁止修改
+- 源码仓库位于 `workspace/{{project}}/.repos/` 下，为只读，禁止修改
 - 每次搜索限制在 PRD 相关的模块目录内，避免全仓库扫描
 - 若搜索 3 次以上仍未找到相关代码，判定为"开发中"降级到 A 级
 
@@ -146,7 +146,7 @@ model: sonnet
 使用 Bash 执行以下命令（将关键词替换为 PRD 中提取的模块关键词）：
 
 ```bash
-bun run .claude/scripts/archive-gen.ts search --query "<模块关键词>" --dir workspace/archive
+bun run .claude/scripts/archive-gen.ts search --query "<模块关键词>" --dir workspace/{{project}}/archive
 ```
 
 从返回的 `SearchResult[]` 中：
@@ -377,7 +377,7 @@ PRD 结构化转换完成
 
 ## 重要约束
 
-- **只读源码**：workspace/.repos/ 下的代码禁止修改
+- **只读源码**：`workspace/{{project}}/.repos/` 下的代码禁止修改
 - **不猜测**：无法确定的内容必须标注 🔴 或 🟡，不得凭空捏造
 - **clarify_envelope 而非阻断**：遇到不确定项时优先分类为 `defaultable_unknown` / `blocking_unknown` / `invalid_input`，不要把所有未知项一律阻断
 - **clarify_envelope 必须独立执行**：步骤 5 是独立步骤，不可在步骤 4 填充过程中"顺便"跳过。即使你认为信息充足，也必须执行 6 维度自检并输出 `<clarify_envelope>`

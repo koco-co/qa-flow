@@ -25,9 +25,32 @@ argument-hint: "[操作] [用例标题或关键词]"
 
 ### 偏好上下文
 
-按优先级加载偏好（后者覆盖前者）：
+按读取顺序加载偏好（后者覆盖前者）：
 1. 全局 `preferences/` 目录下所有 `.md` 文件
 2. 项目级 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件
+
+<precedence>
+用户当前指令 > 项目级 preferences > 全局 preferences > 本文件
+</precedence>
+
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 本 Skill 写入 XMind 时必须使用 Contract A：`case-json.title` 保持裸标题 `验证xxx`，`priority` 单独存储。
+> 若用户提供的是 Archive MD / 展示标题 `【P1】验证xxx`，写入前必须先拆分为 `title=验证xxx` + `priority=P1`。
+
+## 写入确认策略
+
+- `search` / `show` 为只读操作，直接执行，无需确认
+- `patch` / `add` / `delete` 为状态变更操作，必须先 `--dry-run` 预览，再等待用户确认，最后执行真实写入
+- 任何真实写入完成后，先展示结果摘要，再进入偏好写入流程
 
 ---
 
@@ -56,17 +79,20 @@ bun run .claude/scripts/xmind-edit.ts show --file {{file}} --title "{{title}}"
 1. 执行 `show` 展示当前内容
 2. 用户说明修改意图
 3. AI 构造 `case-json`（遵循 `preferences/` 规则及用例编写规范）
-4. 执行写入：
+4. 先执行预览：
 
 ```bash
 bun run .claude/scripts/xmind-edit.ts patch \
   --file {{file}} \
   --title "{{title}}" \
-  --case-json '{{json}}'
+  --case-json '{{json}}' \
+  --dry-run
 ```
 
-5. 展示修改前后对比
-6. 触发**偏好写入流程**
+5. 展示修改前后对比，等待用户确认
+6. 用户确认后去掉 `--dry-run` 执行真实写入
+7. 展示写入结果摘要
+8. 触发**偏好写入流程**
 
 ---
 
@@ -74,16 +100,20 @@ bun run .claude/scripts/xmind-edit.ts patch \
 
 1. 与用户确认目标文件和父节点路径
 2. AI 生成 `case-json`（`title` 必填）
-3. 执行写入：
+3. 先执行预览：
 
 ```bash
 bun run .claude/scripts/xmind-edit.ts add \
   --file {{file}} \
   --parent "{{parent}}" \
-  --case-json '{{json}}'
+  --case-json '{{json}}' \
+  --dry-run
 ```
 
-4. 触发**偏好写入流程**
+4. 展示即将新增的节点内容，等待用户确认
+5. 用户确认后去掉 `--dry-run` 执行真实写入
+6. 展示写入结果摘要
+7. 触发**偏好写入流程**
 
 ---
 
@@ -132,7 +162,7 @@ bun run .claude/scripts/xmind-edit.ts delete \
 
 ```json
 {
-  "title": "验证xxx（可选，patch 时可省略）",
+  "title": "验证xxx（Contract A，可选，patch 时可省略）",
   "priority": "P0|P1|P2（可选）",
   "preconditions": "前置条件（可选）",
   "steps": [{ "step": "操作描述", "expected": "预期结果" }]
@@ -141,6 +171,7 @@ bun run .claude/scripts/xmind-edit.ts delete \
 
 - `patch` 时只写需变更的字段
 - `add` 时 `title` 必填
+- `title` 不得包含 `【P0】` / `【P1】` / `【P2】` 前缀；带前缀的显示标题仅属于 Archive MD / 其他展示面
 
 ---
 

@@ -14,11 +14,27 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 
 <!-- 前置加载 -->
 
-执行前按优先级加载偏好（后者覆盖前者）：
+执行前收集偏好上下文（读取顺序如下；冲突时按 precedence 裁决）：
 1. 全局 `preferences/` 目录下所有 `.md` 文件
 2. 项目级 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件
 
-偏好优先级：用户当前指令 > 项目级偏好 > 全局偏好 > 本 skill 内置规则（references/）。
+<precedence>
+用户当前指令 > 项目级 preferences > 全局 preferences > 本文件
+</precedence>
+
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 本文件引用的 `references/` 属于本 skill 的内置规则，一并受上述 precedence 约束。
+> Contract A 适用于 Writer / Standardize / Reviewer 的中间 JSON 与 XMind 节点；Contract B 仅适用于 Archive MD 与其他展示面。
+
 读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
 全程遵守 `.claude/rules/test-case-writing.md` 用例编写规范。
 
@@ -177,11 +193,11 @@ bun run .claude/scripts/history-convert.ts --path {{input_file}} --detect
 - 补充等待条件
 - 预期结果可断言化
 - 前置条件操作化
-- 标题格式统一为 `【P0/P1/P2】验证xxx`
+- 标题与优先级遵循 Contract A：`title=验证xxx`，`priority` 独立存放
 - 模糊步骤具体化、占位数据替换为真实业务数据
 - 合并符合条件的正向用例
 
-输出中间 JSON 格式（与 writer 输出一致）。
+输出中间 JSON 格式（与 writer 输出一致，使用 Contract A；如需 `【P1】验证xxx`，仅在 Archive MD / 展示面按 Contract B 组装）。
 
 **✅ Task**：将 `S2` 标记为 `completed`（subject: `S2 标准化重写 — 完成`）。
 

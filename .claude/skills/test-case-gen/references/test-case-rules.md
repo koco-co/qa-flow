@@ -1,6 +1,21 @@
 # 测试用例编写硬性规则
 
-> 本文件是用例编写的唯一权威来源。Writer Subagent 和 Reviewer Subagent 必须严格遵守。
+<precedence>
+用户当前指令 > 项目级 preferences > 全局 preferences > 本文件
+</precedence>
+
+<artifact_contract>
+  <xmind_intermediate contract="A">
+    <title>验证xxx</title>
+    <priority>P1</priority>
+  </xmind_intermediate>
+  <archive_md contract="B">
+    <display_title>【P1】验证xxx</display_title>
+  </archive_md>
+</artifact_contract>
+
+> 中间 JSON / XMind 节点 title 字段遵循 Contract A，详见 `intermediate-format.md` 与 `xmind-structure.md`。
+> 本文件中的 `【P1】验证xxx` 示例仅用于 Archive MD / 展示面，不回写到中间 JSON / XMind 节点的 `title` 字段。
 
 ---
 
@@ -13,7 +28,7 @@ Root（项目名）
        └── L2：模块名称             ← 如「数据质量」「商品管理」
             └── L3：菜单名称        ← 如「json格式校验管理」「商品列表」（二级或三级菜单用横杠连接，如「通用配置-json格式校验管理」）
                  └── [L4：功能点]   ← 如「新增key」「搜索筛选」（可选）
-                      └── L5：用例标题
+                      └── L5：用例标题（title=验证xxx，priority 单独存储）
                            └── 步骤
                                 └── 预期结果
 ```
@@ -32,17 +47,18 @@ Root（项目名）
 ## 模块名称          ← 对应 XMind L2（如「数据质量」）
 ### 菜单名称         ← 对应 XMind L3（如「json格式校验管理」，多级菜单用横杠连接）
 #### 功能点           ← 对应 XMind L4（可选，如「新增key」）
-##### 【P0】验证xxx  ← 用例标题（含优先级前缀），对应 XMind L5
+##### 【P0】验证xxx  ← Archive MD / display 标题；对应同一条 XMind L5 用例
 ```
 
 - Archive MD body 从 `##` 开始，**无** `#`（H1）标题
 - 需求名称统一存入 frontmatter `suite_name` 字段
 - `suite_name` 对应 XMind 的 L1 节点名称
-- H2 对应 L2（模块），H3 对应 L3（菜单），H4 对应 L4（功能点），H5 对应 L5（用例标题）
+- H2 对应 L2（模块），H3 对应 L3（菜单），H4 对应 L4（功能点），H5 对应同一条 L5 用例的 Archive / display 标题
+- Archive MD 的 H5 使用 Contract B；XMind L5 节点自身保持 Contract A 裸标题，优先级通过 marker / metadata 表达
 
 ---
 
-## 3. 用例标题规范
+## 3. Archive MD / 展示标题规范
 
 - **优先级前缀**：`【P0】`、`【P1】`、`【P2】`，置于用例标题**最前面**
 - 「验证」二字紧跟优先级标记，例如：`【P1】验证填写完整表单后成功提交`

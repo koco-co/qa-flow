@@ -137,7 +137,7 @@ argument-hint: "[报错日志 | 禅道链接 | 冲突代码]"
 开始分析前，请确认源码参考信息：
 
   仓库：{{推断的 repo_name}}
-  路径：{{workspace/.repos/ 下的实际路径}}
+  路径：{{project_repo_path}}（位于 `workspace/{{project}}/.repos/` 下）
   分支：{{当前分支或推断的分支}}
 
 可选仓库列表：
