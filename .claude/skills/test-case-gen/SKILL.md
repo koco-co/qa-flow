@@ -25,6 +25,7 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 
 <artifact_contract>
 <xmind_intermediate contract="A">
+
 <title>验证xxx</title>
 <priority>P1</priority>
 </xmind_intermediate>

@@ -37,6 +37,7 @@ argument-hint: "[操作] [用例标题或关键词]"
 
 <artifact_contract>
 <xmind_intermediate contract="A">
+
 <title>验证xxx</title>
 <priority>P1</priority>
 </xmind_intermediate>
