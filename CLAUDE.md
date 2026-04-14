@@ -44,7 +44,8 @@ workspace/
 
 - `workspace/{project}/.repos/` 下的源码仓库为只读，禁止 push/commit
 - 用户偏好规则见 `preferences/` 目录（全局）和 `workspace/{project}/preferences/`（项目级），优先级高于 skill 内置规则
-- 所有输出产物写入 `workspace/{project}/` 目录，不污染框架代码
+- 生成产物（PRD、XMind、Archive、报告、测试脚本等）写入 `workspace/{project}/`，不污染框架代码
+- 配置类修改（如 `.env`、`config.json`、project preferences）仅在对应 skill 明确声明并获得确认后允许写入
 
 ## 脚本变更规则
 
