@@ -425,14 +425,6 @@ async function cmdAdd(opts: {
 
   const parentMatch = matches[0];
   const parentNode = parentMatch.topic;
-
-  if (!parentNode.children) {
-    parentNode.children = { attached: [] };
-  }
-  if (!parentNode.children.attached) {
-    parentNode.children.attached = [];
-  }
-
   const newTopic = caseToTopic(caseData);
   const added = topicToCase(newTopic, [...parentMatch.path, newTopic.title ?? ""]);
 
@@ -445,6 +437,13 @@ async function cmdAdd(opts: {
       )}\n`,
     );
     return;
+  }
+
+  if (!parentNode.children) {
+    parentNode.children = { attached: [] };
+  }
+  if (!parentNode.children.attached) {
+    parentNode.children.attached = [];
   }
 
   parentNode.children.attached.push(newTopic);
