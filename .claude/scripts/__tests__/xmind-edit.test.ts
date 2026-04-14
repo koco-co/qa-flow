@@ -351,6 +351,43 @@ describe("xmind-edit patch", () => {
     // Steps untouched
     assert.equal(after.steps.length, before.steps.length);
   });
+
+  it("dry-run previews patch without mutating the file", async () => {
+    const xmindPath = createTestXmind("patch-dry-run");
+    const beforeContent = await readContentJson(xmindPath);
+    const patch = JSON.stringify({
+      title: "验证默认加载列表页（预览）",
+      priority: "P2",
+    });
+
+    const { code, stdout, stderr } = runEdit([
+      "patch",
+      "--file",
+      xmindPath,
+      "--title",
+      "验证默认加载列表页",
+      "--case-json",
+      patch,
+      "--dry-run",
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const result = JSON.parse(stdout) as {
+      dry_run: boolean;
+      before: { title: string; priority: string };
+      after: { title: string; priority: string };
+      file: string;
+    };
+    assert.equal(result.dry_run, true);
+    assert.equal(result.before.title, "验证默认加载列表页");
+    assert.equal(result.before.priority, "P0");
+    assert.equal(result.after.title, "验证默认加载列表页（预览）");
+    assert.equal(result.after.priority, "P2");
+    assert.equal(result.file, xmindPath);
+
+    const afterContent = await readContentJson(xmindPath);
+    assert.deepEqual(afterContent, beforeContent);
+  });
 });
 
 // ─── add ──────────────────────────────────────────────────────────────────────
@@ -477,6 +514,53 @@ describe("xmind-edit add", () => {
       after > before,
       `after (${after}) should be greater than before (${before})`,
     );
+  });
+
+  it("dry-run previews add without mutating the file", async () => {
+    const xmindPath = createTestXmind("add-dry-run");
+    const beforeContent = await readContentJson(xmindPath);
+    const newCase = JSON.stringify({
+      title: "验证仅预览新增用例",
+      priority: "P1",
+      preconditions: "预览前置条件",
+      steps: [{ step: "进入页面", expected: "页面正常加载" }],
+    });
+
+    const { code, stdout, stderr } = runEdit([
+      "add",
+      "--file",
+      xmindPath,
+      "--parent",
+      "搜索筛选",
+      "--case-json",
+      newCase,
+      "--dry-run",
+    ]);
+    assert.equal(code, 0, `stderr: ${stderr}`);
+
+    const result = JSON.parse(stdout) as {
+      dry_run: boolean;
+      would_add: { title: string; priority: string };
+      parent: string[];
+      file: string;
+    };
+    assert.equal(result.dry_run, true);
+    assert.equal(result.would_add.title, "验证仅预览新增用例");
+    assert.equal(result.would_add.priority, "P1");
+    assert.equal(result.parent.at(-1), "搜索筛选");
+    assert.equal(result.file, xmindPath);
+
+    const afterContent = await readContentJson(xmindPath);
+    assert.deepEqual(afterContent, beforeContent);
+
+    const { code: showCode } = runEdit([
+      "show",
+      "--file",
+      xmindPath,
+      "--title",
+      "验证仅预览新增用例",
+    ]);
+    assert.equal(showCode, 1, "dry-run should not persist the new case");
   });
 });
 

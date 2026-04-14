@@ -5,8 +5,8 @@
  * Usage:
  *   bun run .claude/scripts/xmind-edit.ts search <query> [--project <name>] [--dir <dir>] [--limit 20]
  *   bun run .claude/scripts/xmind-edit.ts show --file <xmind> --title <query>
- *   bun run .claude/scripts/xmind-edit.ts patch --file <xmind> --title <query> --case-json '<json>'
- *   bun run .claude/scripts/xmind-edit.ts add --file <xmind> --parent <query> --case-json '<json>'
+ *   bun run .claude/scripts/xmind-edit.ts patch --file <xmind> --title <query> --case-json '<json>' [--dry-run]
+ *   bun run .claude/scripts/xmind-edit.ts add --file <xmind> --parent <query> --case-json '<json>' [--dry-run]
  *   bun run .claude/scripts/xmind-edit.ts delete --file <xmind> --title <query> [--dry-run]
  */
 
@@ -332,6 +332,7 @@ async function cmdPatch(opts: {
   file: string;
   title: string;
   caseJson: string;
+  dryRun?: boolean;
 }): Promise<void> {
   const filePath = validateFilePath(opts.file, [repoRoot()]);
   const { zip, sheets } = await readXmind(filePath);
@@ -355,6 +356,18 @@ async function cmdPatch(opts: {
   const match = matches[0];
   const before = topicToCase(match.topic, match.path);
   const merged = mergeCaseIntoTopic(match.topic, patch);
+  const after = topicToCase(merged, match.path);
+
+  if (opts.dryRun) {
+    process.stdout.write(
+      `${JSON.stringify(
+        { dry_run: true, before, after, file: filePath },
+        null,
+        2,
+      )}\n`,
+    );
+    return;
+  }
 
   // Find and replace topic in-place in sheets
   function replaceTopic(
@@ -380,7 +393,6 @@ async function cmdPatch(opts: {
 
   await writeXmind(filePath, zip, sheets);
 
-  const after = topicToCase(merged, match.path);
   process.stdout.write(
     `${JSON.stringify({ before, after, file: filePath }, null, 2)}\n`,
   );
@@ -390,6 +402,7 @@ async function cmdAdd(opts: {
   file: string;
   parent: string;
   caseJson: string;
+  dryRun?: boolean;
 }): Promise<void> {
   const filePath = validateFilePath(opts.file, [repoRoot()]);
   const { zip, sheets } = await readXmind(filePath);
@@ -421,6 +434,19 @@ async function cmdAdd(opts: {
   }
 
   const newTopic = caseToTopic(caseData);
+  const added = topicToCase(newTopic, [...parentMatch.path, newTopic.title ?? ""]);
+
+  if (opts.dryRun) {
+    process.stdout.write(
+      `${JSON.stringify(
+        { dry_run: true, would_add: added, parent: parentMatch.path, file: filePath },
+        null,
+        2,
+      )}\n`,
+    );
+    return;
+  }
+
   parentNode.children.attached.push(newTopic);
 
   await writeXmind(filePath, zip, sheets);
@@ -428,10 +454,7 @@ async function cmdAdd(opts: {
   process.stdout.write(
     `${JSON.stringify(
       {
-        added: topicToCase(newTopic, [
-          ...parentMatch.path,
-          newTopic.title ?? "",
-        ]),
+        added,
         parent: parentMatch.path,
         file: filePath,
       },
@@ -524,9 +547,17 @@ async function main(): Promise<void> {
     .requiredOption("--file <path>", "Path to the .xmind file")
     .requiredOption("--title <query>", "Title query to find the test case")
     .requiredOption("--case-json <json>", "JSON with fields to update")
-    .action(async (opts: { file: string; title: string; caseJson: string }) => {
-      await cmdPatch(opts);
-    });
+    .option("--dry-run", "Preview the patch without modifying the file")
+    .action(
+      async (opts: {
+        file: string;
+        title: string;
+        caseJson: string;
+        dryRun?: boolean;
+      }) => {
+        await cmdPatch(opts);
+      },
+    );
 
   program
     .command("add")
@@ -535,8 +566,14 @@ async function main(): Promise<void> {
     .requiredOption("--file <path>", "Path to the .xmind file")
     .requiredOption("--parent <query>", "Title query to find the parent topic")
     .requiredOption("--case-json <json>", "JSON of the new test case")
+    .option("--dry-run", "Preview the new case without modifying the file")
     .action(
-      async (opts: { file: string; parent: string; caseJson: string }) => {
+      async (opts: {
+        file: string;
+        parent: string;
+        caseJson: string;
+        dryRun?: boolean;
+      }) => {
         await cmdAdd(opts);
       },
     );
