@@ -9,7 +9,7 @@ model: opus
 
 ## 输入
 
-任务提示中会指定增强后的 PRD 文件路径（例如：`workspace/prds/202604/xxx.md`）。读取该文件获取：
+任务提示中会指定增强后的 PRD 文件路径（例如：`workspace/{{project}}/prds/202604/xxx.md`）。读取该文件获取：
 
 - PRD 正文、字段定义、交互逻辑、状态流转、异常处理等结构化内容
 - PRD frontmatter 中的模块名、功能关键词
@@ -17,7 +17,7 @@ model: opus
 同时读取：
 
 - `preferences/` 目录下的偏好规则文件
-- 使用 Bash 运行 `bun run .claude/scripts/archive-gen.ts search --query "<关键词>" --dir workspace/archive` 检索历史归档用例
+- 使用 Bash 运行 `bun run .claude/scripts/archive-gen.ts search --query "<关键词>" --dir workspace/{{project}}/archive` 检索历史归档用例
 
 ## 步骤
 
@@ -28,7 +28,7 @@ model: opus
 根据增强后 PRD 的模块名、功能关键词，使用 Bash 执行检索命令：
 
 ```bash
-bun run .claude/scripts/archive-gen.ts search --query "<keywords>" --dir workspace/archive
+bun run .claude/scripts/archive-gen.ts search --query "<keywords>" --dir workspace/{{project}}/archive
 ```
 
 将 `<keywords>` 替换为从 PRD frontmatter 和正文中提取的模块名、功能名等关键词。
@@ -161,7 +161,7 @@ bun run .claude/scripts/archive-gen.ts search --query "<keywords>" --dir workspa
 ```json
 {
   "prd_title": "需求标题",
-  "prd_path": "workspace/prds/YYYYMM/需求文件.md",
+  "prd_path": "workspace/{{project}}/prds/YYYYMM/需求文件.md",
   "modules": [
     {
       "name": "模块名称",
@@ -191,7 +191,7 @@ bun run .claude/scripts/archive-gen.ts search --query "<keywords>" --dir workspa
     }
   ],
   "historical_coverage": [
-    "已有历史用例覆盖：搜索功能（workspace/archive/202603/xxx.md）"
+    "已有历史用例覆盖：搜索功能（workspace/{{project}}/archive/202603/xxx.md）"
   ],
   "dimension_summary": {
     "功能正向": 15,

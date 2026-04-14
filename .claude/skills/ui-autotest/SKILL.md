@@ -307,7 +307,7 @@ QA_PROJECT={{project}} bunx playwright test workspace/{{project}}/.temp/ui-block
 
 1. **分析失败原因**：读取 Playwright 错误信息（超时、元素不存在、断言失败等）
 2. **获取实际 DOM**：使用 playwright-cli 的 snapshot 工具获取当前页面的实际 DOM 结构
-3. **参考源码校对**：结合 `workspace/.repos/` 下的前端源码，校对：
+3. **参考源码校对**：结合 `workspace/{{project}}/.repos/` 下的前端源码，校对：
    - 实际路由路径（检查 `router/` 或 `routes/` 配置）
    - 实际菜单/侧边栏导航方式（检查 layout 组件）
    - 按钮文本、表单 label（检查对应组件的 JSX/template）

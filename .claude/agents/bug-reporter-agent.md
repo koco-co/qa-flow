@@ -31,7 +31,7 @@ tools: Read
     "stack": "Stack trace...",
     "step": "步骤描述（哪一步失败）"
   },
-  "screenshot_path": "workspace/reports/playwright/{{YYYYMMDD}}/xxx.png",
+  "screenshot_path": "workspace/{{project}}/reports/playwright/{{YYYYMMDD}}/xxx.png",
   "console_errors": ["console error 1", "console error 2"]
 }
 ```
