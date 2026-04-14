@@ -6,20 +6,18 @@ argument-hint: "[init | 功能编号 | 关键词]"
 
 # qa-flow 入口菜单
 
-## 项目选择
-
-1. 扫描 `workspace/` 下的项目目录
-2. 若只有 1 个项目，自动选中
-3. 若有多个项目，提示用户选择
-4. 将选中项目记为 `{{project}}`
-
----
-
 ## 路由逻辑
+
+<routing>
+  <first_run_policy>
+    若无项目且命令为 `init` / `setup`，则直接路由到 `setup`
+    若无项目且用户请求其他功能，则先提示完成初始化并路由到 `setup`
+  </first_run_policy>
+</routing>
 
 根据用户输入的参数进行菜单路由：
 
-- 空输入或 `help` → 显示功能菜单
+- 空输入或 `help` → 显示功能菜单（若无项目则先路由到 `setup`）
 - `init` 或 `0` → 初始化环境
 - `1` 或 生成用例相关关键词 → 生成测试用例
 - `2` 或 报错/bug 相关关键词 → 分析报错/冲突
@@ -28,6 +26,15 @@ argument-hint: "[init | 功能编号 | 关键词]"
 - `5` 或 标准化/归档/转化 相关关键词 → 标准化归档
 - `6` 或 切换项目 相关关键词 → 切换项目
 - 用户直接提供 `.xmind` 或 `.csv` 文件路径 → 自动路由到标准化归档
+
+## 项目选择
+
+仅在已有项目或完成 `setup` 后执行：
+
+1. 扫描 `workspace/` 下的项目目录
+2. 若只有 1 个项目，自动选中
+3. 若有多个项目，提示用户选择
+4. 将选中项目记为 `{{project}}`
 
 ## 功能菜单
 
@@ -54,7 +61,7 @@ argument-hint: "[init | 功能编号 | 关键词]"
 修改用例 "验证导出仅导出当前筛选结果"
 帮我分析这个报错
 生成测试用例 https://lanhuapp.com/web/#/item/project/...
-标准化归档 workspace/history/旧用例.xmind
+标准化归档 workspace/{{project}}/historys/旧用例.xmind
 ```
 
 更多示例见 `.claude/skills/qa-flow/references/quickstart.md`

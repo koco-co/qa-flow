@@ -6,12 +6,12 @@ argument-hint: "[step-number]"
 
 <!-- 前置加载 -->
 
-执行前按优先级加载偏好（后者覆盖前者）：
+执行前先加载全局偏好并读取基础配置：
 1. 全局 `preferences/` 目录下所有 `.md` 文件
-2. 项目级 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件
+2. 执行 `bun run .claude/scripts/config.ts`（从 `config.json` 和 `.env` 读取模块、仓库、路径配置）
 
 偏好优先级：用户当前指令 > 项目级偏好 > 全局偏好 > 本 skill 内置规则。
-读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
+在步骤 2 选定或创建 `{{project}}` 后，再加载 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件。
 
 ---
 
@@ -29,21 +29,25 @@ argument-hint: "[step-number]"
 
 **目标**：扫描运行环境，检测 Node.js、依赖、配置文件是否就绪。
 
-### 1.1 执行环境扫描
+### 1.0 环境检查清单（步骤 1 / 步骤 6 共用）
 
-```bash
-bun run .claude/skills/setup/scripts/init-wizard.ts scan
-```
-
-扫描项目包括：
+步骤 1 的扫描和步骤 6 的环境验证都以此清单为准：
 
 | 检测项       | 通过条件                                       |
 | ------------ | ---------------------------------------------- |
 | Node.js 版本 | >= 22.0.0                                      |
 | Bun          | `bun` 可执行                                   |
-| .env         | 项目根目录存在（内容不校验，覆盖 config.json） |
-| .env 文件    | 项目根目录存在（内容不校验）                   |
+| config.json  | 项目根目录存在且可读取                         |
+| .env 文件    | 项目根目录存在（内容不校验，运行时可覆盖配置） |
 | 核心脚本     | 核心脚本可通过 `bun run` 执行                  |
+
+### 1.1 执行环境扫描
+
+按上述环境检查清单执行：
+
+```bash
+bun run .claude/skills/setup/scripts/init-wizard.ts scan
+```
 
 ### 1.2 展示扫描结果
 
@@ -101,6 +105,10 @@ mkdir -p workspace/{{project}}/{prds,xmind,archive,issues,historys,reports,tests
 ### 2.3 记录当前项目
 
 将选中的项目名称记为 `{{project}}`，后续步骤使用。
+
+### 2.4 加载项目级偏好
+
+在 `{{project}}` 确定后，再加载 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件；若目录不存在则按空目录处理。
 
 ---
 
@@ -223,14 +231,16 @@ bun run .claude/skills/setup/scripts/init-wizard.ts verify
 
 验证内容：
 
-| 验证项     | 说明                                         |
-| ---------- | -------------------------------------------- |
-| 工作区目录 | 所有子目录均存在                             |
-| .env 文件  | 存在且 WORKSPACE_DIR 字段已写入              |
-| 源码仓库   | 已配置仓库均可 git fetch（或标注为跳过）     |
-| 插件凭证   | 已配置插件的环境变量非空                     |
-| 脚本可执行 | init-wizard.ts 等核心脚本可被 `bun run` 调用 |
-| 硬编码检查 | 脚本和测试中无硬编码绝对路径或凭证（详见 CLAUDE.md「禁止硬编码规则」） |
+- 环境项复用步骤 1 的「环境检查清单」
+- 另追加以下项目级验证：
+
+| 验证项         | 说明                                                     |
+| -------------- | -------------------------------------------------------- |
+| 工作区目录     | 所有子目录均存在                                         |
+| .env 工作区配置 | `WORKSPACE_DIR` 字段已写入                               |
+| 源码仓库       | 已配置仓库均可 git fetch（或标注为跳过）                 |
+| 插件凭证       | 已配置插件的环境变量非空                                 |
+| 硬编码检查     | 脚本和测试中无硬编码绝对路径或凭证（详见 CLAUDE.md「禁止硬编码规则」） |
 
 ### 6.2 展示汇总表
 
