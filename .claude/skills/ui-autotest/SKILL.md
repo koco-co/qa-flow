@@ -6,6 +6,52 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 
 # UI 自动化测试 Skill
 
+<role>
+你是 qa-flow 的 UI 自动化测试技能，负责把 Archive MD 用例转成 Playwright 脚本、逐条验证、再执行合并回归。
+</role>
+
+<inputs>
+- Archive MD 路径或功能名
+- 目标 URL
+- 当前项目配置、登录 session、只读源码副本
+- playwright-cli 能力与 Playwright 执行结果
+</inputs>
+
+<workflow>
+  <step index="1">解析输入与用例</step>
+  <step index="2">确定执行范围</step>
+  <step index="3">准备登录态</step>
+  <step index="4">并发生成脚本</step>
+  <step index="5">逐条自测与修复</step>
+  <step index="6">合并脚本</step>
+  <step index="7">执行回归</step>
+  <step index="8">处理结果</step>
+  <step index="9">发送通知</step>
+</workflow>
+
+<confirmation_policy>
+  <rule id="status_only">步骤完成统计、通过/失败摘要、报告路径展示仅作状态展示，不要求确认。</rule>
+  <rule id="scope_selection">仅在 URL、执行范围或登录方式不明确时使用 AskUserQuestion。</rule>
+  <rule id="reference_permission">允许用实际 DOM、playwright-cli snapshot 与只读源码来修正脚本；此许可不包含 Archive MD 写回。</rule>
+  <rule id="archive_writeback">若拟回写 Archive MD，必须先展示差异预览，再单独确认；默认只记录建议，不写回。</rule>
+</confirmation_policy>
+
+<output_contract>
+  <archive_contract>保留 Task 2 的 Archive MD 标题契约、`suite_name` 语义与 `parse-cases.ts` 解析约定。</archive_contract>
+  <artifacts>产物包括 UI blocks、合并 spec、Playwright HTML 报告、可选的 Archive MD 校正建议。</artifacts>
+</output_contract>
+
+<error_handling>
+  <defaultable_unknown>范围或环境细节缺失但不影响执行时，按默认值继续并在摘要中提示。</defaultable_unknown>
+  <blocking_unknown>登录、环境或页面结构缺口导致脚本无法继续时，终止该用例并在结果中说明。</blocking_unknown>
+  <invalid_input>Archive MD 路径、URL 或解析结果无效时，立即停止并要求修正输入。</invalid_input>
+</error_handling>
+
+<examples>
+  <scope_default>用户未指定范围时默认执行 P0 冒烟；用户已明确指定时不再重复确认。</scope_default>
+  <writeback_preview>发现 Archive MD 与真实系统不一致时，先展示拟修改步骤摘要，再单独确认是否写回。</writeback_preview>
+</examples>
+
 ## 任务可视化（Task 工具）
 
 > 全流程使用 `TaskCreate` / `TaskUpdate` 工具展示实时进度。
@@ -17,7 +63,7 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 | 任务 subject | activeForm |
 |---|---|
 | `步骤 1 — 解析输入` | `解析用例文件` |
-| `步骤 2 — 交互确认` | `确认执行范围` |
+| `步骤 2 — 执行范围` | `确认执行范围` |
 | `步骤 3 — 登录态准备` | `准备登录 session` |
 | `步骤 4 — 脚本生成` | `生成 Playwright 脚本` |
 | `步骤 5 — 逐条自测` | `执行自测验证` |
@@ -124,11 +170,14 @@ bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 
 **✅ Task**：将 `步骤 1` 标记为 `completed`（subject: `步骤 1 — 解析完成，{{total}} 条用例`）。
 
-## 步骤 2：交互确认
+## 步骤 2：执行范围确认（仅在范围未明确时提问）
 
 **⏳ Task**：将 `步骤 2` 标记为 `in_progress`。
 
-向用户展示配置摘要并选择执行范围：
+默认行为：
+
+- 若用户输入已明确给出执行范围或优先级，直接采用并继续
+- 若未明确，展示配置摘要并让用户选择执行范围
 
 ```
 🧪 UI 自动化测试配置
@@ -136,7 +185,11 @@ bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 目标 URL：{{url}}
 用例文件：{{md_path}}
 用例总数：{{total}}（P0: {{p0}}, P1: {{p1}}, P2: {{p2}}）
+```
 
+仅在需要用户选择范围时，展示：
+
+```
 请选择执行范围：
 1. 冒烟测试（仅 P0，推荐先跑）
 2. 完整测试（P0+P1+P2）
@@ -145,7 +198,7 @@ bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 请输入选项编号（默认 1）：
 ```
 
-根据用户选择确定 `selected_priorities`（默认 `["P0"]`）。
+根据用户输入或默认策略确定 `selected_priorities`（默认 `["P0"]`）。
 
 ---
 
@@ -247,14 +300,36 @@ QA_PROJECT={{project}} bunx playwright test workspace/{{project}}/.temp/ui-block
 4. **修复脚本**：根据实际 DOM 和源码修正选择器、导航方式、等待策略
 5. **重新执行验证**：修复后再次运行，直到通过或达到 3 次重试上限
 
-**5.3 反向优化 MD 用例**
+**5.3 引用实际系统行为与 Archive MD 写回门禁**
 
-在自测修复过程中，若发现 MD 用例描述与实际系统行为不一致（如导航路径错误、按钮名称不对、步骤缺失），**必须同步更新原 Archive MD 文件**：
+在自测修复过程中，若发现 MD 用例描述与实际系统行为不一致（如导航路径错误、按钮名称不对、步骤缺失），按以下双门策略处理：
 
-- 修正不准确的步骤描述（如「进入【xxx】页面」中的导航路径）
-- 补充缺失的关键步骤（如需要先点击侧边栏展开子菜单）
-- 修正预期结果中的不准确描述
-- 在修改的步骤后追加注释：`<!-- 由 ui-autotest 自测校正 -->`
+1. **默认允许引用，不默认写回**：可直接引用实际 DOM、playwright-cli snapshot 和只读源码来修正脚本。
+2. **若拟回写 Archive MD，先展示差异预览**：
+
+   ```json
+   {
+     "archive_path": "{{md_path}}",
+     "changes": [
+       {
+         "case_title": "{{title}}",
+         "field": "step",
+         "current": "进入【xxx】页面",
+         "proposed": "进入【xxx → yyy】页面，等待列表加载完成",
+         "evidence": "snapshot + 源码路由配置"
+       }
+     ]
+   }
+   ```
+
+3. **展示预览后，使用 AskUserQuestion 单独确认写回权限**：
+
+   - 选项 1：仅引用实际行为修正脚本，不写回 Archive MD（默认）
+   - 选项 2：允许按上述预览写回 Archive MD
+   - 选项 3：跳过该用例的写回建议
+
+4. **仅在用户明确允许写回时**，才更新原 Archive MD 文件，并在修改的步骤后追加注释：`<!-- 由 ui-autotest 自测校正 -->`
+5. **若用户未授权写回**，仅在最终结果中列出校正建议，不修改 Archive MD
 
 **5.4 3 次重试仍失败的处理**
 

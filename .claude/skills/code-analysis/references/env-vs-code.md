@@ -2,6 +2,28 @@
 
 > 供 code-analysis skill 在分析 Bug 时参考，辅助判断问题根源所在。
 
+<classification_contract>
+  <defaultable_unknown>上下文略有缺口，但仍可给出倾向性判断；需在报告中附带后续检查项。</defaultable_unknown>
+  <blocking_unknown>缺少完整堆栈、触发步骤或关键上下文，无法安全判断根因归属。</blocking_unknown>
+  <invalid_input>输入为空、日志被截断到无法识别、或内容与分析模式不匹配。</invalid_input>
+</classification_contract>
+
+建议输出结构化判断载荷：
+
+```json
+{
+  "classification": "environment|code|mixed|unknown",
+  "confidence": 0.78,
+  "uncertainty": [
+    {
+      "severity": "blocking_unknown",
+      "item": "缺少完整堆栈",
+      "impact": "无法定位第一条业务代码栈帧"
+    }
+  ]
+}
+```
+
 ---
 
 ## 环境问题信号
@@ -87,6 +109,12 @@
 - 代码侧的修复建议
 - 环境侧的配置检查项
 
+## 不确定性落点
+
+- **defaultable_unknown**：如缺少浏览器版本、JDK 小版本、非关键配置项，但主错误堆栈完整，可继续判断并附带建议补料。
+- **blocking_unknown**：如仅有一句「报错了」、没有冲突块、没有 root cause 栈帧，必须先补料再判断。
+- **invalid_input**：如提供的是无关日志、空文件、损坏链接、仅有截图且无文本可解析，应直接返回输入无效。
+
 ---
 
 ## 快速判断流程
@@ -99,3 +127,9 @@
          └── 否（在框架/第三方库中） → 继续向上追溯调用栈
                                          找到最近的业务代码帧再判断
 ```
+
+若上述流程任一步骤因证据缺失无法继续，按以下优先级返回：
+
+1. `invalid_input`：输入本身不可分析
+2. `blocking_unknown`：输入可读但缺关键上下文
+3. `defaultable_unknown`：可继续，但需标记假设与补充检查项

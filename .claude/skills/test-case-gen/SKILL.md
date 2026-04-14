@@ -22,6 +22,47 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
 全程遵守 `.claude/rules/test-case-writing.md` 用例编写规范。
 
+<role>
+你是 qa-flow 的编排型技能，负责在项目偏好优先级与 Task 2 A/B 产物契约保持不变的前提下，协调 PRD → 测试点 → 用例 → XMind/Archive MD 的交付，或执行标准化归档 / XMind 反向同步。
+</role>
+
+<inputs>
+- PRD 路径、蓝湖 URL、XMind/CSV 文件、模块重跑指令、反向同步指令
+- 项目级与全局 `preferences/`
+- `config.ts`、`state.ts`、`workspace/{{project}}/`、只读源码仓库
+- subagent 输出的结构化 JSON / `<clarify_envelope>` / `<blocked_envelope>` / `<confirmed_context>`
+</inputs>
+
+<workflow>
+  <primary>init → transform → enhance → analyze → write → review → format-check → output</primary>
+  <standardize>parse → standardize → review → output</standardize>
+  <reverse_sync>confirm_xmind → parse → locate_archive → preview_or_write → report</reverse_sync>
+</workflow>
+
+<confirmation_policy>
+  <rule id="status_only">纯状态展示、任务进度、完成摘要不要求确认；直接继续下一节点。</rule>
+  <rule id="scope_or_ambiguity">仅在输入存在歧义、范围可变、或用户明确要求人工审阅时使用 AskUserQuestion。</rule>
+  <rule id="stateful_write">覆盖已有文件、保存 repo 映射、反向同步 Archive MD、持久化 profile / config 前，先展示预览或写入摘要，再确认。</rule>
+  <rule id="reference_vs_writeback">允许引用源码/历史/已有产物用于分析，不等于允许写回配置或归档；写回必须单独授权。</rule>
+</confirmation_policy>
+
+<output_contract>
+  <artifact_contract>保留 Task 2 已批准的 A/B 产物契约与文案，不改写 Writer 中间 JSON、Archive MD、XMind 的职责边界。</artifact_contract>
+  <transform_handoff>transform 通过 `<clarify_envelope>` / `<confirmed_context>` 交接，不再依赖旧式 Markdown 协议块。</transform_handoff>
+  <writer_handoff>writer 通过 `<blocked_envelope>` / `<confirmed_context>` 交接；阻断时也必须保持机器可读。</writer_handoff>
+</output_contract>
+
+<error_handling>
+  <defaultable_unknown>能安全默认的缺口记录为默认项并继续。</defaultable_unknown>
+  <blocking_unknown>影响 PRD、测试点或用例正确性的未知项转交澄清/阻断协议。</blocking_unknown>
+  <invalid_input>输入损坏、缺失或路径不合法时立即停止当前分支并提示修正。</invalid_input>
+</error_handling>
+
+<examples>
+  <normal_run>普通模式默认连续推进；只有歧义输入、阻断未知或写回动作才触发确认。</normal_run>
+  <writeback_gate>反向同步 Archive MD、保存 repo profile 等持久化写入必须先预览再确认。</writeback_gate>
+</examples>
+
 ---
 
 ## 项目选择
@@ -177,13 +218,14 @@ bun run .claude/scripts/plugin-loader.ts notify --event archive-converted --data
 
 **✅ Task**：将 `S4` 标记为 `completed`（subject: `S4 输出 — {{count}} 条用例已归档`）。
 
-### 交互点 — 完成确认（使用 AskUserQuestion 工具）
+### 完成摘要（状态展示，无需确认）
 
-使用 AskUserQuestion 工具向用户确认：
+标准化归档完成后，直接展示摘要并结束当前流程：
 
-- 问题：`标准化归档完成。Archive MD：{{archive_tmp_path}}，XMind：{{xmind_tmp_path}}，共 {{n}} 条用例（标准化前 {{original_count}} 条，标准化后 {{final_count}} 条）。下一步？`
-- 选项 1：完成
-- 选项 2：修改某条用例（→ xmind-editor skill）
+- Archive MD：`{{archive_tmp_path}}`
+- XMind：`{{xmind_tmp_path}}`
+- 用例数：标准化前 `{{original_count}}` 条，标准化后 `{{final_count}}` 条
+- 如用户后续提出编辑意图，再路由到 `xmind-editor` skill
 
 ---
 
@@ -236,14 +278,13 @@ bun run .claude/scripts/history-convert.ts --path {{xmind_file}}
 
 转换完成后，将生成的 Archive MD 覆盖写入目标路径（或写入 tmp/ 供预览）。
 
-### RS5: 完成确认
+### RS5: 完成摘要（状态展示，无需确认）
 
-使用 AskUserQuestion 工具：
+反向同步完成后，直接展示：
 
-- 问题：`反向同步完成。Archive MD 已更新：{{archive_path}}，共 {{count}} 条用例。下一步？`
-- 选项 1：完成
-- 选项 2：查看同步后的 Archive MD
-- 选项 3：修改某条用例（→ xmind-editor skill）
+- Archive MD 已更新：`{{archive_path}}`
+- 同步用例数：`{{count}}`
+- 若用户继续提出查看或编辑诉求，再展示文件内容或路由 `xmind-editor`
 
 ---
 
@@ -275,16 +316,21 @@ bun run .claude/scripts/plugin-loader.ts check --input "{{user_input}}"
 bun run .claude/scripts/state.ts init --prd {{prd_path}} --project {{project}} --mode {{mode}}
 ```
 
-### 交互点 A — 确认参数（使用 AskUserQuestion 工具）
+### 交互点 A — 参数分歧处理（仅在输入存在歧义时使用 AskUserQuestion 工具）
 
-使用 AskUserQuestion 工具向用户展示以下选项：
+默认行为：
 
-- 问题：`已识别 PRD：{{prd_path}}，运行模式：{{mode}}。如何继续？`
-- 选项 1：继续（推荐）
+- 用户已明确给出 `prd_path` 和 `mode` → 直接展示摘要并继续，不额外确认
+- 仅当存在多个候选 PRD、需要切换模式、或用户明确要求改选输入时，才使用 AskUserQuestion
+
+若需提问，展示以下选项：
+
+- 问题：`已识别 PRD：{{prd_path}}，运行模式：{{mode}}。如何处理参数分歧？`
+- 选项 1：继续使用当前识别结果（推荐）
 - 选项 2：切换为快速模式
 - 选项 3：指定其他 PRD 文件
 
-等待用户选择后，将 `init` 任务标记为 `completed`（subject 更新为 `init — 已识别 PRD，{{mode}} 模式`），进入节点 2。
+完成分歧处理后，将 `init` 任务标记为 `completed`（subject 更新为 `init — 已识别 PRD，{{mode}} 模式`），进入节点 2。
 
 ---
 
@@ -300,9 +346,9 @@ bun run .claude/scripts/state.ts init --prd {{prd_path}} --project {{project}} -
 bun run .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
 ```
 
-### 2.2 源码配置确认（交互点）
+### 2.2 源码引用许可（交互点）
 
-向用户展示确认清单（使用 AskUserQuestion）：
+先向用户展示引用摘要（使用 AskUserQuestion）：
 
 ```
 📋 源码配置确认
@@ -320,10 +366,29 @@ bun run .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
   ○ 添加更多仓库
   ○ 不使用源码参考
 
-确认后将拉取最新代码。
+引用许可选项：
+
+- 选项 1：允许同步并引用以上仓库（推荐）
+- 选项 2：仅引用当前已有的本地副本，不额外同步
+- 选项 3：调整仓库/分支
+- 选项 4：不使用源码参考
+
+> **注意**：这是“允许引用/同步”的确认，不等于允许写回配置。
 ```
 
-用户确认后，若提供了新的映射关系，询问是否保存：
+若用户提供了新的映射关系，仅在需要持久化时再进行第二道写回确认。先展示写入摘要：
+
+- profile 名称：`{{name}}`
+- repos 预览：`{{repos_json}}`
+- 写入位置：repo profile 配置
+
+然后使用 AskUserQuestion 询问：
+
+- 选项 1：仅本次使用，不保存（默认）
+- 选项 2：保存为新的 profile / 更新现有 profile
+- 选项 3：取消刚才的映射调整
+
+只有在用户明确允许写回时，才执行：
 
 ```bash
 bun run .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_json}}'
@@ -331,11 +396,13 @@ bun run .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_
 
 ### 2.3 拉取源码
 
+若用户选择“允许同步并引用以上仓库”，执行：
+
 ```bash
 bun run .claude/scripts/repo-sync.ts sync-profile --name "{{profile_name}}"
 ```
 
-若用户自行输入了仓库（非 profile），则逐个调用：
+若用户自行输入了仓库（非 profile）且允许同步，则逐个调用：
 
 ```bash
 bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
@@ -351,23 +418,23 @@ bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
 - 源码状态检测与分析（A/B 级）
 - 历史用例检索
 - 按 `references/prd-template.md` 模板填充
-- 生成 CLARIFY 块（若有待确认项）
+- 输出 `<clarify_envelope>`（含空载荷或待确认项）
 
-### 2.5 CLARIFY 中转（强制检查）
+### 2.5 结构化澄清中转（强制检查）
 
-> **⚠️ transform subagent 必须输出 CLARIFY 块（含待确认项或空声明）。若 subagent 输出中缺少 `## CLARIFY` 标记，主 agent 须要求 subagent 补充执行 6 维度自检。**
+> **⚠️ transform subagent 必须输出 `<clarify_envelope>`（含空载荷或待确认项）。若缺失，主 agent 须要求 subagent 补充执行 6 维度自检。**
 
 处理流程参见 `references/clarify-protocol.md`：
 
-1. 检查 transform 输出中是否包含 `## CLARIFY` 块
-   - **缺失** → 通过 SendMessage 要求 subagent 执行步骤 5（CLARIFY 自检），不可跳过
-   - **空声明**（"无待确认项"）→ 正常进入下一节点
-   - **有待确认项** → 执行下方步骤 2-6
-2. 逐个向用户展示选择框（**使用 AskUserQuestion 工具**），包含推荐答案和备选
-3. 收集确认结果，打包为 `## CONFIRMED` 发回 transform subagent
-4. subagent 合入确认结果，移除 🔴 标记
-5. 若产生新的待确认项 → 循环（最多 3 轮）
-6. 无新增 → 输出最终 PRD
+1. 检查 transform 输出中是否包含 `<clarify_envelope>`
+   - **缺失** → 通过 SendMessage 要求 subagent 执行步骤 5 的 6 维度自检
+   - **`status = "ready"` 且 `items = []`** → 正常进入下一节点
+   - **`status = "invalid_input"`** → 停止 transform，要求修正输入
+2. 将 `defaultable_unknown` 项按推荐默认整理到 `<confirmed_context>`，无需额外确认
+3. 仅对 `blocking_unknown` 项逐个使用 AskUserQuestion，保留推荐答案与备选
+4. 将用户答案与自动默认项合并为 `<confirmed_context>` 发回 transform subagent
+5. subagent 合入确认结果，移除对应 🔴 标记
+6. 若产生新的 `blocking_unknown` → 最多循环 3 轮；否则输出最终 PRD
 
 ### 2.6 更新状态
 
@@ -423,11 +490,13 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 
 **✅ Task**：将 `enhance` 任务标记为 `completed`（subject 更新为 `enhance — {{n}} 张图片，{{m}} 个要点`）。
 
-### 交互点 B（--quick 模式跳过，使用 AskUserQuestion 工具）
+### 交互点 B — 健康度摘要（默认直接继续）
 
-使用 AskUserQuestion 工具向用户展示：
+默认行为：展示增强摘要后直接进入 analyze。
 
-- 问题：`增强完成：识别 {{n}} 张图片，{{m}} 个页面要点。健康度：{{health_warnings}}。如何继续？`
+仅当 `health_warnings` 中出现 `blocking_unknown` / `invalid_input`，或用户明确要求停下来查看增强结果时，才使用 AskUserQuestion：
+
+- 问题：`增强完成：识别 {{n}} 张图片，{{m}} 个页面要点。健康度告警：{{health_warnings}}。如何处理？`
 - 选项 1：继续分析（推荐）
 - 选项 2：补充 PRD 信息
 - 选项 3：查看增强后的文件
@@ -462,7 +531,7 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 
 **✅ Task**：将 `analyze` 任务标记为 `completed`（subject 更新为 `analyze — {{n}} 个模块，{{m}} 条测试点`）。
 
-### 交互点 C（--quick 模式跳过，使用 AskUserQuestion 工具）
+### 交互点 C — 测试点摘要（默认直接进入 write）
 
 先在普通文本中展示测试点清单概览：
 
@@ -475,14 +544,14 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 └─ {{module_b}}（{{count_b}} 条）
 ```
 
-然后使用 AskUserQuestion 工具向用户确认：
+默认行为：若测试点清单无 `blocking_unknown` / `invalid_input`，直接进入 write 节点。
 
-- 问题：`以上测试点清单是否确认？`
-- 选项 1：确认，开始生成（推荐）
+仅当 analyze-agent 标记需要人工裁决，或用户明确要求修改范围时，才使用 AskUserQuestion：
+
+- 问题：`测试点清单存在待裁决项，是否需要调整后再生成？`
+- 选项 1：直接开始生成（推荐）
 - 选项 2：调整测试点清单
 - 选项 3：增加/删除测试点
-
-用户确认后方可进入 write 节点。
 
 ---
 
@@ -500,16 +569,16 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 - 该模块已确认的测试点清单
 - preferences/ 目录下的偏好规则（若存在）
 - 历史归档用例参考（来自 analyze 步骤）
-- 已确认信息（来自 CLARIFY 交互）
+- 已确认上下文（来自 `<confirmed_context>`）
 - 源码上下文（来自 transform 步骤的源码分析结果，包括按钮名称、表单结构、字段定义、导航路径等 🔵 标注信息。若 transform 阶段完成了 B 级分析，须将关键 UI 结构摘要传给 Writer）
 
-### 5.2 BLOCKED 中转（强制检查）
+### 5.2 结构化阻断中转（强制检查）
 
-> **⚠️ Writer subagent 必须输出 BLOCKED 块（含阻断项或空声明）。若 subagent 输出中缺少 `## BLOCKED` 标记，主 agent 须要求 subagent 补充执行 5 维度自检。**
+> **⚠️ Writer subagent 在阻断时必须输出 `<blocked_envelope>`；若无阻断则直接输出 Contract A JSON。若主 agent 无法确认 subagent 已完成 5 维度自检，须要求其补充执行。**
 
-- Writer 输出缺少 `## BLOCKED` → 通过 SendMessage 要求 subagent 执行 BLOCKED 前置自检
-- 空声明（"无阻断项"）→ 正常继续
-- 有阻断项 → 执行 BLOCKED 中转协议（见下文）
+- Writer 直接输出 Contract A JSON → 视为无阻断，正常继续
+- Writer 输出 `<blocked_envelope status="needs_confirmation">` → 执行下文的 Writer 阻断中转协议
+- Writer 输出 `<blocked_envelope status="invalid_input">` → 停止该模块并要求修正输入
 
 **✅ Task**：每个 Writer Sub-Agent 完成时，将对应子任务标记为 `completed`（subject 更新为 `[write] {{模块名}} — {{n}} 条用例`）。所有 Writer 完成后，将 `write` 主任务标记为 `completed`（subject 更新为 `write — {{total}} 条用例，{{module_count}} 个模块`）。
 
@@ -557,12 +626,17 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 
 **✅ Task**：将 `review` 任务标记为 `completed`（subject 更新为 `review — {{n}} 条用例，问题率 {{rate}}%`）。
 
-### 交互点 D（使用 AskUserQuestion 工具）
+### 交互点 D — 质量门禁决策（仅在 reviewer 阻断时使用 AskUserQuestion 工具）
 
-使用 AskUserQuestion 工具向用户展示：
+默认行为：
 
-- 问题：`评审完成：共 {{n}} 条用例，修正 {{m}} 条，问题率 {{rate}}%。如何继续？`
-- 选项 1：生成产物（推荐）
+- `verdict = pass` / `pass_with_warnings` → 直接进入 format-check，并在普通文本展示评审摘要
+- `verdict = blocked` → 使用 AskUserQuestion 向用户请求决策
+
+阻断时展示：
+
+- 问题：`评审完成：共 {{n}} 条用例，修正 {{m}} 条，问题率 {{rate}}%，当前为阻断状态。如何处理？`
+- 选项 1：返回 Writer 阶段重新生成（推荐）
 - 选项 2：查看修正详情
 - 选项 3：人工复核后继续
 
@@ -621,7 +695,7 @@ bun run .claude/scripts/format-report-locator.ts print \
 
 ### 6.5.5 修正循环
 
-1. 将偏差报告转为 `## FORMAT_ISSUES` 块
+1. 将偏差报告转为 `<format_issues>` 载荷
 2. 派发 Writer Sub-Agent 修正报告中列出的用例（仅修正偏差用例，其余原样保留）
 3. Writer 输出修正后的 JSON
 4. 派发 `reviewer-agent`（model: opus）对修正后的 JSON 执行 F07-F15 设计逻辑复审
@@ -703,39 +777,54 @@ bun run .claude/scripts/state.ts clean --prd-slug {{slug}} --project {{project}}
 
 **✅ Task**：将 `output` 任务标记为 `completed`（subject 更新为 `output — {{n}} 条用例，XMind + Archive MD 已生成`）。
 
-### 交互点 E — 完成确认（使用 AskUserQuestion 工具）
+### 交付摘要（状态展示，无需确认）
 
-先在普通文本中展示产物摘要，然后使用 AskUserQuestion 工具：
+用例生成完成后，直接展示产物摘要：
 
-- 问题：`用例生成完成。XMind：{{xmind_path}}，Archive：{{archive_path}}，共 {{n}} 条用例（P0: {{p0}}, P1: {{p1}}, P2: {{p2}}）。下一步？`
-- 选项 1：完成
-- 选项 2：修改某条用例（→ xmind-editor skill）
-- 选项 3：重新生成某个模块
+- XMind：`{{xmind_path}}`
+- Archive：`{{archive_path}}`
+- 共 `{{n}}` 条用例（P0: `{{p0}}`, P1: `{{p1}}`, P2: `{{p2}}`）
+- 若用户后续提出编辑或重跑诉求，再路由到 `xmind-editor` 或模块重跑流程
 
 ---
 
-## BLOCKED 中转协议
+## Writer 阻断中转协议
 
-当 Writer Sub-Agent 返回 `## BLOCKED` 时，表示需求信息不足以继续编写。
+当 Writer Sub-Agent 返回 `<blocked_envelope>` 时，表示需求信息不足以继续编写，或输入无效。
 
 ### 处理流程
 
-1. **解析**：从 BLOCKED 内容中提取问题列表
+1. **解析**：从 `<blocked_envelope>` 中提取 `items`
 2. **逐条询问**（使用 AskUserQuestion 工具）：每次只向用户提出一个问题，使用 AskUserQuestion 工具：
 
 - 问题：`Writer 需要确认（{{current}}/{{total}}）：{{question_description}}`
 - 选项按候选答案列出，AI 推荐项标注"（推荐）"
 
-3. **收集完毕**：将所有答案注入 `## 已确认信息` 章节，重启该模块的 Writer
-4. **注入格式**：
+3. **默认项处理**：若 item 为 `defaultable_unknown`，直接采用推荐项并记录为 `auto_defaulted`
+4. **invalid_input 处理**：若 `status = "invalid_input"`，停止该模块并要求修正输入，不重启 Writer
+5. **收集完毕**：将所有答案与默认项注入 `<confirmed_context>`，重启该模块的 Writer
+6. **注入格式**：
 
-```markdown
-## 已确认信息
-
-- Q: {{question_1}}
-  A: {{answer_1}}
-- Q: {{question_2}}
-  A: {{answer_2}}
+```xml
+<confirmed_context>
+{
+  "writer_id": "{{writer_id}}",
+  "items": [
+    {
+      "id": "B1",
+      "resolution": "user_selected",
+      "selected_option": "A",
+      "value": "{{answer_1}}"
+    },
+    {
+      "id": "B2",
+      "resolution": "auto_defaulted",
+      "selected_option": "B",
+      "value": "{{answer_2}}"
+    }
+  ]
+}
+</confirmed_context>
 ```
 
 ---
