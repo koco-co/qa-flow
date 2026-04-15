@@ -476,19 +476,57 @@ export async function getSelectOptions(page: Page, selectLocator: Locator): Prom
 }
 
 export async function saveRuleSet(page: Page): Promise<void> {
+  const saveResponsePromise = page
+    .waitForResponse(
+      (response) => {
+        const request = response.request();
+        return (
+          request.method() === "POST" &&
+          /\/dassets\/v1\/valid\/monitorRuleSet\/(add|edit)/.test(response.url())
+        );
+      },
+      { timeout: 15000 },
+    )
+    .catch(() => null);
+
   await page.getByRole("button", { name: /保\s*存/ }).click();
+
+  const confirmSaveBtn = page
+    .locator(".ant-modal-confirm:visible .ant-btn-primary, .ant-modal:visible .ant-btn-primary")
+    .filter({ hasText: /保\s*存/ })
+    .first();
+  if (await confirmSaveBtn.isVisible().catch(() => false)) {
+    await confirmSaveBtn.click();
+  }
+
+  const saveResponse = await saveResponsePromise;
+  if (saveResponse) {
+    const responseBody = await saveResponse.json().catch(() => null);
+    const saveSucceeded =
+      saveResponse.ok() &&
+      (!responseBody || typeof responseBody !== "object" || responseBody.success !== false);
+
+    if (!saveSucceeded) {
+      const errorMessage =
+        responseBody && typeof responseBody === "object" && "message" in responseBody
+          ? String(responseBody.message)
+          : `HTTP ${saveResponse.status()}`;
+      throw new Error(`Save rule set failed: ${errorMessage}`);
+    }
+
+    await page.waitForTimeout(1000);
+    return;
+  }
 
   const successToast = page
     .locator(".ant-message-notice, .ant-notification-notice, .ant-message")
     .filter({ hasText: /成功/ })
     .first();
   const listRow = page.locator(".ant-table-tbody tr:not(.ant-table-measure-row)").first();
-  const rulePackage = page.locator(".ruleSetMonitor__package").first();
 
   await Promise.any([
     successToast.waitFor({ state: "visible", timeout: 15000 }),
     listRow.waitFor({ state: "visible", timeout: 15000 }),
-    rulePackage.waitFor({ state: "visible", timeout: 15000 }),
   ]);
   await page.waitForTimeout(1000);
 }

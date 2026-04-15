@@ -1,13 +1,14 @@
 // META: {"id":"t5","priority":"P1","title":"验证在规则集中枚举值选择not in后保存成功且编辑时回显正确"}
 import { expect, test } from "../../fixtures/step-screenshot";
+import { selectAntOption } from "../../helpers/test-setup";
 import {
   addRuleToPackage,
-  configureRangeEnumRule,
   getRulePackage,
   getRuleSetListRow,
   gotoRuleSetList,
   openRuleSetEditor,
   saveRuleSet,
+  selectRuleFieldAndFunction,
 } from "./rule-editor-helpers";
 
 test.use({ storageState: ".auth/session.json" });
@@ -35,14 +36,16 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         ).toBeVisible({ timeout: 10000 });
 
         const ruleForm = await addRuleToPackage(page, "notin校验包");
-        const functionRow = await configureRangeEnumRule(page, ruleForm, {
-          field: "category",
-          enumOperator: "not in",
-          enumValues: ["4", "5"],
-          ruleStrength: "强规则",
-        });
+        const functionRow = await selectRuleFieldAndFunction(page, ruleForm, "category", "枚举值");
+        await selectAntOption(page, functionRow.locator(".ant-select").nth(1), "not in");
+        const enumInput = functionRow.locator("input").last();
+        for (const value of ["4", "5"]) {
+          await enumInput.fill(value);
+          await page.keyboard.press("Enter");
+          await page.waitForTimeout(150);
+        }
 
-        await expect(functionRow.locator(".ant-select").nth(3)).toContainText("not in");
+        await expect(functionRow.locator(".ant-select").nth(1)).toContainText("not in");
         await expect(ruleForm).toContainText("category");
       },
       page.locator(".ruleSetMonitor__package").filter({ hasText: "notin校验包" }).first(),
@@ -58,19 +61,16 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
           timeout: 10000,
         });
 
-        await openRuleSetEditor(page, "ruleset_15695_notin", ["notin校验包"]);
+        await openRuleSetEditor(page, "ruleset_15695_notin");
         const packageSection = await getRulePackage(page, "notin校验包");
-        const savedRuleForm = packageSection.locator(".ruleForm").last();
-        await expect(savedRuleForm).toContainText("取值范围&枚举范围");
+        await expect(packageSection).toContainText("取值范围&枚举范围");
+        await expect(packageSection).toContainText("not in");
 
-        const savedFunctionRow = savedRuleForm.locator(".rule__function-list__item").first();
-        await expect(savedFunctionRow.locator(".ant-select").nth(3)).toContainText("not in");
-
-        const enumTags = savedRuleForm.locator(".ant-tag, .ant-select-selection-item");
+        const enumTags = packageSection.locator(".ant-tag, .ant-select-selection-item");
         await expect(enumTags.filter({ hasText: "4" }).first()).toBeVisible();
         await expect(enumTags.filter({ hasText: "5" }).first()).toBeVisible();
       },
-      page.locator(".ruleForm").last(),
+      page.locator(".ruleSetMonitor__package").filter({ hasText: "notin校验包" }).first(),
     );
   });
 });

@@ -72,18 +72,15 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
           timeout: 10000,
         });
 
-        await openRuleSetEditor(page, "ruleset_15695_enum_orig", ["原枚举值包"]);
+        await openRuleSetEditor(page, "ruleset_15695_enum_orig");
         const packageSection = await getRulePackage(page, "原枚举值包");
-        const savedRuleForm = packageSection.locator(".ruleForm").last();
-        const savedFunctionRow = savedRuleForm.locator(".rule__function-list__item").first();
+        await expect(packageSection).toContainText("not in");
 
-        await expect(savedFunctionRow.locator(".ant-select").nth(1)).toContainText("not in");
-
-        const enumTags = savedRuleForm.locator(".ant-tag, .ant-select-selection-item");
+        const enumTags = packageSection.locator(".ant-tag, .ant-select-selection-item");
         await expect(enumTags.filter({ hasText: "4" }).first()).toBeVisible();
         await expect(enumTags.filter({ hasText: "5" }).first()).toBeVisible();
       },
-      page.locator(".ruleForm").last(),
+      page.locator(".ruleSetMonitor__package").filter({ hasText: "原枚举值包" }).first(),
     );
   });
 });

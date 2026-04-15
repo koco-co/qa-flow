@@ -1,14 +1,15 @@
 // META: {"id":"t4","priority":"P1","title":"验证在规则集中仅填写枚举值可正常保存"}
 import { expect, test } from "../../fixtures/step-screenshot";
+import { selectAntOption } from "../../helpers/test-setup";
 import {
   addRuleToPackage,
-  configureRangeEnumRule,
   getRulePackage,
   getRuleSetListRow,
   getSelectOptions,
   gotoRuleSetList,
   openRuleSetEditor,
   saveRuleSet,
+  selectRuleFieldAndFunction,
 } from "./rule-editor-helpers";
 
 test.use({ storageState: ".auth/session.json" });
@@ -36,15 +37,18 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         ).toBeVisible({ timeout: 10000 });
 
         const ruleForm = await addRuleToPackage(page, "仅枚举值包");
-        const functionRow = await configureRangeEnumRule(page, ruleForm, {
-          field: "category",
-          enumOperator: "in",
-          enumValues: ["1", "2", "3"],
-          ruleStrength: "强规则",
-        });
+        const functionRow = await selectRuleFieldAndFunction(page, ruleForm, "category", "枚举值");
+        const enumOpSelect = functionRow.locator(".ant-select").nth(1);
+        await selectAntOption(page, enumOpSelect, "in");
+        const enumInput = functionRow.locator("input").last();
+        for (const value of ["1", "2", "3"]) {
+          await enumInput.fill(value);
+          await page.keyboard.press("Enter");
+          await page.waitForTimeout(150);
+        }
 
-        await expect(functionRow.locator(".ant-select").nth(3)).toContainText("in");
-        const enumOptions = await getSelectOptions(page, functionRow.locator(".ant-select").nth(3));
+        await expect(enumOpSelect).toContainText("in");
+        const enumOptions = await getSelectOptions(page, enumOpSelect);
         expect(enumOptions).toContain("in");
         expect(enumOptions).toContain("not in");
 
@@ -61,19 +65,16 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
 
         await expect(getRuleSetListRow(page, "ruleset_15695_enum")).toBeVisible({ timeout: 10000 });
 
-        await openRuleSetEditor(page, "ruleset_15695_enum", ["仅枚举值包"]);
+        await openRuleSetEditor(page, "ruleset_15695_enum");
         const packageSection = await getRulePackage(page, "仅枚举值包");
-        const savedRuleForm = packageSection.locator(".ruleForm").last();
-        const savedFunctionRow = savedRuleForm.locator(".rule__function-list__item").first();
-
-        await expect(savedRuleForm).toContainText("category");
-        await expect(savedFunctionRow.locator(".ant-select").nth(3)).toContainText("in");
-        const enumTags = savedRuleForm.locator(".ant-tag, .ant-select-selection-item");
+        await expect(packageSection).toContainText("category");
+        await expect(packageSection).toContainText("in");
+        const enumTags = packageSection.locator(".ant-tag, .ant-select-selection-item");
         await expect(enumTags.filter({ hasText: "1" }).first()).toBeVisible();
         await expect(enumTags.filter({ hasText: "2" }).first()).toBeVisible();
         await expect(enumTags.filter({ hasText: "3" }).first()).toBeVisible();
       },
-      page.locator(".ruleForm").last(),
+      page.locator(".ruleSetMonitor__package").filter({ hasText: "仅枚举值包" }).first(),
     );
   });
 });

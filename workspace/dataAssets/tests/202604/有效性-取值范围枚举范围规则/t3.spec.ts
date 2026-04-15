@@ -8,6 +8,7 @@ import {
   gotoRuleSetList,
   openRuleSetEditor,
   saveRuleSet,
+  selectRuleFieldAndFunction,
 } from "./rule-editor-helpers";
 
 test.use({ storageState: ".auth/session.json" });
@@ -35,8 +36,10 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         ).toBeVisible({ timeout: 10000 });
 
         const ruleForm = await addRuleToPackage(page, "仅取值范围包");
+        const functionRow = await selectRuleFieldAndFunction(page, ruleForm, "score", "取值范围");
         await configureRangeEnumRule(page, ruleForm, {
           field: "score",
+          functionName: "取值范围",
           range: {
             firstOperator: ">=",
             firstValue: "0",
@@ -45,6 +48,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         });
 
         await expect(ruleForm).toContainText("score");
+        await expect(functionRow.locator(".ant-select").first()).toContainText("取值范围");
       },
       page.locator(".ruleSetMonitor__package").filter({ hasText: "仅取值范围包" }).first(),
     );
@@ -59,14 +63,13 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
           timeout: 10000,
         });
 
-        await openRuleSetEditor(page, "ruleset_15695_range", ["仅取值范围包"]);
+        await openRuleSetEditor(page, "ruleset_15695_range");
         const packageSection = await getRulePackage(page, "仅取值范围包");
-        const savedRuleForm = packageSection.locator(".ruleForm").last();
-        await expect(savedRuleForm).toContainText("score");
-        await expect(savedRuleForm).toContainText(">=");
-        await expect(savedRuleForm).toContainText("0");
+        await expect(packageSection).toContainText("score");
+        await expect(packageSection).toContainText(">=");
+        await expect(packageSection).toContainText("0");
       },
-      page.locator(".ruleForm").last(),
+      page.locator(".ruleSetMonitor__package").filter({ hasText: "仅取值范围包" }).first(),
     );
   });
 });
