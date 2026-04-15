@@ -257,27 +257,30 @@ export async function openRuleSetEditor(
 
 async function ensureMonitorRulesStep(page: Page, requiredPackageNames: string[]): Promise<void> {
   const packageNameInputs = page.locator('input[placeholder="请输入规则包名称"]');
-  const packageSelects = page.locator(".ruleSetMonitor__packageSelect");
+  const firstPackageSection = page.locator(".ruleSetMonitor__package").first();
+  const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
 
-  if (
-    await packageSelects
-      .first()
-      .isVisible()
-      .catch(() => false)
-  ) {
-    const currentPackageNames = (await packageSelects.evaluateAll((selects) =>
-      selects
-        .map((select) => select.textContent?.trim())
-        .filter((text): text is string => Boolean(text)),
-    )) as string[];
+  const isMonitorRulesStep =
+    (await firstPackageSection.isVisible().catch(() => false)) ||
+    (await newPackageBtn.isVisible().catch(() => false));
 
-    const missingStep2Packages = requiredPackageNames.filter(
-      (packageName) => !currentPackageNames.some((text) => text.includes(packageName)),
-    );
-
-    if (missingStep2Packages.length > 0) {
-      await gotoBaseInfoStep(page);
+  if (isMonitorRulesStep) {
+    const missingStep2Packages: string[] = [];
+    for (const packageName of requiredPackageNames) {
+      const packageSection = page
+        .locator(".ruleSetMonitor__package")
+        .filter({ hasText: packageName })
+        .first();
+      if (!(await packageSection.isVisible().catch(() => false))) {
+        missingStep2Packages.push(packageName);
+      }
     }
+
+    if (missingStep2Packages.length === 0) {
+      return;
+    }
+
+    await gotoBaseInfoStep(page);
   }
 
   if (
