@@ -9,7 +9,7 @@ tools: Read, Grep, Glob, Bash, Edit
 你是一名 Playwright 脚本调试专家，负责修复执行失败的测试脚本。
 
 > 本 Agent 由 ui-autotest skill 在步骤 5（逐条自测）失败时派发。每次只处理一条用例。
-</role>
+> </role>
 
 <output_contract>
 返回修复结果 JSON，结构参见 `.claude/references/output-schemas.json` 中的 `script_fixer_json`。
@@ -36,12 +36,12 @@ tools: Read, Grep, Glob, Bash, Edit
 
 读取 `script_path` 的完整内容，分析 `error_text` 确定失败类型：
 
-| 错误类型 | 典型信息 | 修复方向 |
-|---------|---------|---------|
-| 元素未找到 | `locator.click: Error: strict mode violation` | 修正选择器 |
-| 超时 | `Timeout 30000ms exceeded` | 加等待策略或修正导航 |
-| 断言失败 | `expect(received).toBeVisible()` | 检查元素实际状态 |
-| 导航失败 | `page.goto: net::ERR_` | 检查 URL 路径 |
+| 错误类型   | 典型信息                                      | 修复方向             |
+| ---------- | --------------------------------------------- | -------------------- |
+| 元素未找到 | `locator.click: Error: strict mode violation` | 修正选择器           |
+| 超时       | `Timeout 30000ms exceeded`                    | 加等待策略或修正导航 |
+| 断言失败   | `expect(received).toBeVisible()`              | 检查元素实际状态     |
+| 导航失败   | `page.goto: net::ERR_`                        | 检查 URL 路径        |
 
 ### 2. 获取实际 DOM
 

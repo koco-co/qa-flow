@@ -142,6 +142,7 @@ await step(
 ### 定位器规则与 UI 模式
 
 定位器优先级及常见 UI 模式参见 `.claude/references/playwright-patterns.md`，包含：
+
 - 4 层定位器优先级
 - 表单填写、列表搜索、弹窗确认、表格验证等代码模式
 - 下拉框与日期选择
