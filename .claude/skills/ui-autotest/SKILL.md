@@ -444,61 +444,74 @@ bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --s
 
 断点恢复时，跳过 `test_status === "passed"` 的用例。对于 `test_status === "failed"` 且 `attempts >= 3` 的用例，也跳过（除非用户选择「重试失败项」）。
 
-**5.2 失败处理（最多重试 3 轮）**
+**5.2 失败处理（派发 Sub-Agent，最多重试 3 轮）**
 
-脚本执行失败时，**不生成 bug 报告**，而是进入自修复循环：
+> **⚠️ 主 agent 上下文保护规则：主 agent 绝不自行调试脚本。** 所有失败分析、DOM 获取、源码校对、选择器修复、重新验证**必须派发给 sub-agent** 执行。主 agent 仅负责：派发 → 收结果 → 更新进度状态 → 决定继续或放弃。
 
-1. **分析失败原因**：读取 Playwright 错误信息（超时、元素不存在、断言失败等）
-2. **获取实际 DOM**：使用 playwright-cli 的 snapshot 工具获取当前页面的实际 DOM 结构
-3. **参考源码校对**：结合 `workspace/{{project}}/.repos/` 下的前端源码，校对：
-   - 实际路由路径（检查 `router/` 或 `routes/` 配置）
-   - 实际菜单/侧边栏导航方式（检查 layout 组件）
-   - 按钮文本、表单 label（检查对应组件的 JSX/template）
-   - API 接口路径（检查 service 层调用）
-4. **修复脚本**：根据实际 DOM 和源码修正选择器、导航方式、等待策略
-5. **重新执行验证**：修复后再次运行，直到通过或达到 3 次重试上限
+**5.2.1 派发调试 Sub-Agent**
 
-**5.3 引用实际系统行为与 Archive MD 写回门禁**
+脚本执行失败时，派发 `script-fixer-agent`（model: sonnet），传入：
 
-在自测修复过程中，若发现 MD 用例描述与实际系统行为不一致（如导航路径错误、按钮名称不对、步骤缺失），按以下双门策略处理：
+- **失败的脚本路径**：`workspace/{{project}}/.temp/ui-blocks/{{id}}.ts`
+- **Playwright 错误信息**：从执行结果中提取的完整错误文本
+- **当前轮次**：第 N 轮（1~3）
+- **目标 URL**：`{{url}}`
+- **源码目录**：`workspace/{{project}}/.repos/`
+- **Archive MD 中该用例的原始步骤**
 
-1. **默认允许引用，不默认写回**：可直接引用实际 DOM、playwright-cli snapshot 和只读源码来修正脚本。
-2. **若拟回写 Archive MD，先展示差异预览**：
+Sub-Agent 的职责（完整包含在派发 prompt 中，不依赖主 agent 上下文）：
 
-   ```json
-   {
-     "archive_path": "{{md_path}}",
-     "changes": [
-       {
-         "case_title": "{{title}}",
-         "field": "step",
-         "current": "进入【xxx】页面",
-         "proposed": "进入【xxx → yyy】页面，等待列表加载完成",
-         "evidence": "snapshot + 源码路由配置"
-       }
-     ]
-   }
-   ```
+1. 分析 Playwright 错误信息（超时、元素不存在、断言失败等）
+2. 使用 playwright-cli 的 snapshot 工具获取实际 DOM 结构
+3. 结合前端源码校对路由、组件、选择器、API 路径
+4. 修复脚本中的选择器、导航方式、等待策略
+5. 重新执行验证：`QA_PROJECT={{project}} bunx playwright test {{script_path}} --project=chromium --timeout=30000`
+6. 报告结果：`FIXED`（通过）或 `STILL_FAILING`（仍失败 + 错误信息）
 
-3. **展示预览后，使用 AskUserQuestion 单独确认写回权限**：
-   - 选项 1：仅引用实际行为修正脚本，不写回 Archive MD（默认）
-   - 选项 2：允许按上述预览写回 Archive MD
-   - 选项 3：跳过该用例的写回建议
+**5.2.2 主 agent 处理 Sub-Agent 结果**
 
-4. **仅在用户明确允许写回时**，才更新原 Archive MD 文件，并在修改的步骤后追加注释：`<!-- 由 ui-autotest 自测校正 -->`
-5. **若用户未授权写回**，仅在最终结果中列出校正建议，不修改 Archive MD
+- `FIXED` → 更新进度 `test_status = "passed"`，继续下一条
+- `STILL_FAILING` → 更新进度 `test_status = "failed"` + `last_error`，判断 `attempts < 3` 则再派发一轮，否则标记放弃
+
+**5.2.3 主 agent 在步骤 5 中的行为边界**
+
+| 主 agent 可以做 | 主 agent 不可以做 |
+|----------------|-----------------|
+| 执行 `bunx playwright test` 首次运行 | 读 Playwright 错误详情去分析根因 |
+| 读取执行结果判断通过/失败 | 使用 playwright-cli snapshot |
+| 派发 sub-agent 并传入错误信息 | 直接修改脚本文件 |
+| 更新进度状态（running/passed/failed） | 读前端源码对比选择器 |
+| 决定重试或放弃 | 多轮调试循环 |
+
+**5.3 Archive MD 写回门禁**
+
+Sub-Agent 在修复过程中若发现 MD 用例描述与实际系统行为不一致，将在返回结果中附带 `corrections` 字段。主 agent 收集所有 corrections，在步骤 5 全部完成后**统一展示**：
+
+```
+以下用例的 Archive MD 描述与实际系统行为不一致：
+
+{{#each corrections}}
+- {{case_title}}：{{field}} "{{current}}" → "{{proposed}}" (依据: {{evidence}})
+{{/each}}
+
+是否更新 Archive MD？
+1. 不更新（默认）
+2. 更新
+```
+
+仅在用户确认后才写回，写回时追加注释：`<!-- 由 ui-autotest 自测校正 -->`
 
 **5.4 3 次重试仍失败的处理**
 
-若某条用例经过 3 轮修复仍无法通过：
+若某条用例经过 3 轮 sub-agent 修复仍无法通过：
 
 1. 记录为「环境/平台问题」，标记失败原因
 2. 将该用例从待合并列表中移除（不影响其他用例）
-3. 在最终报告中单独列出，注明失败原因和已尝试的修复措施
-4. **不自动生成 Bug 报告**（可能是环境问题而非真实 Bug），改为向用户报告：
+3. 在最终报告中单独列出，注明失败原因和 sub-agent 已尝试的修复措施
+4. **不自动生成 Bug 报告**，改为向用户报告：
 
 ```
-以下用例经过 3 轮自测修复仍未通过，可能为环境或平台问题：
+以下用例经过 3 轮 sub-agent 修复仍未通过，可能为环境或平台问题：
 
 - {{title}}：{{最后一次的错误摘要}}
   已尝试：{{修复措施列表}}
