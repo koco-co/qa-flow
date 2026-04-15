@@ -362,6 +362,8 @@ bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{fix_branch}}
 
 **E4. 输出用例文件**
 
+> **约束：直接使用 agent 返回的用例内容写入文件，编排层不得追加、拆分或重写用例。** 若 agent 输出质量不足，应调整 agent 提示词，而非在编排层补救。
+
 文件路径：`workspace/{{project}}/issues/{{YYYYMM}}/hotfix_{{version}}_{{bugId}}-{{summary}}.md`
 
 其中：
