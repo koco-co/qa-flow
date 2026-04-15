@@ -175,20 +175,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
           .click();
         await page.waitForTimeout(1500);
 
-        // 统计函数: 取值范围&枚举范围（在 .rule__function-list__item 内）
-        const funcListItem = page.locator(".rule__function-list__item").first();
-        await funcListItem.waitFor({ state: "visible", timeout: 10000 });
-        const statFuncSelect = funcListItem.locator(".ant-select").first();
-        await statFuncSelect.locator(".ant-select-selector").click();
-        await page.waitForTimeout(500);
-        await page
-          .locator(".ant-select-dropdown:visible")
-          .getByText("取值范围&枚举范围", { exact: false })
-          .first()
-          .click();
-        await page.waitForTimeout(1000);
-
-        // 字段: score（选择统计函数后字段下拉可能刷新）
+        // 先选字段: score（选字段后统计函数选项才会更新）
         const fieldFormItem = page
           .locator(".ant-form-item")
           .filter({ hasText: /^字段/ })
@@ -196,12 +183,29 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         const fieldSelect = fieldFormItem.locator(".ant-select").first();
         await fieldSelect.locator(".ant-select-selector").click();
         await page.waitForTimeout(500);
-        await page
-          .locator(".ant-select-dropdown:visible")
-          .getByText("score", { exact: false })
+        const fieldDropdown = page.locator(".ant-select-dropdown:visible").last();
+        await fieldDropdown.waitFor({ state: "visible", timeout: 5000 });
+        await fieldDropdown
+          .locator(".ant-select-item-option")
+          .filter({ hasText: "score" })
           .first()
           .click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(1000);
+
+        // 统计函数: 取值范围&枚举范围（在 .rule__function-list__item 内，选字段后才出现此选项）
+        const funcListItem = page.locator(".rule__function-list__item").first();
+        await funcListItem.waitFor({ state: "visible", timeout: 10000 });
+        const statFuncSelect = funcListItem.locator(".ant-select").first();
+        await statFuncSelect.locator(".ant-select-selector").click();
+        await page.waitForTimeout(1000);
+        const funcDropdown = page.locator(".ant-select-dropdown:visible").last();
+        await funcDropdown.waitFor({ state: "visible", timeout: 5000 });
+        await funcDropdown
+          .locator(".ant-select-item-option")
+          .filter({ hasText: /取值范围.*枚举范围|枚举范围.*取值范围/ })
+          .first()
+          .click();
+        await page.waitForTimeout(1000);
 
         // 取值范围设置: > 1 且 < 10
         const rangeFormItem = page
