@@ -138,6 +138,18 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 ---
 
+## 步骤 0：偏好预加载
+
+工作流启动时一次性加载偏好：
+
+```bash
+bun run .claude/scripts/preference-loader.ts load --project {{project}} > workspace/{{project}}/.temp/preferences-merged.json
+```
+
+后续步骤通过此 JSON 传递偏好给 sub-agent，不再各自读 preferences/ 目录。
+
+---
+
 ## 步骤 1：解析输入
 
 按 Task Schema 更新：创建 9 个主流程任务，将 `步骤 1` 标记为 `in_progress`。

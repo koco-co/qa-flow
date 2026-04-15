@@ -513,10 +513,11 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 ### 4.1 历史用例检索
 
 ```bash
-bun run .claude/scripts/archive-gen.ts search --query "{{keywords}}" --dir workspace/{{project}}/archive --project {{project}}
+bun run .claude/scripts/archive-gen.ts search --query "{{keywords}}" --project {{project}} --limit 20 \
+  | bun run .claude/scripts/search-filter.ts filter --top 5
 ```
 
-> 注：`workspace/{{project}}/archive` 中的 `workspace` 对应 `.env` 中 `WORKSPACE_DIR` 的值（默认 `workspace`），`{{project}}` 为当前选中的项目名称。
+> 注：`workspace/{{project}}/archive` 中的 `workspace` 对应 `.env` 中 `WORKSPACE_DIR` 的值（默认 `workspace`），`{{project}}` 为当前选中的项目名称。`search-filter.ts` 对结果做相关性排序并截取 top-5，减少传入 analyze-agent 的上下文体积。
 
 ### 4.2 测试点清单生成（AI 任务）
 
