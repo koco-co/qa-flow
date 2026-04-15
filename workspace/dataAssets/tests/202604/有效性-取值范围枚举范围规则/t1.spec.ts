@@ -13,6 +13,57 @@ test.use({ storageState: ".auth/session.json" });
 const SUITE_NAME = "【内置规则丰富】有效性，支持设置字段多规则的且或关系(#15695)";
 const PAGE_NAME = "规则集管理";
 
+async function postRuleSetApi<T>(
+  page: import("@playwright/test").Page,
+  path: string,
+  body: unknown,
+) {
+  return page.evaluate(
+    async ({ requestPath, requestBody, projectId }) => {
+      const response = await fetch(requestPath, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+          "Accept-Language": "zh-CN",
+          "X-Valid-Project-ID": String(projectId),
+        },
+        body: JSON.stringify(requestBody),
+      });
+      return response.json();
+    },
+    {
+      requestPath: path,
+      requestBody: body,
+      projectId: QUALITY_PROJECT_ID,
+    },
+  ) as Promise<T>;
+}
+
+async function deleteExistingRuleSets(
+  page: import("@playwright/test").Page,
+  tableNames: string[],
+): Promise<void> {
+  const listResponse = (await postRuleSetApi<{
+    data?: { contentList?: Array<{ id?: number | string; tableName?: string }> };
+  }>(page, "/dassets/v1/valid/monitorRuleSet/pageQuery", {
+    current: 1,
+    size: 50,
+    search: "",
+  })) ?? { data: { contentList: [] } };
+
+  const rows = (listResponse.data?.contentList ?? []).filter((item) =>
+    tableNames.includes(String(item.tableName ?? "")),
+  );
+
+  for (const row of rows) {
+    if (!row.id) continue;
+    await postRuleSetApi(page, "/dassets/v1/valid/monitorRuleSet/delete", {
+      id: Number(row.id),
+    });
+  }
+}
+
 test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
   // ── 前置条件：建表 ──
   test.beforeAll(async ({ browser }) => {
@@ -39,6 +90,10 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await page.waitForLoadState("networkidle");
         await page.waitForTimeout(500);
         await injectProjectContext(page, QUALITY_PROJECT_ID);
+        await page.reload();
+        await page.waitForLoadState("networkidle");
+        await page.waitForTimeout(1000);
+        await deleteExistingRuleSets(page, ["quality_test_num", "quality_test_str"]);
         await page.reload();
         await page.waitForLoadState("networkidle");
         await page.waitForTimeout(1000);

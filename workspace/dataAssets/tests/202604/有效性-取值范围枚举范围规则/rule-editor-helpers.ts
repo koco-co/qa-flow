@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
 import { applyRuntimeCookies, buildDataAssetsUrl, selectAntOption } from "../../helpers/test-setup";
-import { injectProjectContext, QUALITY_PROJECT_ID } from "./test-data";
+import { DORIS_DATABASE, injectProjectContext, QUALITY_PROJECT_ID } from "./test-data";
 
 export interface RangeConfig {
   firstOperator?: string;
@@ -33,6 +33,8 @@ const RULESET_ROW_FALLBACKS: Record<string, string> = {
   ruleset_15695_str: "quality_test_str",
 };
 
+const DORIS_DATASOURCE_PATTERN = /doris/i;
+
 export function getRuleSetListRow(page: Page, rulesetName: string): Locator {
   const rowText = RULESET_ROW_FALLBACKS[rulesetName] ?? rulesetName;
   return page
@@ -50,6 +52,160 @@ export async function gotoRuleSetList(page: Page): Promise<void> {
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1000);
+}
+
+async function gotoRuleSetCreate(page: Page): Promise<void> {
+  await applyRuntimeCookies(page);
+  await page.goto(buildDataAssetsUrl("/dq/ruleSet/add", QUALITY_PROJECT_ID));
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
+  await injectProjectContext(page, QUALITY_PROJECT_ID);
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1000);
+}
+
+async function ensurePackageNamesInBaseInfo(
+  page: Page,
+  requiredPackageNames: string[],
+): Promise<void> {
+  const packageNameInputs = page.locator('input[placeholder="请输入规则包名称"]');
+  await packageNameInputs.first().waitFor({ state: "visible", timeout: 10000 });
+
+  const existingPackageNames = (await packageNameInputs.evaluateAll((inputs) =>
+    inputs.map((input) => (input as HTMLInputElement).value.trim()).filter(Boolean),
+  )) as string[];
+
+  const missingPackageNames = requiredPackageNames.filter(
+    (packageName) => !existingPackageNames.includes(packageName),
+  );
+
+  for (const packageName of missingPackageNames) {
+    await page.getByRole("button", { name: /^新增$/ }).click();
+    await page.waitForTimeout(300);
+    await packageNameInputs.last().fill(packageName);
+    await page.waitForTimeout(200);
+  }
+}
+
+async function gotoBaseInfoStep(page: Page): Promise<void> {
+  const packageNameInputs = page.locator('input[placeholder="请输入规则包名称"]');
+  if (
+    await packageNameInputs
+      .first()
+      .isVisible()
+      .catch(() => false)
+  ) {
+    return;
+  }
+
+  const prevBtn = page.getByRole("button", { name: "上一步" }).first();
+  if (await prevBtn.isVisible().catch(() => false)) {
+    await prevBtn.click();
+  } else {
+    const baseInfoBtn = page.getByRole("button", { name: /基础信息/ }).first();
+    if (await baseInfoBtn.isVisible().catch(() => false)) {
+      await baseInfoBtn.click();
+    } else {
+      throw new Error("Cannot switch to 基础信息 step.");
+    }
+  }
+
+  await packageNameInputs.first().waitFor({ state: "visible", timeout: 10000 });
+  await page.waitForTimeout(500);
+}
+
+async function gotoMonitorRulesStep(page: Page): Promise<void> {
+  const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
+  if (
+    (await page.locator(".ruleSetMonitor__package").count()) > 0 ||
+    (await newPackageBtn.isVisible().catch(() => false))
+  ) {
+    return;
+  }
+
+  await page.getByRole("button", { name: "下一步" }).click();
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1000);
+  await expect(newPackageBtn.or(page.locator(".ruleSetMonitor__package").first())).toBeVisible({
+    timeout: 10000,
+  });
+}
+
+async function addPackageSlot(page: Page, packageName: string): Promise<void> {
+  await page
+    .getByRole("button", { name: /新增规则包/ })
+    .first()
+    .click();
+  await page.waitForTimeout(300);
+
+  const packageSection = page.locator(".ruleSetMonitor__package").last();
+  const packageSelect = packageSection
+    .locator(".ruleSetMonitor__packageSelect .ant-select")
+    .first();
+  await packageSelect.waitFor({ state: "visible", timeout: 10000 });
+  await selectAntOption(page, packageSelect, packageName);
+  await page.waitForTimeout(300);
+}
+
+async function ensureRuleSetPackagesVisible(
+  page: Page,
+  requiredPackageNames: string[],
+): Promise<void> {
+  const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
+  await expect(newPackageBtn.or(page.locator(".ruleSetMonitor__package").first())).toBeVisible({
+    timeout: 10000,
+  });
+
+  for (const packageName of requiredPackageNames) {
+    const packageSection = page
+      .locator(".ruleSetMonitor__package")
+      .filter({ hasText: packageName })
+      .first();
+    if (await packageSection.isVisible().catch(() => false)) {
+      continue;
+    }
+    await addPackageSlot(page, packageName);
+    await expect(
+      page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first(),
+    ).toBeVisible({ timeout: 10000 });
+  }
+}
+
+async function createRuleSetDraft(
+  page: Page,
+  tableName: string,
+  requiredPackageNames: string[],
+): Promise<void> {
+  await gotoRuleSetCreate(page);
+
+  const sourceFormItem = page
+    .locator(".ant-form-item")
+    .filter({ hasText: /选择数据源/ })
+    .first();
+  await selectAntOption(
+    page,
+    sourceFormItem.locator(".ant-select").first(),
+    DORIS_DATASOURCE_PATTERN,
+  );
+
+  const schemaFormItem = page
+    .locator(".ant-form-item")
+    .filter({ hasText: /选择数据库/ })
+    .first();
+  await selectAntOption(page, schemaFormItem.locator(".ant-select").first(), DORIS_DATABASE);
+  await page.waitForTimeout(1000);
+
+  const tableFormItem = page
+    .locator(".ant-form-item")
+    .filter({ hasText: /选择数据表/ })
+    .first();
+  await selectAntOption(page, tableFormItem.locator(".ant-select").first(), tableName);
+  await page.waitForTimeout(500);
+
+  await ensurePackageNamesInBaseInfo(page, requiredPackageNames);
+  await gotoMonitorRulesStep(page);
+  await ensureRuleSetPackagesVisible(page, requiredPackageNames);
 }
 
 export async function openRuleSetEditor(
@@ -76,6 +232,11 @@ export async function openRuleSetEditor(
       await ensureMonitorRulesStep(page, requiredPackageNames);
       return;
     }
+  }
+
+  if (fallbackRowText === "quality_test_str") {
+    await createRuleSetDraft(page, fallbackRowText, requiredPackageNames);
+    return;
   }
 
   const availableRows = await dataRows.allTextContents();
@@ -105,21 +266,7 @@ async function ensureMonitorRulesStep(page: Page, requiredPackageNames: string[]
     );
 
     if (missingStep2Packages.length > 0) {
-      const prevBtn = page.getByRole("button", { name: "上一步" }).first();
-      if (await prevBtn.isVisible().catch(() => false)) {
-        await prevBtn.click();
-      } else {
-        const baseInfoBtn = page.getByRole("button", { name: /基础信息/ }).first();
-        if (await baseInfoBtn.isVisible().catch(() => false)) {
-          await baseInfoBtn.click();
-        } else {
-          throw new Error(
-            `Cannot switch to 基础信息 step to add packages: ${missingStep2Packages.join(", ")}`,
-          );
-        }
-      }
-      await packageNameInputs.first().waitFor({ state: "visible", timeout: 10000 });
-      await page.waitForTimeout(500);
+      await gotoBaseInfoStep(page);
     }
   }
 
@@ -129,35 +276,11 @@ async function ensureMonitorRulesStep(page: Page, requiredPackageNames: string[]
       .isVisible()
       .catch(() => false)
   ) {
-    const existingPackageNames = (await packageNameInputs.evaluateAll((inputs) =>
-      inputs.map((input) => (input as HTMLInputElement).value.trim()).filter(Boolean),
-    )) as string[];
-
-    const missingPackageNames = requiredPackageNames.filter(
-      (packageName) => !existingPackageNames.includes(packageName),
-    );
-
-    for (const packageName of missingPackageNames) {
-      await page.getByRole("button", { name: /新增/ }).last().click();
-      await page.waitForTimeout(300);
-      await packageNameInputs.last().fill(packageName);
-      await page.waitForTimeout(200);
-    }
-
-    await page.getByRole("button", { name: "下一步" }).click();
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
+    await ensurePackageNamesInBaseInfo(page, requiredPackageNames);
   }
 
-  await expect(page.locator(".ruleSetMonitor__package").first()).toBeVisible({
-    timeout: 15000,
-  });
-
-  for (const packageName of requiredPackageNames) {
-    await expect(
-      page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first(),
-    ).toBeVisible({ timeout: 15000 });
-  }
+  await gotoMonitorRulesStep(page);
+  await ensureRuleSetPackagesVisible(page, requiredPackageNames);
 }
 
 export async function getRulePackage(page: Page, packageName: string): Promise<Locator> {
