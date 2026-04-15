@@ -11,7 +11,6 @@ argument-hint: "[报错日志 | 禅道链接 | 冲突代码]"
 <inputs>
 - 报错日志、冲突代码片段、禅道 Bug 链接、用户补充上下文
 - `workspace/{{project}}` 输出目录、`config.ts` 配置、只读源码副本、报告模板
-- 子 agent 返回的结构化 JSON 或 Archive Markdown
 </inputs>
 
 <modes>
@@ -24,6 +23,7 @@ argument-hint: "[报错日志 | 禅道链接 | 冲突代码]"
 
 <confirmation_policy>
 <rule id="status_only">模式识别、分析摘要、报告生成完成仅作状态展示，不要求确认。</rule>
+<rule id="no_merge">引用源码 / 执行 repo sync 与写回 `.env` / 分支映射是两道独立门禁，不得合并为一次确认。</rule>
 <rule id="reference_sync">引用源码或执行 repo sync 前，先展示 repo/branch/path 摘要并请求允许；Hotfix 模式若已给出 fix_branch，可自动 sync 作为 reference，但不自动写回配置。</rule>
 <rule id="writeback">写回 `.env`、repo branch mapping 或其他配置前，必须单独展示变更预览并再次确认；拒绝写回时可继续本次分析。</rule>
 </confirmation_policy>
@@ -40,11 +40,6 @@ argument-hint: "[报错日志 | 禅道链接 | 冲突代码]"
 <blocking_unknown>缺少完整堆栈、关键冲突块、repo/branch 等核心上下文时，返回补料请求或等待用户决策。</blocking_unknown>
 <invalid_input>输入为空、链接损坏、内容与识别模式不匹配时，立即返回输入无效。</invalid_input>
 </error_handling>
-
-<examples>
-  <reference_gate>允许引用源码与允许写回配置是两道独立门禁，不能一次确认同时覆盖。</reference_gate>
-  <status_summary>报告生成完成后直接展示路径和摘要；只有阻断态才继续追问。</status_summary>
-</examples>
 
 ## 执行前准备
 
@@ -123,16 +118,16 @@ argument-hint: "[报错日志 | 禅道链接 | 冲突代码]"
 
 **A1. 派发分析 Agent**
 
-派发 `backend-bug-agent`（model: sonnet），传入报错日志和源码上下文，由 Agent 独立完成分析并返回结构化 JSON。
+派发 `backend-bug-agent`（model: sonnet），传入报错日志和源码上下文，由 Agent 独立完成分析并返回 `backend_bug_json`（结构见 `<output_contract>`）。
 
 **A2. 源码引用许可与可选写回（双门策略）**
 
-> **⚠️ 强制规则：引用源码 / 执行 repo sync 与写回 `.env` / 分支映射是两道独立门禁，不得合并为一次确认。**
+> **⚠️ 强制规则：引用源码 / 执行 repo sync 与写回 `.env` / 分支映射是两道独立门禁，不得合并为一次确认。**（`<confirmation_policy>` rule: `no_merge`）
 
 执行流程：
 
 1. 根据报错信息中的包名、模块名，从 config.repos 中推断最可能的仓库和分支。
-2. 通过 AskUserQuestion 工具先展示“引用/同步”摘要并等待许可：
+2. 通过 AskUserQuestion 工具先展示"引用/同步"摘要并等待许可：
 
 ```
 开始分析前，请确认源码参考信息：
@@ -213,7 +208,7 @@ Bug 分析完成
 
 **B1. 派发分析 Agent**
 
-派发 `conflict-agent`（model: sonnet），传入冲突代码片段和分支信息，由 Agent 独立完成分析并返回结构化 JSON。
+派发 `conflict-agent`（model: sonnet），传入冲突代码片段和分支信息，由 Agent 独立完成分析并返回 `conflict_json`（结构见 `<output_contract>`）。
 
 **B2. 获取分支信息（可选）**
 
@@ -261,9 +256,11 @@ bun run .claude/scripts/plugin-loader.ts notify --event conflict-analyzed --data
 
 **C1. 派发分析 Agent**
 
-派发 `frontend-bug-agent`（model: sonnet），传入前端报错信息和源码上下文，由 Agent 独立完成分析并返回结构化 JSON。
+派发 `frontend-bug-agent`（model: sonnet），传入前端报错信息和源码上下文，由 Agent 独立完成分析并返回 `frontend_bug_json`（结构见 `<output_contract>`）。
 
-**C2. 源码引用许可与可选写回（同模式 A 的双门策略）**
+**C2. 源码引用许可与可选写回**
+
+参见模式 A 的 **A2** 步骤，流程完全一致（双门策略：`<confirmation_policy>` rule: `no_merge`）。
 
 **C3. AI 分析**
 
@@ -302,11 +299,11 @@ bun run .claude/scripts/plugin-loader.ts notify --event bug-report --data '{"rep
 提供信息后，请重新发送给我。
 ```
 
-说明：
+错误分类（参见顶部 `<error_handling>`）：
 
-- 缺少完整日志或冲突块 → 视为 `blocking_unknown`
-- 输入为空、链接损坏、内容明显与分析模式不匹配 → 视为 `invalid_input`
-- 仅缺辅助环境信息 → 视为 `defaultable_unknown`，可在补充后提升报告质量
+- 缺少完整日志或冲突块 → `blocking_unknown`，阻断并等待用户补充
+- 仅缺辅助环境信息 → `defaultable_unknown`，继续分析并给出补充检查项
+- 输入为空、链接损坏或内容明显不匹配 → `invalid_input`，立即返回输入无效
 
 ---
 
@@ -338,7 +335,7 @@ bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{fix_branch}}
 ```
 
 3. 同步完成后输出一行状态信息即可：`源码已同步：{{repo_name}} @ {{fix_branch}}`
-4. 若需要把推断出的 repo / branch 持久化到 `.env` 或分支映射，仍按模式 A 的写回门禁单独确认。
+4. 若需要把推断出的 repo / branch 持久化到 `.env` 或分支映射，仍按模式 A 的 A2 步骤 4 单独确认。
 
 **路径 B — fix_branch 为 null（需要用户确认）：**
 
@@ -358,7 +355,7 @@ bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{fix_branch}}
 
 **E3. AI 分析**
 
-派发 `hotfix-case-agent`（model: sonnet），传入禅道 Bug 信息和 git diff，由 Agent 独立完成分析并返回 Archive 格式 Markdown。
+派发 `hotfix-case-agent`（model: sonnet），传入禅道 Bug 信息和 git diff，由 Agent 独立完成分析并返回 Archive 格式 Markdown（结构见 `<output_contract>`）。
 
 **E4. 输出用例文件**
 

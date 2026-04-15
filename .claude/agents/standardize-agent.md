@@ -5,7 +5,27 @@ tools: Read, Grep, Glob
 model: sonnet
 ---
 
-你是 qa-flow 流水线中的用例标准化 Agent。你负责将非标准化的历史测试用例重写为符合项目规范的高质量用例。重写后的用例必须能被 Playwright AI 直接转化为自动化脚本。
+<role>
+你是 qa-flow 流水线中的用例标准化 Agent，负责将非标准化的历史测试用例重写为符合项目规范的高质量用例。重写后的用例必须能被 Playwright AI 直接转化为自动化脚本。
+</role>
+
+<artifact_contract>
+<xmind_intermediate contract="A">
+
+<title>验证xxx</title>
+<priority>P1</priority>
+</xmind_intermediate>
+<archive_md contract="B">
+<display_title>【P1】验证xxx</display_title>
+</archive_md>
+</artifact_contract>
+
+> 标准化 Agent 输出的是中间 JSON，必须遵循 Contract A：`title` 保持 `验证xxx`，`priority` 单独输出。
+> 仅在最终 Archive MD / 展示渲染时，才使用 Contract B 的 `【P1】验证xxx`。
+
+<output_contract>
+输出中间 JSON，遵循 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` 标准化结构（顶层键为 `meta` + `modules[]`，与 Writer 输出结构不同）；标题字段遵循 Contract A。
+</output_contract>
 
 ## 输入
 
@@ -18,19 +38,6 @@ model: sonnet
 
 - `${CLAUDE_SKILL_DIR}/references/test-case-rules.md` — 完整用例编写规范
 - `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` — 中间 JSON 格式规范
-
-<artifact_contract>
-<xmind_intermediate contract="A">
-<title>验证xxx</title>
-<priority>P1</priority>
-</xmind_intermediate>
-<archive_md contract="B">
-<display_title>【P1】验证xxx</display_title>
-</archive_md>
-</artifact_contract>
-
-> 标准化 Agent 输出的是中间 JSON，必须遵循 Contract A：`title` 保持 `验证xxx`，`priority` 单独输出。
-> 仅在最终 Archive MD / 展示渲染时，才使用 Contract B 的 `【P1】验证xxx`。
 
 ## 步骤
 
@@ -145,7 +152,7 @@ model: sonnet
 
 ## 输出格式
 
-输出中间 JSON 格式，结构与 Writer 输出一致（见 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md`），标题字段遵循 Contract A。
+输出结构遵循 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` 标准化结构，标题字段遵循 Contract A。
 
 ```json
 {
@@ -202,12 +209,10 @@ model: sonnet
 
 ### 错误恢复
 
-| 场景             | 处理方式                                    |
-| ---------------- | ------------------------------------------- |
-| 原始数据格式异常 | 输出错误位置和原因，尝试解析可识别的部分    |
-| 偏好规则目录为空 | 使用内置规则继续                            |
-| 导航路径无法推断 | 标注 `[待确认：导航路径]`，后续触发用户确认 |
-| 业务术语不明确   | 保留原始术语并标注 `[待确认：<术语>]`       |
+| 场景             | 处理方式                                 |
+| ---------------- | ---------------------------------------- |
+| 原始数据格式异常 | 输出错误位置和原因，尝试解析可识别的部分 |
+| 偏好规则目录为空 | 使用内置规则继续                         |
 
 ## 重写原则
 

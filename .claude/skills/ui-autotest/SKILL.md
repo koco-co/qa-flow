@@ -14,7 +14,6 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 - Archive MD 路径或功能名
 - 目标 URL
 - 当前项目配置、登录 session、只读源码副本
-- playwright-cli 能力与 Playwright 执行结果
 </inputs>
 
 <workflow>
@@ -47,10 +46,19 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 <invalid_input>Archive MD 路径、URL 或解析结果无效时，立即停止并要求修正输入。</invalid_input>
 </error_handling>
 
-<examples>
-  <scope_default>用户未指定范围时默认执行 P0 冒烟；用户已明确指定时不再重复确认。</scope_default>
-  <writeback_preview>发现 Archive MD 与真实系统不一致时，先展示拟修改步骤摘要，再单独确认是否写回。</writeback_preview>
-</examples>
+<artifact_contract>
+<xmind_intermediate contract="A">
+
+<title>验证xxx</title>
+<priority>P1</priority>
+</xmind_intermediate>
+<archive_md contract="B">
+<display_title>【P1】验证xxx</display_title>
+</archive_md>
+</artifact_contract>
+
+> 本 Skill 消费的是 Archive MD（Contract B）。
+> `parse-cases.ts` 会保留原始 H5 标题到 `title`（如 `【P1】验证xxx`），并单独提取 `priority=P1`；示例与任务命名必须按此契约书写。
 
 ## 任务可视化（Task 工具）
 
@@ -101,20 +109,6 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 ---
 
 ## 前置说明
-
-<artifact_contract>
-<xmind_intermediate contract="A">
-
-<title>验证xxx</title>
-<priority>P1</priority>
-</xmind_intermediate>
-<archive_md contract="B">
-<display_title>【P1】验证xxx</display_title>
-</archive_md>
-</artifact_contract>
-
-> 本 Skill 消费的是 Archive MD（Contract B）。
-> `parse-cases.ts` 会保留原始 H5 标题到 `title`（如 `【P1】验证xxx`），并单独提取 `priority=P1`；示例与任务命名必须按此契约书写。
 
 本 Skill 依赖外部 `playwright-cli` skill（单独安装）。执行前检查是否已安装：若未安装，提示用户执行 `/playwright-cli` 安装后再继续。
 
@@ -281,11 +275,11 @@ bun run .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --outp
 workspace/{{project}}/.temp/ui-blocks/{{id}}.ts
 ```
 
-代码块格式：
+代码块格式（import 路径须与 `script-writer-agent` 的 output_contract 一致）：
 
 ```typescript
 // META: {"id":"t1","priority":"P0","title":"【P0】验证xxx"}
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../fixtures/step-screenshot";
 // ... Playwright test code
 ```
 
@@ -526,10 +520,10 @@ bun run .claude/scripts/plugin-loader.ts notify \
 
 ## 输出目录约定
 
-| 类型                 | 路径                                                 |
-| -------------------- | ---------------------------------------------------- |
-| 临时代码块           | `workspace/{{project}}/.temp/ui-blocks/`             |
-| E2E spec 文件        | `workspace/{{project}}/tests/YYYYMM/{{suite_name}}/` |
-| Playwright HTML 报告 | `workspace/{{project}}/reports/playwright/YYYYMM/{{suite_name}}/` |
+| 类型                 | 路径                                                                        |
+| -------------------- | --------------------------------------------------------------------------- |
+| 临时代码块           | `workspace/{{project}}/.temp/ui-blocks/`                                    |
+| E2E spec 文件        | `workspace/{{project}}/tests/YYYYMM/{{suite_name}}/`                        |
+| Playwright HTML 报告 | `workspace/{{project}}/reports/playwright/YYYYMM/{{suite_name}}/`           |
 | Bug 报告             | `workspace/{{project}}/reports/bugs/YYYYMM/ui-autotest-{{suite_name}}.html` |
-| Session 文件         | `.auth/session.json`                                 |
+| Session 文件         | `.auth/session.json`                                                        |

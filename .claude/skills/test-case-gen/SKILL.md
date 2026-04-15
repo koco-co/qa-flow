@@ -48,7 +48,6 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 - PRD 路径、蓝湖 URL、XMind/CSV 文件、模块重跑指令、反向同步指令
 - 项目级与全局 `preferences/`
 - `config.ts`、`state.ts`、`workspace/{{project}}/`、只读源码仓库
-- subagent 输出的结构化 JSON / `<clarify_envelope>` / `<blocked_envelope>` / `<confirmed_context>`
 </inputs>
 
 <workflow>
@@ -59,13 +58,14 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 
 <confirmation_policy>
 <rule id="status_only">纯状态展示、任务进度、完成摘要不要求确认；直接继续下一节点。</rule>
+<rule id="default_continue">普通模式默认连续推进；只有歧义输入、阻断未知或写回动作才触发确认。</rule>
 <rule id="scope_or_ambiguity">仅在输入存在歧义、范围可变、或用户明确要求人工审阅时使用 AskUserQuestion。</rule>
 <rule id="stateful_write">覆盖已有文件、保存 repo 映射、反向同步 Archive MD、持久化 profile / config 前，先展示预览或写入摘要，再确认。</rule>
 <rule id="reference_vs_writeback">允许引用源码/历史/已有产物用于分析，不等于允许写回配置或归档；写回必须单独授权。</rule>
 </confirmation_policy>
 
 <output_contract>
-<artifact_contract>保留 Task 2 已批准的 A/B 产物契约与文案，不改写 Writer 中间 JSON、Archive MD、XMind 的职责边界。</artifact_contract>
+<contract_preservation>保留 Task 2 已批准的 A/B 产物契约与文案，不改写 Writer 中间 JSON、Archive MD、XMind 的职责边界。</contract_preservation>
 <transform_handoff>transform 通过 `<clarify_envelope>` / `<confirmed_context>` 交接，不再依赖旧式 Markdown 协议块。</transform_handoff>
 <writer_handoff>writer 通过 `<blocked_envelope>` / `<confirmed_context>` 交接；阻断时也必须保持机器可读。</writer_handoff>
 </output_contract>
@@ -75,11 +75,6 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 <blocking_unknown>影响 PRD、测试点或用例正确性的未知项转交澄清/阻断协议。</blocking_unknown>
 <invalid_input>输入损坏、缺失或路径不合法时立即停止当前分支并提示修正。</invalid_input>
 </error_handling>
-
-<examples>
-  <normal_run>普通模式默认连续推进；只有歧义输入、阻断未知或写回动作才触发确认。</normal_run>
-  <writeback_gate>反向同步 Archive MD、保存 repo profile 等持久化写入必须先预览再确认。</writeback_gate>
-</examples>
 
 ---
 
@@ -394,7 +389,7 @@ bun run .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
 - 选项 3：调整仓库/分支
 - 选项 4：不使用源码参考
 
-> **注意**：这是“允许引用/同步”的确认，不等于允许写回配置。
+> **注意**：这是"允许引用/同步"的确认，不等于允许写回配置。
 ```
 
 若用户提供了新的映射关系，仅在需要持久化时再进行第二道写回确认。先展示写入摘要：
@@ -417,7 +412,7 @@ bun run .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_
 
 ### 2.3 拉取源码
 
-若用户选择“允许同步并引用以上仓库”，执行：
+若用户选择"允许同步并引用以上仓库"，执行：
 
 ```bash
 bun run .claude/scripts/repo-sync.ts sync-profile --name "{{profile_name}}"
@@ -666,6 +661,8 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 ## 节点 6.5: format-check — 格式合规检查闭环
 
 **目标**：确保 Writer 产出的用例在格式层面严格符合 R01-R11 编写规范，零偏差才放行。
+
+> **最大轮次**：普通模式最多 5 轮；--quick 模式最多 2 轮。
 
 **⏳ Task**：将 `format-check` 任务标记为 `in_progress`。创建第 1 轮子任务（subject: `[format-check] 第 1 轮`，activeForm: `执行第 1 轮格式检查`）。
 
