@@ -5,6 +5,7 @@
 
 <artifact_contract>
 <xmind_intermediate contract="A">
+
 <title>验证xxx</title>
 <priority>P1</priority>
 </xmind_intermediate>
@@ -30,7 +31,6 @@ iteration_id: 23
 | prd_version 输入 | 生成的 Root 节点名称（= frontmatter root_name） |
 | ---------------- | ----------------------------------------------- |
 | `v6.3.10`        | `数据资产v6.3.10迭代用例(#23)`                  |
-| `6.3.10`         | `数据资产v6.3.10迭代用例(#23)`                  |
 
 ## Frontmatter root_name 字段
 

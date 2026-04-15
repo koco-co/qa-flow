@@ -137,23 +137,14 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
     await step(
       "步骤3: 新增取值范围&枚举范围规则并填写配置 → 规则配置区域展开正常，各字段可正常录入",
       async () => {
-        // 先选择规则包（进入监控规则页面后必须先选包才能新增规则）
-        const packageSelect = page
-          .locator(".ruleSetMonitor__packageSelect, .ant-select")
-          .filter({ hasText: /请选择规则包/ })
-          .first();
-        await packageSelect.locator(".ant-select-selector").click();
-        await page.waitForTimeout(500);
-        await page
-          .locator(".ant-select-dropdown:visible")
-          .getByText("且关系校验包", { exact: false })
-          .first()
-          .click();
-        await page.waitForTimeout(1000);
+        // 等待 Step 2 监控规则页面完全加载（规则包从 Step 1 带入，已预设）
+        await page.waitForTimeout(2000);
 
         // 点击新增规则
-        await page.getByRole("button", { name: /新增规则/ }).first().click();
-        await page.waitForTimeout(1000);
+        const addRuleBtn = page.getByRole("button", { name: /新增规则/ }).first();
+        await addRuleBtn.waitFor({ state: "visible", timeout: 15000 });
+        await addRuleBtn.click();
+        await page.waitForTimeout(1500);
 
         // 统计函数: 取值范围&枚举范围
         const statFuncSelect = page
