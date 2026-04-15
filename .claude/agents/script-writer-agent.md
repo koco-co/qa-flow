@@ -139,91 +139,12 @@ await step(
 - 使用 `test.use({ storageState: '{{session_path}}' })` 复用登录态
 - step 函数使用规范参见上一章节
 
-### 定位器规则
+### 定位器规则与 UI 模式
 
-优先级从高到低：
-
-1. **语义化定位器**（首选）：
-   - `page.getByRole('button', { name: '新增' })`
-   - `page.getByText('确认')`
-   - `page.getByLabel('商品名称')`
-   - `page.getByPlaceholder('请输入商品名称')`
-
-2. **测试 ID**（次选）：
-   - `page.getByTestId('search-btn')`
-
-3. **CSS 选择器**（最后选，仅在前两种无法确定时使用）：
-   - `page.locator('.ant-btn-primary')`
-   - `page.locator('table tbody tr').first()`
-
-4. **无法确定选择器时**：
-   - 添加注释 `// TODO: 需通过 playwright-cli snapshot 获取实际选择器`
-   - 使用 `page.locator('text={{按钮文本}}')` 作为占位
-
-### 常见 UI 模式
-
-**页面导航**：
-
-```typescript
-await page.goto("{{url}}/path/to/page");
-await page.waitForLoadState("networkidle");
-await expect(page.getByRole("heading")).toBeVisible();
-```
-
-**表单填写**：
-
-```typescript
-await page.getByLabel("商品名称").fill("2026春季新款运动鞋");
-await page.getByLabel("商品分类").selectOption("运动鞋");
-await page.getByRole("button", { name: "提交" }).click();
-```
-
-**列表搜索**：
-
-```typescript
-await page.getByPlaceholder("请输入搜索关键词").fill("测试数据");
-await page.getByRole("button", { name: "查询" }).click();
-await page.waitForLoadState("networkidle");
-await expect(page.locator("table tbody tr")).toHaveCount(1);
-```
-
-**弹窗确认**：
-
-```typescript
-await page.getByRole("button", { name: "删除" }).click();
-await expect(page.getByRole("dialog")).toBeVisible();
-await page.getByRole("button", { name: "确认" }).click();
-await expect(page.getByText("删除成功")).toBeVisible();
-```
-
-**表格数据验证**：
-
-```typescript
-const firstRow = page.locator("table tbody tr").first();
-await expect(firstRow.locator("td").nth(0)).toContainText("期望值");
-```
-
-**消息提示验证**：
-
-```typescript
-await expect(page.getByText("操作成功")).toBeVisible({ timeout: 5000 });
-```
-
-**下拉框选择**：
-
-```typescript
-// Ant Design Select
-await page.getByText("请选择").click();
-await page.getByText("目标选项").click();
-```
-
-**日期选择**：
-
-```typescript
-await page.getByPlaceholder("开始日期").fill("2026-01-01");
-await page.getByPlaceholder("结束日期").fill("2026-03-31");
-await page.keyboard.press("Enter");
-```
+定位器优先级及常见 UI 模式参见 `.claude/references/playwright-patterns.md`，包含：
+- 4 层定位器优先级
+- 表单填写、列表搜索、弹窗确认、表格验证等代码模式
+- 下拉框与日期选择
 
 ### 等待策略
 
@@ -246,96 +167,18 @@ await page.keyboard.press("Enter");
 
 ## 前置条件处理
 
-> **核心原则**：前置条件中的数据库名称仅供参考，不要纠结于它。只关注 CREATE TABLE 语句。数据库/数据源通过离线开发 API 中已有的项目来操作。
+Archive MD 用例的前置条件中若包含 SQL 或数据准备步骤，须在测试执行前通过 API 完成。
 
-### 前置条件 6 步工作流
+### 处理流程
 
-在为每条用例生成脚本之前，按以下步骤分析并处理前置条件：
+1. 从 preconditions 中提取 SQL 语句
+2. 通过 API 建表：`POST {{url}}/api/xxx` + SQL body
+3. 引入数据源（若未引入）
+4. 触发同步并等待完成（轮询状态接口，最长 180 秒）
+5. 创建质量项目（若用例涉及质量模块）
+6. 项目授权
 
-#### 第 1 步：分析建表语句
-
-从前置条件中提取 `CREATE TABLE` 和 `INSERT INTO` 语句。**忽略前置条件中提到的数据库名称**（如 `test_db`），只关注表结构和数据。
-
-#### 第 2 步：通过 API 建表（不走 UI）
-
-使用 `setupPreconditions`（来自 `../../helpers/preconditions`）自动完成建表。它内部调用离线开发 API，流程为：
-1. 查找离线项目（默认 `env_rebuild_test`，可配置）
-2. 获取项目中对应类型的数据源
-3. 通过 DDL API 执行建表 + 数据插入
-4. 自动将数据源引入数据资产平台（如尚未引入）
-5. 触发元数据同步并等待完成
-
-```typescript
-import { setupPreconditions } from "../../helpers/preconditions";
-
-test.describe("{{suite_name}} - {{page}}", () => {
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-    await setupPreconditions(page, {
-      datasourceType: "Doris", // 支持: Doris, MySQL, Hive, SparkThrift
-      tables: [
-        {
-          name: "quality_test_num", // 表名（不含库名前缀）
-          sql: "DROP TABLE IF EXISTS quality_test_num;\nCREATE TABLE quality_test_num (...);\nINSERT INTO quality_test_num VALUES ...;",
-        },
-      ],
-      syncTimeout: 180, // 元数据同步超时（秒），默认 180
-    });
-    await page.close();
-  });
-
-  test("{{title}}", async ({ page, step }) => {
-    // ... 测试步骤
-  });
-});
-```
-
-**⚠️ 禁止**：不要生成单独的 `setup.spec.ts` 通过 UI 自动化（临时查询、手动输入 SQL）来建表。这种方式极其脆弱且容易失败。
-
-**SQL 文件引用**：当 SQL 较长时，存放在 `sql/` 子目录：
-
-```typescript
-import { readFileSync } from "fs";
-import { resolve } from "path";
-
-const sql = readFileSync(resolve(__dirname, "sql/table_a.sql"), "utf-8");
-```
-
-#### 第 3 步：数据源引入（setupPreconditions 自动处理）
-
-`setupPreconditions` 已内置数据源引入逻辑（检查→引入→同步），无需额外操作。
-
-#### 第 4 步：数据质量项目创建（仅数据质量相关需求）
-
-判断需求是否涉及数据质量模块（规则集管理、规则任务管理、质量报告等）。如果是：
-
-- 需要在「数据质量 → 项目管理 → 项目信息」中创建资产项目
-- 命名规范：`Story_{{prd_id}}`（如 `Story_15695`）
-- 通过 UI 操作或 API 创建（如果 API 不可用，在 `beforeAll` 中通过页面操作创建）
-
-#### 第 5 步：数据源授权（仅数据质量相关需求）
-
-创建项目后，在「平台管理 → 数据源管理」中：
-- 找到测试使用的数据源
-- 点击「质量项目授权」
-- 将数据源授权给步骤 4 创建的资产项目
-
-#### 第 6 步：验证可见性
-
-在测试的第一个 step 中，验证数据质量模块能看到对应的数据源、库、表。如果看不到，说明前置条件未就绪。
-
-### 离线项目不存在时的处理
-
-如果离线开发中没有合适的项目或数据源：
-- `setupPreconditions` 会抛出明确错误
-- 此时应在脚本注释中说明，并标记为需要用户手动处理：
-  `// TODO: 需要用户在离线开发中创建项目并对接计算引擎（如 Doris/SparkThrift）`
-
-### 非 SQL 前置条件
-
-- 前置条件含登录要求时：已通过 `storageState` 处理，无需额外操作
-- 前置条件含页面操作准备时：在 `test.beforeAll` 或测试步骤开头执行对应操作
-- 前置条件仅含环境说明时：在步骤开始前添加注释 `// 前置：{{precondition}}`
+具体 API 端点和参数从源码 `workspace/{{project}}/.repos/` 中查找。使用 `page.request` 发送 API 请求，不通过 UI 操作。
 
 ---
 
