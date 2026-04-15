@@ -63,49 +63,54 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
     await step(
       "步骤2: 点击新建规则集，填写 Step1 基础信息后点击下一步 → 进入 Step2 监控规则页面",
       async () => {
-        // 点击新增规则集按钮
+        // 点击新增规则集按钮（源码 I18N: "新增规则集"）
         const addBtn = page
           .getByRole("button", { name: /新增规则集|新建规则集/ })
-          .or(page.locator("button").filter({ hasText: /新增规则集|新建规则集/ }))
           .first();
         await addBtn.click();
         await page.waitForLoadState("networkidle");
         await page.waitForTimeout(1000);
 
-        // 选择数据源：找包含 Doris 的选项
-        // 源码中 label 格式为 "${dataSourceName}（${sourceTypeValue}）"
-        const sourceSelect = page
+        // 选择数据源：源码 label 格式 "${dataSourceName}（${sourceTypeValue}）"
+        // Form.Item name="sourceId", label="选择数据源"
+        const sourceFormItem = page
           .locator(".ant-form-item")
           .filter({ hasText: /选择数据源/ })
-          .locator(".ant-select")
-          .first();
-        await selectAntOption(page, sourceSelect.locator(".ant-select-selector"), "Doris");
-        await page.waitForTimeout(1000);
-
-        // 选择数据库/Schema: test_db
-        const schemaSelect = page
-          .locator(".ant-form-item")
-          .filter({ hasText: /选择数据库/ })
-          .locator(".ant-select")
-          .first();
-        await selectAntOption(page, schemaSelect.locator(".ant-select-selector"), "test_db");
-        await page.waitForTimeout(1000);
-
-        // 选择数据表: quality_test_num
-        const tableSelect = page
-          .locator(".ant-form-item")
-          .filter({ hasText: /选择数据表/ })
-          .locator(".ant-select")
           .first();
         await selectAntOption(
           page,
-          tableSelect.locator(".ant-select-selector"),
+          sourceFormItem.locator(".ant-select-selector").first(),
+          "Doris",
+        );
+        await page.waitForTimeout(1000);
+
+        // 选择数据库/Schema: test_db
+        // Form.Item name="schemaName", label="选择数据库"
+        const schemaFormItem = page
+          .locator(".ant-form-item")
+          .filter({ hasText: /选择数据库/ })
+          .first();
+        await selectAntOption(
+          page,
+          schemaFormItem.locator(".ant-select-selector").first(),
+          "test_db",
+        );
+        await page.waitForTimeout(1000);
+
+        // 选择数据表: quality_test_num
+        // Form.Item name="sourceTable", label="选择数据表", labelInValue
+        const tableFormItem = page
+          .locator(".ant-form-item")
+          .filter({ hasText: /选择数据表/ })
+          .first();
+        await selectAntOption(
+          page,
+          tableFormItem.locator(".ant-select-selector").first(),
           "quality_test_num",
         );
         await page.waitForTimeout(500);
 
-        // 填写规则包名称（在 Table 中的第一行 Input）
-        // 源码: Form.List name="tableConfig" → Table 列 "规则包名称"
+        // 填写规则包名称（Form.List name="tableConfig" → Table 列 "规则包名称"）
         const packageNameInput = page
           .locator(".ant-table-row")
           .first()
@@ -120,8 +125,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await page.waitForLoadState("networkidle");
         await page.waitForTimeout(1500);
 
-        // 验证进入 Step2 监控规则页面
-        // 源码 I18N: step tab "监控规则"
+        // 验证进入 Step2 监控规则页面（源码 I18N: "监控规则"）
         await expect(
           page.getByText("监控规则", { exact: false }).first(),
         ).toBeVisible({ timeout: 10000 });
@@ -136,76 +140,73 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         // 点击新增规则（规则包内的新增按钮）
         const addRuleBtn = page
           .getByRole("button", { name: /新增规则|新增/ })
-          .or(page.locator("button").filter({ hasText: /新增规则/ }))
           .first();
         await addRuleBtn.click();
         await page.waitForTimeout(1000);
 
         // 选择统计函数: 取值范围&枚举范围
-        // 源码 API: GET_RULE_FUNCTION → /dassets/v1/valid/function/getFunctions
-        const statFuncSelect = page
-          .locator(".ant-form-item, [class*='form-item']")
-          .filter({ hasText: /统计函数/ })
+        // 源码: Form.Item name={[field.name, 'functionId']}，Select with showSearch optionFilterProp="label"
+        // 统计函数列表来自 API GET_RULE_FUNCTION
+        const funcSelectCol = page
+          .locator(".rule__function-list__item")
+          .first()
           .locator(".ant-select")
           .first();
         await selectAntOption(
           page,
-          statFuncSelect.locator(".ant-select-selector"),
+          funcSelectCol.locator(".ant-select-selector"),
           "取值范围&枚举范围",
         );
         await page.waitForTimeout(500);
 
         // 选择字段: score
-        const fieldSelect = page
-          .locator(".ant-form-item, [class*='form-item']")
-          .filter({ hasText: /^字段|选择字段/ })
-          .last()
-          .locator(".ant-select")
+        // 源码: Form.Item name={[field.name, 'columnName']}, label="字段"
+        const fieldFormItem = page
+          .locator(".ant-form-item")
+          .filter({ hasText: /^字段/ })
           .first();
         await selectAntOption(
           page,
-          fieldSelect.locator(".ant-select-selector"),
+          fieldFormItem.locator(".ant-select-selector").first(),
           "score",
         );
         await page.waitForTimeout(500);
 
-        // 取值范围设置: > 1 且 < 10
-        // 源码: Form.Item name=['range','firstOperator'] + ['range','firstThreshold']
-        //        + ['range','condition'] + ['range','secondOperator'] + ['range','secondThreshold']
+        // ── 取值范围设置: > 1 【且】< 10 ──
+        // 源码 renderValueAndEnumFunction → Row 1: "取值范围设置：" + renderRangeFunction(field, 'valueRange')
+        // Form fields: [field.name, 'valueRange', 'firstOperator/firstThreshold/condition/secondOperator/secondThreshold']
+        const rangeRow = page
+          .locator(".col-inline-form")
+          .filter({ hasText: /取值范围设置/ })
+          .first()
+          .locator("..");
 
-        // 第一操作符: >
-        const rangeSelects = page
-          .locator("[class*='range'], .ant-form-item")
-          .filter({ hasText: /取值范围/ })
-          .locator(".ant-select");
-        const firstOpSelect = rangeSelects.first();
+        // 第一操作符: > (Select width: 80)
+        const rangeSelects = rangeRow.locator(".ant-select");
         await selectAntOption(
           page,
-          firstOpSelect.locator(".ant-select-selector"),
+          rangeSelects.first().locator(".ant-select-selector"),
           ">",
         );
         await page.waitForTimeout(300);
 
-        // 第一期望值: 1
-        const rangeInputs = page
-          .locator("[class*='range'], .ant-form-item")
-          .filter({ hasText: /取值范围/ })
-          .locator("input[type='text'], input:not([type])")
-          .filter({ hasNot: page.locator(".ant-select-selection-search-input") });
-        const firstInput = rangeInputs.first();
-        await firstInput.fill("1");
+        // 第一期望值: 1 (Input width: 100)
+        const rangeInputs = rangeRow.locator(
+          "input:not(.ant-select-selection-search-input)",
+        );
+        await rangeInputs.first().fill("1");
         await page.waitForTimeout(300);
 
-        // 且/或 条件选择: 且
-        // 源码: RadioGroup for condition (AND/OR)
-        const conditionRadio = page
-          .locator(".ant-radio-wrapper, .ant-radio-button-wrapper")
+        // 且/或 条件选择: 且 (RadioGroup value="AND")
+        // 源码: <Radio value="AND">{AND_TEXT}</Radio> 其中 AND_TEXT = "且"
+        const rangeConditionRadio = rangeRow
+          .locator(".ant-radio-wrapper")
           .filter({ hasText: "且" })
           .first();
-        await conditionRadio.click();
+        await rangeConditionRadio.click();
         await page.waitForTimeout(300);
 
-        // 第二操作符: <
+        // 第二操作符: < (出现在条件选择后面)
         const secondOpSelect = rangeSelects.nth(1);
         await selectAntOption(
           page,
@@ -215,53 +216,55 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await page.waitForTimeout(300);
 
         // 第二期望值: 10
-        const secondInput = rangeInputs.nth(1);
-        await secondInput.fill("10");
+        await rangeInputs.nth(1).fill("10");
         await page.waitForTimeout(300);
 
-        // 枚举值设置: in 1、2、3
-        // 源码: Select mode="tags" for enum values, operator select for in/not in
-        // 先确认枚举值操作符默认为 in
-        const enumSection = page
-          .locator("[class*='form-item'], .ant-form-item, [class*='col-inline-form']")
-          .filter({ hasText: /枚举值/ });
-        const enumOpSelect = enumSection.locator(".ant-select").first();
-        await expect(enumOpSelect).toBeVisible({ timeout: 5000 });
+        // ── 枚举值设置: in 1、2、3 ──
+        // 源码 renderEnumFunction(field, '枚举值设置：', 'enumRange')
+        // Form fields: [field.name, 'enumRange', 'operator'] (Select: in/not in)
+        //              [field.name, 'enumRange', 'threshold'] (Select mode="tags")
+        const enumRow = page
+          .locator(".col-inline-form")
+          .filter({ hasText: /枚举值设置/ })
+          .first()
+          .locator("..");
 
-        // 输入枚举值: 使用 tags 模式输入
-        const enumTagInput = enumSection
-          .locator(".ant-select")
-          .last()
-          .locator("input")
+        // 枚举值操作符默认为空，需要选择 "in"
+        const enumOpSelect = enumRow.locator(".ant-select").first();
+        await selectAntOption(
+          page,
+          enumOpSelect.locator(".ant-select-selector"),
+          "in",
+        );
+        await page.waitForTimeout(300);
+
+        // 输入枚举值: 使用 tags 模式输入 (Select mode="tags")
+        const enumTagsSelect = enumRow.locator(".ant-select").nth(1);
+        const enumTagInput = enumTagsSelect.locator(
+          ".ant-select-selection-search input",
+        );
+        for (const val of ["1", "2", "3"]) {
+          await enumTagInput.fill(val);
+          await page.keyboard.press("Enter");
+          await page.waitForTimeout(200);
+        }
+        // 点击其他地方关闭 tags dropdown
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(200);
+
+        // ── 取值范围和枚举值关系: 且 ──
+        // 源码 Row 3: "取值范围和枚举值的关系：" + RadioGroup(AND/OR) at [field.name, 'condition']
+        const relationRow = page
+          .locator(".col-inline-form")
+          .filter({ hasText: /取值范围和枚举值的关系/ })
+          .first()
+          .locator("..");
+        const relationAndRadio = relationRow
+          .locator(".ant-radio-wrapper")
+          .filter({ hasText: "且" })
           .first();
-        if (await enumTagInput.isVisible().catch(() => false)) {
-          for (const val of ["1", "2", "3"]) {
-            await enumTagInput.fill(val);
-            await page.keyboard.press("Enter");
-            await page.waitForTimeout(200);
-          }
-        } else {
-          // 备用方案：直接在枚举值输入区域输入
-          const enumInput = enumSection.locator("input").last();
-          for (const val of ["1", "2", "3"]) {
-            await enumInput.fill(val);
-            await page.keyboard.press("Enter");
-            await page.waitForTimeout(200);
-          }
-        }
-
-        // 取值范围和枚举值关系: 且
-        // 如果上面已经点了且，这里可能已自动设置
-        // 源码中 condition radio 在取值范围行内，另有一个关系选择在枚举值和取值范围之间
-        // 需要确认是否有两个独立的「且/或」选择器
-        const relationRadios = page
-          .locator(".ant-radio-wrapper, .ant-radio-button-wrapper")
-          .filter({ hasText: "且" });
-        if ((await relationRadios.count()) > 1) {
-          // 可能有第二个「且」选择器用于枚举值和取值范围的关系
-          await relationRadios.last().click();
-          await page.waitForTimeout(300);
-        }
+        await relationAndRadio.click();
+        await page.waitForTimeout(300);
 
         // 验证枚举值操作符下拉框显示 in 和 not in
         await enumOpSelect.locator(".ant-select-selector").click();
@@ -277,8 +280,8 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await page.waitForTimeout(200);
       },
       page
-        .locator(".ant-form-item, [class*='form-item']")
-        .filter({ hasText: /枚举值/ })
+        .locator(".col-inline-form")
+        .filter({ hasText: /枚举值设置/ })
         .first(),
     );
 

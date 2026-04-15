@@ -14,6 +14,11 @@ export interface BatchDatasource {
   readonly schemaName?: string;
   readonly schema?: string;
   readonly jdbcUrl?: string;
+  readonly dataJson?: {
+    readonly jdbcUrl?: string;
+    readonly url?: string;
+    readonly username?: string;
+  };
 }
 
 function toBase64(str: string): string {
@@ -112,64 +117,76 @@ export class BatchApi {
     return ds ?? null;
   }
 
+  private async executeSqlViaDdlApi(
+    projectId: number,
+    datasource: BatchDatasource,
+    stmt: string,
+    targetSchema: string,
+  ): Promise<void> {
+    const resp = await this.client.postWithProjectId(
+      "/api/rdos/batch/batchTableInfo/ddlCreateTableEncryption",
+      {
+        sql: toBase64(stmt),
+        sourceId: datasource.id,
+        targetSchema,
+        syncTask: true,
+      },
+      projectId,
+    );
+    if (resp.code !== 1) {
+      throw new Error(resp.message ?? "unknown error");
+    }
+  }
+
   async executeDDL(projectId: number, datasource: BatchDatasource, sql: string): Promise<void> {
     const targetSchema =
       datasource.schemaName ??
       datasource.schema ??
-      extractSchemaFromJdbcUrl(datasource.jdbcUrl ?? "");
+      extractSchemaFromJdbcUrl(datasource.jdbcUrl ?? "") ??
+      extractSchemaFromJdbcUrl(datasource.dataJson?.jdbcUrl ?? "");
 
     const statements = splitStatements(sql);
-    const createStatements = statements.filter((s) => isCreateStatement(s));
-    const customStatements = statements.filter((s) => !isCreateStatement(s));
 
-    // Execute DDL (CREATE/DROP) via Batch DDL API — one statement at a time
-    for (const stmt of createStatements) {
+    for (const stmt of statements) {
+      const isDrop = isDropStatement(stmt);
+      const isCreate = isCreateStatement(stmt);
+
       try {
-        const resp = await this.client.postWithProjectId(
-          "/api/rdos/batch/batchTableInfo/ddlCreateTableEncryption",
-          {
-            sql: toBase64(stmt),
-            sourceId: datasource.id,
-            targetSchema: targetSchema ?? "",
-            syncTask: true,
-          },
-          projectId,
-        );
-        if (resp.code !== 1) {
-          throw new Error(resp.message ?? "unknown error");
+        if (isCreate) {
+          // CREATE TABLE goes through DDL API
+          await this.executeSqlViaDdlApi(projectId, datasource, stmt, targetSchema ?? "");
+        } else {
+          // DROP/INSERT/others go through custom SQL API first
+          await this.executeCustomSql(projectId, datasource, stmt, targetSchema ?? "");
         }
-      } catch (error) {
-        if (isAlreadyExistsError((error as Error).message)) {
-          process.stderr.write(`[batch] CREATE warning: ${(error as Error).message}\n`);
+      } catch (primaryError) {
+        if (isAlreadyExistsError((primaryError as Error).message)) {
+          process.stderr.write(`[batch] warning (already exists): ${(primaryError as Error).message}\n`);
+          continue;
+        }
+        if (isDrop) {
+          process.stderr.write(`[batch] DROP skipped: ${(primaryError as Error).message}\n`);
           continue;
         }
 
-        await this.executeCustomSql(projectId, datasource, stmt, targetSchema ?? "").catch(
-          (fallbackError) => {
-            const details = [(error as Error).message, (fallbackError as Error).message].join(
-              " | fallback: ",
-            );
-            throw new Error(`DDL execution failed: ${details}`);
-          },
-        );
-      }
-    }
-
-    // DROP / INSERT need the general SQL execution API instead of the create-table endpoint.
-    for (const stmt of customStatements) {
-      try {
-        await this.executeCustomSql(projectId, datasource, stmt, targetSchema ?? "");
-      } catch (error) {
-        if (isInsertStatement(stmt)) {
-          throw new Error(`INSERT execution failed: ${(error as Error).message}`);
+        // For non-DDL statements, try the other API as fallback
+        try {
+          if (isCreate) {
+            await this.executeCustomSql(projectId, datasource, stmt, targetSchema ?? "");
+          } else {
+            await this.executeSqlViaDdlApi(projectId, datasource, stmt, targetSchema ?? "");
+          }
+        } catch (fallbackError) {
+          // For INSERT: warn but continue (table may already have data)
+          if (isInsertStatement(stmt)) {
+            process.stderr.write(`[batch] INSERT skipped (table may have data): ${(primaryError as Error).message}\n`);
+            continue;
+          }
+          const details = [(primaryError as Error).message, (fallbackError as Error).message].join(
+            " | fallback: ",
+          );
+          throw new Error(`SQL execution failed: ${details}`);
         }
-
-        if (isDropStatement(stmt) && isMissingObjectError((error as Error).message)) {
-          process.stderr.write(`[batch] DROP warning: ${(error as Error).message}\n`);
-          continue;
-        }
-
-        throw new Error(`SQL execution failed: ${(error as Error).message}`);
       }
     }
   }

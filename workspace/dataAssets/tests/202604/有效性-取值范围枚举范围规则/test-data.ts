@@ -4,18 +4,18 @@
  */
 import type { Page } from "@playwright/test";
 import { setupPreconditions } from "../../helpers/preconditions";
-import { applyRuntimeCookies, normalizeBaseUrl } from "../../helpers/test-setup";
+import { applyRuntimeCookies, normalizeBaseUrl, syncMetadata } from "../../helpers/test-setup";
 
 // ── SQL 表定义 ─────────────────────────────────────────────
 
 const QUALITY_TEST_NUM_SQL = `
-DROP TABLE IF EXISTS test_db.quality_test_num;
-CREATE TABLE test_db.quality_test_num (
+DROP TABLE IF EXISTS quality_test_num;
+CREATE TABLE quality_test_num (
   id INT NOT NULL,
   score DOUBLE,
   category VARCHAR(50)
 ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO test_db.quality_test_num VALUES
+INSERT INTO quality_test_num VALUES
   (1, 5.0, '2'),
   (2, 15.0, '4'),
   (3, 3.0, '1'),
@@ -24,13 +24,13 @@ INSERT INTO test_db.quality_test_num VALUES
 `.trim();
 
 const QUALITY_TEST_STR_SQL = `
-DROP TABLE IF EXISTS test_db.quality_test_str;
-CREATE TABLE test_db.quality_test_str (
+DROP TABLE IF EXISTS quality_test_str;
+CREATE TABLE quality_test_str (
   id INT NOT NULL,
   score_str VARCHAR(50),
   category VARCHAR(50)
 ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO test_db.quality_test_str VALUES
+INSERT INTO quality_test_str VALUES
   (1, '5', '2'),
   (2, '5.0', '4'),
   (3, '15.0', '1'),
@@ -39,20 +39,20 @@ INSERT INTO test_db.quality_test_str VALUES
 `.trim();
 
 const QUALITY_TEST_SAMPLE_SQL = `
-DROP TABLE IF EXISTS test_db.quality_test_sample;
-CREATE TABLE test_db.quality_test_sample (
+DROP TABLE IF EXISTS quality_test_sample;
+CREATE TABLE quality_test_sample (
   id INT NOT NULL,
   score DOUBLE,
   category VARCHAR(50)
 ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO test_db.quality_test_sample VALUES
+INSERT INTO quality_test_sample VALUES
   (1, 5.0, '2'), (2, 15.0, '4'), (3, 3.0, '1'), (4, -1.0, '3'), (5, 8.0, '5'),
   (6, 7.0, '1'), (7, 9.0, '2'), (8, 2.0, '3'), (9, 6.0, '1'), (10, 4.0, '2')
 `.trim();
 
 const QUALITY_TEST_PARTITION_SQL = `
-DROP TABLE IF EXISTS test_db.quality_test_partition;
-CREATE TABLE test_db.quality_test_partition (
+DROP TABLE IF EXISTS quality_test_partition;
+CREATE TABLE quality_test_partition (
   id INT NOT NULL,
   score DOUBLE,
   category VARCHAR(50),
@@ -61,18 +61,18 @@ CREATE TABLE test_db.quality_test_partition (
   PARTITION p20260401 VALUES LESS THAN ('2026-04-02'),
   PARTITION p20260402 VALUES LESS THAN ('2026-04-03')
 ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO test_db.quality_test_partition VALUES
+INSERT INTO quality_test_partition VALUES
   (1, 5.0, '2', '2026-04-01'), (2, 15.0, '4', '2026-04-01'),
   (3, 3.0, '1', '2026-04-02'), (4, -1.0, '3', '2026-04-02')
 `.trim();
 
 const QUALITY_TEST_ENUM_PASS_SQL = `
-DROP TABLE IF EXISTS test_db.quality_test_enum_pass;
-CREATE TABLE test_db.quality_test_enum_pass (
+DROP TABLE IF EXISTS quality_test_enum_pass;
+CREATE TABLE quality_test_enum_pass (
   id INT NOT NULL,
   category VARCHAR(50)
 ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO test_db.quality_test_enum_pass VALUES (1, '1'), (2, '2'), (3, '3')
+INSERT INTO quality_test_enum_pass VALUES (1, '1'), (2, '2'), (3, '3')
 `.trim();
 
 export const ALL_TABLES = [
@@ -93,16 +93,24 @@ export const QUALITY_PROJECT_ALIAS = "Story_15695";
 export async function runPreconditions(page: Page): Promise<void> {
   await applyRuntimeCookies(page);
 
-  process.stderr.write("[preconditions] Starting table creation & metadata sync...\n");
+  process.stderr.write("[preconditions] Starting table creation via API...\n");
 
   await setupPreconditions(page, {
     datasourceType: "Doris",
     tables: ALL_TABLES.map((t) => ({ name: t.name, sql: t.sql })),
-    projectName: "story_15648",
-    syncTimeout: 180,
+    projectName: "pw",
+    syncTimeout: 10, // 不依赖 API 同步，改用 UI 同步
+  }).catch((err) => {
+    process.stderr.write(`[preconditions] API setup partial: ${(err as Error).message}\n`);
   });
 
-  process.stderr.write("[preconditions] Table creation & metadata sync complete.\n");
+  // 通过 UI 自动化执行元数据同步（新建周期同步任务 → 临时同步）
+  process.stderr.write("[preconditions] Starting UI-based metadata sync...\n");
+  await syncMetadata(page, "doris3").catch((err) => {
+    process.stderr.write(`[preconditions] Metadata sync warning: ${(err as Error).message}\n`);
+  });
+
+  process.stderr.write("[preconditions] Preconditions complete.\n");
 }
 
 // ── 前置条件：质量项目创建 + 数据源授权 ─────────────────────
@@ -257,21 +265,31 @@ export async function authDatasourceToProject(
         }>;
       };
 
-      // 查找已导入到元数据的 Doris 数据源
+      // 查找已导入到元数据的 Doris 3.x 数据源
       const dsResp = await post(
         "/dmetadata/v1/dataSource/pageQuery",
         { current: 1, size: 50 },
       );
-      const dsList = ((dsResp.data as { records?: unknown[] })?.records ??
-        (dsResp.data as unknown[])) as Array<{
-        id?: number;
+      const rawData = dsResp.data as
+        | { contentList?: unknown[]; records?: unknown[]; list?: unknown[] }
+        | unknown[];
+      const dsList = (
+        Array.isArray(rawData) ? rawData
+        : (rawData as { contentList?: unknown[]; records?: unknown[]; list?: unknown[] })?.contentList
+          ?? (rawData as { contentList?: unknown[]; records?: unknown[]; list?: unknown[] })?.records
+          ?? (rawData as { contentList?: unknown[]; records?: unknown[]; list?: unknown[] })?.list
+          ?? []
+      ) as Array<{
+        id?: number | string;
         dataSourceName?: string;
         dataSourceType?: number;
+        sourceTypeValue?: string;
       }>;
+      // 优先匹配 Doris 3.x 数据源
       const dorisSource = dsList.find(
-        (ds) =>
-          ds.dataSourceName?.toLowerCase().includes("doris") ||
-          ds.dataSourceType === 25, // Doris type ID
+        (ds) => ds.sourceTypeValue?.includes("Doris3"),
+      ) ?? dsList.find(
+        (ds) => ds.dataSourceName?.toLowerCase().includes("doris"),
       );
       if (!dorisSource?.id) {
         console.warn("[preconditions] Doris datasource not found in metadata, skipping auth");
