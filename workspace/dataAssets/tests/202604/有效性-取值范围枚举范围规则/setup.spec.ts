@@ -1,16 +1,17 @@
-import { test } from "../../fixtures/step-screenshot";
-import {
-  applyRuntimeCookies,
-  executeSqlViaBatchDoris,
-} from "../../helpers/test-setup";
+/**
+ * 前置数据准备：通过离线开发临时查询在 Doris 建表
+ */
+import { test, expect } from "../../fixtures/step-screenshot";
+import { applyRuntimeCookies } from "../../helpers/test-setup";
 
 test.use({ storageState: ".auth/session.json" });
-test.setTimeout(300_000); // 5 min for setup
+test.setTimeout(300_000);
 
-const PROJECT = "tongmeng_dev";
+const BASE = "http://shuzhan63-ltqc-dev.k8s.dtstack.cn";
+const PROJECT_NAME = "story_15648"; // 已知存在的项目
 
-const SQLS = [
-  `CREATE DATABASE IF NOT EXISTS test_db`,
+const SQL_BLOCKS = [
+  "CREATE DATABASE IF NOT EXISTS test_db",
   `DROP TABLE IF EXISTS test_db.quality_test_num;
 CREATE TABLE test_db.quality_test_num (
   id INT NOT NULL, score DOUBLE, category VARCHAR(50)
@@ -47,10 +48,101 @@ CREATE TABLE test_db.quality_test_enum_pass (
 INSERT INTO test_db.quality_test_enum_pass VALUES (1, '1'), (2, '2'), (3, '3')`,
 ];
 
-test("建表：创建 test_db 及全部测试表", async ({ page }) => {
+test("建表：通过离线开发临时查询创建全部测试表", async ({ page }) => {
   await applyRuntimeCookies(page, "batch");
-  for (let i = 0; i < SQLS.length; i++) {
-    const name = `setup_${Date.now().toString(36)}_${i}`;
-    await executeSqlViaBatchDoris(page, SQLS[i], name, PROJECT);
+
+  // 1. 进入项目列表
+  await page.goto(`${BASE}/batch/#/projects`);
+  await page.waitForLoadState("networkidle");
+  await page.locator(".ant-table-row").first().waitFor({ state: "visible", timeout: 15000 });
+
+  // 2. 搜索并进入项目
+  const searchBox = page.getByPlaceholder(/搜索/);
+  await searchBox.fill(PROJECT_NAME);
+  await page.getByRole("button", { name: "search" }).click();
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1000);
+
+  // 点击项目名称进入
+  const projectRow = page.locator(".ant-table-row").filter({ hasText: PROJECT_NAME }).first();
+  await projectRow.waitFor({ state: "visible", timeout: 10000 });
+  const projectLink = projectRow.getByText(PROJECT_NAME, { exact: false }).first();
+
+  // 记录当前 URL 以便后续恢复
+  await projectLink.click();
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(3000);
+
+  for (let i = 0; i < SQL_BLOCKS.length; i++) {
+    const sql = SQL_BLOCKS[i];
+    const taskName = `setup_${Date.now().toString(36)}_${i}`;
+
+    // 3. 点击临时查询 tab
+    const tempTab = page.locator(".ant-tabs-tab").filter({ hasText: "临时查询" }).first();
+    await tempTab.click();
+    await page.waitForTimeout(2000);
+
+    // 4. 右键临时查询节点 → 新建临时查询
+    const treeNode = page.locator("[class*='folder'], [class*='tree']").filter({ hasText: "临时查询" }).first();
+    await treeNode.click({ button: "right" });
+    await page.waitForTimeout(500);
+
+    const newQueryMenu = page.locator("[role='menuitem'], .ant-dropdown-menu-item").filter({ hasText: /新建临时查询|新建/ }).first();
+    await newQueryMenu.click();
+    await page.waitForTimeout(1500);
+
+    // 5. 弹窗：填名称 + 选 Doris SQL 类型
+    const modal = page.locator(".ant-modal:visible").first();
+    await modal.waitFor({ state: "visible", timeout: 10000 });
+
+    const nameInput = modal.locator("input").first();
+    await nameInput.clear();
+    await nameInput.fill(taskName);
+
+    // 选择类型 = Doris SQL
+    const typeSelect = modal.locator(".ant-form-item").filter({ hasText: /类型/ }).locator(".ant-select").first();
+    await typeSelect.locator(".ant-select-selector").click();
+    await page.waitForTimeout(500);
+    await page.locator(".ant-select-dropdown:visible .ant-select-item-option").filter({ hasText: /Doris/i }).first().click();
+    await page.waitForTimeout(800);
+
+    // 确认
+    await modal.locator(".ant-btn-primary").first().click();
+    await modal.waitFor({ state: "hidden", timeout: 15000 });
+    await page.waitForTimeout(2000);
+
+    // 6. 编辑器输入 SQL
+    const editor = page.locator(".view-lines, .monaco-editor .overflow-guard").first();
+    await editor.waitFor({ state: "visible", timeout: 20000 });
+    await editor.click();
+    await page.waitForTimeout(300);
+    const mod = process.platform === "darwin" ? "Meta" : "Control";
+    await page.keyboard.press(`${mod}+a`);
+    await page.keyboard.press("Delete");
+    await page.waitForTimeout(300);
+
+    for (const chunk of sql.match(/.{1,100}/g) ?? [sql]) {
+      await page.keyboard.type(chunk, { delay: 0 });
+    }
+    await page.waitForTimeout(500);
+
+    // 7. 运行
+    const runBtn = page.getByRole("button", { name: /运行/ }).or(page.locator("button").filter({ hasText: /运行/ })).first();
+    await runBtn.click();
+    await page.waitForTimeout(5000);
+    await page.waitForLoadState("networkidle");
+
+    // 8. 等待执行完成
+    try {
+      await page.waitForFunction(() => {
+        const el = document.querySelector(".ide-console, [class*='console'], [class*='result']");
+        return el && !/运行中|executing/i.test(el.textContent ?? "");
+      }, { timeout: 60000 });
+    } catch { /* timeout ok for DDL */ }
+    await page.waitForTimeout(1000);
+
+    console.log(`[${i + 1}/${SQL_BLOCKS.length}] Executed: ${sql.slice(0, 50)}...`);
   }
+
+  console.log("All SQL blocks executed!");
 });
