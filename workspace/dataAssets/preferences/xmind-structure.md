@@ -4,13 +4,13 @@
 > 本文件由 AI 辅助维护，用户也可直接编辑
 
 <artifact_contract>
-  <xmind_intermediate contract="A">
-    <title>验证xxx</title>
-    <priority>P1</priority>
-  </xmind_intermediate>
-  <archive_md contract="B">
-    <display_title>【P1】验证xxx</display_title>
-  </archive_md>
+<xmind_intermediate contract="A">
+<title>验证xxx</title>
+<priority>P1</priority>
+</xmind_intermediate>
+<archive_md contract="B">
+<display_title>【P1】验证xxx</display_title>
+</archive_md>
 </artifact_contract>
 
 ## Root 节点命名模板
@@ -42,13 +42,13 @@ Archive MD 的 frontmatter 中包含 `root_name` 字段，其值通常根据 `pr
 
 ## 层级映射
 
-| XMind 层级 | Archive MD 层级             | 说明                                                          |
-| ---------- | --------------------------- | ------------------------------------------------------------- |
-| Root       | frontmatter `root_name`     | `root_name` 存在时优先使用；缺失时才回退到模板 / 项目名       |
-| L1         | frontmatter `suite_name`    | 需求名称                                                      |
-| L2         | `## 标题` (H2)              | 模块名称                                                      |
-| L3         | `### 标题` (H3)             | 菜单名称（多级菜单用横杠连接）                                |
-| L4         | `#### 标题` (H4)            | 功能点名称（可选）                                            |
+| XMind 层级 | Archive MD 层级            | 说明                                                                                               |
+| ---------- | -------------------------- | -------------------------------------------------------------------------------------------------- |
+| Root       | frontmatter `root_name`    | `root_name` 存在时优先使用；缺失时才回退到模板 / 项目名                                            |
+| L1         | frontmatter `suite_name`   | 需求名称                                                                                           |
+| L2         | `## 标题` (H2)             | 模块名称                                                                                           |
+| L3         | `### 标题` (H3)            | 菜单名称（多级菜单用横杠连接）                                                                     |
+| L4         | `#### 标题` (H4)           | 功能点名称（可选）                                                                                 |
 | L5         | `##### 【P1】验证xxx` (H5) | Archive MD 使用 Contract B；写入 XMind 时节点标题改为 Contract A `验证xxx`，优先级通过 marker 表达 |
 
 ## prd_version 格式

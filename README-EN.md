@@ -57,16 +57,16 @@ Archive MD + URL ──────────────── /ui-autotest �
 
 ## Features
 
-| Feature                        | Description                                                                                                      |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| **7 Skills / 5 Core Workflows** | `qa-flow` Router + `setup` + 5 primary execution workflows from initialization to delivery                      |
-| **13-Agent Architecture**      | Specialized agents declare model/tools in frontmatter and are dispatched by Skills based on task complexity     |
-| **Project-Scoped Workspace**   | All artifacts are written into `workspace/&lt;project&gt;/...`, keeping projects isolated                        |
-| **A/B Artifact Contract**      | XMind / intermediate artifacts use Contract A; Archive MD / display titles use Contract B                       |
-| **Preview-before-Write**       | XMind `patch` / `add` / `delete` always run `--dry-run` first, then require confirmation                        |
-| **Self-healing UI Regression** | UI automation verifies each script individually, repairs up to 3 rounds, and can emit bug reports or fix hints |
-| **Plugin Hooks**               | Lanhu import, Zentao integration, and IM notifications are attached via lifecycle hooks                         |
-| **Safety Gates**               | Read-only source repos, explicit side-effect confirmation, and separate reference vs writeback gates            |
+| Feature                         | Description                                                                                                    |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **7 Skills / 5 Core Workflows** | `qa-flow` Router + `setup` + 5 primary execution workflows from initialization to delivery                     |
+| **13-Agent Architecture**       | Specialized agents declare model/tools in frontmatter and are dispatched by Skills based on task complexity    |
+| **Project-Scoped Workspace**    | All artifacts are written into `workspace/&lt;project&gt;/...`, keeping projects isolated                      |
+| **A/B Artifact Contract**       | XMind / intermediate artifacts use Contract A; Archive MD / display titles use Contract B                      |
+| **Preview-before-Write**        | XMind `patch` / `add` / `delete` always run `--dry-run` first, then require confirmation                       |
+| **Self-healing UI Regression**  | UI automation verifies each script individually, repairs up to 3 rounds, and can emit bug reports or fix hints |
+| **Plugin Hooks**                | Lanhu import, Zentao integration, and IM notifications are attached via lifecycle hooks                        |
+| **Safety Gates**                | Read-only source repos, explicit side-effect confirmation, and separate reference vs writeback gates           |
 
 ---
 
@@ -126,14 +126,14 @@ In Claude Code, start with:
 
 A 6-step interactive wizard will guide you through:
 
-| Step | Description                                                              |
-| ---- | ------------------------------------------------------------------------ |
-| 1    | Environment detection — Node.js, Bun, config files, and core scripts    |
-| 2    | Project management — Select an existing project or create a new one      |
-| 3    | Workspace setup — Create the standard `workspace/<project>/` structure   |
+| Step | Description                                                                               |
+| ---- | ----------------------------------------------------------------------------------------- |
+| 1    | Environment detection — Node.js, Bun, config files, and core scripts                      |
+| 2    | Project management — Select an existing project or create a new one                       |
+| 3    | Workspace setup — Create the standard `workspace/<project>/` structure                    |
 | 4    | Source repo configuration — Clone Git repos into `workspace/<project>/.repos/` (optional) |
-| 5    | Plugin configuration — Check for plugin credentials in `.env` (optional) |
-| 6    | Environment verification — Comprehensive validation of all config items  |
+| 5    | Plugin configuration — Check for plugin credentials in `.env` (optional)                  |
+| 6    | Environment verification — Comprehensive validation of all config items                   |
 
 ### Quick Commands
 
@@ -185,15 +185,15 @@ Transforms PRD / Story documents into structured XMind and Archive Markdown test
 
 #### 7 Nodes
 
-| Node | Name          | Description                                                                 | Key Scripts                               |
-| ---- | ------------- | --------------------------------------------------------------------------- | ----------------------------------------- |
-| 1    | **init**      | Parse input, restore state, and load project/plugin context                 | `state.ts`, `plugin-loader.ts`            |
-| 2    | **transform** | Source code analysis + PRD structuring, with structured `clarify_envelope`  | `repo-profile.ts`, `repo-sync.ts`         |
-| 3    | **enhance**   | Image recognition, frontmatter normalization, and health pre-check          | `image-compress.ts`, `prd-frontmatter.ts` |
-| 4    | **analyze**   | Historical case retrieval + QA brainstorming &rarr; test point checklist    | `archive-gen.ts search`                   |
-| 5    | **write**     | Parallel Writer Sub-Agents generate Contract A cases by module              | Parallel sub-agents                       |
-| 6    | **review**    | Quality-gate review (threshold < 15% / 15-40% / > 40%), up to 2 rounds      | Quality gate                              |
-| 7    | **output**    | Generate XMind (A) + Archive MD (B), send notifications, and clean state    | `xmind-gen.ts`, `archive-gen.ts`          |
+| Node | Name          | Description                                                                | Key Scripts                               |
+| ---- | ------------- | -------------------------------------------------------------------------- | ----------------------------------------- |
+| 1    | **init**      | Parse input, restore state, and load project/plugin context                | `state.ts`, `plugin-loader.ts`            |
+| 2    | **transform** | Source code analysis + PRD structuring, with structured `clarify_envelope` | `repo-profile.ts`, `repo-sync.ts`         |
+| 3    | **enhance**   | Image recognition, frontmatter normalization, and health pre-check         | `image-compress.ts`, `prd-frontmatter.ts` |
+| 4    | **analyze**   | Historical case retrieval + QA brainstorming &rarr; test point checklist   | `archive-gen.ts search`                   |
+| 5    | **write**     | Parallel Writer Sub-Agents generate Contract A cases by module             | Parallel sub-agents                       |
+| 6    | **review**    | Quality-gate review (threshold < 15% / 15-40% / > 40%), up to 2 rounds     | Quality gate                              |
+| 7    | **output**    | Generate XMind (A) + Archive MD (B), send notifications, and clean state   | `xmind-gen.ts`, `archive-gen.ts`          |
 
 #### Quality Gate (Review Node)
 
@@ -284,8 +284,8 @@ Signal detection → Mode routing → reference/sync confirmation → AI analysi
 
 #### Output Directories
 
-| Type             | Path                                    |
-| ---------------- | --------------------------------------- |
+| Type             | Path                                              |
+| ---------------- | ------------------------------------------------- |
 | Bug Reports      | `workspace/<project>/reports/bugs/YYYYMMDD/`      |
 | Conflict Reports | `workspace/<project>/reports/conflicts/YYYYMMDD/` |
 | Hotfix Cases     | `workspace/<project>/issues/YYYYMM/`              |
@@ -298,13 +298,13 @@ Perform local edits on existing XMind files without re-reading PRDs. All write o
 
 #### Operations
 
-| Operation | Command                                    | Preview / execution flow                                                              |
-| --------- | ------------------------------------------ | ------------------------------------------------------------------------------------- |
-| Search    | `搜索用例 "export"`                        | `xmind-edit.ts search "keyword"`                                                      |
-| Show      | `查看用例 "Verify list page default load"` | `xmind-edit.ts show --file X --title "Y"`                                             |
-| Modify    | `修改用例 "Verify export filters"`         | `xmind-edit.ts patch --file X --title "Y" --case-json '{...}' --dry-run` → confirm   |
-| Add       | `新增用例 到 "Rule List Page" 分组`        | `xmind-edit.ts add --file X --parent "Y" --case-json '{...}' --dry-run` → confirm    |
-| Delete    | `删除用例 "Verify xxx"`                    | `xmind-edit.ts delete --file X --title "Y" --dry-run` → confirm                       |
+| Operation | Command                                    | Preview / execution flow                                                           |
+| --------- | ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| Search    | `搜索用例 "export"`                        | `xmind-edit.ts search "keyword"`                                                   |
+| Show      | `查看用例 "Verify list page default load"` | `xmind-edit.ts show --file X --title "Y"`                                          |
+| Modify    | `修改用例 "Verify export filters"`         | `xmind-edit.ts patch --file X --title "Y" --case-json '{...}' --dry-run` → confirm |
+| Add       | `新增用例 到 "Rule List Page" 分组`        | `xmind-edit.ts add --file X --parent "Y" --case-json '{...}' --dry-run` → confirm  |
+| Delete    | `删除用例 "Verify xxx"`                    | `xmind-edit.ts delete --file X --title "Y" --dry-run` → confirm                    |
 
 #### Preference Learning
 
@@ -322,17 +322,17 @@ Transforms Archive MD test cases into Playwright TypeScript scripts, executes by
 
 #### 9 Steps
 
-| Step | Name                  | Description                                                                          |
-| ---- | --------------------- | ------------------------------------------------------------------------------------ |
-| 1    | **Parse Input**       | Extract `md_path` and `url`, parse Archive MD via `parse-cases.ts`                  |
-| 2    | **Select Scope**      | Only prompt when scope is unclear: smoke / full / custom                            |
-| 3    | **Session Prep**      | Check/create login session via `session-login.ts`                                   |
-| 4    | **Script Generation** | Up to 5 parallel Sub-Agents generate `.ts` code blocks                              |
-| 5    | **Per-case Verify**   | Each script is executed individually and self-healed for up to 3 rounds             |
-| 6    | **Merge Specs**       | `merge-specs.ts` assembles `smoke.spec.ts` and `full.spec.ts`                       |
-| 7    | **Run Regression**    | `bunx playwright test` executes the merged smoke / full specs                       |
-| 8    | **Process Results**   | Generate Playwright reports, bug reports, and Archive MD correction suggestions      |
-| 9    | **Send Notifications**| Plugin sends pass/fail summary via IM                                               |
+| Step | Name                   | Description                                                                     |
+| ---- | ---------------------- | ------------------------------------------------------------------------------- |
+| 1    | **Parse Input**        | Extract `md_path` and `url`, parse Archive MD via `parse-cases.ts`              |
+| 2    | **Select Scope**       | Only prompt when scope is unclear: smoke / full / custom                        |
+| 3    | **Session Prep**       | Check/create login session via `session-login.ts`                               |
+| 4    | **Script Generation**  | Up to 5 parallel Sub-Agents generate `.ts` code blocks                          |
+| 5    | **Per-case Verify**    | Each script is executed individually and self-healed for up to 3 rounds         |
+| 6    | **Merge Specs**        | `merge-specs.ts` assembles `smoke.spec.ts` and `full.spec.ts`                   |
+| 7    | **Run Regression**     | `bunx playwright test` executes the merged smoke / full specs                   |
+| 8    | **Process Results**    | Generate Playwright reports, bug reports, and Archive MD correction suggestions |
+| 9    | **Send Notifications** | Plugin sends pass/fail summary via IM                                           |
 
 #### Test Scope
 
@@ -344,12 +344,12 @@ Transforms Archive MD test cases into Playwright TypeScript scripts, executes by
 
 #### Output
 
-| Type                 | Path                                                          |
-| -------------------- | ------------------------------------------------------------- |
-| Temporary UI blocks  | `workspace/<project>/.temp/ui-blocks/`                        |
-| E2E specs            | `workspace/<project>/tests/YYYYMM/<suite_name>/`              |
-| Playwright reports   | `workspace/<project>/reports/playwright/YYYYMM/<suite_name>/` |
-| Bug reports          | `workspace/<project>/reports/bugs/YYYYMM/`                    |
+| Type                | Path                                                          |
+| ------------------- | ------------------------------------------------------------- |
+| Temporary UI blocks | `workspace/<project>/.temp/ui-blocks/`                        |
+| E2E specs           | `workspace/<project>/tests/YYYYMM/<suite_name>/`              |
+| Playwright reports  | `workspace/<project>/reports/playwright/YYYYMM/<suite_name>/` |
+| Bug reports         | `workspace/<project>/reports/bugs/YYYYMM/`                    |
 
 ---
 

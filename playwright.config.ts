@@ -23,8 +23,12 @@ loadDotEnv();
 
 // 根据 QA_ACTIVE_ENV 自动桥接 Cookie / BaseURL，无需命令行传参
 const activeEnv = (process.env.QA_ACTIVE_ENV ?? "ltqc").toUpperCase();
-const cookie = process.env[`QA_COOKIE_${activeEnv}`] ?? process.env.UI_AUTOTEST_COOKIE ?? "";
-const baseUrl = process.env[`QA_BASE_URL_${activeEnv}`] ?? process.env.UI_AUTOTEST_BASE_URL ?? "";
+const cookie =
+  process.env[`QA_COOKIE_${activeEnv}`] ?? process.env.UI_AUTOTEST_COOKIE ?? "";
+const baseUrl =
+  process.env[`QA_BASE_URL_${activeEnv}`] ??
+  process.env.UI_AUTOTEST_BASE_URL ??
+  "";
 process.env.UI_AUTOTEST_COOKIE = cookie;
 if (baseUrl) process.env.UI_AUTOTEST_BASE_URL = baseUrl;
 

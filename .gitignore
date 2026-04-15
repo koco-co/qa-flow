@@ -6,7 +6,7 @@ node_modules/
 .auth/
 
 # ── 源码仓库 ────────────────────────────
-workspace/.repos/
+*.repos/
 !workspace/.repos/**/.gitkeep
 
 # ── Playwright 自动生成产物 ─────────────────────────────

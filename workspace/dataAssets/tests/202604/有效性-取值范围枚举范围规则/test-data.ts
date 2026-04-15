@@ -109,70 +109,13 @@ interface QualityProjectResult {
   readonly projectName: string;
 }
 
-/**
- * 扫描所有质量项目，返回第一个拥有 Doris 数据源的项目。
- * 避免复杂的数据源授权操作。
- */
-export async function findProjectWithDoris(
-  page: Page,
-): Promise<QualityProjectResult> {
-  const baseUrl = normalizeBaseUrl("dataAssets");
+// ── 质量项目 ID（环境中已配置 tongmeng_doris3 Doris3.x 数据源的项目）──
+export const QUALITY_PROJECT_ID = 35;
+export const QUALITY_PROJECT_NAME = "Story_15695";
 
-  const currentUrl = page.url();
-  if (currentUrl === "about:blank" || !currentUrl.includes(new URL(baseUrl).hostname)) {
-    await page.goto(`${baseUrl}/#/dataStandard`, {
-      waitUntil: "domcontentloaded",
-      timeout: 30_000,
-    });
-  }
-
-  const result = await page.evaluate(async () => {
-    const post = async (url: string, body: unknown, headers: Record<string, string> = {}) => {
-      const resp = await fetch(url, {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "content-type": "application/json;charset=UTF-8", ...headers },
-        body: JSON.stringify(body),
-      });
-      return resp.json() as Promise<{ code?: number; success?: boolean; data?: unknown }>;
-    };
-
-    const projResp = await post("/dassets/v1/valid/project/getProjects", {});
-    const projects = (projResp.data ?? []) as Array<{
-      id?: string | number;
-      projectName?: string;
-    }>;
-
-    for (const p of projects) {
-      const pid = String(p.id);
-      const dsResp = await post(
-        "/dmetadata/v1/dataSource/monitor/list", {},
-        { "X-Valid-Project-ID": pid },
-      );
-      const dsList = Array.isArray(dsResp?.data) ? dsResp.data : [];
-      const hasDoris = dsList.some(
-        (d: { sourceTypeValue?: string }) =>
-          d.sourceTypeValue?.includes("Doris") || d.sourceTypeValue?.includes("DORIS"),
-      );
-      if (hasDoris) {
-        return { projectId: Number(p.id), projectName: p.projectName ?? "" };
-      }
-    }
-    return { projectId: null, projectName: "" };
-  });
-
-  if (result.projectId) {
-    process.stderr.write(
-      `[preconditions] Found project with Doris: "${result.projectName}" (id=${result.projectId})\n`,
-    );
-  } else {
-    process.stderr.write(
-      "[preconditions] WARNING: No project with Doris datasource found!\n",
-    );
-  }
-
-  return result;
-}
+// ── 数据源和数据库配置 ──
+export const DORIS_DATASOURCE_KEYWORD = "doris"; // 数据源下拉框匹配关键字
+export const DORIS_DATABASE = "pw"; // 建表所在的 Doris 数据库
 
 /**
  * 注入质量项目 ID 到 sessionStorage，确保后续 API 请求携带正确的 X-Valid-Project-ID 头。

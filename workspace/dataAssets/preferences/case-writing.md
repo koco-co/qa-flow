@@ -3,13 +3,13 @@
 > 优先级：用户当前指令 > 项目级偏好规则 > 全局偏好规则 > skill 内置规则
 
 <artifact_contract>
-  <xmind_intermediate contract="A">
-    <title>验证xxx</title>
-    <priority>P1</priority>
-  </xmind_intermediate>
-  <archive_md contract="B">
-    <display_title>【P1】验证xxx</display_title>
-  </archive_md>
+<xmind_intermediate contract="A">
+<title>验证xxx</title>
+<priority>P1</priority>
+</xmind_intermediate>
+<archive_md contract="B">
+<display_title>【P1】验证xxx</display_title>
+</archive_md>
 </artifact_contract>
 
 > 本项目偏好不改写 A/B 契约：中间 JSON / XMind 节点使用裸标题 `验证xxx`，Archive MD / 展示面使用 `【P1】验证xxx`。
@@ -165,9 +165,9 @@
 
 不同需求来源使用的主要数据源类型不同，编写用例时需结合需求来源与源码 / PRD 中确认的实际版本选择对应数据源：
 
-| 需求来源 | 主要数据源类型 |
-| -------- | -------------- |
-| 岚图需求 | SparkThrift2.x                         |
+| 需求来源 | 主要数据源类型                       |
+| -------- | ------------------------------------ |
+| 岚图需求 | SparkThrift2.x                       |
 | Gate需求 | Doris 系列（版本以需求实际实现为准） |
 
 > 用例中建表语句、字段类型、SQL 语法需与对应数据源兼容（如 SparkThrift 使用 `STRING`，Doris 系列按实际版本使用对应语法，如 `VARCHAR` 等）。
