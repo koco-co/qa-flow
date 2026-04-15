@@ -36,7 +36,7 @@ model: sonnet
 
 同时读取：
 
-- `${CLAUDE_SKILL_DIR}/references/test-case-rules.md` — 完整用例编写规范
+- `.claude/references/test-case-standards.md` — 用例编写规范（权威来源）
 - `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` — 中间 JSON 格式规范
 
 ## 步骤
@@ -152,41 +152,7 @@ model: sonnet
 
 ## 输出格式
 
-输出结构遵循 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` 标准化结构，标题字段遵循 Contract A。
-
-```json
-{
-  "meta": {
-    "project_name": "<从文件名或内容推断>",
-    "requirement_name": "<从文件名或内容推断>",
-    "source_file": "<原始文件路径>",
-    "standardized": true
-  },
-  "modules": [
-    {
-      "name": "模块名称",
-      "pages": [
-        {
-          "name": "页面名称",
-          "test_cases": [
-            {
-              "title": "验证xxx",
-              "priority": "P1",
-              "preconditions": "1、xxx\n2、xxx",
-              "steps": [
-                {
-                  "step": "进入【xxx→yyy】页面，等待列表加载完成",
-                  "expected": "页面正常加载，列表显示 N 条数据"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
+JSON 结构参见 `.claude/references/output-schemas.json` 中的 `standardize_json`；输出结构同时遵循 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md`，标题字段遵循 Contract A。
 
 ## 输出
 
@@ -203,16 +169,7 @@ model: sonnet
 
 ## 错误处理
 
-- 若原始用例数据文件不存在或格式无法解析，立即失败并输出明确错误信息。
-- 若偏好规则目录为空，使用内置规则继续。
-- 若参考规范文件不存在，使用本文件中的内置规则继续。
-
-### 错误恢复
-
-| 场景             | 处理方式                                 |
-| ---------------- | ---------------------------------------- |
-| 原始数据格式异常 | 输出错误位置和原因，尝试解析可识别的部分 |
-| 偏好规则目录为空 | 使用内置规则继续                         |
+遵循 `.claude/references/error-handling-patterns.md` 中的标准分类与恢复策略。
 
 ## 重写原则
 

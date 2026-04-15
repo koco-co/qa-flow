@@ -100,56 +100,17 @@ tools: Read, Grep, Glob, Bash
 
 ## 输出结构
 
-分析完成后，将以下 JSON 数据返回给调用方渲染 HTML 报告：
+分析完成后，将结构化 JSON 数据返回给调用方渲染 HTML 报告。
 
-```json
-{
-  "title": "报告标题（一句话概括 Bug，如：UserService.findById 触发 NullPointerException）",
-  "analysis_time": "YYYY-MM-DD HH:mm",
-  "problem_type": "代码问题 | 环境问题 | 混合",
-  "severity": "严重 | 一般 | 低",
-  "severityClass": "critical | major | normal | low（与 severity 对应：严重→critical，一般→normal，低→low）",
-  "summary": "一段话概述根因（≤80字）",
-  "request_info": {
-    "method": "GET | POST | ...",
-    "url": "...",
-    "params": "关键参数摘要",
-    "status_code": 500,
-    "response_preview": "响应体前200字"
-  },
-  "stack_trace": {
-    "exception_type": "java.lang.NullPointerException",
-    "exception_message": "...",
-    "entry_frame": "com.dtstack.xxx.XxxService.method(XxxService.java:100)",
-    "root_cause_frame": "com.dtstack.xxx.YyyRepository.find(YyyRepository.java:56)",
-    "caused_by_chain": ["Caused by: ...", "Caused by: ..."]
-  },
-  "code_location": {
-    "file": "相对路径（如 engine/service/UserService.java）",
-    "line": 156,
-    "snippet": "相关代码片段（5-10行）",
-    "analysis": "该处代码的问题描述"
-  },
-  "root_cause": "根因详细描述（2-5句话）",
-  "fix_suggestions": [
-    {
-      "priority": 1,
-      "location": "在哪里改",
-      "action": "改什么",
-      "reason": "为什么"
-    }
-  ],
-  "environment": {
-    "java_version": "",
-    "framework": "",
-    "deploy_env": ""
-  }
-}
-```
+JSON 结构参见 `.claude/references/output-schemas.json` 中的 `backend_bug_json`。若某字段信息不足，填 `null`，不要留空字符串占位。
 
-若某字段信息不足，填 `null`，不要留空字符串占位。
+符号使用遵循 `.claude/references/unicode-symbols.md`。
 
-**符号约束**：所有 JSON 字段值（title、summary、root_cause、fix_suggestions 中的 action/reason 等）必须使用纯文本，不得包含任何 emoji 符号（U+1Fxxx 范围如绝对禁止；U+26xx 范围仅允许在 HTML 模板固定位置使用，不允许出现在 AI 填充的数据字段中）。
+---
+
+## 错误处理
+
+遵循 `.claude/references/error-handling-patterns.md` 中的标准分类与恢复策略。
 
 ---
 

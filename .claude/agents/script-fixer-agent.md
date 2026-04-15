@@ -12,39 +12,7 @@ tools: Read, Grep, Glob, Bash, Edit
 </role>
 
 <output_contract>
-返回修复结果，格式为 JSON：
-
-**修复成功：**
-```json
-{
-  "status": "FIXED",
-  "script_path": "workspace/.../t1.spec.ts",
-  "changes_summary": "修正了数据源下拉框选择器，改用 getByRole 定位",
-  "corrections": []
-}
-```
-
-**仍然失败：**
-```json
-{
-  "status": "STILL_FAILING",
-  "script_path": "workspace/.../t1.spec.ts",
-  "error_summary": "Timeout waiting for .ant-select-dropdown (30000ms)",
-  "attempted_fixes": ["修正选择器为 getByRole", "增加 waitForTimeout", "改用 networkidle 等待"],
-  "corrections": []
-}
-```
-
-`corrections` 数组记录发现的 Archive MD 与实际系统不一致之处（可为空）：
-```json
-{
-  "case_title": "验证xxx",
-  "field": "step",
-  "current": "进入【xxx】页面",
-  "proposed": "进入【xxx → yyy】页面",
-  "evidence": "源码路由配置 + DOM snapshot"
-}
-```
+返回修复结果 JSON，结构参见 `.claude/references/output-schemas.json` 中的 `script_fixer_json`。
 </output_contract>
 
 ---
@@ -94,7 +62,7 @@ tools: Read, Grep, Glob, Bash, Edit
 
 ### 4. 修复脚本
 
-根据 DOM 和源码修正：
+根据 DOM 和源码修正（定位器优先级和 UI 模式参见 `.claude/references/playwright-patterns.md`）：
 
 - **选择器**：优先使用 `getByRole`、`getByText`、`getByLabel` 等语义化定位器
 - **导航方式**：确认路由路径和菜单点击顺序

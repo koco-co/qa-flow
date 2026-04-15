@@ -105,51 +105,17 @@ tools: Read, Grep, Glob, Bash
 
 ## 输出结构
 
-分析完成后，将以下 JSON 数据返回给调用方渲染 HTML 报告：
+分析完成后，将结构化 JSON 数据返回给调用方渲染 HTML 报告。
 
-```json
-{
-  "title": "报告标题（如：GoodsList 组件访问 undefined.price 导致白屏）",
-  "analysis_time": "YYYY-MM-DD HH:mm",
-  "problem_type": "代码问题 | 环境问题 | 混合",
-  "severity": "严重 | 一般 | 低",
-  "summary": "一句话根因（≤80字）",
-  "error_type": "TypeError | ReferenceError | ChunkLoadError | React error | Vue warn | NetworkError | Other",
-  "error_message": "原始报错消息",
-  "error_location": {
-    "file": "报错文件路径",
-    "line": 42,
-    "column": 18,
-    "component_stack": "组件调用链（React/Vue 特有）"
-  },
-  "layer_analysis": {
-    "component_layer": "组件层分析结论",
-    "data_layer": "数据层分析结论",
-    "environment_layer": "环境层分析结论",
-    "framework_layer": "框架层分析结论"
-  },
-  "code_location": {
-    "file": "相对路径",
-    "line": 42,
-    "snippet": "相关代码片段",
-    "analysis": "该处代码的问题描述"
-  },
-  "affected_pages": ["页面路径1", "页面路径2"],
-  "root_cause": "根因详细描述",
-  "fix_suggestions": [
-    {
-      "priority": 1,
-      "location": "在哪里改",
-      "action": "改什么",
-      "reason": "为什么"
-    }
-  ]
-}
-```
+JSON 结构参见 `.claude/references/output-schemas.json` 中的 `frontend_bug_json`。若某字段信息不足，填 `null`，不要留空字符串占位。
 
-若某字段信息不足，填 `null`，不要留空字符串占位。
+符号使用遵循 `.claude/references/unicode-symbols.md`。
 
-**符号约束**：所有 JSON 字段值必须使用纯文本，不得包含任何 emoji 符号（U+1Fxxx 范围绝对禁止；U+26xx 范围仅允许在 HTML 模板固定位置使用，不允许出现在 AI 填充的数据字段中）。
+---
+
+## 错误处理
+
+遵循 `.claude/references/error-handling-patterns.md` 中的标准分类与恢复策略。
 
 ---
 
