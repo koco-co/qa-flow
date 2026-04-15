@@ -146,9 +146,7 @@ async function addPackageSlot(page: Page, packageName: string): Promise<void> {
   await page.waitForTimeout(300);
 
   const packageSection = page.locator(".ruleSetMonitor__package").last();
-  const packageSelect = packageSection
-    .locator(".ruleSetMonitor__packageSelect .ant-select")
-    .first();
+  const packageSelect = packageSection.locator(".ruleSetMonitor__packageSelect").first();
   await packageSelect.waitFor({ state: "visible", timeout: 10000 });
   await selectAntOption(page, packageSelect, packageName);
   await page.waitForTimeout(300);
