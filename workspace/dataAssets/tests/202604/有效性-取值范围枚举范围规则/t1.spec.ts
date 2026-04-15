@@ -113,15 +113,14 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
 
         // 填写规则包名称
         const packageNameInput = page
-          .locator(".ant-table-row")
-          .first()
-          .locator("input")
+          .locator("input[placeholder*='规则包名称']")
           .first();
+        await packageNameInput.waitFor({ state: "visible", timeout: 5000 });
         await packageNameInput.clear();
         await packageNameInput.fill("且关系校验包");
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
 
-        // 点击下一步
+        // 点击下一步进入 Step 2
         await page.getByRole("button", { name: "下一步" }).click();
         await page.waitForLoadState("networkidle");
         await page.waitForTimeout(1500);
@@ -133,25 +132,53 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
       page.getByText("监控规则").first(),
     );
 
-    // 步骤3：新增取值范围&枚举范围规则并填写配置
+    // 步骤3：新增规则包 → 添加规则 → 填写配置
     await step(
       "步骤3: 新增取值范围&枚举范围规则并填写配置 → 规则配置区域展开正常，各字段可正常录入",
       async () => {
-        // 等待 Step 2 监控规则页面完全加载（规则包从 Step 1 带入，已预设）
-        await page.waitForTimeout(2000);
+        // Step 2 页面：先点击"新增规则包"
+        const addPackageBtn = page.getByText("新增规则包", { exact: false }).first();
+        await addPackageBtn.waitFor({ state: "visible", timeout: 10000 });
+        await addPackageBtn.click();
+        await page.waitForTimeout(1000);
 
-        // 点击新增规则
-        const addRuleBtn = page.getByRole("button", { name: /新增规则/ }).first();
-        await addRuleBtn.waitFor({ state: "visible", timeout: 15000 });
+        // 选择规则包名称（在 ruleSetMonitor__packageSelect 下拉框中选择或输入）
+        const packageSelect = page
+          .locator(".ruleSetMonitor__packageSelect, .ant-select")
+          .filter({ has: page.locator(".ant-select-selection-placeholder") })
+          .first();
+        await packageSelect.locator(".ant-select-selector").click();
+        await page.waitForTimeout(500);
+        // 在下拉框中选择第一个可用的规则包名称，或输入新名称
+        const pkgDropdown = page.locator(".ant-select-dropdown:visible").last();
+        await pkgDropdown.waitFor({ state: "visible", timeout: 5000 });
+        // 从 Step 1 定义的规则包中选择（包名来自基础信息配置）
+        const pkgOption = pkgDropdown.locator(".ant-select-item-option").first();
+        if (await pkgOption.isVisible()) {
+          await pkgOption.click();
+        }
+        await page.waitForTimeout(1000);
+
+        // 点击"添加规则"（Dropdown 按钮）→ 选择"有效性校验"规则类型
+        const addRuleBtn = page.getByRole("button", { name: /添加规则/ }).first();
+        await addRuleBtn.waitFor({ state: "visible", timeout: 10000 });
         await addRuleBtn.click();
+        await page.waitForTimeout(500);
+        // 从 Dropdown 菜单选择规则类型
+        const ruleTypeMenu = page.locator(
+          ".ant-dropdown:visible, .ant-dropdown-menu:visible",
+        );
+        await ruleTypeMenu.first().waitFor({ state: "visible", timeout: 10000 });
+        await ruleTypeMenu
+          .getByText("有效性校验", { exact: false })
+          .first()
+          .click();
         await page.waitForTimeout(1500);
 
-        // 统计函数: 取值范围&枚举范围
-        const statFuncSelect = page
-          .locator(".ant-form-item")
-          .filter({ hasText: /统计函数|规则类型/ })
-          .locator(".ant-select")
-          .first();
+        // 统计函数: 取值范围&枚举范围（在 .rule__function-list__item 内）
+        const funcListItem = page.locator(".rule__function-list__item").first();
+        await funcListItem.waitFor({ state: "visible", timeout: 10000 });
+        const statFuncSelect = funcListItem.locator(".ant-select").first();
         await statFuncSelect.locator(".ant-select-selector").click();
         await page.waitForTimeout(500);
         await page
@@ -159,15 +186,14 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
           .getByText("取值范围&枚举范围", { exact: false })
           .first()
           .click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(1000);
 
-        // 字段: score
-        const fieldSelect = page
+        // 字段: score（选择统计函数后字段下拉可能刷新）
+        const fieldFormItem = page
           .locator(".ant-form-item")
-          .filter({ hasText: "字段" })
-          .last()
-          .locator(".ant-select")
+          .filter({ hasText: /^字段/ })
           .first();
+        const fieldSelect = fieldFormItem.locator(".ant-select").first();
         await fieldSelect.locator(".ant-select-selector").click();
         await page.waitForTimeout(500);
         await page
