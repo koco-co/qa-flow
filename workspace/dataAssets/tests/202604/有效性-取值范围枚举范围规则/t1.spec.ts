@@ -137,74 +137,92 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
     await step(
       "步骤3: 新增取值范围&枚举范围规则并填写配置 → 规则配置区域展开正常，各字段可正常录入",
       async () => {
-        const addRuleBtn = page
-          .getByRole("button", { name: /新增规则|新增/ })
-          .first();
-        await addRuleBtn.click();
+        // 点击新增规则
+        await page.getByRole("button", { name: /新增规则/ }).first().click();
         await page.waitForTimeout(1000);
 
         // 统计函数: 取值范围&枚举范围
-        const funcSelectCol = page
-          .locator(".rule__function-list__item")
-          .first()
+        const statFuncSelect = page
+          .locator(".ant-form-item")
+          .filter({ hasText: /统计函数|规则类型/ })
           .locator(".ant-select")
           .first();
-        await selectAntOption(
-          page,
-          funcSelectCol.locator(".ant-select-selector"),
-          "取值范围&枚举范围",
-        );
+        await statFuncSelect.locator(".ant-select-selector").click();
+        await page.waitForTimeout(500);
+        await page
+          .locator(".ant-select-dropdown:visible")
+          .getByText("取值范围&枚举范围", { exact: false })
+          .first()
+          .click();
         await page.waitForTimeout(500);
 
         // 字段: score
-        const fieldFormItem = page
+        const fieldSelect = page
           .locator(".ant-form-item")
-          .filter({ hasText: /^字段/ })
+          .filter({ hasText: "字段" })
+          .last()
+          .locator(".ant-select")
           .first();
-        await selectAntOption(
-          page,
-          fieldFormItem.locator(".ant-select-selector").first(),
-          "score",
-        );
+        await fieldSelect.locator(".ant-select-selector").click();
+        await page.waitForTimeout(500);
+        await page
+          .locator(".ant-select-dropdown:visible")
+          .getByText("score", { exact: false })
+          .first()
+          .click();
         await page.waitForTimeout(500);
 
-        // 取值范围: > 1 且 < 10
-        const rangeRow = page
-          .locator(".col-inline-form")
-          .filter({ hasText: /取值范围设置/ })
+        // 取值范围设置: > 1 且 < 10
+        const rangeFormItem = page
+          .locator(".ant-form-item")
+          .filter({ hasText: /取值范围/ })
+          .first();
+
+        // 操作符1: >
+        const rangeOp1 = rangeFormItem.locator(".ant-select").first();
+        await rangeOp1.locator(".ant-select-selector").click();
+        await page.waitForTimeout(300);
+        await page
+          .locator(".ant-select-dropdown:visible")
+          .getByText(">", { exact: true })
           .first()
-          .locator("..");
-
-        const rangeSelects = rangeRow.locator(".ant-select");
-        await selectAntOption(page, rangeSelects.first().locator(".ant-select-selector"), ">");
+          .click();
         await page.waitForTimeout(300);
 
-        const rangeInputs = rangeRow.locator("input:not(.ant-select-selection-search-input)");
-        await rangeInputs.first().fill("1");
+        // 期望值1: 1
+        await rangeFormItem.locator("input").first().fill("1");
         await page.waitForTimeout(300);
 
-        await rangeRow.locator(".ant-radio-wrapper").filter({ hasText: "且" }).first().click();
+        // 选择"且"（双条件）
+        const rangeRadioGroup = rangeFormItem.locator(".ant-radio-wrapper, .ant-radio-button-wrapper");
+        await rangeRadioGroup.filter({ hasText: "且" }).first().click();
         await page.waitForTimeout(300);
 
-        await selectAntOption(page, rangeSelects.nth(1).locator(".ant-select-selector"), "<");
+        // 操作符2: <
+        const rangeOp2 = rangeFormItem.locator(".ant-select").nth(1);
+        await rangeOp2.locator(".ant-select-selector").click();
         await page.waitForTimeout(300);
-        await rangeInputs.nth(1).fill("10");
-        await page.waitForTimeout(300);
-
-        // 枚举值: in 1、2、3
-        const enumRow = page
-          .locator(".col-inline-form")
-          .filter({ hasText: /枚举值设置/ })
+        await page
+          .locator(".ant-select-dropdown:visible")
+          .getByText("<", { exact: true })
           .first()
-          .locator("..");
-
-        const enumOpSelect = enumRow.locator(".ant-select").first();
-        await selectAntOption(page, enumOpSelect.locator(".ant-select-selector"), "in");
+          .click();
         await page.waitForTimeout(300);
 
-        const enumTagInput = enumRow.locator(".ant-select").nth(1).locator(".ant-select-selection-search input");
+        // 期望值2: 10
+        await rangeFormItem.locator("input").nth(1).fill("10");
+        await page.waitForTimeout(300);
+
+        // 枚举值设置: in 1、2、3
+        const enumFormItem = page
+          .locator(".ant-form-item")
+          .filter({ hasText: /枚举值/ })
+          .first();
+
+        // 操作符默认为 in，直接输入枚举值
+        const enumInput = enumFormItem.locator("input").last();
         for (const val of ["1", "2", "3"]) {
-          await enumTagInput.fill(val);
+          await enumInput.fill(val);
           await page.keyboard.press("Enter");
           await page.waitForTimeout(200);
         }
@@ -212,15 +230,18 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await page.waitForTimeout(200);
 
         // 取值范围和枚举值关系: 且
-        const relationRow = page
-          .locator(".col-inline-form")
-          .filter({ hasText: /取值范围和枚举值的关系/ })
+        const relationFormItem = page
+          .locator(".ant-form-item")
+          .filter({ hasText: /关系/ });
+        await relationFormItem
+          .locator(".ant-radio-wrapper, .ant-radio-button-wrapper")
+          .filter({ hasText: "且" })
           .first()
-          .locator("..");
-        await relationRow.locator(".ant-radio-wrapper").filter({ hasText: "且" }).first().click();
+          .click();
         await page.waitForTimeout(300);
 
-        // 验证枚举值操作符选项
+        // 验证枚举值操作符支持 in/not in
+        const enumOpSelect = enumFormItem.locator(".ant-select").first();
         await enumOpSelect.locator(".ant-select-selector").click();
         await page.waitForTimeout(300);
         const enumDropdown = page.locator(".ant-select-dropdown:visible");
@@ -229,7 +250,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await page.keyboard.press("Escape");
         await page.waitForTimeout(200);
       },
-      page.locator(".col-inline-form").filter({ hasText: /枚举值设置/ }).first(),
+      page.locator(".ant-form-item").filter({ hasText: /枚举值/ }).first(),
     );
 
     // 步骤4：保存规则并完成规则集创建
