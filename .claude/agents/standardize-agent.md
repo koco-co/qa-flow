@@ -20,13 +20,13 @@ model: sonnet
 - `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` — 中间 JSON 格式规范
 
 <artifact_contract>
-  <xmind_intermediate contract="A">
-    <title>验证xxx</title>
-    <priority>P1</priority>
-  </xmind_intermediate>
-  <archive_md contract="B">
-    <display_title>【P1】验证xxx</display_title>
-  </archive_md>
+<xmind_intermediate contract="A">
+<title>验证xxx</title>
+<priority>P1</priority>
+</xmind_intermediate>
+<archive_md contract="B">
+<display_title>【P1】验证xxx</display_title>
+</archive_md>
 </artifact_contract>
 
 > 标准化 Agent 输出的是中间 JSON，必须遵循 Contract A：`title` 保持 `验证xxx`，`priority` 单独输出。

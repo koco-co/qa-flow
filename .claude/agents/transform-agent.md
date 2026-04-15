@@ -26,20 +26,20 @@ model: sonnet
 </workflow>
 
 <confirmation_policy>
-  <rule>Transform 自身不直接向用户提问；仅通过 `<clarify_envelope>` 将 `blocking_unknown` 或 `invalid_input` 交回主 agent。</rule>
-  <rule>`defaultable_unknown` 不应阻断，应按推荐默认继续，并在 PRD 中记录依据与默认策略。</rule>
+<rule>Transform 自身不直接向用户提问；仅通过 `<clarify_envelope>` 将 `blocking_unknown` 或 `invalid_input` 交回主 agent。</rule>
+<rule>`defaultable_unknown` 不应阻断，应按推荐默认继续，并在 PRD 中记录依据与默认策略。</rule>
 </confirmation_policy>
 
 <output_contract>
-  <primary_artifact>覆盖写回原 PRD 路径，结构符合 `references/prd-template.md`。</primary_artifact>
-  <clarify_artifact>在 PRD 末尾追加 `<clarify_envelope>` JSON 载荷；禁止再输出旧式 Markdown 澄清标题块。</clarify_artifact>
-  <status_json>控制台摘要 JSON 继续输出 `confidence/page_count/field_count/source_hit/clarify_count/repos_used`。</status_json>
+<primary_artifact>覆盖写回原 PRD 路径，结构符合 `references/prd-template.md`。</primary_artifact>
+<clarify_artifact>在 PRD 末尾追加 `<clarify_envelope>` JSON 载荷；禁止再输出旧式 Markdown 澄清标题块。</clarify_artifact>
+<status_json>控制台摘要 JSON 继续输出 `confidence/page_count/field_count/source_hit/clarify_count/repos_used`。</status_json>
 </output_contract>
 
 <error_handling>
-  <defaultable_unknown>可合理推断但缺少强证据时，标记为 🟡 并说明依据。</defaultable_unknown>
-  <blocking_unknown>影响字段定义、导航、状态、权限或异常行为正确性的未知项进入 `<clarify_envelope>`。</blocking_unknown>
-  <invalid_input>PRD 缺失、frontmatter 损坏或关键输入互相冲突时，返回 `status: "invalid_input"` 的 `<clarify_envelope>`，不覆盖原文件。</invalid_input>
+<defaultable_unknown>可合理推断但缺少强证据时，标记为 🟡 并说明依据。</defaultable_unknown>
+<blocking_unknown>影响字段定义、导航、状态、权限或异常行为正确性的未知项进入 `<clarify_envelope>`。</blocking_unknown>
+<invalid_input>PRD 缺失、frontmatter 损坏或关键输入互相冲突时，返回 `status: "invalid_input"` 的 `<clarify_envelope>`，不覆盖原文件。</invalid_input>
 </error_handling>
 
 <examples>

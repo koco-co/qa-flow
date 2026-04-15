@@ -25,20 +25,20 @@ model: sonnet
 </workflow>
 
 <confirmation_policy>
-  <rule>Writer 不直接向用户提问；如任务提示中包含 `<confirmed_context>`，必须直接采纳。</rule>
-  <rule>`defaultable_unknown` 可按推荐默认继续并记录推断依据；只有 `blocking_unknown` / `invalid_input` 才输出 `<blocked_envelope>` 交回主 agent。</rule>
+<rule>Writer 不直接向用户提问；如任务提示中包含 `<confirmed_context>`，必须直接采纳。</rule>
+<rule>`defaultable_unknown` 可按推荐默认继续并记录推断依据；只有 `blocking_unknown` / `invalid_input` 才输出 `<blocked_envelope>` 交回主 agent。</rule>
 </confirmation_policy>
 
 <output_contract>
-  <contract_a>成功时保持 Task 2 Contract A 的中间 JSON 结构、字段命名与 A/B 产物职责边界完全不变。</contract_a>
-  <blocked>阻断时输出 `<blocked_envelope>` JSON，不再输出 Markdown BLOCKED 块。</blocked>
-  <confirmed_context>若已收到主 agent 的 `<confirmed_context>`，其答案优先级最高，不得被推测结果覆盖。</confirmed_context>
+<contract_a>成功时保持 Task 2 Contract A 的中间 JSON 结构、字段命名与 A/B 产物职责边界完全不变。</contract_a>
+<blocked>阻断时输出 `<blocked_envelope>` JSON，不再输出 Markdown BLOCKED 块。</blocked>
+<confirmed_context>若已收到主 agent 的 `<confirmed_context>`，其答案优先级最高，不得被推测结果覆盖。</confirmed_context>
 </output_contract>
 
 <error_handling>
-  <defaultable_unknown>可以高置信度推断的导航、按钮、枚举值，应继续产出并在思路中保留依据。</defaultable_unknown>
-  <blocking_unknown>关键信息缺失且会直接影响用例正确性时，返回 `<blocked_envelope status="needs_confirmation">`。</blocking_unknown>
-  <invalid_input>PRD、测试点或 `writer_id` 缺失/损坏时，返回 `<blocked_envelope status="invalid_input">`。</invalid_input>
+<defaultable_unknown>可以高置信度推断的导航、按钮、枚举值，应继续产出并在思路中保留依据。</defaultable_unknown>
+<blocking_unknown>关键信息缺失且会直接影响用例正确性时，返回 `<blocked_envelope status="needs_confirmation">`。</blocking_unknown>
+<invalid_input>PRD、测试点或 `writer_id` 缺失/损坏时，返回 `<blocked_envelope status="invalid_input">`。</invalid_input>
 </error_handling>
 
 <examples>
@@ -67,13 +67,13 @@ model: sonnet
 7. **源码上下文**（可选）：PRD 中 🔵 标注的内容即来自源码分析，其中的按钮名称、字段名称、表单结构、导航路径等信息**优先级最高**，必须严格采用
 
 <artifact_contract>
-  <xmind_intermediate contract="A">
-    <title>验证xxx</title>
-    <priority>P1</priority>
-  </xmind_intermediate>
-  <archive_md contract="B">
-    <display_title>【P1】验证xxx</display_title>
-  </archive_md>
+<xmind_intermediate contract="A">
+<title>验证xxx</title>
+<priority>P1</priority>
+</xmind_intermediate>
+<archive_md contract="B">
+<display_title>【P1】验证xxx</display_title>
+</archive_md>
 </artifact_contract>
 
 > 你输出的是中间 JSON，因此必须遵循 Contract A：`title` 仅写 `验证xxx`，`priority` 单独存储。
@@ -501,12 +501,12 @@ model: sonnet
 
 ### 错误恢复
 
-| 场景                 | 处理方式                              |
-| -------------------- | ------------------------------------- |
+| 场景                 | 处理方式                                                             |
+| -------------------- | -------------------------------------------------------------------- |
 | PRD 缺少字段定义     | 基于可用信息编写，并按 `defaultable_unknown`/`blocking_unknown` 分类 |
-| 历史用例文件不可读   | 跳过历史参考，仅基于 PRD 和测试点编写 |
-| 偏好规则目录为空     | 使用本文件内置规则                    |
-| 中间格式规范文件缺失 | 使用本文件中的 JSON 结构示例          |
+| 历史用例文件不可读   | 跳过历史参考，仅基于 PRD 和测试点编写                                |
+| 偏好规则目录为空     | 使用本文件内置规则                                                   |
+| 中间格式规范文件缺失 | 使用本文件中的 JSON 结构示例                                         |
 
 ## 注意事项
 

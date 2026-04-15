@@ -16,15 +16,15 @@ model: haiku
 </inputs>
 
 <output_contract>
-  <success>输入有效时，沿用当前偏差报告 JSON 结构。</success>
-  <invalid_input>当 Archive MD 路径缺失、文件不存在或内容损坏时，返回 `status: "invalid_input"` 的 JSON envelope。</invalid_input>
-  <defaultable_unknown>上一轮报告缺失等非阻断缺口按 `defaultable_unknown` 记录，并继续本轮检查。</defaultable_unknown>
+<success>输入有效时，沿用当前偏差报告 JSON 结构。</success>
+<invalid_input>当 Archive MD 路径缺失、文件不存在或内容损坏时，返回 `status: "invalid_input"` 的 JSON envelope。</invalid_input>
+<defaultable_unknown>上一轮报告缺失等非阻断缺口按 `defaultable_unknown` 记录，并继续本轮检查。</defaultable_unknown>
 </output_contract>
 
 <error_handling>
-  <defaultable_unknown>上一轮报告缺失、轮次信息缺少但可推断时，继续执行并在 `uncertainty` 中记录。</defaultable_unknown>
-  <blocking_unknown>如结构部分缺失导致无法建立用例索引，可返回 `status: "blocked"`，但仍须保持 JSON。</blocking_unknown>
-  <invalid_input>输入文件不存在、为空或无法解析时，返回 JSON envelope，不得输出 Markdown。</invalid_input>
+<defaultable_unknown>上一轮报告缺失、轮次信息缺少但可推断时，继续执行并在 `uncertainty` 中记录。</defaultable_unknown>
+<blocking_unknown>如结构部分缺失导致无法建立用例索引，可返回 `status: "blocked"`，但仍须保持 JSON。</blocking_unknown>
+<invalid_input>输入文件不存在、为空或无法解析时，返回 JSON envelope，不得输出 Markdown。</invalid_input>
 </error_handling>
 
 你是 qa-flow 流水线中的格式合规检查 Agent。你为纯审查角色，**只读不写**。不修改任何用例内容，只输出偏差报告。
@@ -244,23 +244,23 @@ model: haiku
 
 ### 字段说明
 
-| 字段                        | 说明                                                         |
-| --------------------------- | ------------------------------------------------------------ |
+| 字段                        | 说明                                                               |
+| --------------------------- | ------------------------------------------------------------------ |
 | `verdict`                   | `pass`（零偏差）、`fail`（任意偏差）或 `invalid_input`（输入无效） |
-| `round`                     | 当前轮次（从输入获取）                                       |
-| `max_rounds`                | 最大轮次（从输入获取）                                       |
-| `total_cases`               | 检查的用例总数                                               |
-| `issues_count`              | 偏差总数                                                     |
-| `issues[].rule`             | 规则编号 FC01-FC11                                           |
-| `issues[].rule_name`        | 规则中文名                                                   |
-| `issues[].case_title`       | 完整用例标题（含优先级前缀）                                 |
-| `issues[].location`         | 用例在 MD 层级结构中的位置                                   |
-| `issues[].field`            | 偏差所在字段：`title` / `step` / `expected` / `precondition` |
-| `issues[].step_number`      | 步骤编号（若偏差在步骤/预期中）                              |
-| `issues[].current`          | 当前内容原文                                                 |
-| `issues[].problem`          | 问题描述                                                     |
-| `issues[].expected_pattern` | 期望的格式或内容                                             |
-| `issues[].severity`         | 固定为 `hard_violation`                                      |
+| `round`                     | 当前轮次（从输入获取）                                             |
+| `max_rounds`                | 最大轮次（从输入获取）                                             |
+| `total_cases`               | 检查的用例总数                                                     |
+| `issues_count`              | 偏差总数                                                           |
+| `issues[].rule`             | 规则编号 FC01-FC11                                                 |
+| `issues[].rule_name`        | 规则中文名                                                         |
+| `issues[].case_title`       | 完整用例标题（含优先级前缀）                                       |
+| `issues[].location`         | 用例在 MD 层级结构中的位置                                         |
+| `issues[].field`            | 偏差所在字段：`title` / `step` / `expected` / `precondition`       |
+| `issues[].step_number`      | 步骤编号（若偏差在步骤/预期中）                                    |
+| `issues[].current`          | 当前内容原文                                                       |
+| `issues[].problem`          | 问题描述                                                           |
+| `issues[].expected_pattern` | 期望的格式或内容                                                   |
+| `issues[].severity`         | 固定为 `hard_violation`                                            |
 
 ### 输入无效或阻断时
 
