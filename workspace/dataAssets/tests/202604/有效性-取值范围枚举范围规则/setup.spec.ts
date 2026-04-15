@@ -82,13 +82,14 @@ test("建表：通过离线开发临时查询创建全部测试表", async ({ pa
     await tempTab.click();
     await page.waitForTimeout(2000);
 
-    // 4. 右键临时查询节点 → 新建临时查询
-    const treeNode = page.locator("[class*='folder'], [class*='tree']").filter({ hasText: "临时查询" }).first();
+    // 4. 右键临时查询树节点 → 新建临时查询
+    const treeNode = page.getByRole("tree").getByText("临时查询", { exact: true });
     await treeNode.click({ button: "right" });
     await page.waitForTimeout(500);
 
-    const newQueryMenu = page.locator("[role='menuitem'], .ant-dropdown-menu-item").filter({ hasText: /新建临时查询|新建/ }).first();
-    await newQueryMenu.click();
+    const ctxMenu = page.locator(".ant-dropdown:visible, .ant-menu:visible").first();
+    await ctxMenu.waitFor({ state: "visible", timeout: 5000 });
+    await ctxMenu.getByText(/新建/, { exact: false }).first().click();
     await page.waitForTimeout(1500);
 
     // 5. 弹窗：填名称 + 选 Doris SQL 类型
