@@ -74,85 +74,33 @@ model: sonnet
 
 输出：内部页面清单，用于后续逐页分析。
 
-### 步骤 2：源码状态检测与分析
+### 步骤 2: 源码状态检测
 
-#### 2.1 检测源码状态
-
-对 PRD frontmatter 中 `repos` 列出的每个仓库，检测与当前需求的相关性：
-
-| 检测方法                                       | 判定结果                  |
-| ---------------------------------------------- | ------------------------- |
-| 在前端路由/菜单配置中找到 PRD 提到的页面路径   | **已开发** → B 级分析     |
-| 仓库存在但搜索不到相关代码（仅有骨架或空文件） | **开发中** → A 级分析     |
-| 未配置源码仓库                                 | **无源码** → 跳过源码分析 |
-
-#### 2.2 A 级分析（路由 + API 接口层）
-
-搜索范围：
-
-**前端**：
-
-- 路由配置文件（搜索 `route`, `menu`, `path` 关键词）
-- 页面组件入口文件
-
-**后端**：
-
-- Controller 层（搜索 API 路径、`@RequestMapping`、`@GetMapping` 等注解）
-- 接口入参出参定义
-
-标注所有内容为 `🟡 [推测: 基于同模块 xxx 页面推断]`。
-
-#### 2.3 B 级分析（深入业务逻辑层）
-
-在 A 级基础上增加：
-
-**前端**：
-
-- 表单校验规则（搜索 `rules`, `validator`, `required`, `pattern`）
-- 字段联动逻辑（搜索 `useEffect`, `watch`, `onChange` + 字段名）
-- 状态管理（搜索 `useState`, `useReducer`, `store`）
-- 权限判断（搜索 `permission`, `auth`, `role`）
-
-**后端**：
-
-- Service 层业务规则（字段校验、状态流转）
-- 权限配置（搜索 `@PreAuthorize`, `PermissionConfig`, `role`）
-- 异常处理（搜索 `throw`, `Exception`, `BusinessException`）
-- 数据格式化（搜索 `DateFormat`, `NumberFormat`, `pattern`）
-
-直接标注为 `🔵 [源码: 文件名:行号]`。
-
-#### 2.4 搜索策略
-
-使用 Grep 工具在仓库目录中搜索。搜索顺序：
-
-1. 先搜索 PRD 中提到的关键词（功能名、字段名、中文标签）
-2. 从找到的文件向上/向下追踪关联代码
-3. 对每个发现记录：文件路径、行号、提取的信息、置信度
-
-**注意**：
-
-- 源码仓库位于 `workspace/{{project}}/.repos/` 下，为只读，禁止修改
-- 每次搜索限制在 PRD 相关的模块目录内，避免全仓库扫描
-- 若搜索 3 次以上仍未找到相关代码，判定为"开发中"降级到 A 级
-
-### 步骤 3：历史用例检索
-
-使用 Bash 执行以下命令（将关键词替换为 PRD 中提取的模块关键词）：
+使用 `source-analyze.ts` 批量搜索源码仓库：
 
 ```bash
-bun run .claude/scripts/archive-gen.ts search --query "<模块关键词>" --dir workspace/{{project}}/archive
+bun run .claude/scripts/source-analyze.ts analyze \
+  --repo workspace/{{project}}/.repos/{{repo}} \
+  --keywords "{{从PRD提取的关键词,逗号分隔}}" \
+  --output json
 ```
 
-从返回的 `SearchResult[]` 中：
+脚本返回 `a_level`（精确匹配：函数名/类名/接口名）和 `b_level`（模糊匹配：注释/字符串/变量名），直接用于模板填充。
 
-1. 读取相关 archive MD 文件
-2. 提取可参考的：
-   - 字段定义和校验规则
-   - 交互逻辑描述
-   - 异常场景处理方式
-   - 测试数据样例
-3. 标注所有引用为 `🟡 归档#需求ID`
+若脚本不可用（如首次运行未安装），回退为手动 grep 搜索。
+
+### 步骤 3: 历史用例检索
+
+使用 `search-filter.ts` 搜索并过滤归档用例：
+
+```bash
+bun run .claude/scripts/archive-gen.ts search --query "{{关键词}}" --project {{project}} --limit 20 \
+  | bun run .claude/scripts/search-filter.ts filter --top 5 --output json
+```
+
+仅阅读 top-5 结果的摘要。需深入查看时再 Read 具体文件。
+
+若脚本不可用，回退为直接调用 `archive-gen.ts search`。
 
 ### 步骤 4：按模板填充结构化 PRD
 
@@ -355,20 +303,7 @@ PRD 结构化转换完成
 
 ## 错误处理
 
-- 若 PRD 文件路径未提供或文件不存在，返回 `status: "invalid_input"` 的 `<clarify_envelope>`。
-- 若 `repos` 字段缺失或为空，跳过源码分析步骤；源码相关缺口按 `defaultable_unknown` / `blocking_unknown` 分类记录。
-- 若 `archive-gen.ts search` 命令失败或返回空结果，跳过历史用例步骤并在摘要中注明。
-- 若 `${CLAUDE_SKILL_DIR}/references/prd-template.md` 不存在，使用内置模板结构继续。
-
-### 错误恢复
-
-| 场景                    | 处理方式                                        |
-| ----------------------- | ----------------------------------------------- |
-| 源码仓库目录不存在      | 输出警告，降级为无源码模式，所有源码内容标注 🔴 |
-| PRD 中无图片引用        | 正常继续，字段定义仅依赖文本和源码              |
-| archive-gen.ts 脚本报错 | 跳过历史检索，`historical_coverage` 置空        |
-| config.ts 脚本报错      | 使用默认配置继续                                |
-| 搜索 3 次无结果         | 降级到 A 级分析，标注为 🟡 推测                 |
+遵循 `.claude/references/error-handling-patterns.md` 标准模式。Transform 特有补充：遇到 `blocking_unknown` 时生成 `clarify_envelope`（格式见上方）。
 
 ## 重要约束
 
