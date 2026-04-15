@@ -250,6 +250,17 @@ bun run .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --outp
 
 **⏳ Task**：将 `步骤 4` 标记为 `in_progress`。为每条用例创建脚本生成子任务（见「任务可视化」章节）。
 
+**4.0 源码分析（每次生成脚本前必做）**
+
+在生成任何脚本之前，先阅读 `workspace/{{project}}/.repos/` 下的相关前端源码，梳理：
+
+- **当前迭代需求与主流程的关系**：理解新增功能在现有系统中的位置
+- **页面路由和菜单结构**：确认导航方式和路径（检查 `router/`、`routes/` 配置）
+- **组件层次和表单结构**：了解页面实际的表单项、按钮文本、选择器结构
+- **接口调用方式**：确认 API 路径（检查 service 层）
+
+> 这一步的信息将直接指导脚本中选择器和导航方式的编写，避免盲猜。
+
 **4.1 分发任务**
 
 按 `selected_priorities` 过滤 `tasks`，最多 **5 个 sub-agent 并发**执行脚本生成。
@@ -260,10 +271,24 @@ bun run .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --outp
 - 目标 URL
 - 派发 `script-writer-agent`（model: sonnet），每个 sub-agent 独立生成一条脚本
 - 参考资料：playwright-cli skill 的 references（获取 API 用法）
+- 步骤 4.0 中源码分析的关键发现（路由路径、组件结构、API 路径等）
 
-**4.2 SQL 前置条件处理**
+**4.2 前置条件处理（6 步工作流）**
 
-当用例的 `preconditions` 包含 SQL 建表/数据准备时，sub-agent 必须在生成的脚本中使用 `setupPreconditions` API（来自 `assets-sql-sync` 插件），而非添加注释跳过。具体用法参见 `script-writer-agent` 的「前置条件处理」章节。
+> **核心原则**：建表只看 CREATE TABLE 语句，不纠结数据库名称。数据库通过离线 API 操作。**禁止**生成单独的 `setup.spec.ts` 通过 UI 自动化建表。
+
+当用例的 `preconditions` 包含 SQL 建表/数据准备时：
+
+1. **分析建表语句**：从前置条件中提取 CREATE TABLE + INSERT 语句，忽略数据库名
+2. **通过 API 建表**：在脚本的 `test.beforeAll` 中使用 `setupPreconditions`（来自 `assets-sql-sync` 插件），它会自动：查找离线项目 → 获取数据源 → 执行 DDL → 引入数据源 → 元数据同步
+3. **数据源引入**：`setupPreconditions` 自动处理，无需额外操作
+4. **判断是否涉及数据质量**：如果需求与数据质量模块相关（规则集、规则任务、质量报告等），需要额外创建资产项目（命名：`Story_{{prd_id}}`）
+5. **数据源授权**：将测试数据源授权给资产项目
+6. **验证可见性**：测试第一步验证数据质量模块能看到数据源/库/表
+
+如果离线开发中没有项目或对接计算引擎太复杂，使用 AskUserQuestion 请求用户手动创建。
+
+具体用法参见 `script-writer-agent` 的「前置条件处理」章节。
 
 若用例同时包含多张表的 SQL，可将 SQL 文件放在 `workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/sql/` 目录下，脚本中通过 `readFileSync` 读取。
 
