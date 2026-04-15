@@ -1,6 +1,6 @@
 ---
 suite_name: "Hotfix 用例 - #147514 部分自动分级任务卡在运行中状态"
-description: "验证 Bug #147514 修复效果：线程池缩小、异常兜底、定时清理超时任务"
+description: "验证 Bug #147514 修复效果：定时任务清理超时 STARTING 状态的分级规则"
 keywords: "5.3 | 数据安全 | | | 5.3 | 代码缺陷"
 tags:
   - hotfix
@@ -12,80 +12,32 @@ origin: zentao
 
 ## 数据资产
 
-### 数据安全 - 数据分级
+### 数据安全 - 数据分级分类
 
-#### 分级设置 - 自动分级规则
+#### 自动分级
 
-##### 【147514】验证超时 STARTING 状态的分级规则被定时任务自动重置为 STOP
+##### 【147514】验证 STARTING 状态超时 24 小时以上的分级规则被定时任务自动重置为可操作状态
 
 > 前置条件
 
-```sql
--- 向 metadata_data_rank_rule 表写入一条 STARTING 状态且 latest_start_time 超过 24 小时的规则记录
--- tenant_id 替换为当前测试环境实际租户 ID
-INSERT INTO dt_metadata.metadata_data_rank_rule
-  (tenant_id, name, rule_desc, rank_id, class_id, state, latest_start_time, latest_start_uid, is_deleted, create_at, update_at)
-VALUES
-  (1, 'hotfix_147514_test_rule', '超时兜底验证用例', 1, 1, 'starting', DATE_SUB(NOW(), INTERVAL 25 HOUR), UUID(), 0, NOW(), NOW());
+```
+1、已登录系统，具有「数据安全 → 数据分级分类」管理权限
+
+2、「数据源类型」已接入 MySQL 数据源（数据源名称：test_mysql_ds，库：test_db，至少含 1 张数据表）
+
+3、「所属分类」已存在分类节点（如：个人信息）；「所属分级」已存在级别（如：机密）
+   可在【数据安全 → 数据分级分类 → 级别管理】确认级别列表不为空
 ```
 
 > 用例步骤
 
 | 编号 | 步骤 | 预期 |
 | ---- | ---- | ---- |
-| 1 | 执行前置 SQL，确认记录写入成功 | `metadata_data_rank_rule` 表中存在 name=`hotfix_147514_test_rule`、state=`starting`、`latest_start_time` 为 25 小时前的记录 |
-| 2 | 触发定时任务 `UpdateOutTimeRankRuleJob`:<br>方式一：等待凌晨 03:00 自动触发<br>方式二：临时将 cron 配置 `UpdateOutTimeRankRuleJob.cron` 改为近期时间触发 | 应用日志出现 `开始执行超时分级任务清理任务` 和 `发现1个超时的分级任务，准备清理` |
-| 3 | 查询数据库验证状态:<br>`SELECT state FROM dt_metadata.metadata_data_rank_rule WHERE name = 'hotfix_147514_test_rule';` | state 由 `starting` 变更为 `stop` |
-| 4 | 进入【数据安全 > 数据分级 > 分级设置】，找到 `hotfix_147514_test_rule` | 规则状态显示为已停止，可被重新操作 |
-| 5 | 查看应用日志 | 日志出现 `超时分级任务清理完成，共处理1个任务，成功1个`，无 Error 异常 |
-| 6 | 清理测试数据:<br>`DELETE FROM dt_metadata.metadata_data_rank_rule WHERE name = 'hotfix_147514_test_rule';` | |
-
-##### 【147514】验证正常自动分级任务能正常完成且状态正确流转
-
-> 前置条件
-
-无
-
-> 用例步骤
-
-| 编号 | 步骤 | 预期 |
-| ---- | ---- | ---- |
-| 1 | 进入【数据安全 > 数据分级 > 分级设置】，选择一条已配置好的分级规则 | |
-| 2 | 点击【生效】触发自动分级任务 | 规则状态变为"分级中"（STARTING） |
-| 3 | 等待分级任务执行完毕 | 规则状态自动变为"已完成"（FINISH），不卡在"分级中" |
-| 4 | 进入该规则关联的表，查看分级结果 | 字段分级标签已正确标注 |
-
-##### 【147514】验证分级任务异常时状态不卡在 STARTING
-
-> 前置条件
-
-构造一条会执行失败的分级规则（如关联一个不可达的数据源，或数据量极大触发超时）
-
-> 用例步骤
-
-| 编号 | 步骤 | 预期 |
-| ---- | ---- | ---- |
-| 1 | 进入【数据安全 > 数据分级 > 分级设置】，对异常规则点击【生效】 | 规则状态变为"分级中" |
-| 2 | 等待任务执行结束 | 规则状态最终变为"已停止"（STOP）或"已完成"（FINISH），不会一直卡在"分级中" |
-| 3 | 查看应用日志 | 日志中出现 `分级任务执行失败，分级结束 error`，且后续有状态更新记录 |
-
-##### 【147514】验证未超时的 STARTING 任务不被定时清理误清
-
-> 前置条件
-
-```sql
--- 写入一条 STARTING 状态但 latest_start_time 仅 2 小时前的记录（未超时）
-INSERT INTO dt_metadata.metadata_data_rank_rule
-  (tenant_id, name, rule_desc, rank_id, class_id, state, latest_start_time, latest_start_uid, is_deleted, create_at, update_at)
-VALUES
-  (1, 'hotfix_147514_not_timeout', '未超时验证用例', 1, 1, 'starting', DATE_SUB(NOW(), INTERVAL 2 HOUR), UUID(), 0, NOW(), NOW());
-```
-
-> 用例步骤
-
-| 编号 | 步骤 | 预期 |
-| ---- | ---- | ---- |
-| 1 | 执行前置 SQL，确认记录写入成功 | 记录 state=`starting`，`latest_start_time` 为 2 小时前 |
-| 2 | 触发定时任务 `UpdateOutTimeRankRuleJob` | 日志出现 `未发现超时的分级任务` 或该记录不在清理列表中 |
-| 3 | 查询数据库:<br>`SELECT state FROM dt_metadata.metadata_data_rank_rule WHERE name = 'hotfix_147514_not_timeout';` | state 仍为 `starting`，未被误改 |
-| 4 | 清理测试数据:<br>`DELETE FROM dt_metadata.metadata_data_rank_rule WHERE name = 'hotfix_147514_not_timeout';` | |
+| 1 | 进入【数据安全 → 数据分级分类 → 自动分级】页面 | 页面正常加载，展示自动分级规则列表及顶部【添加规则】按钮 |
+| 2 | 点击【添加规则】按钮，进入新建规则页第一步「基础信息」，填写如下：<br><br>- 规则名称：超时清理测试规则<br>- 所属分类：个人信息<br>- 所属分级：机密<br>- 描述信息：用于验证超时清理定时任务（非必填）<br><br>填写完成后点击【下一步】 | 跳转至第二步「配置规则」 |
+| 3 | 在「配置规则」步骤中填写如下：<br>- 数据源类型：MySQL<br>- 数据源：test_mysql_ds<br>- 数据识别 → 字段名识别：包含 id_card<br>- 其余识别 / 排除项保持默认空<br><br>填写完成后点击【完成】 | 跳回【自动分级】列表，新增一行"超时清理测试规则"，状态列显示绿色圆点（初始 STOP 状态），操作列【重新生效】【编辑】【删除】均为可点击蓝色链接 |
+| 4 | 在数据库执行以下 SQL，将规则状态改为 STARTING 并将启动时间回溯到 25 小时前：<br><br>UPDATE metadata_data_rank_rule<br>SET state = 'STARTING',<br>   latest_start_time = DATE_SUB(NOW(), INTERVAL 25 HOUR)<br>WHERE name = '超时清理测试规则'<br> AND is_deleted = 0; | SQL 执行成功，返回 `1 row affected` |
+| 5 | 刷新【自动分级】列表页，找到"超时清理测试规则" | 状态列变为橙色圆点 + "分级中"文字，操作列【重新生效】【编辑】【删除】均变为灰色不可点击 |
+| 6 | 通过运维工具手动触发 `UpdateOutTimeRankRuleJob.run()` 定时任务（生产环境等待每日 03:00 自动触发） | 服务 job 日志依次输出：<br>开始执行超时分级任务清理任务<br>发现1个超时的分级任务，准备清理<br>成功更新超时任务状态：ruleId=xxx, name=超时清理测试规则<br>超时分级任务清理完成，共处理1个任务，成功1个 |
+| 7 | 刷新【自动分级】列表页，查看"超时清理测试规则"的状态列和操作列 | 状态列由"分级中"（橙色）恢复为绿色圆点；操作列【重新生效】【编辑】【删除】恢复为可点击蓝色链接 |
+| 8 | 查询数据库验证：<br><br>SELECT state<br>FROM metadata_data_rank_rule<br>WHERE name = '超时清理测试规则'<br> AND is_deleted = 0; | 返回 `STOP`，状态已被定时任务正确重置 |
