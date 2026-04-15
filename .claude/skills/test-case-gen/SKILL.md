@@ -660,17 +660,30 @@ bun run .claude/scripts/archive-gen.ts convert \
   --output workspace/{{project}}/archive/{{YYYYMM}}/tmp/{{name}}-format-check.md
 ```
 
-### 6.5.2 格式合规检查（AI 任务）
+### 6.5.2 格式检查（分层流水线）
 
-派发 `format-checker-agent`（model: haiku）执行格式检查。
+**第一层：脚本确定性检查**
 
-输入：
+```bash
+bun run .claude/scripts/format-check-script.ts check --input workspace/{{project}}/.temp/{{prd_slug}}-format-check.md
+```
 
-- 临时 Archive MD 文件内容
+脚本输出 JSON：`definite_issues`（纯格式违规）+ `suspect_items`（FC04/FC06 疑似项）。
+
+**第二层：语义判断（仅 suspect_items 非空时）**
+
+若 `suspect_items` 为空 → 跳过 haiku 调用，直接合并结果。
+若非空 → 派发 `format-checker-agent`（model: haiku），仅传入 suspect_items，不传完整 Archive。
+
+输入（仅传给 haiku 时）：
+
+- `suspect_items`：疑似违规条目列表
 - 当前轮次信息：`第 {{round}} 轮 / 最大 {{max_rounds}} 轮`
 - 上一轮偏差报告（第 2 轮起）
 
-Format Checker 输出结构化 JSON 偏差报告。
+**合并**：脚本 `definite_issues` + agent `confirmed_issues` = 完整偏差报告。
+
+**循环**：违规项修正后重新执行第一层（最多 5 轮）。
 
 ### 6.5.3 行号定位
 
