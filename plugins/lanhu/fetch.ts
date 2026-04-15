@@ -307,7 +307,7 @@ function parseRequirementFromPageName(
 
   // Requirement name without the leading ID prefix
   // "15525【内置规则丰富】一致性，..." → "【内置规则丰富】一致性，..."
-  const requirementName = pageName.replace(/^\d+/, "");
+  const requirementName = pageName.replace(/^\d+/, "").replace(/\//g, "_");
 
   return { project, requirementId, requirementName };
 }

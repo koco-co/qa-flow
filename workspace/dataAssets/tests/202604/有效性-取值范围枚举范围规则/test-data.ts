@@ -4,7 +4,7 @@
  */
 import type { Page } from "@playwright/test";
 import { setupPreconditions } from "../../helpers/preconditions";
-import { applyRuntimeCookies, normalizeBaseUrl, syncMetadata } from "../../helpers/test-setup";
+import { applyRuntimeCookies, normalizeBaseUrl } from "../../helpers/test-setup";
 
 // ── SQL 表定义 ─────────────────────────────────────────────
 
@@ -83,11 +83,6 @@ export const ALL_TABLES = [
   { name: "quality_test_enum_pass", sql: QUALITY_TEST_ENUM_PASS_SQL },
 ] as const;
 
-// ── 质量项目名称 ─────────────────────────────────────────────
-
-export const QUALITY_PROJECT_NAME = "Story_15695";
-export const QUALITY_PROJECT_ALIAS = "Story_15695";
-
 // ── 前置条件：建表 + 数据源导入 + 元数据同步 ─────────────────
 
 export async function runPreconditions(page: Page): Promise<void> {
@@ -99,37 +94,30 @@ export async function runPreconditions(page: Page): Promise<void> {
     datasourceType: "Doris",
     tables: ALL_TABLES.map((t) => ({ name: t.name, sql: t.sql })),
     projectName: "pw",
-    syncTimeout: 10, // 不依赖 API 同步，改用 UI 同步
+    syncTimeout: 90, // API 元数据同步轮询超时（秒）
   }).catch((err) => {
     process.stderr.write(`[preconditions] API setup partial: ${(err as Error).message}\n`);
-  });
-
-  // 通过 UI 自动化执行元数据同步（新建周期同步任务 → 临时同步）
-  process.stderr.write("[preconditions] Starting UI-based metadata sync...\n");
-  await syncMetadata(page, "doris3").catch((err) => {
-    process.stderr.write(`[preconditions] Metadata sync warning: ${(err as Error).message}\n`);
   });
 
   process.stderr.write("[preconditions] Preconditions complete.\n");
 }
 
-// ── 前置条件：质量项目创建 + 数据源授权 ─────────────────────
+// ── 前置条件：找到有 Doris 数据源的质量项目 ─────────────────────
 
 interface QualityProjectResult {
   readonly projectId: number | null;
-  readonly skipped: boolean;
+  readonly projectName: string;
 }
 
 /**
- * 确保数据质量项目存在。
- * 如果已存在则跳过创建，返回项目 ID。
+ * 扫描所有质量项目，返回第一个拥有 Doris 数据源的项目。
+ * 避免复杂的数据源授权操作。
  */
-export async function ensureQualityProject(
+export async function findProjectWithDoris(
   page: Page,
 ): Promise<QualityProjectResult> {
   const baseUrl = normalizeBaseUrl("dataAssets");
 
-  // 确保 page 在正确的 origin（cookie 才能生效）
   const currentUrl = page.url();
   if (currentUrl === "about:blank" || !currentUrl.includes(new URL(baseUrl).hostname)) {
     await page.goto(`${baseUrl}/#/dataStandard`, {
@@ -138,98 +126,48 @@ export async function ensureQualityProject(
     });
   }
 
-  const result = await page.evaluate(
-    async ({ projectName, projectAlias }) => {
-      const headers: HeadersInit = {
-        "content-type": "application/json;charset=UTF-8",
-        "Accept-Language": "zh-CN",
-      };
-      const post = async (url: string, body: unknown) => {
-        const resp = await fetch(url, {
-          method: "POST",
-          credentials: "same-origin",
-          headers,
-          body: JSON.stringify(body),
-        });
-        return resp.json() as Promise<{
-          code?: number;
-          success?: boolean;
-          data?: unknown;
-          message?: string;
-        }>;
-      };
+  const result = await page.evaluate(async () => {
+    const post = async (url: string, body: unknown, headers: Record<string, string> = {}) => {
+      const resp = await fetch(url, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json;charset=UTF-8", ...headers },
+        body: JSON.stringify(body),
+      });
+      return resp.json() as Promise<{ code?: number; success?: boolean; data?: unknown }>;
+    };
 
-      // 1. 查询已有质量项目
-      const listResp = await post(
-        "/dassets/v1/valid/project/getProjects",
-        {},
+    const projResp = await post("/dassets/v1/valid/project/getProjects", {});
+    const projects = (projResp.data ?? []) as Array<{
+      id?: string | number;
+      projectName?: string;
+    }>;
+
+    for (const p of projects) {
+      const pid = String(p.id);
+      const dsResp = await post(
+        "/dmetadata/v1/dataSource/monitor/list", {},
+        { "X-Valid-Project-ID": pid },
       );
-      const projects = (listResp.data ?? []) as Array<{
-        id?: number;
-        projectName?: string;
-        projectAlias?: string;
-      }>;
-      const existing = projects.find(
-        (p) =>
-          p.projectName === projectName || p.projectAlias === projectAlias,
+      const dsList = Array.isArray(dsResp?.data) ? dsResp.data : [];
+      const hasDoris = dsList.some(
+        (d: { sourceTypeValue?: string }) =>
+          d.sourceTypeValue?.includes("Doris") || d.sourceTypeValue?.includes("DORIS"),
       );
-      if (existing?.id) {
-        return { projectId: existing.id, skipped: true };
+      if (hasDoris) {
+        return { projectId: Number(p.id), projectName: p.projectName ?? "" };
       }
+    }
+    return { projectId: null, projectName: "" };
+  });
 
-      // 2. 创建质量项目（projectAdminUserId=1 即 admin）
-      const createResp = await post(
-        "/dassets/v1/valid/project/createProject",
-        {
-          projectAlias,
-          projectName,
-          projectAdminUserId: 1,
-          projectDesc: `Auto-created for test #15695`,
-        },
-      );
-      if (createResp.code !== 1 && !createResp.success) {
-        // 可能已存在（并发场景），再查一次
-        const retryResp = await post(
-          "/dassets/v1/valid/project/getProjects",
-          {},
-        );
-        const retryProjects = (retryResp.data ?? []) as Array<{
-          id?: number;
-          projectName?: string;
-        }>;
-        const retryMatch = retryProjects.find(
-          (p) => p.projectName === projectName,
-        );
-        return {
-          projectId: retryMatch?.id ?? null,
-          skipped: false,
-        };
-      }
-
-      // 3. 获取新建的项目 ID
-      const afterCreateResp = await post(
-        "/dassets/v1/valid/project/getProjects",
-        {},
-      );
-      const afterProjects = (afterCreateResp.data ?? []) as Array<{
-        id?: number;
-        projectName?: string;
-      }>;
-      const created = afterProjects.find(
-        (p) => p.projectName === projectName,
-      );
-      return { projectId: created?.id ?? null, skipped: false };
-    },
-    { projectName: QUALITY_PROJECT_NAME, projectAlias: QUALITY_PROJECT_ALIAS },
-  );
-
-  if (result.skipped) {
+  if (result.projectId) {
     process.stderr.write(
-      `[preconditions] Quality project "${QUALITY_PROJECT_NAME}" already exists (id=${result.projectId})\n`,
+      `[preconditions] Found project with Doris: "${result.projectName}" (id=${result.projectId})\n`,
     );
   } else {
     process.stderr.write(
-      `[preconditions] Quality project "${QUALITY_PROJECT_NAME}" created (id=${result.projectId})\n`,
+      "[preconditions] WARNING: No project with Doris datasource found!\n",
     );
   }
 
@@ -237,83 +175,13 @@ export async function ensureQualityProject(
 }
 
 /**
- * 将数据源授权给质量项目。
- * 调用 /dmetadata/v1/dataSource/authDataSourceToProject
+ * 注入质量项目 ID 到 sessionStorage，确保后续 API 请求携带正确的 X-Valid-Project-ID 头。
  */
-export async function authDatasourceToProject(
+export async function injectProjectContext(
   page: Page,
-  qualityProjectId: number,
+  projectId: number,
 ): Promise<void> {
-  await page.evaluate(
-    async ({ projectId }) => {
-      const headers: HeadersInit = {
-        "content-type": "application/json;charset=UTF-8",
-        "Accept-Language": "zh-CN",
-      };
-      const post = async (url: string, body: unknown) => {
-        const resp = await fetch(url, {
-          method: "POST",
-          credentials: "same-origin",
-          headers,
-          body: JSON.stringify(body),
-        });
-        return resp.json() as Promise<{
-          code?: number;
-          success?: boolean;
-          data?: unknown;
-          message?: string;
-        }>;
-      };
-
-      // 查找已导入到元数据的 Doris 3.x 数据源
-      const dsResp = await post(
-        "/dmetadata/v1/dataSource/pageQuery",
-        { current: 1, size: 50 },
-      );
-      const rawData = dsResp.data as
-        | { contentList?: unknown[]; records?: unknown[]; list?: unknown[] }
-        | unknown[];
-      const dsList = (
-        Array.isArray(rawData) ? rawData
-        : (rawData as { contentList?: unknown[]; records?: unknown[]; list?: unknown[] })?.contentList
-          ?? (rawData as { contentList?: unknown[]; records?: unknown[]; list?: unknown[] })?.records
-          ?? (rawData as { contentList?: unknown[]; records?: unknown[]; list?: unknown[] })?.list
-          ?? []
-      ) as Array<{
-        id?: number | string;
-        dataSourceName?: string;
-        dataSourceType?: number;
-        sourceTypeValue?: string;
-      }>;
-      // 优先匹配 Doris 3.x 数据源
-      const dorisSource = dsList.find(
-        (ds) => ds.sourceTypeValue?.includes("Doris3"),
-      ) ?? dsList.find(
-        (ds) => ds.dataSourceName?.toLowerCase().includes("doris"),
-      );
-      if (!dorisSource?.id) {
-        console.warn("[preconditions] Doris datasource not found in metadata, skipping auth");
-        return;
-      }
-
-      // 授权数据源到质量项目
-      const authResp = await post(
-        "/dmetadata/v1/dataSource/authDataSourceToProject",
-        {
-          dataSourceId: dorisSource.id,
-          projectIds: [projectId],
-        },
-      );
-      if (authResp.code !== 1 && !authResp.success) {
-        console.warn(
-          `[preconditions] Auth datasource failed: ${authResp.message ?? "unknown"}`,
-        );
-      }
-    },
-    { projectId: qualityProjectId },
-  );
-
-  process.stderr.write(
-    `[preconditions] Datasource authorized to quality project (id=${qualityProjectId})\n`,
-  );
+  await page.evaluate((pid) => {
+    sessionStorage.setItem("X-Valid-Project-ID", String(pid));
+  }, projectId);
 }
