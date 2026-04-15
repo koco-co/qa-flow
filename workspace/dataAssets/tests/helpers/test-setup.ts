@@ -1,8 +1,22 @@
 /**
- * E2E 测试共享 helper
- * 提供环境配置读取、Cookie 注入、URL 构建、菜单导航等通用能力
+ * E2E 测试共享 helper（dataAssets 项目级）
+ *
+ * 通用 Ant Design 交互函数已提升到 lib/playwright/，此处 re-export 保持兼容。
+ * 新增通用函数请加到 lib/playwright/，项目专属函数留在此文件。
  */
 import type { Page } from "@playwright/test";
+
+// ── Re-export 共享库（保持现有 import 兼容） ──────────────
+export {
+  selectAntOption,
+  expectAntMessage,
+  waitForAntModal,
+  confirmAntModal,
+  closeAntModal,
+  navigateViaMenu,
+  uniqueName,
+  todayStr,
+} from "../../../../lib/playwright/index";
 
 type RuntimeEnv = Record<string, string | undefined>;
 type ProjectListResponse = { data?: Array<{ id?: number | string }> };
@@ -110,147 +124,8 @@ export async function getAccessibleProjectIds(page: Page): Promise<number[]> {
   });
 }
 
-// ── 菜单导航 ────────────────────────────────────────────
-
-/**
- * 通过侧边栏菜单导航到指定模块
- * @param menuPath 菜单路径数组，如 ['元数据', '数据地图']
- */
-export async function navigateViaMenu(page: Page, menuPath: string[]): Promise<void> {
-  const sideMenu = page.locator(".ant-layout-sider").first();
-  await sideMenu.waitFor({ state: "visible", timeout: 10000 });
-
-  for (const menuName of menuPath) {
-    const menuItem = sideMenu.getByText(menuName, { exact: false });
-    const isVisible = await menuItem.isVisible().catch(() => false);
-    if (!isVisible) {
-      // 尝试展开父菜单
-      const parentMenu = sideMenu.locator(".ant-menu-submenu-title").filter({ hasText: menuName });
-      if (await parentMenu.isVisible().catch(() => false)) {
-        await parentMenu.click();
-        await page.waitForTimeout(300);
-      }
-    }
-    await menuItem.first().click();
-    await page.waitForTimeout(500);
-  }
-  await page.waitForLoadState("networkidle");
-}
-
-// ── Ant Design 组件交互 ─────────────────────────────────
-
-/**
- * Ant Design Select 下拉选择
- */
-export async function selectAntOption(
-  page: Page,
-  triggerLocator: import("@playwright/test").Locator,
-  optionText: string | RegExp,
-): Promise<void> {
-  await triggerLocator.click();
-  await page.waitForTimeout(300);
-  const dropdown = page.locator(".ant-select-dropdown:visible").last();
-  await dropdown.waitFor({ state: "visible", timeout: 5000 });
-
-  const options = dropdown.locator(".ant-select-item-option");
-
-  const optionLocator = async () => {
-    if (typeof optionText === "string") {
-      const exactMatchIndex = await options.evaluateAll(
-        (els, expected) => els.findIndex((el) => el.textContent?.trim() === expected),
-        optionText,
-      );
-      if (exactMatchIndex >= 0) {
-        return options.nth(exactMatchIndex);
-      }
-    }
-
-    return options.filter({ hasText: optionText }).first();
-  };
-
-  const clickVisibleOption = async (): Promise<boolean> => {
-    const option = await optionLocator();
-    if (!(await option.count())) return false;
-    if (!(await option.isVisible().catch(() => false))) return false;
-    await option.click();
-    await page.waitForTimeout(300);
-    return true;
-  };
-
-  if (await clickVisibleOption()) return;
-
-  if (typeof optionText === "string") {
-    const searchInput = triggerLocator
-      .locator("input.ant-select-selection-search-input")
-      .or(
-        page.locator(
-          ".ant-select-open input.ant-select-selection-search-input, .ant-select-focused input.ant-select-selection-search-input",
-        ),
-      )
-      .first();
-    if ((await searchInput.count()) && (await searchInput.isEditable().catch(() => false))) {
-      await searchInput.fill(optionText);
-      await page.waitForTimeout(300);
-      if (await clickVisibleOption()) return;
-    }
-  }
-
-  const virtualHolder = dropdown.locator(".rc-virtual-list-holder").first();
-  if (await virtualHolder.count()) {
-    const metrics = await virtualHolder.evaluate((el) => ({
-      scrollHeight: el.scrollHeight,
-      clientHeight: el.clientHeight,
-    }));
-    const step = Math.max(Math.floor(metrics.clientHeight / 2), 120);
-    for (let top = 0; top <= metrics.scrollHeight; top += step) {
-      await virtualHolder.evaluate((el, nextTop) => {
-        el.scrollTop = nextTop;
-      }, top);
-      await page.waitForTimeout(200);
-      if (await clickVisibleOption()) return;
-    }
-  }
-
-  const visibleOptions = await dropdown
-    .locator(".ant-select-item-option")
-    .evaluateAll((els) =>
-      els.map((el) => el.textContent?.trim()).filter((text): text is string => Boolean(text)),
-    );
-  throw new Error(
-    `Ant Select option not found: ${String(optionText)}. Visible options: ${visibleOptions.join(", ")}`,
-  );
-}
-
-/**
- * 等待 Ant Design 全局提示消息
- */
-export async function expectAntMessage(
-  page: Page,
-  text: string | RegExp,
-  timeout = 5000,
-): Promise<void> {
-  const { expect } = await import("@playwright/test");
-  const message = page.locator(".ant-message-notice, .ant-notification-notice");
-  await expect(message.filter({ hasText: text }).first()).toBeVisible({
-    timeout,
-  });
-}
-
-/**
- * 等待 Ant Design Modal 可见并返回其 locator
- */
-export async function waitForAntModal(
-  page: Page,
-  titleText?: string,
-): Promise<import("@playwright/test").Locator> {
-  const modal = page.locator(".ant-modal:visible");
-  await modal.first().waitFor({ state: "visible", timeout: 10000 });
-  if (titleText) {
-    const { expect } = await import("@playwright/test");
-    await expect(modal.filter({ hasText: titleText }).first()).toBeVisible();
-  }
-  return modal.first();
-}
+// ── Ant Design 交互 & 导航 & 工具函数 ─────────────────────
+// 已迁移至 lib/playwright/，通过顶部 re-export 保持兼容
 
 // ── 离线开发：项目导航 ──────────────────────────────────
 
@@ -641,11 +516,4 @@ export async function getQualityProjectId(
 }
 
 // ── 时间戳工具 ──────────────────────────────────────────
-
-export function uniqueName(prefix: string): string {
-  return `${prefix}_${Date.now()}`;
-}
-
-export function todayStr(): string {
-  return new Date().toISOString().slice(0, 10).replace(/-/g, "");
-}
+// uniqueName, todayStr 已迁移至 lib/playwright/utils.ts，通过顶部 re-export 保持兼容

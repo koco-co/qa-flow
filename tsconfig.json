@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "rootDir": ".",
     "paths": {
-      "@e2e/*": ["tests/e2e/*"]
+      "@e2e/*": ["tests/e2e/*"],
+      "@pw/*": ["lib/playwright/*"]
     },
     "types": ["node"]
   },
@@ -23,7 +24,8 @@
     ".claude/scripts/**/*.ts",
     ".claude/skills/**/*.ts",
     "plugins/**/*.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "lib/**/*.ts"
   ],
   "exclude": ["node_modules", "workspace"]
 }

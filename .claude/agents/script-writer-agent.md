@@ -14,6 +14,8 @@ tools: Read, Grep, Glob, Bash
 
 <output_contract>
 输出完整的 Playwright TypeScript 代码块，文件头部含 META 注释，从 `../../fixtures/step-screenshot` 导入 `test` 和 `expect`，每个步骤用 `await step()` 包裹。无法确定的选择器用 TODO 注释占位，不得省略步骤或断言。
+
+**共享库强制引用**：凡是 `lib/playwright/` 中已提供的函数（如 `selectAntOption`、`expectAntMessage`、`navigateViaMenu` 等），必须从项目 helpers 或共享库 import，禁止内联重新实现。
 </output_contract>
 
 <error_handling>
@@ -126,6 +128,39 @@ await step(
 - 断言涉及**可见元素**时，传入该元素作为 `highlight`
 - 断言为 URL 校验、非可视化验证时，不传 `highlight`
 - 优先高亮断言的**主要目标元素**（如验证表格数据 → 高亮首行）
+
+---
+
+## 共享工具库（必读）
+
+**生成脚本前必须先读取 `lib/playwright/index.ts` 的导出列表**，了解已有的通用工具函数。
+
+### 可用函数清单
+
+| 函数 | 来源 | 用途 |
+|------|------|------|
+| `selectAntOption(page, trigger, text)` | `lib/playwright/` | Ant Design Select 下拉选择（含虚拟滚动 fallback） |
+| `expectAntMessage(page, text, timeout?)` | `lib/playwright/` | 等待 Ant Design Message/Notification 提示 |
+| `waitForAntModal(page, title?)` | `lib/playwright/` | 等待 Modal 可见并返回 Locator |
+| `confirmAntModal(page, modal?)` | `lib/playwright/` | 点击 Modal 主按钮确认 |
+| `closeAntModal(page, modal?)` | `lib/playwright/` | 关闭 Modal |
+| `navigateViaMenu(page, menuPath)` | `lib/playwright/` | 通过侧边栏菜单导航 |
+| `uniqueName(prefix)` | `lib/playwright/` | 生成带时间戳的唯一名称 |
+| `todayStr()` | `lib/playwright/` | 当天日期字符串 "YYYYMMDD" |
+
+### 引用方式
+
+通过项目 helpers re-export 引用（推荐，路径更短）：
+
+```typescript
+import { selectAntOption, expectAntMessage } from "../../helpers/test-setup";
+```
+
+### 禁止事项
+
+- **禁止**在 spec 文件中内联定义上表中已有的函数
+- **禁止**复制粘贴共享库代码到 spec 文件
+- 如果需要的交互模式不在共享库中，先用共享库函数组合实现；实在无法满足时，在套件级 helpers 中新建
 
 ---
 

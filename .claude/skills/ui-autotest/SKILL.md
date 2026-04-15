@@ -108,7 +108,24 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 ### 脚本编码规范
 
-参见 `.claude/references/playwright-patterns.md`，包含 step() 函数、Meta 注释、定位器优先级、表单填写和表格验证模式。
+参见 `.claude/references/playwright-patterns.md`，包含：
+
+- **共享工具库分层架构**（第 1 章）— 函数归属判断标准、新增函数规则
+- step() 函数、Meta 注释、定位器优先级、表单填写和表格验证模式
+
+### 共享工具库
+
+`lib/playwright/` 提供跨项目通用的 Ant Design 交互函数，所有 sub-agent 生成脚本时**必须优先使用**，禁止内联重新实现：
+
+| 函数 | 用途 |
+|------|------|
+| `selectAntOption` | Ant Design Select 下拉选择（含虚拟滚动） |
+| `expectAntMessage` | 等待 Message/Notification 提示 |
+| `waitForAntModal` / `confirmAntModal` / `closeAntModal` | Modal 弹窗操作 |
+| `navigateViaMenu` | 侧边栏菜单导航 |
+| `uniqueName` / `todayStr` | 测试数据工具 |
+
+引用方式：`import { selectAntOption } from "../../helpers/test-setup"` （通过项目 helpers re-export）。
 
 ---
 
@@ -354,6 +371,7 @@ bun run .claude/scripts/ui-autotest-progress.ts create \
 - 单条测试用例数据（`id`, `title`, `priority`, `page`, `steps`, `preconditions`）
 - 目标 URL
 - 派发 `script-writer-agent`（model: sonnet），每个 sub-agent 独立生成一条脚本
+- **共享工具库清单**：`lib/playwright/index.ts` 的导出函数列表（agent 必须优先使用，禁止重复实现）
 - 参考资料：playwright-cli skill 的 references（获取 API 用法）
 - 步骤 4.0 中源码分析的关键发现（路由路径、组件结构、API 路径等）
 

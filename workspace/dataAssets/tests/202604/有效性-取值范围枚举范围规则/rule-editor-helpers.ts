@@ -118,24 +118,30 @@ async function gotoBaseInfoStep(page: Page): Promise<void> {
 async function gotoMonitorRulesStep(page: Page): Promise<void> {
   const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
   const firstPackage = page.locator(".ruleSetMonitor__package").first();
-  if (
+  const isMonitorRulesVisible = async () =>
     (await firstPackage.isVisible().catch(() => false)) ||
-    (await newPackageBtn.isVisible().catch(() => false))
-  ) {
+    (await newPackageBtn.isVisible().catch(() => false));
+  if (await isMonitorRulesVisible()) {
     return;
   }
 
-  await page.getByRole("button", { name: "下一步" }).click();
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1000);
-  await expect
-    .poll(
-      async () =>
-        (await firstPackage.isVisible().catch(() => false)) ||
-        (await newPackageBtn.isVisible().catch(() => false)),
-      { timeout: 10000 },
-    )
-    .toBe(true);
+  const nextBtn = page.getByRole("button", { name: "下一步" }).first();
+  if (await nextBtn.isVisible().catch(() => false)) {
+    await nextBtn.click();
+    await page.waitForTimeout(1000);
+  }
+
+  if (await isMonitorRulesVisible()) {
+    return;
+  }
+
+  const monitorRulesBtn = page.getByRole("button", { name: /监控规则/ }).first();
+  if (await monitorRulesBtn.isVisible().catch(() => false)) {
+    await monitorRulesBtn.click();
+    await page.waitForTimeout(1000);
+  }
+
+  await expect.poll(async () => await isMonitorRulesVisible(), { timeout: 10000 }).toBe(true);
 }
 
 async function addPackageSlot(page: Page, packageName: string): Promise<void> {
