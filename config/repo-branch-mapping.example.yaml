@@ -1,0 +1,3 @@
+mappings:
+  # 格式: <git-url>: <branch>
+  # http://gitlab.example.com/group/repo.git: release_x.x.x

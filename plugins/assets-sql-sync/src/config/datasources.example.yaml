@@ -1,0 +1,30 @@
+environments:
+  ci:
+    baseUrl: http://your-ci-server
+    login:
+      username: admin@example.com
+      password: ""
+    tenant: default
+
+datasources:
+  doris:
+    type: doris
+    host: ""
+    jdbcPort: 9030
+    httpPort: 8030
+    username: root
+    password: ""
+
+  mysql:
+    type: mysql
+    host: ""
+    port: 3306
+    username: root
+    password: ""
+
+  hive:
+    type: hive
+    host: ""
+    port: 10004
+    username: ""
+    password: ""

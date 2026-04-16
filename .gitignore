@@ -1,29 +1,42 @@
 # ── 依赖 ────────────────────────────────────────────────
 node_modules/
+.venv/
 
-# ── 环境配置 ────────────────────────────────
+# ── 环境与敏感配置 ────────────────────────────────────────
 .env
+.env.local
 .auth/
+config.json
+config/repo-branch-mapping.yaml
+plugins/assets-sql-sync/src/config/datasources.yaml
 
-# ── 源码仓库 ────────────────────────────
+# ── 源码仓库（submodule 引用） ────────────────────────────
 *.repos/
-!workspace/.repos/**/.gitkeep
+
+# ── 工作区临时文件 ────────────────────────────────────────
+.temp/
 
 # ── Playwright 自动生成产物 ─────────────────────────────
 test-results/
 playwright-report/
-workspace/reports/playwright/
-workspace/reports/bugs/
 .playwright-cli
-
-# ── 临时文件 ────────────────────────────────────────────
-.temp/
-workspace/.temp/
-.trash/
 
 # ── 编译 / 构建产物 ─────────────────────────────────────
 dist/
 *.tsbuildinfo
+
+# ── 自动生成的计划文档 ──────────────────────────────────
+docs/superpowers/
+docs/plans/
+
+# ── IDE / 编辑器 ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Claude Code 本地配置 ──────────────────────────────────
+.claude/settings.json
 
 # ── Python ─────────────────────────────────────────────
 __pycache__/
@@ -39,9 +52,3 @@ Thumbs.db
 
 # ── 保留 workspace 目录结构 ─────────────────────────────
 !workspace/.gitkeep
-
-
-ci-datasource-config.md
-
-
-test-results

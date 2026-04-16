@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "dataAssets": {
+      "repo_profiles": {
+        "example-profile": {
+          "repos": [
+            {
+              "path": ".repos/group/repo-name",
+              "branch": "release_x.x.x"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
