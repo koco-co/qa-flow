@@ -76,6 +76,22 @@ const ENUM_NOT_IN_RULE: RangeEnumConfig = {
   description: "category枚举值not in 4,5",
 };
 
+const STRING_RULE: RangeEnumConfig = {
+  field: "score_str",
+  range: {
+    firstOperator: ">",
+    firstValue: "1",
+    condition: "且",
+    secondOperator: "<",
+    secondValue: "10",
+  },
+  enumOperator: "in",
+  enumValues: ["5", "5.5", "15"],
+  relation: "且",
+  ruleStrength: "强规则",
+  description: "score_str取值范围1到10且枚举值in 5,5.5,15",
+};
+
 type SupportingRuleSetConfig = {
   tableName: string;
   packageName: string;
@@ -133,6 +149,15 @@ const TASK_SETUP_CONFIGS: Record<string, TaskSetupConfig> = {
       tableName: "quality_test_partition",
       packageName: "且关系校验包",
       ruleConfig: RANGE_AND_RULE,
+    },
+  },
+  task_15695_str: {
+    tableName: "quality_test_str",
+    packageName: "string强转包",
+    supportingRuleSet: {
+      tableName: "quality_test_str",
+      packageName: "string强转包",
+      ruleConfig: STRING_RULE,
     },
   },
   task_15695_enum_pass: {

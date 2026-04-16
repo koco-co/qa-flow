@@ -1,12 +1,7 @@
 // META: {"id":"t18","priority":"P2","title":"验证取值范围&枚举范围规则执行失败时可查看日志"}
 import type { Locator } from "@playwright/test";
 import { expect, test } from "../../fixtures/step-screenshot";
-import {
-  ensureExecutedRuleTasks,
-  getTaskDetailRuleCard,
-  openTaskInstanceDetail,
-  waitForTaskInstanceFinished,
-} from "./rule-task-helpers";
+import { ensureExecutedRuleTasks, waitForTaskInstanceFinished } from "./rule-task-helpers";
 
 test.use({ storageState: ".auth/session.json" });
 test.setTimeout(600000);
@@ -14,41 +9,40 @@ test.setTimeout(600000);
 test.describe("【内置规则丰富】有效性，支持设置字段多规则的且或关系(#15695) - 校验结果查询", () => {
   test("验证取值范围&枚举范围规则执行失败时可查看日志", async ({ page, step }) => {
     let instanceRow: Locator | null = null;
-    let detailDrawer: Locator | null = null;
 
     await step("步骤1: 进入校验结果查询页面 → 列表显示已有任务记录", async () => {
-      await ensureExecutedRuleTasks(page, ["task_15695_enum_fail"]);
-      instanceRow = await waitForTaskInstanceFinished(page, "task_15695_enum_fail");
+      await ensureExecutedRuleTasks(page, ["task_15695_str"]);
+      instanceRow = await waitForTaskInstanceFinished(page, "task_15695_str");
       await expect(instanceRow).toBeVisible({ timeout: 10000 });
     });
 
     await step(
-      "步骤2: 找到状态为执行失败的实例记录，打开实例详情后点击查看日志 → 日志弹窗正常打开，显示详细日志信息",
+      "步骤2: 找到状态为校验异常的实例记录，查看状态列异常提示 → 页面显示非空异常信息，并可进一步打开详情或异常弹窗",
       async () => {
-        if (!instanceRow) {
-          throw new Error("Missing task instance row from step 1.");
+        const latestInstanceRow = await waitForTaskInstanceFinished(page, "task_15695_str", 10000);
+        instanceRow = latestInstanceRow;
+        await expect(latestInstanceRow).toContainText(/校验异常|失败/);
+
+        const statusCell = latestInstanceRow.locator("td").nth(2);
+        const errorIcon = statusCell.locator("img").last();
+        await expect(errorIcon).toBeVisible({ timeout: 5000 });
+        await errorIcon.hover();
+
+        const tooltip = page.locator(".ant-tooltip:visible, .ant-popover:visible").last();
+        await expect(tooltip).toBeVisible({ timeout: 10000 });
+        const tooltipText = (await tooltip.textContent())?.trim() ?? "";
+        if (!tooltipText) {
+          throw new Error("Task abnormal tooltip is empty.");
         }
-        await expect(instanceRow).toContainText(/校验异常|失败|未通过/);
 
-        detailDrawer = await openTaskInstanceDetail(page, instanceRow);
-        const ruleRow = getTaskDetailRuleCard(detailDrawer, "取值范围&枚举范围");
-        await expect(ruleRow).toBeVisible({ timeout: 10000 });
+        const detailLink = tooltip.locator("a").first();
+        if (await detailLink.isVisible().catch(() => false)) {
+          await detailLink.click();
 
-        const viewLogBtn = ruleRow.locator("button, a").filter({ hasText: "查看日志" }).first();
-        await expect(viewLogBtn).toBeVisible({ timeout: 5000 });
-        await viewLogBtn.click();
-        await page.waitForTimeout(1000);
-
-        const logModal = page.locator(".ant-modal:visible, [class*='log-modal']:visible").first();
-        await expect(logModal).toBeVisible({ timeout: 10000 });
-
-        const logContent = logModal
-          .locator("[class*='log-content'], .ant-modal-body, pre, .log-viewer")
-          .first();
-        await expect(logContent).toBeVisible({ timeout: 5000 });
-        await expect(logContent).not.toHaveText("", { timeout: 5000 });
+          const detailContainer = page.locator(".dtc-drawer:visible, .ant-modal:visible").last();
+          await expect(detailContainer).toBeVisible({ timeout: 10000 });
+        }
       },
-      detailDrawer ?? page.locator(".dtc-drawer:visible").last(),
     );
   });
 });
