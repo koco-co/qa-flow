@@ -115,7 +115,7 @@ export async function runPreconditions(page: Page): Promise<void> {
   await setupPreconditions(page, {
     datasourceType: "Doris",
     tables: ALL_TABLES.map((t) => ({ name: t.name, sql: t.sql })),
-    projectName: "pw",
+    projectName: QUALITY_PROJECT_NAME,
     syncTimeout: 90, // API 元数据同步轮询超时（秒）
   }).catch((err) => {
     process.stderr.write(`[preconditions] API setup partial: ${(err as Error).message}\n`);
@@ -124,7 +124,12 @@ export async function runPreconditions(page: Page): Promise<void> {
   process.stderr.write("[preconditions] Reseeding Doris tables via batch SQL...\n");
   for (const { name, sql } of TABLE_SEED_SQLS) {
     process.stderr.write(`[preconditions] Overwriting ${name}...\n`);
-    await executeSqlViaBatchDoris(page, sql, `seed_${name}_${Date.now().toString(36)}`, "pw");
+    await executeSqlViaBatchDoris(
+      page,
+      sql,
+      `seed_${name}_${Date.now().toString(36)}`,
+      QUALITY_PROJECT_NAME,
+    );
   }
 
   process.stderr.write("[preconditions] Preconditions complete.\n");

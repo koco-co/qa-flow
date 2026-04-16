@@ -8,13 +8,7 @@
  *     --output tests/e2e/202604/xxx/
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { Command } from "commander";
 
@@ -83,9 +77,7 @@ export function readCodeBlocks(inputDir: string): CodeBlock[] {
     const meta = parseBlockMeta(content);
 
     if (!meta) {
-      process.stderr.write(
-        `[merge-specs] 跳过无效代码块（缺少 META）：${file}\n`,
-      );
+      process.stderr.write(`[merge-specs] 跳过无效代码块（缺少 META）：${file}\n`);
       continue;
     }
 
@@ -163,7 +155,7 @@ function runCli(): void {
 
   try {
     const result = mergeSpecs(opts.input, opts.output);
-    process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   } catch (err) {
     process.stderr.write(
       `[merge-specs] 错误：${err instanceof Error ? err.message : String(err)}\n`,
