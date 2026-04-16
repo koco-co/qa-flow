@@ -595,8 +595,16 @@ async function createTask(page: Page, taskName: string, config: TaskSetupConfig)
   }
 
   await completeTaskScheduleAndSave(page, taskName);
-  await gotoRuleTaskList(page);
-  await expect(getTableRowByTaskName(page, taskName)).toBeVisible({ timeout: 15000 });
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline) {
+    try {
+      await getTaskMonitorRow(page, taskName);
+      return;
+    } catch {
+      await page.waitForTimeout(2000);
+    }
+  }
+  throw new Error(`Created task "${taskName}" was not returned by monitor pageQuery within 30000ms`);
 }
 
 export async function ensureRuleTasks(page: Page, taskNames: string[]): Promise<void> {

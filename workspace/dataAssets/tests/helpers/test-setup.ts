@@ -317,7 +317,19 @@ async function openBatchDorisEditor(
 
   const okBtn = modal.locator(".ant-btn-primary").first();
   await okBtn.click();
-  await modal.waitFor({ state: "hidden", timeout: 15000 });
+  const editorTab = page.locator(".ant-tabs-tab, [role='tab']").filter({ hasText: name }).first();
+  await Promise.race([
+    modal.waitFor({ state: "hidden", timeout: 15000 }),
+    editorTab.waitFor({ state: "visible", timeout: 15000 }),
+  ]).catch(() => undefined);
+  if (await modal.isVisible().catch(() => false)) {
+    const closeBtn = modal.locator(".ant-modal-close").first();
+    if (await closeBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await closeBtn.click().catch(() => undefined);
+      await modal.waitFor({ state: "hidden", timeout: 5000 }).catch(() => undefined);
+    }
+  }
+  await editorTab.waitFor({ state: "visible", timeout: 30000 }).catch(() => undefined);
   await page.waitForTimeout(2000);
 }
 
