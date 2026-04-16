@@ -40,6 +40,35 @@ const RULESET_ROW_FALLBACKS: Record<string, string> = {
 
 const DORIS_DATASOURCE_PATTERN = /doris/i;
 
+async function selectAntOptionWithRetry(
+  page: Page,
+  triggerLocator: Locator,
+  optionText: string | RegExp,
+  attempts = 5,
+): Promise<void> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      await selectAntOption(page, triggerLocator, optionText);
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.includes("Ant Select option not found")) {
+        throw error;
+      }
+
+      lastError = error instanceof Error ? error : new Error(message);
+      await page.keyboard.press("Escape").catch(() => undefined);
+      await page.waitForTimeout(1000 * (attempt + 1));
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+}
+
 const RANGE_AND_RULE_SEED: RangeEnumConfig = {
   field: "score",
   range: {
@@ -97,6 +126,15 @@ const ENUM_NOT_IN_RULE_SEED: RangeEnumConfig = {
   description: "category枚举值not in 4,5",
 };
 
+const ORIGINAL_ENUM_RULE_SEED: RangeEnumConfig = {
+  field: "score",
+  functionName: "枚举值",
+  enumOperator: "in",
+  enumValues: ["5", "15"],
+  ruleStrength: "强规则",
+  description: "score枚举值in 5,15",
+};
+
 const STRING_RULE_SEED: RangeEnumConfig = {
   field: "score_str",
   range: {
@@ -119,7 +157,7 @@ const RULESET_PACKAGE_SEEDS: Record<string, RangeEnumConfig> = {
   仅取值范围包: RANGE_ONLY_RULE_SEED,
   仅枚举值包: ENUM_IN_RULE_SEED,
   notin校验包: ENUM_NOT_IN_RULE_SEED,
-  原枚举值包: ENUM_IN_RULE_SEED,
+  原枚举值包: ORIGINAL_ENUM_RULE_SEED,
   过滤条件包: RANGE_AND_RULE_SEED,
   string强转包: STRING_RULE_SEED,
 };
@@ -387,7 +425,7 @@ async function createRuleSetDraft(
     .locator(".ant-form-item")
     .filter({ hasText: /选择数据源/ })
     .first();
-  await selectAntOption(
+  await selectAntOptionWithRetry(
     page,
     sourceFormItem.locator(".ant-select").first(),
     DORIS_DATASOURCE_PATTERN,
@@ -397,7 +435,11 @@ async function createRuleSetDraft(
     .locator(".ant-form-item")
     .filter({ hasText: /选择数据库/ })
     .first();
-  await selectAntOption(page, schemaFormItem.locator(".ant-select").first(), DORIS_DATABASE);
+  await selectAntOptionWithRetry(
+    page,
+    schemaFormItem.locator(".ant-select").first(),
+    DORIS_DATABASE,
+  );
   await page.waitForTimeout(1000);
 
   const tableFormItem = page
@@ -408,7 +450,7 @@ async function createRuleSetDraft(
   let selectTableError: Error | null = null;
   for (let attempt = 0; attempt < 4; attempt += 1) {
     try {
-      await selectAntOption(page, tableSelect, tableName);
+      await selectAntOptionWithRetry(page, tableSelect, tableName, 1);
       selectTableError = null;
       break;
     } catch (error) {

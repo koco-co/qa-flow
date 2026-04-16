@@ -861,6 +861,23 @@ async function triggerQualityReportToday(page: Page, taskName: string): Promise<
 }
 
 export async function executeTaskFromList(page: Page, taskName: string): Promise<void> {
+  const taskMonitorRow = await getTaskMonitorRow(page, taskName);
+  const monitorId = getMonitorId(taskMonitorRow);
+  if (monitorId !== null) {
+    const executeResponse =
+      (await postTaskApi<{
+        success?: boolean;
+        message?: string;
+      }>(page, "/dassets/v1/valid/monitor/immediatelyExecuted", {
+        monitorId,
+      })) ?? {};
+
+    if (executeResponse.success) {
+      await page.waitForTimeout(1000);
+      return;
+    }
+  }
+
   await gotoRuleTaskList(page);
   const targetRow = getTableRowByTaskName(page, taskName);
   await expect(targetRow).toBeVisible({ timeout: 15000 });

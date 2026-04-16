@@ -4,6 +4,7 @@ import { expect, test } from "../../fixtures/step-screenshot";
 import { selectAntOption } from "../../helpers/test-setup";
 import {
   addRuleToPackage,
+  deleteRuleSetsByTableNames,
   getRulePackage,
   getRuleSetListRow,
   getSelectOptions,
@@ -26,6 +27,10 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
       "步骤1: 进入规则集管理页面 → 规则集管理页面打开，列表显示已有规则集数据行",
       async () => {
         await gotoRuleSetList(page);
+        await deleteRuleSetsByTableNames(page, ["quality_test_num"]);
+        await page.reload();
+        await page.waitForLoadState("networkidle");
+        await page.waitForTimeout(1000);
         await expect(page.locator(".ant-table-row").first()).toBeVisible({ timeout: 15000 });
       },
       page.locator(".ant-table-tbody"),

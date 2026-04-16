@@ -30,6 +30,28 @@ export async function selectAntOption(
   await dropdown.waitFor({ state: "visible", timeout: 5000 });
 
   const options = dropdown.locator(".ant-select-item-option");
+  const waitForOptionsToSettle = async (maxWaitMs = 1200): Promise<void> => {
+    const startedAt = Date.now();
+    do {
+      if ((await options.count()) > 0) {
+        await page.waitForTimeout(150);
+        return;
+      }
+
+      const isLoading = await dropdown
+        .locator(".ant-spin-spinning, .ant-select-item-empty .ant-spin-spinning")
+        .first()
+        .isVisible()
+        .catch(() => false);
+      if (!isLoading && Date.now() - startedAt >= maxWaitMs / 2) {
+        return;
+      }
+
+      await page.waitForTimeout(250);
+    } while (Date.now() - startedAt < maxWaitMs);
+  };
+
+  await waitForOptionsToSettle();
 
   const optionLocator = async () => {
     if (typeof optionText === "string") {
@@ -69,7 +91,7 @@ export async function selectAntOption(
       .first();
     if ((await searchInput.count()) && (await searchInput.isEditable().catch(() => false))) {
       await searchInput.fill(optionText);
-      await page.waitForTimeout(300);
+      await waitForOptionsToSettle(2500);
       if (await clickVisibleOption()) return;
     }
   }
