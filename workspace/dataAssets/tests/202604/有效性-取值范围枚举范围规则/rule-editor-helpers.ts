@@ -40,7 +40,88 @@ const RULESET_ROW_FALLBACKS: Record<string, string> = {
 
 const DORIS_DATASOURCE_PATTERN = /doris/i;
 
-async function selectAntOptionWithRetry(
+async function postProjectApi<T>(
+  page: Page,
+  path: string,
+  body: unknown,
+): Promise<T> {
+  return page.evaluate(
+    async ({ requestPath, requestBody, projectId }) => {
+      const response = await fetch(requestPath, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+          "Accept-Language": "zh-CN",
+          "X-Valid-Project-ID": String(projectId),
+        },
+        body: JSON.stringify(requestBody),
+      });
+      return response.json();
+    },
+    {
+      requestPath: path,
+      requestBody: body,
+      projectId: QUALITY_PROJECT_ID,
+    },
+  ) as Promise<T>;
+}
+
+async function ensureDorisMonitorDatasource(page: Page): Promise<boolean> {
+  const listMonitorDatasources = async () =>
+    postProjectApi<{
+      success?: boolean;
+      data?: Array<{ id?: string; dataSourceName?: string; dtCenterSourceName?: string }>;
+    }>(page, "/dmetadata/v1/dataSource/monitor/list", {});
+
+  const findDorisMonitorDatasource = async () => {
+    const response = await listMonitorDatasources();
+    return (response.data ?? []).find((item) =>
+      DORIS_DATASOURCE_PATTERN.test(
+        `${String(item.dataSourceName ?? "")} ${String(item.dtCenterSourceName ?? "")}`,
+      ),
+    );
+  };
+
+  if (await findDorisMonitorDatasource()) {
+    return false;
+  }
+
+  const allDatasources = await postProjectApi<{
+    success?: boolean;
+    data?: Array<{ dataSourceId?: string; dataSourceName?: string }>;
+  }>(page, "/dassets/v1/dataSource/getAllDataSourceAndDatabase", {});
+  const dorisDatasource = (allDatasources.data ?? []).find((item) =>
+    DORIS_DATASOURCE_PATTERN.test(String(item.dataSourceName ?? "")),
+  );
+
+  if (!dorisDatasource?.dataSourceId) {
+    throw new Error("No Doris datasource available for current quality project.");
+  }
+
+  const authResponse = await postProjectApi<{ success?: boolean; message?: string }>(
+    page,
+    "/dmetadata/v1/dataSource/authDataSourceToProject",
+    {
+      dataSourceId: Number(dorisDatasource.dataSourceId),
+      projectList: [QUALITY_PROJECT_ID],
+    },
+  );
+  if (!authResponse.success) {
+    throw new Error(authResponse.message ?? "Authorize Doris datasource to project failed.");
+  }
+
+  await expect
+    .poll(async () => Boolean(await findDorisMonitorDatasource()), {
+      timeout: 15000,
+      message: "Waiting for Doris datasource to appear in monitor datasource list.",
+    })
+    .toBe(true);
+
+  return true;
+}
+
+export async function selectAntOptionWithRetry(
   page: Page,
   triggerLocator: Locator,
   optionText: string | RegExp,
@@ -236,7 +317,7 @@ async function dismissIntroDialog(page: Page): Promise<void> {
   }
 }
 
-async function gotoRuleSetCreate(page: Page): Promise<void> {
+export async function gotoRuleSetCreate(page: Page): Promise<void> {
   await applyRuntimeCookies(page);
   await page.goto(buildDataAssetsUrl("/dq/ruleSet/add", QUALITY_PROJECT_ID));
   await page.waitForLoadState("networkidle");
@@ -424,12 +505,18 @@ async function ensureRuleSetPackagesVisible(
   }
 }
 
-async function createRuleSetDraft(
+export async function createRuleSetDraft(
   page: Page,
   tableName: string,
   requiredPackageNames: string[],
 ): Promise<void> {
   await gotoRuleSetCreate(page);
+  if (await ensureDorisMonitorDatasource(page)) {
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1000);
+    await dismissIntroDialog(page);
+  }
 
   const sourceFormItem = page
     .locator(".ant-form-item")

@@ -1,8 +1,8 @@
 // META: {"id":"t1","priority":"P0","title":"验证在规则集中按完整顺序新建取值范围&枚举范围且关系规则（数值类型字段）"}
 import { expect, test } from "../../fixtures/step-screenshot";
 import { applyRuntimeCookies, buildDataAssetsUrl, selectAntOption } from "../../helpers/test-setup";
+import { createRuleSetDraft } from "./rule-editor-helpers";
 import {
-  DORIS_DATABASE,
   injectProjectContext,
   QUALITY_PROJECT_ID,
   runPreconditions,
@@ -107,73 +107,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
     await step(
       "步骤2: 点击新建规则集，填写 Step1 基础信息后点击下一步 → 进入 Step2 监控规则页面",
       async () => {
-        // 直接导航到新建页面（确保 sessionStorage 生效）
-        await page.goto(buildDataAssetsUrl("/dq/ruleSet/add", QUALITY_PROJECT_ID));
-        await page.waitForLoadState("networkidle");
-        await page.waitForTimeout(2000);
-
-        // 选择数据源（匹配 doris）
-        const sourceFormItem = page
-          .locator(".ant-form-item")
-          .filter({ hasText: /选择数据源/ })
-          .first();
-        const sourceSelector = sourceFormItem.locator(".ant-select-selector").first();
-        await sourceSelector.click();
-        await page.waitForTimeout(500);
-        const dsDropdown = page.locator(".ant-select-dropdown:visible");
-        await dsDropdown.waitFor({ state: "visible", timeout: 5000 });
-        await dsDropdown
-          .locator(".ant-select-item-option")
-          .filter({ hasText: /doris/i })
-          .first()
-          .click();
-        await page.waitForTimeout(1000);
-
-        // 选择数据库
-        const schemaFormItem = page
-          .locator(".ant-form-item")
-          .filter({ hasText: /选择数据库/ })
-          .first();
-        await selectAntOption(
-          page,
-          schemaFormItem.locator(".ant-select-selector").first(),
-          DORIS_DATABASE,
-        );
-        // 等待表列表 API 加载
-        await page.waitForTimeout(2000);
-
-        // 选择数据表: quality_test_num
-        const tableFormItem = page
-          .locator(".ant-form-item")
-          .filter({ hasText: /选择数据表/ })
-          .first();
-        let tableSelected = false;
-        let lastTableSelectError: unknown;
-        for (let attempt = 0; attempt < 3 && !tableSelected; attempt += 1) {
-          try {
-            await selectAntOption(page, tableFormItem.locator(".ant-select").first(), "quality_test_num");
-            tableSelected = true;
-          } catch (error) {
-            lastTableSelectError = error;
-            await page.waitForTimeout(1000);
-          }
-        }
-        if (!tableSelected) {
-          throw lastTableSelectError;
-        }
-        await page.waitForTimeout(500);
-
-        // 填写规则包名称
-        const packageNameInput = page.locator("input[placeholder*='规则包名称']").first();
-        await packageNameInput.waitFor({ state: "visible", timeout: 5000 });
-        await packageNameInput.clear();
-        await packageNameInput.fill("且关系校验包");
-        await page.waitForTimeout(500);
-
-        // 点击下一步进入 Step 2
-        await page.getByRole("button", { name: "下一步" }).click();
-        await page.waitForLoadState("networkidle");
-        await page.waitForTimeout(1500);
+        await createRuleSetDraft(page, "quality_test_num", ["且关系校验包"]);
 
         await expect(page.getByText("监控规则", { exact: false }).first()).toBeVisible({
           timeout: 10000,
