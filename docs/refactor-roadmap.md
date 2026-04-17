@@ -18,7 +18,7 @@
 
 | # | 目标 | 状态 | Spec | 核心交付 |
 | --- | --- | --- | --- | --- |
-| **0** | 信息架构 + `rules/` 迁移 | 🟡 IN PROGRESS | [`2026-04-17-knowledge-architecture-design.md`](refactor/specs/2026-04-17-knowledge-architecture-design.md) | 三层边界定型、`preferences → rules` 迁移、`knowledge/` 空骨架、`knowledge-keeper` contract |
+| **0** | 信息架构 + `rules/` 迁移 | ✅ DONE | [`2026-04-17-knowledge-architecture-design.md`](refactor/specs/2026-04-17-knowledge-architecture-design.md) | 三层边界定型、`preferences → rules` 迁移、`knowledge/` 空骨架、`knowledge-keeper` contract |
 | **1** | `create-project` skill + `setup` 瘦身 + `knowledge-keeper` 实施 | ⏳ PENDING | — | 新 skill 创建、setup 移除项目管理步骤、knowledge-keeper 代码实施 |
 | **2** | PRD 需求讨论阶段（目标 1.1） | ⏳ PENDING | — | 主 agent 亲自主持需求讨论、结构化 plan 模板、支持 `/clear` 重启 |
 | **3** | UI 自动化（目标 1.3） | ⏳ PENDING | — | 技术调研、Playwright 工作流重构、Allure 报告、subagent 升级契约、多环境/多项目 session |
