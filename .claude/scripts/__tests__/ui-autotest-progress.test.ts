@@ -981,6 +981,100 @@ describe("error_history", () => {
   });
 });
 
+// ── update: reject structured-field direct writes ─────────────────────────────
+
+describe("update: reject direct writes to structured fields", () => {
+  it("exits non-zero with stderr when --field last_error is used", () => {
+    createTestSuite("reject-last-error-suite");
+    const { code, stderr } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "reject-last-error-suite",
+      "--case", "t1",
+      "--field", "last_error",
+      "--value", "some error",
+    ]);
+    assert.equal(code, 1);
+    assert.ok(
+      stderr.includes("last_error") && stderr.includes("cannot be set directly"),
+      `expected "last_error cannot be set directly" in stderr, got: ${stderr}`,
+    );
+  });
+
+  it("exits non-zero with stderr when --field error_history is used", () => {
+    createTestSuite("reject-error-history-suite");
+    const { code, stderr } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "reject-error-history-suite",
+      "--case", "t1",
+      "--field", "error_history",
+      "--value", "[]",
+    ]);
+    assert.equal(code, 1);
+    assert.ok(
+      stderr.includes("error_history") && stderr.includes("cannot be set directly"),
+      `expected "error_history cannot be set directly" in stderr, got: ${stderr}`,
+    );
+  });
+});
+
+// ── migration: strip last_error even when error_history already exists ─────────
+
+describe("migration: strip last_error when error_history already exists", () => {
+  it("strips last_error but preserves existing error_history when both are present", () => {
+    const suiteName = "migration-both-fields-suite";
+    const filePath = join(
+      TMP_DIR, "workspace", "dataAssets", ".temp",
+      `ui-autotest-progress-${slugify(suiteName)}.json`,
+    );
+    const legacyProgress = {
+      version: 1,
+      suite_name: suiteName,
+      archive_md: "test.md",
+      url: "http://localhost",
+      selected_priorities: ["P0"],
+      output_dir: "tests/",
+      started_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-02T00:00:00.000Z",
+      current_step: 4,
+      preconditions_ready: false,
+      cases: {
+        t1: {
+          title: "c1",
+          priority: "P0",
+          generated: false,
+          script_path: null,
+          test_status: "failed",
+          attempts: 2,
+          // Both fields present — legacy leak scenario
+          last_error: "foo",
+          error_history: [{ at: "2024-01-02T00:00:00.000Z", message: "bar" }],
+        },
+      },
+      merge_status: "pending",
+    };
+    writeFileSync(filePath, `${JSON.stringify(legacyProgress, null, 2)}\n`, "utf8");
+
+    const { stdout, code } = run([
+      "read", "--project", "dataAssets", "--suite", suiteName,
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    // error_history must be preserved exactly as written
+    assert.deepEqual(
+      progress.cases.t1.error_history,
+      [{ at: "2024-01-02T00:00:00.000Z", message: "bar" }],
+    );
+    // last_error must be stripped entirely
+    assert.equal(
+      progress.cases.t1.last_error,
+      undefined,
+      "last_error should be stripped even when error_history already exists",
+    );
+  });
+});
+
 // ── slugify ───────────────────────────────────────────────────────────────────
 
 describe("slugify()", () => {

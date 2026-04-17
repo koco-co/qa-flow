@@ -80,15 +80,22 @@ function migrateCaseState(
   raw: Record<string, unknown>,
   updatedAt: string,
 ): CaseState {
-  // Migrate legacy last_error → error_history
-  if ("last_error" in raw && !("error_history" in raw)) {
-    const lastError = raw["last_error"];
-    const errorHistory: ErrorEntry[] =
-      typeof lastError === "string" ? [{ at: updatedAt, message: lastError }] : [];
-    const { last_error: _removed, ...rest } = raw;
-    return { ...(rest as Omit<CaseState, "error_history">), error_history: errorHistory };
+  // Strip last_error whenever present — regardless of whether error_history already exists
+  if (!("last_error" in raw)) {
+    return raw as unknown as CaseState;
   }
-  return raw as unknown as CaseState;
+
+  const { last_error: lastError, ...rest } = raw;
+
+  // If error_history already present, preserve it and just strip last_error
+  if ("error_history" in rest) {
+    return rest as unknown as CaseState;
+  }
+
+  // Derive error_history from last_error
+  const errorHistory: ErrorEntry[] =
+    typeof lastError === "string" ? [{ at: updatedAt, message: lastError }] : [];
+  return { ...(rest as Omit<CaseState, "error_history">), error_history: errorHistory };
 }
 
 function readProgress(project: string, suiteName: string, env?: string): Progress | null {
@@ -98,9 +105,9 @@ function readProgress(project: string, suiteName: string, env?: string): Progres
     const parsed = JSON.parse(readFileSync(filePath, "utf8")) as Progress & {
       cases: Record<string, Record<string, unknown>>;
     };
-    // Migrate cases that still use legacy last_error field
+    // Migrate cases that still carry legacy last_error field (strip it always)
     const needsMigration = Object.values(parsed.cases).some(
-      (c) => "last_error" in c && !("error_history" in c),
+      (c) => "last_error" in c,
     );
     if (!needsMigration) return parsed as unknown as Progress;
 
@@ -233,6 +240,14 @@ program
       env?: string;
     }) => {
       initEnv();
+
+      // Guard: reject direct writes to structured fields that must be managed via flags
+      if (opts.field === "last_error" || opts.field === "error_history") {
+        process.stderr.write(
+          `[ui-autotest-progress:update] "${opts.field}" cannot be set directly. Use --field test_status --value failed --error "<msg>" to append to error_history, or resume --retry-failed to clear.\n`,
+        );
+        process.exit(1);
+      }
 
       const progress = readProgress(opts.project, opts.suite, opts.env);
       if (!progress) {

@@ -486,8 +486,13 @@ bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --s
 执行结果（失败）：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field test_status --value failed
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field last_error --value "{{error_summary}}"
+bun run .claude/scripts/ui-autotest-progress.ts update \
+  --project {{project}} \
+  --suite "{{suite_name}}" \
+  --env "{{env}}" \
+  --case {{tN}} \
+  --field test_status --value failed \
+  --error "{{error_summary}}"
 ```
 
 断点恢复时，跳过 `test_status === "passed"` 的用例。对于 `test_status === "failed"` 且 `attempts >= 3` 的用例，也跳过（除非用户选择「重试失败项」）。
@@ -520,7 +525,7 @@ bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --s
 }
 ```
 
-Sub-Agent 返回 `FIXED` → 更新进度 `test_status = "passed"`；返回 `STILL_FAILING` → 更新 `test_status = "failed"` + `last_error`，`attempts < 3` 则再派发一轮，否则标记放弃。
+Sub-Agent 返回 `FIXED` → 更新进度 `test_status = "passed"`；返回 `STILL_FAILING` → 更新 `test_status = "failed"` 并通过 `--error` 追加到 `error_history`，`attempts < 3` 则再派发一轮，否则标记放弃。
 
 **5.3 Archive MD 反向更新**
 
