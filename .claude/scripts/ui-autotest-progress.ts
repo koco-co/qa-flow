@@ -51,7 +51,7 @@ interface Progress {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function slugify(name: string): string {
+export function slugify(name: string): string {
   return name
     .replace(/[()（）#【】&，。、；：""''《》？！\s]/g, "-")
     .replace(/-{2,}/g, "-")
@@ -61,6 +61,10 @@ function slugify(name: string): string {
 function progressFilePath(project: string, suiteName: string, env?: string): string {
   const envSuffix = env ? `-${env.toLowerCase()}` : "";
   return `${tempDir(project)}/ui-autotest-progress-${slugify(suiteName)}${envSuffix}.json`;
+}
+
+export function uiBlocksDir(project: string, suiteName: string): string {
+  return `${tempDir(project)}/ui-blocks/${slugify(suiteName)}`;
 }
 
 function nowIso(): string {
@@ -430,4 +434,6 @@ program
     }
   });
 
-program.parse(process.argv);
+if (import.meta.main) {
+  program.parse(process.argv);
+}

@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, rmSync, utimesSync, writeFileSync } from "node:f
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, before, describe, it } from "node:test";
+import { slugify, uiBlocksDir } from "../ui-autotest-progress.ts";
 
 const TMP_DIR = join(tmpdir(), `qa-flow-uap-test-${process.pid}`);
 const SCRIPT = ".claude/scripts/ui-autotest-progress.ts";
@@ -772,5 +773,39 @@ describe("env isolation", () => {
     ]);
     assert.equal(code, 0);
     assert.equal(JSON.parse(stdout).cases.t1.test_status, "pending");
+  });
+});
+
+// ── slugify ───────────────────────────────────────────────────────────────────
+
+describe("slugify()", () => {
+  it("replaces special chars and collapses dashes", () => {
+    assert.equal(slugify("【通用配置】json格式配置(#15696)"), "通用配置-json格式配置-15696");
+  });
+
+  it("handles plain ASCII with spaces and parens", () => {
+    assert.equal(slugify("Abc (Def) #123"), "Abc-Def-123");
+  });
+
+  it("trims leading and trailing dashes", () => {
+    assert.equal(slugify("(leading)"), "leading");
+  });
+});
+
+// ── uiBlocksDir() ─────────────────────────────────────────────────────────────
+
+describe("uiBlocksDir()", () => {
+  before(() => {
+    process.env.WORKSPACE_DIR = join(TMP_DIR, "workspace");
+  });
+
+  it("returns {tempDir}/ui-blocks/{slug} for given project+suite", () => {
+    const result = uiBlocksDir("dataAssets", "【通用配置】json格式配置(#15696)");
+    assert.match(result, /\/workspace\/dataAssets\/\.temp\/ui-blocks\/通用配置-json格式配置-15696$/);
+  });
+
+  it("slugifies identical to progressFilePath", () => {
+    const blocksDir = uiBlocksDir("dataAssets", "Abc (Def) #123");
+    assert.ok(blocksDir.endsWith("/ui-blocks/Abc-Def-123"));
   });
 });
