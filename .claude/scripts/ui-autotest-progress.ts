@@ -21,6 +21,11 @@ import { tempDir } from "./lib/paths.ts";
 type TestStatus = "pending" | "running" | "passed" | "failed";
 type MergeStatus = "pending" | "completed";
 
+interface ErrorEntry {
+  readonly at: string;
+  readonly message: string;
+}
+
 interface CaseState {
   readonly title: string;
   readonly priority: string;
@@ -28,7 +33,7 @@ interface CaseState {
   readonly script_path: string | null;
   readonly test_status: TestStatus;
   readonly attempts: number;
-  readonly last_error: string | null;
+  readonly error_history: readonly ErrorEntry[];
 }
 
 interface Progress {
@@ -71,11 +76,41 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+function migrateCaseState(
+  raw: Record<string, unknown>,
+  updatedAt: string,
+): CaseState {
+  // Migrate legacy last_error → error_history
+  if ("last_error" in raw && !("error_history" in raw)) {
+    const lastError = raw["last_error"];
+    const errorHistory: ErrorEntry[] =
+      typeof lastError === "string" ? [{ at: updatedAt, message: lastError }] : [];
+    const { last_error: _removed, ...rest } = raw;
+    return { ...(rest as Omit<CaseState, "error_history">), error_history: errorHistory };
+  }
+  return raw as unknown as CaseState;
+}
+
 function readProgress(project: string, suiteName: string, env?: string): Progress | null {
   const filePath = progressFilePath(project, suiteName, env);
   if (!existsSync(filePath)) return null;
   try {
-    return JSON.parse(readFileSync(filePath, "utf8")) as Progress;
+    const parsed = JSON.parse(readFileSync(filePath, "utf8")) as Progress & {
+      cases: Record<string, Record<string, unknown>>;
+    };
+    // Migrate cases that still use legacy last_error field
+    const needsMigration = Object.values(parsed.cases).some(
+      (c) => "last_error" in c && !("error_history" in c),
+    );
+    if (!needsMigration) return parsed as unknown as Progress;
+
+    const migratedCases: Record<string, CaseState> = Object.fromEntries(
+      Object.entries(parsed.cases).map(([id, c]) => [
+        id,
+        migrateCaseState(c, parsed.updated_at),
+      ]),
+    );
+    return { ...(parsed as unknown as Progress), cases: migratedCases };
   } catch (err) {
     throw new Error(`Failed to parse progress file: ${err}`);
   }
@@ -144,7 +179,7 @@ program
             script_path: null,
             test_status: "pending" as TestStatus,
             attempts: 0,
-            last_error: null,
+            error_history: [],
           } satisfies CaseState,
         ]),
       );
@@ -185,6 +220,7 @@ program
   .option("--case <id>", "Case ID to update (omit for top-level field)")
   .requiredOption("--field <name>", "Field name to update")
   .requiredOption("--value <val>", "New value")
+  .option("--error <msg>", "Error message to append to error_history (only used when field=test_status and value=failed)")
   .option("--env <name>", "环境标识（如 ci63、ltqcdev）")
   .action(
     (opts: {
@@ -193,6 +229,7 @@ program
       case?: string;
       field: string;
       value: string;
+      error?: string;
       env?: string;
     }) => {
       initEnv();
@@ -233,10 +270,22 @@ program
             ? { attempts: existing.attempts + 1 }
             : {};
 
+        // Append to error_history when status set to failed and --error is provided
+        const errorHistoryFields: Partial<CaseState> =
+          opts.field === "test_status" && opts.value === "failed" && opts.error !== undefined
+            ? {
+                error_history: [
+                  ...existing.error_history,
+                  { at: nowIso(), message: opts.error },
+                ],
+              }
+            : {};
+
         const updatedCase: CaseState = {
           ...existing,
           [opts.field]: coercedValue,
           ...extraCaseFields,
+          ...errorHistoryFields,
         };
 
         updated = {
@@ -403,7 +452,7 @@ program
 
         // 2. Reset failed → pending if --retry-failed
         if (opts.retryFailed && updated.test_status === "failed") {
-          updated = { ...updated, test_status: "pending", attempts: 0, last_error: null };
+          updated = { ...updated, test_status: "pending", attempts: 0, error_history: [] };
         }
 
         // 3. Validate script_path: if generated but file missing, reset

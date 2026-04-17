@@ -120,7 +120,7 @@ describe("create", () => {
     assert.equal(t1.generated, false);
     assert.equal(t1.test_status, "pending");
     assert.equal(t1.attempts, 0);
-    assert.equal(t1.last_error, null);
+    assert.deepEqual(t1.error_history, []);
     assert.equal(t1.script_path, null);
 
     const t2 = progress.cases.t2;
@@ -195,19 +195,22 @@ describe("update", () => {
     assert.equal(progress.cases.t1.test_status, "running");
   });
 
-  it("updates last_error", () => {
+  it("--error flag appends to error_history when status set to failed", () => {
     createTestSuite("update-error-suite");
     const { stdout, code } = run([
       "update",
       "--project", "dataAssets",
       "--suite", "update-error-suite",
       "--case", "t1",
-      "--field", "last_error",
-      "--value", "Timeout after 30s",
+      "--field", "test_status",
+      "--value", "failed",
+      "--error", "Timeout after 30s",
     ]);
     assert.equal(code, 0);
     const progress = JSON.parse(stdout);
-    assert.equal(progress.cases.t1.last_error, "Timeout after 30s");
+    assert.equal(progress.cases.t1.error_history.length, 1);
+    assert.equal(progress.cases.t1.error_history[0].message, "Timeout after 30s");
+    assert.ok(progress.cases.t1.error_history[0].at, "at should be an ISO date string");
   });
 
   it("updates top-level current_step (number coercion)", () => {
@@ -446,7 +449,7 @@ describe("resume", () => {
     ]);
     run([
       "update", "--project", "dataAssets", "--suite", "resume-failed-suite",
-      "--case", "t1", "--field", "last_error", "--value", "Assertion failed",
+      "--case", "t1", "--field", "test_status", "--value", "failed", "--error", "Assertion failed",
     ]);
 
     const { stdout, code } = run([
@@ -457,7 +460,7 @@ describe("resume", () => {
     const progress = JSON.parse(stdout);
     assert.equal(progress.cases.t1.test_status, "pending");
     assert.equal(progress.cases.t1.attempts, 0);
-    assert.equal(progress.cases.t1.last_error, null);
+    assert.deepEqual(progress.cases.t1.error_history, []);
   });
 
   it("validates script_path, resets generated if file missing", () => {
@@ -773,6 +776,208 @@ describe("env isolation", () => {
     ]);
     assert.equal(code, 0);
     assert.equal(JSON.parse(stdout).cases.t1.test_status, "pending");
+  });
+});
+
+// ── error_history ─────────────────────────────────────────────────────────────
+
+describe("error_history", () => {
+  it("create initializes error_history as [] for each case", () => {
+    const { stdout, code } = run([
+      "create",
+      "--project", "dataAssets",
+      "--suite", "error-history-init-suite",
+      "--archive", "test.md",
+      "--url", "http://localhost",
+      "--cases", JSON.stringify({ t1: { title: "c1", priority: "P0" }, t2: { title: "c2", priority: "P1" } }),
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    assert.deepEqual(progress.cases.t1.error_history, []);
+    assert.deepEqual(progress.cases.t2.error_history, []);
+  });
+
+  it("update --error appends one entry with at and message", () => {
+    createTestSuite("error-history-append-suite");
+    const { stdout, code } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "error-history-append-suite",
+      "--case", "t1",
+      "--field", "test_status",
+      "--value", "failed",
+      "--error", "Element not found",
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    const history = progress.cases.t1.error_history;
+    assert.equal(history.length, 1);
+    assert.equal(history[0].message, "Element not found");
+    assert.ok(history[0].at, "at should be present");
+    // Verify at is a valid ISO date string
+    assert.ok(!Number.isNaN(Date.parse(history[0].at)), "at should be a valid ISO date");
+  });
+
+  it("two sequential failed updates append two entries in order", () => {
+    createTestSuite("error-history-two-entries-suite");
+    run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "error-history-two-entries-suite",
+      "--case", "t1",
+      "--field", "test_status",
+      "--value", "failed",
+      "--error", "First failure",
+    ]);
+    const { stdout, code } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "error-history-two-entries-suite",
+      "--case", "t1",
+      "--field", "test_status",
+      "--value", "failed",
+      "--error", "Second failure",
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    const history = progress.cases.t1.error_history;
+    assert.equal(history.length, 2);
+    assert.equal(history[0].message, "First failure");
+    assert.equal(history[1].message, "Second failure");
+  });
+
+  it("update to passed does NOT mutate error_history", () => {
+    createTestSuite("error-history-passed-suite");
+    // First add a failure
+    run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "error-history-passed-suite",
+      "--case", "t1",
+      "--field", "test_status",
+      "--value", "failed",
+      "--error", "Initial failure",
+    ]);
+    // Then update to passed
+    const { stdout, code } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "error-history-passed-suite",
+      "--case", "t1",
+      "--field", "test_status",
+      "--value", "passed",
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    // error_history should still have the original entry
+    assert.equal(progress.cases.t1.error_history.length, 1);
+    assert.equal(progress.cases.t1.error_history[0].message, "Initial failure");
+    assert.equal(progress.cases.t1.test_status, "passed");
+  });
+
+  it("migration: legacy last_error is converted to error_history on read", () => {
+    const suiteName = "error-history-migration-suite";
+    // Manually write a legacy progress file with last_error
+    const filePath = join(
+      TMP_DIR, "workspace", "dataAssets", ".temp",
+      `ui-autotest-progress-${slugify(suiteName)}.json`,
+    );
+    const legacyProgress = {
+      version: 1,
+      suite_name: suiteName,
+      archive_md: "test.md",
+      url: "http://localhost",
+      selected_priorities: ["P0"],
+      output_dir: "tests/",
+      started_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-02T00:00:00.000Z",
+      current_step: 4,
+      preconditions_ready: false,
+      cases: {
+        t1: {
+          title: "c1",
+          priority: "P0",
+          generated: false,
+          script_path: null,
+          test_status: "failed",
+          attempts: 1,
+          last_error: "Old error from legacy format",
+        },
+      },
+      merge_status: "pending",
+    };
+    writeFileSync(filePath, `${JSON.stringify(legacyProgress, null, 2)}\n`, "utf8");
+
+    const { stdout, code } = run([
+      "read", "--project", "dataAssets", "--suite", suiteName,
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    // Should have error_history migrated from last_error
+    assert.equal(progress.cases.t1.error_history.length, 1);
+    assert.equal(progress.cases.t1.error_history[0].message, "Old error from legacy format");
+    assert.equal(progress.cases.t1.error_history[0].at, "2024-01-02T00:00:00.000Z");
+    // last_error should be stripped
+    assert.equal(progress.cases.t1.last_error, undefined);
+  });
+
+  it("migration: legacy last_error=null produces empty error_history", () => {
+    const suiteName = "error-history-migration-null-suite";
+    const filePath = join(
+      TMP_DIR, "workspace", "dataAssets", ".temp",
+      `ui-autotest-progress-${slugify(suiteName)}.json`,
+    );
+    const legacyProgress = {
+      version: 1,
+      suite_name: suiteName,
+      archive_md: "test.md",
+      url: "http://localhost",
+      selected_priorities: ["P0"],
+      output_dir: "tests/",
+      started_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-02T00:00:00.000Z",
+      current_step: 4,
+      preconditions_ready: false,
+      cases: {
+        t1: {
+          title: "c1",
+          priority: "P0",
+          generated: false,
+          script_path: null,
+          test_status: "pending",
+          attempts: 0,
+          last_error: null,
+        },
+      },
+      merge_status: "pending",
+    };
+    writeFileSync(filePath, `${JSON.stringify(legacyProgress, null, 2)}\n`, "utf8");
+
+    const { stdout, code } = run([
+      "read", "--project", "dataAssets", "--suite", suiteName,
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    assert.deepEqual(progress.cases.t1.error_history, []);
+    assert.equal(progress.cases.t1.last_error, undefined);
+  });
+
+  it("resume --retry-failed resets error_history to []", () => {
+    createTestSuite("error-history-resume-suite");
+    run([
+      "update", "--project", "dataAssets", "--suite", "error-history-resume-suite",
+      "--case", "t1", "--field", "test_status", "--value", "failed",
+      "--error", "Failure before retry",
+    ]);
+
+    const { stdout, code } = run([
+      "resume", "--project", "dataAssets", "--suite", "error-history-resume-suite",
+      "--retry-failed",
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    assert.equal(progress.cases.t1.test_status, "pending");
+    assert.deepEqual(progress.cases.t1.error_history, []);
   });
 });
 
