@@ -173,8 +173,11 @@ export const test = base.extend<{ step: StepFn }>({
           await renderStepBadge(page, badgeLabel);
           await settleForScreenshot(page);
 
-          // 无论成功或失败都截图
-          const screenshot = await page.screenshot({ fullPage: false }).catch(() => null);
+          // 无论成功或失败都截图（加超时保护避免 screenshot 挂起）
+          const screenshot = await Promise.race([
+            page.screenshot({ fullPage: false }).catch(() => null),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+          ]);
 
           // 移除高亮
           if (highlightTarget) {
