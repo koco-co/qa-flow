@@ -1169,6 +1169,22 @@ describe("slug alias file", () => {
   });
 });
 
+// ── suite-slug command ────────────────────────────────────────────────────────
+
+describe("suite-slug command", () => {
+  it("prints slug only (no newline, no extra output)", () => {
+    const { stdout, code } = run(["suite-slug", "--suite", "【X】a b"]);
+    assert.equal(code, 0);
+    assert.equal(stdout, "X-a-b");
+  });
+
+  it("slug matches the slug embedded in progressFilePath", () => {
+    const suite = "【通用】中文-xyz(#999)";
+    const { stdout } = run(["suite-slug", "--suite", suite]);
+    assert.equal(stdout, slugify(suite));
+  });
+});
+
 // ── uiBlocksDir() ─────────────────────────────────────────────────────────────
 
 describe("uiBlocksDir()", () => {

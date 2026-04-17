@@ -527,6 +527,16 @@ program
     }
   });
 
+// ── suite-slug ────────────────────────────────────────────────────────────────
+
+program
+  .command("suite-slug")
+  .description("Print ASCII-safe slug for a suite name (used for ui-blocks subdir)")
+  .requiredOption("--suite <name>", "Test suite name")
+  .action((opts: { suite: string }) => {
+    process.stdout.write(slugify(opts.suite));
+  });
+
 if (import.meta.main) {
   program.parse(process.argv);
 }

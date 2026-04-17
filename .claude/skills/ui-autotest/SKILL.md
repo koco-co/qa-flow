@@ -160,6 +160,14 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 选定的项目名称记为 `{{project}}`，后续所有路径均使用该变量。
 
+**模板变量说明：**
+
+- `{{project}}`：项目名称（如 `dataAssets`）
+- `{{suite_name}}`：套件名称，来自 parse-cases.ts 输出的 `suite_name` 字段
+- `{{suite_slug}}`：suite 名称 slug 化结果。用法：`bun run .claude/scripts/ui-autotest-progress.ts suite-slug --suite "xxx"` 生成。用于 `.temp/ui-blocks/{{suite_slug}}/` 子目录隔离，避免同项目多 suite 并发覆盖。
+- `{{env}}`：环境标识（如 `ltqcdev`、`ci63`）
+- `{{id}}`：用例 ID（如 `t1`、`t2`）
+
 ### 读取配置
 
 读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块路径配置）。
@@ -413,7 +421,7 @@ bun run .claude/scripts/ui-autotest-progress.ts create \
 每个 sub-agent 输出代码块，保存到：
 
 ```
-workspace/{{project}}/.temp/ui-blocks/{{id}}.ts
+workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts
 ```
 
 代码块格式（import 路径须与 `script-writer-agent` 的 output_contract 一致）：
@@ -432,7 +440,7 @@ import { test, expect } from "../../fixtures/step-screenshot";
 
 ```bash
 bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field generated --value true
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field script_path --value "workspace/{{project}}/.temp/ui-blocks/{{id}}.ts"
+bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field script_path --value "workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts"
 ```
 
 断点恢复时，跳过 `generated === true` 的用例，只生成剩余的。
@@ -463,10 +471,10 @@ bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --s
 
 断点恢复时，若 `preconditions_ready === true`，跳过前置条件准备。
 
-对 `workspace/{{project}}/.temp/ui-blocks/` 中的每个代码块，逐条执行 Playwright 测试：
+对 `workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/` 中的每个代码块，逐条执行 Playwright 测试：
 
 ```bash
-ACTIVE_ENV={{env}} QA_PROJECT={{project}} bunx playwright test workspace/{{project}}/.temp/ui-blocks/{{id}}.ts --project=chromium --timeout=30000
+ACTIVE_ENV={{env}} QA_PROJECT={{project}} bunx playwright test workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts --project=chromium --timeout=30000
 ```
 
 **💾 进度持久化 — 自测状态**：
@@ -517,7 +525,7 @@ bun run .claude/scripts/ui-autotest-progress.ts update \
 ```json
 {
   "error_type": "timeout | locator | assertion | unknown",
-  "script_path": "workspace/{{project}}/.temp/ui-blocks/{{id}}.ts",
+  "script_path": "workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts",
   "stderr_last_20_lines": "...",
   "attempt": 1,
   "url": "{{url}}",
@@ -600,7 +608,7 @@ bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --s
 
 ```bash
 bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
-  --input workspace/{{project}}/.temp/ui-blocks/ \
+  --input workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/ \
   --output workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/
 ```
 
@@ -753,7 +761,7 @@ bun run .claude/scripts/plugin-loader.ts notify \
 
 | 类型                 | 路径                                                                        |
 | -------------------- | --------------------------------------------------------------------------- |
-| 临时代码块           | `workspace/{{project}}/.temp/ui-blocks/`                                    |
+| 临时代码块           | `workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/`                     |
 | E2E spec 文件        | `workspace/{{project}}/tests/YYYYMM/{{suite_name}}/`                        |
 | Playwright HTML 报告 | `workspace/{{project}}/reports/playwright/YYYYMM/{{suite_name}}/{{env}}/`   |
 | Bug 报告             | `workspace/{{project}}/reports/bugs/YYYYMM/ui-autotest-{{suite_name}}.html` |
