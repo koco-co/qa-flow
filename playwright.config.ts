@@ -58,7 +58,10 @@ const project = process.env.QA_PROJECT ?? "dataAssets";
 const reportDir = `workspace/${project}/reports/playwright/${yyyymm}/${suiteName}/${envLower}`;
 
 export default defineConfig({
-  testMatch: `workspace/${project}/tests/**/*.spec.ts`,
+  testMatch: [
+    `workspace/${project}/tests/**/*.spec.ts`,
+    `workspace/${project}/.temp/ui-blocks/**/*.ts`,
+  ],
   timeout: 60000,
   reporter: [
     ["line"],
