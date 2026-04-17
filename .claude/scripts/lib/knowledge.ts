@@ -271,3 +271,42 @@ export function confidenceGate(
   }
   return { allowed: false, reason: `Unknown confidence: ${confidence}` };
 }
+
+export function autoFixFrontmatter(
+  rawContent: string,
+  filePath: string,
+  today: string,
+): { fixed: boolean; content: string } {
+  const parsed = parseFrontmatter(rawContent);
+  if (parsed.frontmatter !== null) {
+    return { fixed: false, content: rawContent };
+  }
+
+  let type: Frontmatter["type"];
+  if (filePath.includes("/modules/")) type = "module";
+  else if (filePath.includes("/pitfalls/")) type = "pitfall";
+  else if (filePath.endsWith("overview.md")) type = "overview";
+  else if (filePath.endsWith("terms.md")) type = "term";
+  else type = "module";
+
+  let title = "";
+  const h1Match = rawContent.match(/^#\s+(.+)$/m);
+  if (h1Match) {
+    title = h1Match[1].trim();
+  } else {
+    const segments = filePath.split("/");
+    title = segments[segments.length - 1].replace(/\.md$/, "");
+  }
+
+  const fm: Frontmatter = {
+    title,
+    type,
+    tags: [],
+    confidence: "high",
+    source: "",
+    updated: today,
+  };
+
+  const content = serializeFrontmatter(fm) + "\n" + rawContent;
+  return { fixed: true, content };
+}

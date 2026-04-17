@@ -8,6 +8,7 @@ import {
   renderIndex,
   searchPitfalls,
   confidenceGate,
+  autoFixFrontmatter,
   type Frontmatter,
   type ContentTerm,
   type ContentOverview,
@@ -316,5 +317,68 @@ describe("confidenceGate", () => {
   it("rejects unknown confidence", () => {
     const r = confidenceGate("bogus", true);
     assert.equal(r.allowed, false);
+  });
+});
+
+describe("autoFixFrontmatter", () => {
+  it("injects minimal frontmatter into a phase-0 template module file", () => {
+    const raw = `# 某模块标题
+
+> 由 knowledge-keeper skill（阶段 1 实施后）维护。
+
+模块正文。
+`;
+    const result = autoFixFrontmatter(raw, "/path/workspace/p/knowledge/modules/foo.md", "2026-04-17");
+    assert.equal(result.fixed, true);
+    assert.ok(result.content.startsWith("---\n"));
+    assert.ok(result.content.includes("title: 某模块标题"));
+    assert.ok(result.content.includes("type: module"));
+    assert.ok(result.content.includes("tags: []"));
+    assert.ok(result.content.includes("confidence: high"));
+    assert.ok(result.content.includes("updated: 2026-04-17"));
+  });
+
+  it("does not modify file that already has frontmatter", () => {
+    const raw = `---
+title: 已有
+type: module
+tags: [x]
+confidence: high
+source: ""
+updated: 2026-04-17
+---
+
+body`;
+    const result = autoFixFrontmatter(raw, "/w/p/knowledge/modules/foo.md", "2099-01-01");
+    assert.equal(result.fixed, false);
+    assert.equal(result.content, raw);
+  });
+
+  it("infers type=pitfall from path", () => {
+    const raw = "# 坑标题\n正文\n";
+    const result = autoFixFrontmatter(raw, "/w/p/knowledge/pitfalls/bad.md", "2026-04-17");
+    assert.equal(result.fixed, true);
+    assert.ok(result.content.includes("type: pitfall"));
+  });
+
+  it("infers type=overview for overview.md", () => {
+    const raw = "# X 业务概览\n\n正文\n";
+    const result = autoFixFrontmatter(raw, "/w/p/knowledge/overview.md", "2026-04-17");
+    assert.equal(result.fixed, true);
+    assert.ok(result.content.includes("type: overview"));
+  });
+
+  it("infers type=term for terms.md", () => {
+    const raw = "# 术语表\n\n| 术语 | 中文 |\n";
+    const result = autoFixFrontmatter(raw, "/w/p/knowledge/terms.md", "2026-04-17");
+    assert.equal(result.fixed, true);
+    assert.ok(result.content.includes("type: term"));
+  });
+
+  it("falls back to filename when no H1 present", () => {
+    const raw = "没有 H1 的正文\n";
+    const result = autoFixFrontmatter(raw, "/w/p/knowledge/modules/my-module.md", "2026-04-17");
+    assert.equal(result.fixed, true);
+    assert.ok(result.content.includes("title: my-module"));
   });
 });
