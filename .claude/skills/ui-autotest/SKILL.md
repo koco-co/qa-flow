@@ -612,6 +612,8 @@ bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
   --output workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/
 ```
 
+> 提示：默认会执行 `tsc --noEmit` 对代码块做类型检查，如需跳过（调试时）可加 `--no-compile-check`。
+
 生成：
 
 - `smoke.spec.ts`：仅含 P0 用例（已验证通过）

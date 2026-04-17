@@ -211,4 +211,21 @@ describe("mergeSpecs compileCheck", () => {
       rmSync(tmpOut2, { recursive: true, force: true });
     }
   });
+
+  it("does not false-positive when block imports @playwright/test", () => {
+    const tmpIn = join(tmpdir(), `merge-realistic-${Date.now()}`);
+    mkdirSync(tmpIn, { recursive: true });
+    writeFileSync(
+      join(tmpIn, "t1.ts"),
+      '// META: {"id":"t1","priority":"P0","title":"x"}\nimport { test } from "@playwright/test";\ntest("x", async () => {});\n',
+      "utf-8",
+    );
+    const tmpOut = `${tmpIn}-out`;
+    try {
+      assert.doesNotThrow(() => mergeSpecs(tmpIn, tmpOut, { compileCheck: true }));
+    } finally {
+      rmSync(tmpIn, { recursive: true, force: true });
+      rmSync(tmpOut, { recursive: true, force: true });
+    }
+  });
 });
