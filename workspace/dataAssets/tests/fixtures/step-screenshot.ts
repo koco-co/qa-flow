@@ -23,7 +23,12 @@
  *   });
  */
 
-import { test as base, expect as baseExpect, type Locator, type Page } from "@playwright/test";
+import {
+  test as base,
+  expect as baseExpect,
+  type Locator,
+  type Page,
+} from "@playwright/test";
 
 export type StepFn = (
   name: string,
@@ -31,7 +36,8 @@ export type StepFn = (
   highlight?: Locator,
 ) => Promise<void>;
 
-const HIGHLIGHT_STYLE = "outline: 3px solid red !important; outline-offset: 2px !important;";
+const HIGHLIGHT_STYLE =
+  "outline: 3px solid red !important; outline-offset: 2px !important;";
 const STEP_BADGE_ID = "__qa_step_badge__";
 
 type StepCaptureState = {
@@ -182,7 +188,9 @@ export const test = base.extend<{ step: StepFn }>({
           // 无论成功或失败都截图（加超时保护避免 screenshot 挂起）
           const screenshot = await Promise.race([
             page.screenshot({ fullPage: false }).catch(() => null),
-            new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+            new Promise<null>((resolve) =>
+              setTimeout(() => resolve(null), 5000),
+            ),
           ]);
 
           // 移除高亮（加超时保护）
