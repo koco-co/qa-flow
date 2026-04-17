@@ -8,6 +8,7 @@ import {
   getRuleSetListRow,
   getSelectOptions,
   gotoRuleSetList,
+  isOfflineMode,
   openRuleSetEditor,
   saveRuleSet,
 } from "./rule-editor-helpers";
@@ -38,9 +39,13 @@ for (const datasource of ACTIVE_DATASOURCES) {
         async () => {
           await gotoRuleSetList(page);
           await deleteRuleSetsByTableNames(page, ["quality_test_str"]);
-          await page.reload();
-          await page.waitForLoadState("networkidle");
-          await page.waitForTimeout(1000);
+          if (isOfflineMode()) {
+            await gotoRuleSetList(page);
+          } else {
+            await page.reload();
+            await page.waitForLoadState("networkidle");
+            await page.waitForTimeout(1000);
+          }
           await expect(page.locator(".ant-table-row").first()).toBeVisible({ timeout: 10000 });
         },
         page.locator(".ant-table-tbody"),

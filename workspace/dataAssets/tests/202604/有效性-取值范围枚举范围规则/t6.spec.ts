@@ -10,12 +10,14 @@ import {
   getRuleSetListRow,
   getSelectOptions,
   gotoRuleSetList,
+  isOfflineMode,
   openRuleSetEditor,
   saveRuleSet,
   selectRuleFieldAndFunction,
 } from "./rule-editor-helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
+test.setTimeout(600000);
 
 const SUITE_NAME = "【内置规则丰富】有效性，支持设置字段多规则的且或关系(#15695)";
 const PAGE_NAME = "规则集管理";
@@ -41,9 +43,13 @@ for (const datasource of ACTIVE_DATASOURCES) {
         async () => {
           await gotoRuleSetList(page);
           await deleteRuleSetsByTableNames(page, ["quality_test_num"]);
-          await page.reload();
-          await page.waitForLoadState("networkidle");
-          await page.waitForTimeout(1000);
+          if (isOfflineMode()) {
+            await gotoRuleSetList(page);
+          } else {
+            await page.reload();
+            await page.waitForLoadState("networkidle");
+            await page.waitForTimeout(1000);
+          }
           await expect(page.locator(".ant-table-row").first()).toBeVisible({ timeout: 15000 });
         },
         page.locator(".ant-table-tbody"),

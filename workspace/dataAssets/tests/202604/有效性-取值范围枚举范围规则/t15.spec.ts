@@ -5,15 +5,13 @@ import {
   ensureRuleTasks,
   executeTaskFromList,
   getTaskDetailRuleCard,
-  getTableRowByTaskName,
   openTaskInstanceDetail,
+  waitForTaskMonitorReady,
   waitForTaskInstanceFinished,
 } from "./rule-task-helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 test.setTimeout(600000);
-
-const tableRows = ".ant-table-tbody tr:not(.ant-table-measure-row)";
 
 for (const datasource of ACTIVE_DATASOURCES) {
   test.describe(`${"【内置规则丰富】有效性，支持设置字段多规则的且或关系(#15695) - 规则任务管理"} - ${datasource.reportName}`, () => {
@@ -36,15 +34,12 @@ for (const datasource of ACTIVE_DATASOURCES) {
 
       await step("步骤1: 进入规则任务管理页面 → 任务列表显示已有任务数据行", async () => {
         await ensureRuleTasks(page, ["task_15695_and"]);
-        const taskTable = page.locator(tableRows).first();
-        await expect(taskTable).toBeVisible({ timeout: 10000 });
+        await waitForTaskMonitorReady(page, "task_15695_and", 30000);
       });
 
       await step(
         "步骤2: 点击task_15695_and的执行按钮 → 页面弹出提示信息，提示任务已提交执行",
         async () => {
-          const targetRow = page.locator(tableRows).filter({ hasText: "task_15695_and" }).first();
-          await expect(targetRow).toBeVisible({ timeout: 10000 });
           await executeTaskFromList(page, "task_15695_and");
         },
       );
@@ -64,7 +59,7 @@ for (const datasource of ACTIVE_DATASOURCES) {
             timeout: 10000,
           });
         },
-        getTableRowByTaskName(page, "task_15695_and"),
+        page.locator(".dtc-drawer:visible").last(),
       );
     });
   });

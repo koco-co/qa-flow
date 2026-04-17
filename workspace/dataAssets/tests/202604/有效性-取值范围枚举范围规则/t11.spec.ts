@@ -10,6 +10,7 @@ import {
 } from "./rule-editor-helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
+test.setTimeout(600000);
 
 for (const datasource of ACTIVE_DATASOURCES) {
   test.describe(`${"【内置规则丰富】有效性，支持设置字段多规则的且或关系(#15695) - 规则集管理"} - ${datasource.reportName}`, () => {

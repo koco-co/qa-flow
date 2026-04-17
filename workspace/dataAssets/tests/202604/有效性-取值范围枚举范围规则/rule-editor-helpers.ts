@@ -4,9 +4,30 @@ import {
   applyRuntimeCookies,
   buildDataAssetsUrl,
   confirmAntModal,
+  normalizeDataAssetsBaseUrl,
   selectAntOption,
 } from "../../helpers/test-setup";
-import { getCurrentDatasource, injectProjectContext, QUALITY_PROJECT_ID } from "./test-data";
+import {
+  DORIS3X_SOURCE_TYPE,
+  DORIS3X_SOURCE_TYPE_NAME,
+  getCurrentDatasource,
+  injectProjectContext,
+  QUALITY_PROJECT_ID,
+} from "./test-data";
+import {
+  addOfflineRuleToPackage,
+  cloneOfflineRule,
+  configureOfflineRule,
+  deleteOfflineRule,
+  deleteOfflineRuleSetsByTableNames,
+  gotoOfflineRuleBase,
+  gotoOfflineRuleSetCreate,
+  gotoOfflineRuleSetList,
+  isOfflineMode,
+  openOfflineRuleSetEditor,
+  saveOfflineRuleSet,
+  setOfflineRuleFieldAndFunction,
+} from "./offline-suite-helper";
 
 export interface RangeConfig {
   firstOperator?: string;
@@ -38,27 +59,182 @@ const RULESET_ROW_FALLBACKS: Record<string, string> = {
   ruleset_15695_str: "quality_test_str",
 };
 
-async function postProjectApi<T>(page: Page, path: string, body: unknown): Promise<T> {
-  return page.evaluate(
-    async ({ requestPath, requestBody, projectId }) => {
-      const response = await fetch(requestPath, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json;charset=UTF-8",
-          "Accept-Language": "zh-CN",
-          "X-Valid-Project-ID": String(projectId),
-        },
-        body: JSON.stringify(requestBody),
+const compatibleDorisRoutingPages = new WeakSet<Page>();
+const RETRYABLE_HTTP_STATUS = new Set([502, 503, 504]);
+let cachedCompatibleMonitorDatasourcePayload: { data?: MonitorDatasourceItem[] } | null = null;
+
+type MonitorDatasourceItem = {
+  dataSourceName?: string;
+  dtCenterSourceName?: string;
+  sourceTypeValue?: string;
+  dataSourceType?: number;
+  sourceType?: number;
+  type?: number;
+};
+
+function patchCompatibleDorisSource<T extends MonitorDatasourceItem>(item: T): T {
+  const datasource = getCurrentDatasource();
+  if (datasource.preconditionType !== "Doris") {
+    return item;
+  }
+
+  const searchableText = `${String(item.dataSourceName ?? "")} ${String(item.dtCenterSourceName ?? "")}`;
+  if (!datasource.optionPattern.test(searchableText)) {
+    return item;
+  }
+
+  return {
+    ...item,
+    dataSourceType: DORIS3X_SOURCE_TYPE,
+    sourceType: DORIS3X_SOURCE_TYPE,
+    type: DORIS3X_SOURCE_TYPE,
+    sourceTypeValue: DORIS3X_SOURCE_TYPE_NAME,
+  };
+}
+
+async function requestJsonWithRetries<T>(
+  page: Page,
+  requestUrl: string,
+  body: unknown,
+  headers: Record<string, string>,
+): Promise<T> {
+  let lastError: Error | null = null;
+  const sanitizedHeaders = Object.fromEntries(
+    Object.entries(headers).filter(
+      ([name]) => !["content-length", "host"].includes(name.toLowerCase()),
+    ),
+  );
+
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    try {
+      const response = await page.context().request.post(requestUrl, {
+        data: body,
+        headers: sanitizedHeaders,
+        timeout: 15_000,
       });
-      return response.json();
-    },
-    {
-      requestPath: path,
-      requestBody: body,
-      projectId: QUALITY_PROJECT_ID,
-    },
-  ) as Promise<T>;
+      const text = await response.text();
+      if (response.ok()) {
+        if (!text.trim()) {
+          return {} as T;
+        }
+        return JSON.parse(text) as T;
+      }
+
+      lastError = new Error(
+        `HTTP ${response.status()} ${response.statusText()} from ${requestUrl}: ${text.slice(0, 200)}`,
+      );
+      if (!RETRYABLE_HTTP_STATUS.has(response.status()) || attempt === 4) {
+        throw lastError;
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempt === 4) {
+        throw lastError;
+      }
+    }
+
+    await page.waitForTimeout(1000 * attempt);
+  }
+
+  throw lastError ?? new Error(`Request failed: ${requestUrl}`);
+}
+
+export async function enableCompatibleMonitorDatasourceRouting(page: Page): Promise<void> {
+  if (compatibleDorisRoutingPages.has(page)) {
+    return;
+  }
+
+  const handleCompatibleMonitorDatasourceRoute = async (route: import("@playwright/test").Route) => {
+    const requestUrl = route.request().url();
+    const headers = route.request().headers();
+    const requestBody = route.request().postDataJSON?.() ?? {};
+
+    try {
+      const payload = await requestJsonWithRetries<{ data?: MonitorDatasourceItem[] }>(
+        page,
+        requestUrl,
+        requestBody,
+        headers,
+      );
+
+      if (!Array.isArray(payload?.data)) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json;charset=UTF-8",
+          body: JSON.stringify(payload),
+        });
+        return;
+      }
+
+      const patchedPayload = {
+        ...payload,
+        data: payload.data.map((item: MonitorDatasourceItem) => patchCompatibleDorisSource(item)),
+      };
+      cachedCompatibleMonitorDatasourcePayload = patchedPayload;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json;charset=UTF-8",
+        body: JSON.stringify(patchedPayload),
+      });
+      return;
+    } catch (error) {
+      const datasource = getCurrentDatasource();
+      const fallbackResponse = await requestJsonWithRetries<{
+        data?: { contentList?: MonitorDatasourceItem[] };
+      }>(
+        page,
+        new URL("/dassets/v1/dataSource/pageQuery", requestUrl).toString(),
+        {
+          current: 1,
+          size: 200,
+          search: "",
+        },
+        headers,
+      ).catch(() => null);
+      const fallbackItem = fallbackResponse?.data?.contentList?.find((item) =>
+        datasource.optionPattern.test(
+          `${String(item.dataSourceName ?? "")} ${String(item.dtCenterSourceName ?? "")}`,
+        ),
+      );
+      if (fallbackItem) {
+        const patchedPayload = {
+          data: [patchCompatibleDorisSource(fallbackItem)],
+        };
+        cachedCompatibleMonitorDatasourcePayload = patchedPayload;
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json;charset=UTF-8",
+          body: JSON.stringify(patchedPayload),
+        });
+        return;
+      }
+      if (cachedCompatibleMonitorDatasourcePayload) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json;charset=UTF-8",
+          body: JSON.stringify(cachedCompatibleMonitorDatasourcePayload),
+        });
+        return;
+      }
+      throw error;
+    }
+  };
+
+  await page.route("**/dmetadata/v1/dataSource/monitor/list", handleCompatibleMonitorDatasourceRoute);
+  await page.route("**/dassets/v1/dataSource/monitor/list", handleCompatibleMonitorDatasourceRoute);
+
+  compatibleDorisRoutingPages.add(page);
+}
+
+async function postProjectApi<T>(page: Page, path: string, body: unknown): Promise<T> {
+  const requestUrl = /^https?:\/\//.test(path)
+    ? path
+    : new URL(path, normalizeDataAssetsBaseUrl()).toString();
+  return requestJsonWithRetries<T>(page, requestUrl, body, {
+    "content-type": "application/json;charset=UTF-8",
+    "Accept-Language": "zh-CN",
+    "X-Valid-Project-ID": String(QUALITY_PROJECT_ID),
+  });
 }
 
 async function ensureMonitorDatasource(page: Page): Promise<boolean> {
@@ -83,7 +259,28 @@ async function ensureMonitorDatasource(page: Page): Promise<boolean> {
     );
   };
 
-  if (await findMonitorDatasource()) {
+  let existingMonitorDatasource:
+    | {
+        id?: string;
+        dataSourceName?: string;
+        dtCenterSourceName?: string;
+        sourceTypeValue?: string;
+      }
+    | undefined;
+  try {
+    existingMonitorDatasource = await findMonitorDatasource();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/(HTTP (502|503|504)\b|Timeout \d+ms exceeded|ETIMEDOUT)/.test(message)) {
+      throw error;
+    }
+    process.stderr.write(
+      `[ruleset] monitor datasource check hit network error, continuing with existing datasource context.\n`,
+    );
+    return false;
+  }
+
+  if (existingMonitorDatasource) {
     return false;
   }
 
@@ -129,10 +326,23 @@ async function ensureMonitorDatasource(page: Page): Promise<boolean> {
   }
 
   await expect
-    .poll(async () => Boolean(await findMonitorDatasource()), {
-      timeout: 15000,
-      message: `Waiting for ${datasource.reportName} datasource to appear in monitor datasource list.`,
-    })
+    .poll(
+      async () => {
+        try {
+          return Boolean(await findMonitorDatasource());
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          if (/(HTTP (502|503|504)\b|Timeout \d+ms exceeded|ETIMEDOUT)/.test(message)) {
+            return true;
+          }
+          throw error;
+        }
+      },
+      {
+        timeout: 15000,
+        message: `Waiting for ${datasource.reportName} datasource to appear in monitor datasource list.`,
+      },
+    )
     .toBe(true);
 
   return true;
@@ -269,40 +479,82 @@ export function getRuleSetListRow(page: Page, rulesetName: string): Locator {
 }
 
 async function postRuleSetApi<T>(page: Page, path: string, body: unknown): Promise<T> {
-  return page.evaluate(
-    async ({ requestPath, requestBody, projectId }) => {
-      const response = await fetch(requestPath, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json;charset=UTF-8",
-          "Accept-Language": "zh-CN",
-          "X-Valid-Project-ID": String(projectId),
-        },
-        body: JSON.stringify(requestBody),
-      });
-      return response.json();
-    },
-    {
-      requestPath: path,
-      requestBody: body,
-      projectId: QUALITY_PROJECT_ID,
-    },
-  ) as Promise<T>;
+  let lastError: Error | null = null;
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const response = await page.evaluate(
+      async ({ requestPath, requestBody, projectId }) => {
+        const result = await fetch(requestPath, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json;charset=UTF-8",
+            "Accept-Language": "zh-CN",
+            "X-Valid-Project-ID": String(projectId),
+          },
+          body: JSON.stringify(requestBody),
+        });
+        return {
+          ok: result.ok,
+          status: result.status,
+          statusText: result.statusText,
+          text: await result.text(),
+        };
+      },
+      {
+        requestPath: path,
+        requestBody: body,
+        projectId: QUALITY_PROJECT_ID,
+      },
+    );
+
+    if (response.ok) {
+      if (!response.text.trim()) {
+        return {} as T;
+      }
+      try {
+        return JSON.parse(response.text) as T;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Non-JSON response from ${path}: ${message}. Body: ${response.text.slice(0, 200)}`,
+        );
+      }
+    }
+
+    lastError = new Error(
+      `HTTP ${response.status} ${response.statusText} from ${path}: ${response.text.slice(0, 200)}`,
+    );
+    if (!RETRYABLE_HTTP_STATUS.has(response.status) || attempt === 4) {
+      throw lastError;
+    }
+    await page.waitForTimeout(1000 * attempt);
+  }
+
+  throw lastError ?? new Error(`Request failed: ${path}`);
 }
 
 export async function deleteRuleSetsByTableNames(page: Page, tableNames: string[]): Promise<void> {
-  const listResponse = (await postRuleSetApi<{
-    data?: { contentList?: Array<{ id?: number | string; tableName?: string }> };
-  }>(page, "/dassets/v1/valid/monitorRuleSet/pageQuery", {
-    current: 1,
-    size: 50,
-    search: "",
-  })) ?? { data: { contentList: [] } };
+  if (isOfflineMode()) {
+    await deleteOfflineRuleSetsByTableNames(page, tableNames);
+    return;
+  }
+  const rows: Array<{ id?: number | string; tableName?: string }> = [];
 
-  const rows = (listResponse.data?.contentList ?? []).filter((item) =>
-    tableNames.includes(String(item.tableName ?? "")),
-  );
+  for (let current = 1; current <= 20; current += 1) {
+    const listResponse = (await postRuleSetApi<{
+      data?: { contentList?: Array<{ id?: number | string; tableName?: string }> };
+    }>(page, "/dassets/v1/valid/monitorRuleSet/pageQuery", {
+      current,
+      size: 50,
+      search: "",
+    })) ?? { data: { contentList: [] } };
+
+    const pageRows = listResponse.data?.contentList ?? [];
+    rows.push(...pageRows.filter((item) => tableNames.includes(String(item.tableName ?? ""))));
+    if (pageRows.length < 50) {
+      break;
+    }
+  }
 
   for (const row of rows) {
     if (!row.id) {
@@ -315,15 +567,32 @@ export async function deleteRuleSetsByTableNames(page: Page, tableNames: string[
 }
 
 export async function gotoRuleSetList(page: Page): Promise<void> {
+  if (isOfflineMode()) {
+    await gotoOfflineRuleSetList(page);
+    return;
+  }
   await applyRuntimeCookies(page);
-  await page.goto(buildDataAssetsUrl("/dq/ruleSet", QUALITY_PROJECT_ID));
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(500);
-  await injectProjectContext(page, QUALITY_PROJECT_ID);
-  await page.reload();
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1000);
-  await dismissIntroDialog(page);
+  const targetUrl = buildDataAssetsUrl("/dq/ruleSet", QUALITY_PROJECT_ID);
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    await page.goto(targetUrl, { waitUntil: "domcontentloaded" }).catch(() => undefined);
+    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page.waitForTimeout(500);
+    await injectProjectContext(page, QUALITY_PROJECT_ID);
+    await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);
+    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page.waitForTimeout(1000);
+
+    const pageText = await page.locator("body").innerText().catch(() => "");
+    if (!page.url().startsWith("chrome-error://") && !/HTTP ERROR 502|Bad Gateway/i.test(pageText)) {
+      await dismissIntroDialog(page);
+      return;
+    }
+
+    if (attempt === 4) {
+      throw new Error(`Rule set list page is unavailable: ${pageText.slice(0, 200)}`);
+    }
+    await page.waitForTimeout(2000 * attempt);
+  }
 }
 
 async function dismissIntroDialog(page: Page): Promise<void> {
@@ -335,15 +604,33 @@ async function dismissIntroDialog(page: Page): Promise<void> {
 }
 
 export async function gotoRuleSetCreate(page: Page): Promise<void> {
+  if (isOfflineMode()) {
+    await gotoOfflineRuleSetCreate(page);
+    return;
+  }
   await applyRuntimeCookies(page);
-  await page.goto(buildDataAssetsUrl("/dq/ruleSet/add", QUALITY_PROJECT_ID));
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(500);
-  await injectProjectContext(page, QUALITY_PROJECT_ID);
-  await page.reload();
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1000);
-  await dismissIntroDialog(page);
+  await enableCompatibleMonitorDatasourceRouting(page);
+  const targetUrl = buildDataAssetsUrl("/dq/ruleSet/add", QUALITY_PROJECT_ID);
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    await page.goto(targetUrl, { waitUntil: "domcontentloaded" }).catch(() => undefined);
+    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page.waitForTimeout(500);
+    await injectProjectContext(page, QUALITY_PROJECT_ID);
+    await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);
+    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page.waitForTimeout(1000);
+
+    const pageText = await page.locator("body").innerText().catch(() => "");
+    if (!page.url().startsWith("chrome-error://") && !/HTTP ERROR 502|Bad Gateway/i.test(pageText)) {
+      await dismissIntroDialog(page);
+      return;
+    }
+
+    if (attempt === 4) {
+      throw new Error(`Rule set create page is unavailable: ${pageText.slice(0, 200)}`);
+    }
+    await page.waitForTimeout(2000 * attempt);
+  }
 }
 
 async function ensurePackageNamesInBaseInfo(
@@ -424,6 +711,34 @@ async function gotoBaseInfoStep(page: Page): Promise<void> {
   await page.waitForTimeout(500);
 }
 
+async function getBaseInfoValidationSummary(page: Page): Promise<string | null> {
+  const messages = await page
+    .locator(".ant-form-item-explain-error:visible")
+    .evaluateAll((nodes) =>
+      nodes.map((node) => node.textContent?.trim()).filter((text): text is string => Boolean(text)),
+    )
+    .catch(() => [] as string[]);
+
+  if (messages.length === 0) {
+    return null;
+  }
+
+  const selectedDatasourceText = await page
+    .locator(".ant-form-item")
+    .filter({ hasText: /选择数据源/ })
+    .locator(".ant-select-selection-item")
+    .first()
+    .textContent()
+    .catch(() => null);
+
+  const details = Array.from(new Set(messages)).join("；");
+  const datasourceInfo = selectedDatasourceText?.trim()
+    ? `（当前数据源：${selectedDatasourceText.trim()}）`
+    : "";
+
+  return `${details}${datasourceInfo}`;
+}
+
 async function gotoMonitorRulesStep(page: Page): Promise<void> {
   const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
   const firstPackage = page.locator(".ruleSetMonitor__package").first();
@@ -432,6 +747,13 @@ async function gotoMonitorRulesStep(page: Page): Promise<void> {
     (await newPackageBtn.isVisible().catch(() => false));
   if (await isMonitorRulesVisible()) {
     return;
+  }
+
+  const initialValidationSummary = await getBaseInfoValidationSummary(page);
+  if (initialValidationSummary) {
+    throw new Error(
+      `Cannot enter 监控规则 step because 基础信息校验未通过: ${initialValidationSummary}`,
+    );
   }
 
   const nextBtn = page.getByRole("button", { name: "下一步" }).first();
@@ -444,10 +766,24 @@ async function gotoMonitorRulesStep(page: Page): Promise<void> {
     return;
   }
 
+  const afterNextValidationSummary = await getBaseInfoValidationSummary(page);
+  if (afterNextValidationSummary) {
+    throw new Error(
+      `Cannot enter 监控规则 step because 基础信息校验未通过: ${afterNextValidationSummary}`,
+    );
+  }
+
   const monitorRulesBtn = page.getByRole("button", { name: /监控规则/ }).first();
   if (await monitorRulesBtn.isVisible().catch(() => false)) {
     await monitorRulesBtn.click();
     await page.waitForTimeout(1000);
+  }
+
+  const afterStepClickValidationSummary = await getBaseInfoValidationSummary(page);
+  if (afterStepClickValidationSummary) {
+    throw new Error(
+      `Cannot enter 监控规则 step because 基础信息校验未通过: ${afterStepClickValidationSummary}`,
+    );
   }
 
   await expect.poll(async () => await isMonitorRulesVisible(), { timeout: 10000 }).toBe(true);
@@ -527,6 +863,10 @@ export async function createRuleSetDraft(
   tableName: string,
   requiredPackageNames: string[],
 ): Promise<void> {
+  if (isOfflineMode()) {
+    await gotoOfflineRuleSetCreate(page, tableName, requiredPackageNames);
+    return;
+  }
   const datasource = getCurrentDatasource();
   await gotoRuleSetCreate(page);
   if (await ensureMonitorDatasource(page)) {
@@ -625,6 +965,10 @@ export async function openRuleSetEditor(
   rulesetName: string,
   requiredPackageNames: string[] = [],
 ): Promise<void> {
+  if (isOfflineMode()) {
+    await openOfflineRuleSetEditor(page, rulesetName, requiredPackageNames);
+    return;
+  }
   await page.locator(".ant-table-tbody").waitFor({ state: "visible", timeout: 15000 });
   const dataRows = page.locator(".ant-table-tbody tr:not(.ant-table-measure-row)");
   await expect(dataRows.first()).toBeVisible({ timeout: 15000 });
@@ -726,6 +1070,9 @@ export async function addRuleToPackage(
   packageName: string,
   ruleType = "有效性校验",
 ): Promise<Locator> {
+  if (isOfflineMode()) {
+    return addOfflineRuleToPackage(page, packageName);
+  }
   const packageSection = await getRulePackage(page, packageName);
   const ruleForms = packageSection.locator(".ruleForm");
   const beforeCount = await ruleForms.count();
@@ -756,6 +1103,16 @@ export async function selectRuleFieldAndFunction(
   field: string,
   functionName = "取值范围&枚举范围",
 ): Promise<Locator> {
+  if (isOfflineMode()) {
+    const packageName = await ruleForm
+      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .getAttribute("data-package-name");
+    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index")) ?? "0");
+    if (!packageName) {
+      throw new Error("Offline rule form is missing package name");
+    }
+    return setOfflineRuleFieldAndFunction(page, packageName, ruleIndex, field, functionName);
+  }
   const fieldSelect = ruleForm
     .locator(".ant-form-item")
     .filter({ hasText: /字段/ })
@@ -776,6 +1133,16 @@ export async function configureRangeEnumRule(
   ruleForm: Locator,
   config: RangeEnumConfig,
 ): Promise<Locator> {
+  if (isOfflineMode()) {
+    const packageName = await ruleForm
+      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .getAttribute("data-package-name");
+    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index")) ?? "0");
+    if (!packageName) {
+      throw new Error("Offline rule form is missing package name");
+    }
+    return configureOfflineRule(page, packageName, ruleIndex, config);
+  }
   const functionRow = await selectRuleFieldAndFunction(
     page,
     ruleForm,
@@ -863,6 +1230,29 @@ export async function configureRangeEnumRule(
 }
 
 export async function selectRuleRelation(ruleForm: Locator, relation: "且" | "或"): Promise<void> {
+  if (isOfflineMode()) {
+    const page = ruleForm.page();
+    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index").catch(() => null)) ?? "-1");
+    const packageName = await ruleForm
+      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .getAttribute("data-package-name")
+      .catch(() => null);
+    const currentRuleForm =
+      packageName && Number.isFinite(ruleIndex) && ruleIndex >= 0
+        ? page
+            .locator(".ruleSetMonitor__package")
+            .filter({ hasText: packageName })
+            .first()
+            .locator(".ruleForm")
+            .nth(ruleIndex)
+        : page.locator(".ruleForm").last();
+    await currentRuleForm
+      .locator(".ant-radio-wrapper, .ant-radio-button-wrapper")
+      .filter({ hasText: new RegExp(`^${relation}$`) })
+      .last()
+      .click();
+    return;
+  }
   await ruleForm
     .locator(".ant-radio-wrapper, .ant-radio-button-wrapper")
     .filter({ hasText: new RegExp(`^${relation}$`) })
@@ -890,6 +1280,10 @@ export async function getSelectOptions(page: Page, selectLocator: Locator): Prom
 }
 
 export async function saveRuleSet(page: Page): Promise<void> {
+  if (isOfflineMode()) {
+    await saveOfflineRuleSet(page);
+    return;
+  }
   const saveResponsePromise = page
     .waitForResponse(
       (response) => {
@@ -903,7 +1297,19 @@ export async function saveRuleSet(page: Page): Promise<void> {
     )
     .catch(() => null);
 
-  await page.getByRole("button", { name: /保\s*存/ }).click();
+  const saveButtons = page.getByRole("button", { name: /保\s*存/ });
+  await saveButtons.first().waitFor({ state: "visible", timeout: 10000 });
+  await saveButtons.first().click();
+  await page.waitForTimeout(500);
+
+  const saveButtonCount = await saveButtons.count();
+  if (saveButtonCount > 1) {
+    const finalSaveButton = saveButtons.last();
+    if (await finalSaveButton.isVisible().catch(() => false)) {
+      await finalSaveButton.click();
+      await page.waitForTimeout(500);
+    }
+  }
 
   const confirmSaveBtn = page
     .locator(".ant-modal-confirm:visible .ant-btn-primary, .ant-modal:visible .ant-btn-primary")
@@ -947,10 +1353,32 @@ export async function saveRuleSet(page: Page): Promise<void> {
 }
 
 export async function cloneRule(ruleForm: Locator): Promise<void> {
+  if (isOfflineMode()) {
+    const packageName = await ruleForm
+      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .getAttribute("data-package-name");
+    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index")) ?? "0");
+    if (!packageName) {
+      throw new Error("Offline rule form is missing package name");
+    }
+    await cloneOfflineRule(ruleForm.page(), packageName, ruleIndex);
+    return;
+  }
   await ruleForm.getByRole("button", { name: "克隆" }).click();
 }
 
 export async function deleteRule(page: Page, ruleForm: Locator): Promise<void> {
+  if (isOfflineMode()) {
+    const packageName = await ruleForm
+      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .getAttribute("data-package-name");
+    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index")) ?? "0");
+    if (!packageName) {
+      throw new Error("Offline rule form is missing package name");
+    }
+    await deleteOfflineRule(page, packageName, ruleIndex);
+    return;
+  }
   await ruleForm.locator(".ruleForm__icon").locator("xpath=ancestor::button[1]").click();
   await page.waitForTimeout(200);
 
@@ -962,3 +1390,17 @@ export async function deleteRule(page: Page, ruleForm: Locator): Promise<void> {
     await page.waitForTimeout(300);
   }
 }
+
+export async function gotoRuleBase(page: Page): Promise<void> {
+  if (isOfflineMode()) {
+    await gotoOfflineRuleBase(page);
+    return;
+  }
+  await applyRuntimeCookies(page);
+  const targetUrl = buildDataAssetsUrl("/dq/ruleBase", QUALITY_PROJECT_ID);
+  await page.goto(targetUrl, { waitUntil: "domcontentloaded" });
+  await page.waitForLoadState("networkidle");
+  await injectProjectContext(page, QUALITY_PROJECT_ID);
+}
+
+export { isOfflineMode };

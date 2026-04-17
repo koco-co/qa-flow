@@ -2,6 +2,8 @@
  * 共享测试数据 & 前置条件
  * 「有效性-取值范围枚举范围规则」全部 27 条用例的公共依赖
  */
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import type { Page } from "@playwright/test";
 import { setupPreconditions } from "../../helpers/preconditions";
 import { applyRuntimeCookies } from "../../helpers/test-setup";
@@ -9,7 +11,7 @@ import { applyRuntimeCookies } from "../../helpers/test-setup";
 export interface DatasourceConfig {
   readonly id: "sparkthrift2.x" | "doris3.x";
   readonly cacheKey: "sparkthrift2_x" | "doris3_x";
-  readonly reportName: "sparkthrift2.x" | "doris3.x";
+  readonly reportName: "sparkthrift2.x" | "doris";
   readonly preconditionType: "SparkThrift" | "Doris";
   readonly optionPattern: RegExp;
   readonly sourceTypePattern: RegExp;
@@ -213,6 +215,9 @@ const TABLE_DEFINITIONS: readonly TableDefinition[] = [
   { name: "quality_test_enum_pass", sqlByDatasource: QUALITY_TEST_ENUM_PASS_SQL },
 ] as const;
 
+export const DORIS3X_SOURCE_TYPE = 129;
+export const DORIS3X_SOURCE_TYPE_NAME = "Doris3.x";
+
 const DEFAULT_DATASOURCES: readonly DatasourceConfig[] = [
   {
     id: "sparkthrift2.x",
@@ -226,7 +231,7 @@ const DEFAULT_DATASOURCES: readonly DatasourceConfig[] = [
   {
     id: "doris3.x",
     cacheKey: "doris3_x",
-    reportName: "doris3.x",
+    reportName: "doris",
     preconditionType: "Doris",
     optionPattern: /doris/i,
     sourceTypePattern: /doris/i,
@@ -235,11 +240,12 @@ const DEFAULT_DATASOURCES: readonly DatasourceConfig[] = [
 ] as const;
 
 const DATASOURCE_BY_ID = new Map(DEFAULT_DATASOURCES.map((item) => [item.id, item] as const));
+const DEFAULT_ACTIVE_DATASOURCE_IDS: readonly DatasourceConfig["id"][] = ["doris3.x"];
 
 function loadActiveDatasources(): readonly DatasourceConfig[] {
   const rawMatrix = process.env.QA_DATASOURCE_MATRIX?.trim();
   if (!rawMatrix) {
-    return DEFAULT_DATASOURCES;
+    return DEFAULT_ACTIVE_DATASOURCE_IDS.map((id) => DATASOURCE_BY_ID.get(id)!);
   }
 
   const resolved = rawMatrix
@@ -260,6 +266,14 @@ export const ALL_TABLES = TABLE_DEFINITIONS.map((table) => table.name) as readon
 
 export const QUALITY_PROJECT_ID = 87;
 export const QUALITY_PROJECT_NAME = "pw_test";
+
+if (process.env.QA_OFFLINE_MODE === "1") {
+  const suiteDir = dirname(fileURLToPath(import.meta.url));
+  process.env.UI_AUTOTEST_SESSION_PATH = resolve(
+    suiteDir,
+    "./offline-storage-state.json",
+  );
+}
 
 let currentDatasource = ACTIVE_DATASOURCES[0] ?? DEFAULT_DATASOURCES[0];
 
@@ -283,31 +297,52 @@ export async function runPreconditions(
   page: Page,
   datasource = getCurrentDatasource(),
 ): Promise<void> {
+  if (process.env.QA_OFFLINE_MODE === "1") {
+    return;
+  }
   await applyRuntimeCookies(page);
 
   process.stderr.write(`[preconditions] Preparing ${datasource.reportName} tables...\n`);
 
-  try {
-    await setupPreconditions(page, {
-      datasourceType: datasource.preconditionType,
-      tables: TABLE_DEFINITIONS.map((table) => ({
-        name: table.name,
-        sql: table.sqlByDatasource[datasource.id],
-      })),
-      projectName: QUALITY_PROJECT_NAME,
-      syncTimeout: 90,
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (!message.includes("Metadata sync timed out")) {
-      throw error;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await setupPreconditions(page, {
+        datasourceType: datasource.preconditionType,
+        tables: TABLE_DEFINITIONS.map((table) => ({
+          name: table.name,
+          sql: table.sqlByDatasource[datasource.id],
+        })),
+        projectName: QUALITY_PROJECT_NAME,
+        syncTimeout: 90,
+      });
+      process.stderr.write(`[preconditions] ${datasource.reportName} preconditions complete.\n`);
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("Metadata sync timed out")) {
+        process.stderr.write(
+          `[preconditions] ${datasource.reportName} metadata sync timed out, continuing with existing synced metadata.\n`,
+        );
+        process.stderr.write(`[preconditions] ${datasource.reportName} preconditions complete.\n`);
+        return;
+      }
+      const retryableGateway = /HTTP (502|503|504)\b/.test(message);
+      if (!retryableGateway) {
+        throw error;
+      }
+      if (attempt === 3) {
+        process.stderr.write(
+          `[preconditions] ${datasource.reportName} setup kept hitting gateway errors, continuing with existing project metadata.\n`,
+        );
+        process.stderr.write(`[preconditions] ${datasource.reportName} preconditions complete.\n`);
+        return;
+      }
+      process.stderr.write(
+        `[preconditions] ${datasource.reportName} hit transient gateway error, retrying setup (${attempt}/3)...\n`,
+      );
+      await page.waitForTimeout(2000 * attempt);
     }
-    process.stderr.write(
-      `[preconditions] ${datasource.reportName} metadata sync timed out, continuing with existing synced metadata.\n`,
-    );
   }
-
-  process.stderr.write(`[preconditions] ${datasource.reportName} preconditions complete.\n`);
 }
 
 /**

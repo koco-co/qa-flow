@@ -10,6 +10,7 @@ import {
 import {
   createRuleSetForTable,
   deleteRuleSetsByTableNames,
+  enableCompatibleMonitorDatasourceRouting,
   gotoRuleSetList,
   type RangeEnumConfig,
 } from "./rule-editor-helpers";
@@ -20,6 +21,19 @@ import {
   resolveVariantName,
   runPreconditions,
 } from "./test-data";
+import {
+  ensureOfflineTasks,
+  gotoOfflineQualityReport,
+  gotoOfflineRuleTaskList,
+  gotoOfflineValidationResults,
+  isOfflineMode,
+  markOfflineReportReady,
+  markOfflineTaskExecuted,
+  openOfflineQualityReportDetail,
+  openOfflineQualityReportRuleDetail,
+  openOfflineTaskInstanceDetail,
+  openOfflineTaskRuleDetailDataDrawer,
+} from "./offline-suite-helper";
 
 const TABLE_ROWS = ".ant-table-tbody tr:not(.ant-table-measure-row)";
 const TASK_API_PAGE_SIZE = 200;
@@ -200,6 +214,36 @@ type MonitorListRow = {
   ruleName?: string;
   monitorName?: string;
   name?: string;
+  status?: number;
+  jobKey?: string;
+  execEndTime?: string | null;
+  execTimeStr?: string;
+};
+
+type ProjectDatasourceRow = {
+  id?: number | string;
+  dataSourceName?: string;
+  dtCenterSourceName?: string;
+  sourceTypeValue?: string;
+};
+
+type RulePackageRow = {
+  packageId?: number | string;
+  packageName?: string;
+  tableId?: number | string;
+};
+
+type RuleTypeRow = {
+  ruleType?: number | string;
+};
+
+type ImportedRuleRow = Record<string, unknown> & {
+  standardRules?: Array<Record<string, unknown>>;
+  standardRuleList?: Array<Record<string, unknown>>;
+  customSql?: string;
+  selectDataSql?: string;
+  customizeSql?: string;
+  ruleStrength?: number | string;
 };
 
 type ConfigReportMonitor = {
@@ -230,6 +274,12 @@ type ConfigReportRow = {
 };
 
 type TaskDetailPayload = {
+  dataSourceId?: number | string;
+  tableName?: string;
+  schema?: string;
+  catalogName?: string;
+  sourceType?: number | string;
+  ruleName?: string;
   monitorReportDetailDTO?: ConfigReportRow;
 };
 
@@ -239,9 +289,19 @@ type GeneratedReportRow = {
   status?: number;
 };
 
+type BatchRunRecord = {
+  jobId?: string;
+  runNum?: number;
+  status?: number;
+  execStartTime?: number;
+  execEndTime?: number;
+  engineJobId?: string;
+};
+
 const GENERATED_REPORT_STATUS_SUCCESS = 2;
 const GENERATED_REPORT_STATUS_FAILED = 3;
 const GENERATED_REPORT_STATUS_KEEP_RUNNING = 4;
+const RETRYABLE_HTTP_STATUS = new Set([502, 503, 504]);
 
 function buildTaskApiUrl(path: string): string {
   if (/^https?:\/\//.test(path)) {
@@ -253,49 +313,77 @@ function buildTaskApiUrl(path: string): string {
 }
 
 async function postTaskApi<T>(page: Page, path: string, body: unknown): Promise<T> {
-  return page.evaluate(
-    async ({ requestUrl, requestBody, projectId }) => {
-      const response = await fetch(requestUrl, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json;charset=UTF-8",
-          "Accept-Language": "zh-CN",
-          "X-Valid-Project-ID": String(projectId),
-        },
-        body: JSON.stringify(requestBody),
-      });
-      return response.json();
-    },
-    {
-      requestUrl: buildTaskApiUrl(path),
-      requestBody: body,
-      projectId: QUALITY_PROJECT_ID,
-    },
-  ) as Promise<T>;
+  return postJsonApi<T>(page, buildTaskApiUrl(path), body, {
+    "X-Valid-Project-ID": String(QUALITY_PROJECT_ID),
+  });
 }
 
 async function postQualityReportApi<T>(page: Page, path: string, body: unknown): Promise<T> {
-  return page.evaluate(
-    async ({ requestUrl, requestBody, projectId }) => {
-      const response = await fetch(requestUrl, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json;charset=UTF-8",
-          "Accept-Language": "zh-CN",
-          "X-Valid-Project-ID": String(projectId),
-        },
-        body: JSON.stringify(requestBody),
-      });
-      return response.json();
-    },
-    {
-      requestUrl: buildTaskApiUrl(path),
-      requestBody: body,
-      projectId: QUALITY_PROJECT_ID,
-    },
-  ) as Promise<T>;
+  return postJsonApi<T>(page, buildTaskApiUrl(path), body, {
+    "X-Valid-Project-ID": String(QUALITY_PROJECT_ID),
+  });
+}
+
+async function postBatchApi<T>(page: Page, path: string, body: unknown): Promise<T> {
+  return postJsonApi<T>(page, path, body);
+}
+
+async function postJsonApi<T>(
+  page: Page,
+  requestUrl: string,
+  requestBody: unknown,
+  extraHeaders?: Record<string, string>,
+): Promise<T> {
+  let lastError: Error | null = null;
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const response = await page.evaluate(
+      async ({ url, body, headers }) => {
+        const result = await fetch(url, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json;charset=UTF-8",
+            "Accept-Language": "zh-CN",
+            ...headers,
+          },
+          body: JSON.stringify(body),
+        });
+        return {
+          ok: result.ok,
+          status: result.status,
+          statusText: result.statusText,
+          text: await result.text(),
+        };
+      },
+      {
+        url: requestUrl,
+        body: requestBody,
+        headers: extraHeaders ?? {},
+      },
+    );
+
+    if (response.ok) {
+      try {
+        return JSON.parse(response.text) as T;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Non-JSON response from ${requestUrl}: ${message}. Body: ${response.text.slice(0, 200)}`,
+        );
+      }
+    }
+
+    lastError = new Error(
+      `HTTP ${response.status} ${response.statusText} from ${requestUrl}: ${response.text.slice(0, 200)}`,
+    );
+    if (!RETRYABLE_HTTP_STATUS.has(response.status) || attempt === 4) {
+      throw lastError;
+    }
+
+    await page.waitForTimeout(1000 * attempt);
+  }
+
+  throw lastError ?? new Error(`Request failed: ${requestUrl}`);
 }
 
 function extractMonitorRows(payload: {
@@ -326,6 +414,302 @@ function getReportName(taskName: string): string {
   return `${resolveTaskName(taskName)}_report`;
 }
 
+function encodeBase64(input: string): string {
+  return Buffer.from(input, "utf8").toString("base64");
+}
+
+function serializeImportedRule(
+  rule: ImportedRuleRow,
+  weakenImportedRule = false,
+): Record<string, unknown> {
+  const normalizedRule: ImportedRuleRow = { ...rule };
+  const nextRuleStrength = weakenImportedRule ? 1 : normalizedRule.ruleStrength;
+  const standardRuleList = (normalizedRule.standardRules ?? normalizedRule.standardRuleList)?.map(
+    (item) => ({
+      ...item,
+      ...(weakenImportedRule ? { ruleStrength: 1 } : {}),
+    }),
+  );
+
+  if (standardRuleList) {
+    normalizedRule.standardRuleList = standardRuleList;
+  }
+  delete normalizedRule.standardRules;
+
+  const { id, isNew, isTable, percentType, functionName, verifyTypeValue, ...serializedRule } =
+    normalizedRule;
+  void id;
+  void isNew;
+  void isTable;
+  void percentType;
+  void functionName;
+  void verifyTypeValue;
+
+  if (typeof serializedRule.customSql === "string" && serializedRule.customSql) {
+    serializedRule.customSql = encodeBase64(serializedRule.customSql);
+  }
+  if (typeof serializedRule.selectDataSql === "string" && serializedRule.selectDataSql) {
+    serializedRule.selectDataSql = encodeBase64(serializedRule.selectDataSql);
+  }
+  if (typeof serializedRule.customizeSql === "string" && serializedRule.customizeSql) {
+    serializedRule.customizeSql = encodeBase64(serializedRule.customizeSql);
+  }
+  if (nextRuleStrength !== undefined && nextRuleStrength !== null && nextRuleStrength !== "") {
+    serializedRule.ruleStrength = Number(nextRuleStrength);
+  }
+
+  return serializedRule;
+}
+
+async function getProjectDatasource(page: Page): Promise<Required<Pick<ProjectDatasourceRow, "id">> & ProjectDatasourceRow> {
+  const datasource = getCurrentDatasource();
+  const matchesCurrentDatasource = (item: ProjectDatasourceRow) =>
+    datasource.optionPattern.test(
+      `${String(item.dataSourceName ?? "")} ${String(item.dtCenterSourceName ?? "")}`,
+    ) || datasource.sourceTypePattern.test(String(item.sourceTypeValue ?? ""));
+
+  const monitorListResponse = await postTaskApi<{
+    data?: ProjectDatasourceRow[];
+  }>(page, "/dmetadata/v1/dataSource/monitor/list", {}).catch(() => null);
+  const monitorDatasource = (monitorListResponse?.data ?? []).find(matchesCurrentDatasource);
+  if (monitorDatasource?.id) {
+    return monitorDatasource as Required<Pick<ProjectDatasourceRow, "id">> & ProjectDatasourceRow;
+  }
+
+  const pageQueryResponse =
+    (await postTaskApi<{
+      data?: {
+        contentList?: ProjectDatasourceRow[];
+      };
+    }>(page, "/dassets/v1/dataSource/pageQuery", {
+      current: 1,
+      size: 200,
+      search: "",
+    })) ?? {};
+
+  const projectDatasource = (pageQueryResponse.data?.contentList ?? []).find(
+    (item) =>
+      matchesCurrentDatasource(item),
+  );
+
+  if (!projectDatasource?.id) {
+    throw new Error(`No ${datasource.reportName} datasource available for current quality project.`);
+  }
+
+  return projectDatasource as Required<Pick<ProjectDatasourceRow, "id">> & ProjectDatasourceRow;
+}
+
+async function importTaskRulesFromPackage(
+  page: Page,
+  config: TaskSetupConfig,
+): Promise<{
+  dataSourceId: number;
+  tableId: number;
+  packageIds: number[];
+  ruleTypes: number[];
+  rules: Record<string, unknown>[];
+}> {
+  const datasource = getCurrentDatasource();
+  const seededDatasourceId = await (async () => {
+    const preferredTaskNames = Object.entries(TASK_SETUP_CONFIGS)
+      .filter(([, candidateConfig]) => candidateConfig.tableName === config.tableName)
+      .map(([taskName]) => resolveVariantName(taskName));
+    const fallbackTaskNames = Object.keys(TASK_SETUP_CONFIGS)
+      .map((taskName) => resolveVariantName(taskName))
+      .filter((taskName) => !preferredTaskNames.includes(taskName));
+    const candidateNames = new Set([...preferredTaskNames, ...fallbackTaskNames]);
+    const monitorRows: MonitorListRow[] = [];
+
+    for (let pageIndex = 1; pageIndex <= 3; pageIndex += 1) {
+      const listResponse =
+        (await postTaskApi<{
+          data?: { data?: MonitorListRow[]; contentList?: MonitorListRow[]; list?: MonitorListRow[] };
+        }>(page, "/dassets/v1/valid/monitor/pageQuery", {
+          pageIndex,
+          pageSize: TASK_API_PAGE_SIZE,
+        })) ?? {};
+      const pageRows = extractMonitorRows(listResponse);
+      monitorRows.push(...pageRows);
+      if (pageRows.length < TASK_API_PAGE_SIZE) {
+        break;
+      }
+    }
+
+    for (const row of monitorRows) {
+      const monitorName = getMonitorName(row);
+      if (!candidateNames.has(monitorName)) {
+        continue;
+      }
+      const monitorId = getMonitorId(row);
+      if (monitorId === null) {
+        continue;
+      }
+      try {
+        const detailResponse =
+          (await postTaskApi<{
+            success?: boolean;
+            message?: string;
+            data?: TaskDetailPayload;
+          }>(page, "/dassets/v1/valid/monitor/detail", {
+            monitorId,
+          })) ?? {};
+        const candidateId = Number(detailResponse.data?.dataSourceId);
+        if (Number.isFinite(candidateId)) {
+          process.stderr.write(
+            `[task] reusing datasource id ${candidateId} from existing task ${monitorName}.\n`,
+          );
+          return candidateId;
+        }
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  })();
+  const dataSourceId =
+    seededDatasourceId ??
+    Number((await getProjectDatasource(page)).id);
+  if (!Number.isFinite(dataSourceId)) {
+    throw new Error(`Datasource id for ${datasource.reportName} is invalid: ${dataSourceId}`);
+  }
+  process.stderr.write(
+    `[task] preparing package import for ${config.packageName} on ${config.tableName} (datasourceId=${dataSourceId}).\n`,
+  );
+
+  const packageResponse =
+    (await postTaskApi<{
+      success?: boolean;
+      message?: string;
+      data?: RulePackageRow[];
+    }>(page, "/dassets/v1/valid/monitorRulePackage/ruleSetList", {
+      dataSourceId,
+      tableName: config.tableName,
+      schemaName: datasource.database,
+    })) ?? {};
+  const packageRow = (packageResponse.data ?? []).find((item) => item.packageName === config.packageName);
+  if (!packageRow?.packageId) {
+    throw new Error(
+      `Task package "${config.packageName}" for table "${config.tableName}" was not found via API.`,
+    );
+  }
+
+  const packageId = Number(packageRow.packageId);
+  const tableId = Number(packageRow.tableId);
+  if (!Number.isFinite(packageId) || !Number.isFinite(tableId)) {
+    throw new Error(
+      `Task package "${config.packageName}" returned invalid package/table ids: ${packageRow.packageId}/${packageRow.tableId}`,
+    );
+  }
+
+  const ruleTypeResponse =
+    (await postTaskApi<{
+      success?: boolean;
+      message?: string;
+      data?: RuleTypeRow[];
+    }>(page, "/dassets/v1/valid/monitorRulePackage/ruleTypes", {
+      packageIdList: [packageId],
+    })) ?? {};
+  const ruleTypes = (ruleTypeResponse.data ?? [])
+    .map((item) => Number(item.ruleType))
+    .filter((value) => Number.isFinite(value));
+  if (ruleTypes.length === 0) {
+    throw new Error(`Task package "${config.packageName}" did not expose any rule types via API.`);
+  }
+
+  const importResponse =
+    (await postTaskApi<{
+      success?: boolean;
+      message?: string;
+      data?: ImportedRuleRow[];
+    }>(page, "/dassets/v1/valid/monitorRulePackage/getMonitorRule", {
+      packageIdList: [packageId],
+      ruleTypeList: ruleTypes,
+    })) ?? {};
+  if (!importResponse.success || !Array.isArray(importResponse.data) || importResponse.data.length === 0) {
+    throw new Error(
+      `Importing rules from package "${config.packageName}" failed: ${importResponse.message ?? "no rules returned"}`,
+    );
+  }
+  process.stderr.write(`[task] imported ${importResponse.data.length} rules from ${config.packageName}.\n`);
+
+  return {
+    dataSourceId,
+    tableId,
+    packageIds: [packageId],
+    ruleTypes,
+    rules: importResponse.data.map((rule) => serializeImportedRule(rule, config.weakenImportedRule)),
+  };
+}
+
+function buildMonitorReportParam(taskName: string) {
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    monitorReport: {
+      reportName: getReportName(taskName),
+      periodType: 2,
+      reportType: 1,
+      needCar: 0,
+      reportShowResultType: 1,
+      reportGenerateType: 2,
+      ruleTaskTypesList: [],
+      dataContextStart: "1",
+      dataContextEnd: "0",
+      dispatchConfigDTO: {
+        periodType: "2",
+        beginDate: today,
+        endDate: "2099-12-31",
+        hour: "0",
+        min: "0",
+      },
+      isEnable: 1,
+    },
+  };
+}
+
+async function createTaskViaApi(page: Page, taskName: string, config: TaskSetupConfig): Promise<void> {
+  const actualTaskName = resolveTaskName(taskName);
+  const datasource = getCurrentDatasource();
+  const importedPackage = await importTaskRulesFromPackage(page, config);
+  process.stderr.write(`[task] creating ${actualTaskName} via monitor/add API.\n`);
+  const addResponse =
+    (await postTaskApi<{
+      success?: boolean;
+      message?: string;
+      data?: number | string;
+      result?: number | string;
+    }>(page, "/dassets/v1/valid/monitor/add", {
+      dataSourceId: importedPackage.dataSourceId,
+      tableName: config.tableName,
+      tableId: importedPackage.tableId,
+      schemaName: datasource.database,
+      ruleName: actualTaskName,
+      regularType: 0,
+      packageCount: 1,
+      jobBuildType: 2,
+      isRunOn: 0,
+      isSubscribe: 0,
+      partition: "",
+      partitionType: 0,
+      associatedTasks: [],
+      channelIds: [],
+      notifyUser: [],
+      webhook: "",
+      taskParams: "",
+      scheduleConf: "",
+      packageIds: importedPackage.packageIds,
+      ruleTypes: importedPackage.ruleTypes,
+      rules: importedPackage.rules,
+      monitorReportParam: buildMonitorReportParam(taskName),
+    })) ?? {};
+
+  if (!addResponse.success) {
+    throw new Error(
+      `Task API create failed for "${actualTaskName}": ${addResponse.message ?? "unknown error"}`,
+    );
+  }
+  process.stderr.write(`[task] api create succeeded for ${actualTaskName}.\n`);
+}
+
 export function getTableRowByTaskName(page: Page, taskName: string): Locator {
   return page
     .locator(TABLE_ROWS)
@@ -333,15 +717,75 @@ export function getTableRowByTaskName(page: Page, taskName: string): Locator {
     .first();
 }
 
+async function hasTaskRowInListUi(page: Page, taskName: string, timeout = 5000): Promise<boolean> {
+  const row = getTableRowByTaskName(page, taskName);
+  return row.isVisible({ timeout }).catch(() => false);
+}
+
+export async function waitForTaskMonitorReady(
+  page: Page,
+  taskName: string,
+  timeout = 90000,
+): Promise<void> {
+  if (isOfflineMode()) {
+    await ensureOfflineTasks(page, [taskName]);
+    return;
+  }
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    try {
+      if (await hasTaskMonitorRow(page, taskName)) {
+        return;
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!/HTTP (502|503|504)\b/.test(message)) {
+        throw error;
+      }
+    }
+    if (await hasTaskRowInListUi(page, taskName, 2000)) {
+      return;
+    }
+    await page.waitForTimeout(5000);
+  }
+
+  throw new Error(`Task "${resolveTaskName(taskName)}" did not appear in monitor API within ${timeout}ms`);
+}
+
 async function openQualityRoute(page: Page, path: string): Promise<void> {
+  if (isOfflineMode()) {
+    if (path.startsWith("/dq/rule")) {
+      await gotoOfflineRuleTaskList(page);
+      return;
+    }
+    if (path.startsWith("/dq/qualityReport")) {
+      await gotoOfflineQualityReport(page);
+      return;
+    }
+    await gotoOfflineValidationResults(page);
+    return;
+  }
   await applyRuntimeCookies(page);
-  await page.goto(buildDataAssetsUrl(path, QUALITY_PROJECT_ID), { waitUntil: "domcontentloaded" });
-  await page.locator("body").waitFor({ state: "visible", timeout: 15000 });
-  await page.waitForTimeout(500);
-  await injectProjectContext(page, QUALITY_PROJECT_ID);
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await page.locator("body").waitFor({ state: "visible", timeout: 15000 });
-  await page.waitForTimeout(1000);
+  const targetUrl = buildDataAssetsUrl(path, QUALITY_PROJECT_ID);
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    await page.goto(targetUrl, { waitUntil: "domcontentloaded" }).catch(() => undefined);
+    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page.waitForTimeout(500);
+    await injectProjectContext(page, QUALITY_PROJECT_ID);
+    await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);
+    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page.waitForTimeout(1000);
+
+    const pageText = await page.locator("body").innerText().catch(() => "");
+    if (!page.url().startsWith("chrome-error://") && !/HTTP ERROR 502|Bad Gateway/i.test(pageText)) {
+      return;
+    }
+
+    if (attempt === 4) {
+      throw new Error(`Quality route "${path}" is unavailable: ${pageText.slice(0, 200)}`);
+    }
+    await page.waitForTimeout(2000 * attempt);
+  }
 }
 
 export async function gotoRuleTaskList(page: Page): Promise<void> {
@@ -349,10 +793,15 @@ export async function gotoRuleTaskList(page: Page): Promise<void> {
 }
 
 async function gotoRuleTaskCreate(page: Page): Promise<void> {
+  await enableCompatibleMonitorDatasourceRouting(page);
   await openQualityRoute(page, "/dq/rule/add");
 }
 
 export async function gotoValidationResults(page: Page): Promise<void> {
+  if (isOfflineMode()) {
+    await gotoOfflineValidationResults(page);
+    return;
+  }
   await openQualityRoute(page, "/dq/overview");
   await navigateViaMenu(page, ["数据质量", "校验结果查询"]);
   await page.waitForLoadState("networkidle");
@@ -360,6 +809,10 @@ export async function gotoValidationResults(page: Page): Promise<void> {
 }
 
 export async function gotoQualityReport(page: Page): Promise<void> {
+  if (isOfflineMode()) {
+    await gotoOfflineQualityReport(page);
+    return;
+  }
   await openQualityRoute(page, "/dq/qualityReport?tab=REPORT_GENERATE");
   const generatedTab = page.getByRole("tab", { name: "已生成报告" }).first();
   if (await generatedTab.isVisible().catch(() => false)) {
@@ -386,14 +839,34 @@ async function ensureSupportingRuleSet(
     return;
   }
   await gotoRuleSetList(page);
-  await deleteRuleSetsByTableNames(page, [config.tableName]);
-  await createRuleSetForTable(
-    page,
-    config.tableName,
-    config.packageName,
-    config.ruleConfig,
-    "有效性校验",
-  );
+  let reuseExistingRuleSet = false;
+  await deleteRuleSetsByTableNames(page, [config.tableName]).catch((error) => {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/HTTP (502|503|504)\b/.test(message)) {
+      throw error;
+    }
+    process.stderr.write(
+      `[ruleset] delete for ${config.tableName} hit gateway error, reusing existing rulesets.\n`,
+    );
+    reuseExistingRuleSet = true;
+  });
+  if (reuseExistingRuleSet) {
+    return;
+  }
+  await createRuleSetForTable(page, config.tableName, config.packageName, config.ruleConfig, "有效性校验")
+    .catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        !/(HTTP (502|503|504)\b|Timeout \d+ms exceeded|ETIMEDOUT|Rule set create page is unavailable|waiting for locator\('.ant-form-item'.*选择数据源)/.test(
+          message,
+        )
+      ) {
+        throw error;
+      }
+      process.stderr.write(
+        `[ruleset] refresh for ${config.tableName} hit unstable page/network state, reusing existing rulesets.\n`,
+      );
+    });
 }
 
 async function deleteTasksByNames(page: Page, taskNames: string[]): Promise<void> {
@@ -401,18 +874,23 @@ async function deleteTasksByNames(page: Page, taskNames: string[]): Promise<void
     return;
   }
   const actualTaskNames = taskNames.map((taskName) => resolveTaskName(taskName));
+  const rows: MonitorListRow[] = [];
 
-  const listResponse =
-    (await postTaskApi<{
-      data?: { data?: MonitorListRow[]; contentList?: MonitorListRow[]; list?: MonitorListRow[] };
-    }>(page, "/dassets/v1/valid/monitor/pageQuery", {
-      pageIndex: 1,
-      pageSize: TASK_API_PAGE_SIZE,
-    })) ?? {};
+  for (let pageIndex = 1; pageIndex <= 20; pageIndex += 1) {
+    const listResponse =
+      (await postTaskApi<{
+        data?: { data?: MonitorListRow[]; contentList?: MonitorListRow[]; list?: MonitorListRow[] };
+      }>(page, "/dassets/v1/valid/monitor/pageQuery", {
+        pageIndex,
+        pageSize: TASK_API_PAGE_SIZE,
+      })) ?? {};
 
-  const rows = extractMonitorRows(listResponse).filter((row) =>
-    actualTaskNames.includes(getMonitorName(row)),
-  );
+    const pageRows = extractMonitorRows(listResponse);
+    rows.push(...pageRows.filter((row) => actualTaskNames.includes(getMonitorName(row))));
+    if (pageRows.length < TASK_API_PAGE_SIZE) {
+      break;
+    }
+  }
 
   for (const row of rows) {
     const monitorId = getMonitorId(row);
@@ -422,6 +900,24 @@ async function deleteTasksByNames(page: Page, taskNames: string[]): Promise<void
     await postTaskApi(page, "/dassets/v1/valid/monitor/delete", {
       monitorId,
     });
+  }
+
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline) {
+    const existingRows = await Promise.all(
+      taskNames.map(async (taskName) => {
+        try {
+          await getTaskMonitorRow(page, taskName);
+          return true;
+        } catch {
+          return false;
+        }
+      }),
+    );
+    if (existingRows.every((exists) => !exists)) {
+      return;
+    }
+    await page.waitForTimeout(2000);
   }
 }
 
@@ -481,16 +977,33 @@ async function fillTaskBaseInfo(
   }
   await page.waitForTimeout(1000);
 
-  await page.getByRole("button", { name: "下一步" }).first().click();
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1500);
+  const nextButton = page.getByRole("button", { name: "下一步" }).first();
+  const rulePackageFormItem = page
+    .locator(".ant-form-item")
+    .filter({ hasText: /规则包/ })
+    .first();
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await nextButton.click();
+    await page.waitForLoadState("networkidle").catch(() => undefined);
+    await page.waitForTimeout(1500 * (attempt + 1));
+    if (await rulePackageFormItem.isVisible({ timeout: 3000 }).catch(() => false)) {
+      return;
+    }
+  }
 
-  await expect(
-    page
-      .locator(".ant-form-item")
-      .filter({ hasText: /规则包/ })
-      .first(),
-  ).toBeVisible({ timeout: 10000 });
+  const visibleErrors = await page
+    .locator(".ant-form-item-explain-error:visible, .ant-message-notice, .ant-notification-notice")
+    .allTextContents()
+    .catch(() => [] as string[]);
+  const pageText = await page
+    .locator("body")
+    .innerText()
+    .catch(() => "");
+  throw new Error(
+    `Task form did not advance to rule package step. Visible errors: ${
+      visibleErrors.join(" | ") || "none"
+    }. Page text: ${pageText.slice(0, 500)}`,
+  );
 }
 
 async function importRulePackage(page: Page, packageName: string): Promise<void> {
@@ -500,25 +1013,38 @@ async function importRulePackage(page: Page, packageName: string): Promise<void>
     .first()
     .locator(".ant-select")
     .first();
-  await packageSelect.locator(".ant-select-selector").click();
-  await page.waitForTimeout(500);
 
-  const dropdown = page.locator(".ant-select-dropdown:visible").last();
-  await dropdown.waitFor({ state: "visible", timeout: 10000 });
+  let availableOptions: string[] = [];
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    await packageSelect.locator(".ant-select-selector").click();
+    await page.waitForTimeout(500);
 
-  const packageOption = dropdown
-    .locator(".ant-select-item-option")
-    .filter({ hasText: packageName })
-    .first();
-  if (!(await packageOption.isVisible({ timeout: 2000 }).catch(() => false))) {
-    const options = await dropdown
+    const dropdown = page.locator(".ant-select-dropdown:visible").last();
+    await dropdown.waitFor({ state: "visible", timeout: 10000 });
+
+    const packageOption = dropdown
+      .locator(".ant-select-item-option")
+      .filter({ hasText: packageName })
+      .first();
+    if (await packageOption.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await packageOption.click();
+      await page.waitForTimeout(1000);
+      availableOptions = [];
+      break;
+    }
+
+    availableOptions = await dropdown
       .locator(".ant-select-item-option")
       .allTextContents()
       .then((items) => items.map((item) => item.trim()).filter(Boolean));
-    throw new Error(`Task package "${packageName}" not found. Available: ${options.join(" | ")}`);
+
+    await page.keyboard.press("Escape").catch(() => undefined);
+    await page.waitForTimeout(1000 * (attempt + 1));
   }
-  await packageOption.click();
-  await page.waitForTimeout(1000);
+
+  if (availableOptions.length > 0) {
+    throw new Error(`Task package "${packageName}" not found. Available: ${availableOptions.join(" | ")}`);
+  }
 
   const ruleTypeSelect = page
     .locator(".ant-form-item")
@@ -592,7 +1118,7 @@ async function completeTaskScheduleAndSave(page: Page, taskName: string): Promis
 
   const dataCycleInputs = page
     .locator(".ant-form-item")
-    .filter({ hasText: /数据周期/ })
+    .filter({ hasText: /数据日期|数据周期/ })
     .locator("input");
   if (
     await dataCycleInputs
@@ -604,11 +1130,24 @@ async function completeTaskScheduleAndSave(page: Page, taskName: string): Promis
     await dataCycleInputs.nth(1).fill("0");
   }
 
-  const saveResponsePromise = page.waitForResponse(
+  const needCarNoRadio = page
+    .locator(".ant-form-item")
+    .filter({ hasText: /是否需要车辆信息/ })
+    .locator(".ant-radio-wrapper, .ant-radio-button-wrapper")
+    .filter({ hasText: /^否$/ })
+    .first();
+  if (await needCarNoRadio.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await needCarNoRadio.click();
+    await page.waitForTimeout(300);
+  }
+
+  const saveResponsePromise = page
+    .waitForResponse(
     (response) =>
       response.url().includes("/dassets/v1/valid/monitor/add") ||
       response.url().includes("/dassets/v1/valid/monitor/edit"),
-  );
+    )
+    .catch(() => null);
   const createButton = page.getByRole("button", { name: /新\s*建|保\s*存/ }).last();
   await createButton.click();
   await page.waitForTimeout(1000);
@@ -622,6 +1161,16 @@ async function completeTaskScheduleAndSave(page: Page, taskName: string): Promis
   }
 
   const saveResponse = await saveResponsePromise;
+  if (!saveResponse) {
+    const visibleErrors = await page
+      .locator(".ant-form-item-explain-error:visible")
+      .allTextContents()
+      .catch(() => [] as string[]);
+    throw new Error(
+      `Task save request was not triggered. Visible errors: ${visibleErrors.join(" | ") || "none"}`,
+    );
+  }
+
   const saveResult = (await saveResponse.json().catch(() => null)) as { success?: boolean } | null;
   if (!saveResult?.success) {
     throw new Error(`Task save failed via ${saveResponse.url()}`);
@@ -631,16 +1180,10 @@ async function completeTaskScheduleAndSave(page: Page, taskName: string): Promis
 }
 
 async function createTask(page: Page, taskName: string, config: TaskSetupConfig): Promise<void> {
-  await gotoRuleTaskCreate(page);
-  await fillTaskBaseInfo(page, taskName, config);
-  await importRulePackage(page, config.packageName);
-
-  if (config.weakenImportedRule) {
-    await weakenImportedRule(page);
+  await createTaskViaApi(page, taskName, config);
+  if (await hasTaskMonitorRow(page, taskName)) {
+    return;
   }
-
-  await completeTaskScheduleAndSave(page, taskName);
-  const actualTaskName = resolveTaskName(taskName);
   const deadline = Date.now() + 30000;
   while (Date.now() < deadline) {
     try {
@@ -665,6 +1208,13 @@ async function hasTaskMonitorRow(page: Page, taskName: string): Promise<boolean>
 }
 
 export async function ensureRuleTasks(page: Page, taskNames: string[]): Promise<void> {
+  if (isOfflineMode()) {
+    await ensureOfflineTasks(page, taskNames);
+    for (const taskName of taskNames) {
+      preparedTasks.add(resolveTaskName(taskName));
+    }
+    return;
+  }
   await ensureBaseData(page);
 
   for (const taskName of taskNames) {
@@ -687,29 +1237,81 @@ export async function ensureRuleTasks(page: Page, taskNames: string[]): Promise<
     }
 
     await gotoRuleTaskList(page);
-    await deleteTasksByNames(page, [taskName]);
-    await createTask(page, taskName, config);
+    let reuseExistingTask = false;
+    await deleteTasksByNames(page, [taskName]).catch(async (error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!/HTTP (502|503|504)\b/.test(message)) {
+        throw error;
+      }
+      reuseExistingTask =
+        (await hasTaskMonitorRow(page, taskName).catch(() => false)) ||
+        (await hasTaskRowInListUi(page, taskName, 3000));
+      process.stderr.write(
+        reuseExistingTask
+          ? `[task] delete for ${actualTaskName} hit gateway error, reusing existing task.\n`
+          : `[task] delete for ${actualTaskName} hit gateway error and no existing task was found, creating a new task.\n`,
+      );
+    });
+    if (!reuseExistingTask) {
+      await createTask(page, taskName, config);
+    }
+    await waitForTaskMonitorReady(page, taskName);
     preparedTasks.add(actualTaskName);
   }
 }
 
 async function getTaskMonitorRow(page: Page, taskName: string): Promise<MonitorListRow> {
   const actualTaskName = resolveTaskName(taskName);
+
+  for (let pageIndex = 1; pageIndex <= 20; pageIndex += 1) {
+    const listResponse =
+      (await postTaskApi<{
+        data?: { data?: MonitorListRow[]; contentList?: MonitorListRow[]; list?: MonitorListRow[] };
+      }>(page, "/dassets/v1/valid/monitor/pageQuery", {
+        pageIndex,
+        pageSize: TASK_API_PAGE_SIZE,
+      })) ?? {};
+
+    const pageRows = extractMonitorRows(listResponse);
+    const taskRow = pageRows.find((row) => getMonitorName(row) === actualTaskName);
+    if (taskRow) {
+      return taskRow;
+    }
+    if (pageRows.length < TASK_API_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  throw new Error(`Task "${actualTaskName}" not found in monitor list`);
+}
+
+async function getTaskInstanceRecord(page: Page, taskName: string): Promise<MonitorListRow | null> {
+  const actualTaskName = resolveTaskName(taskName);
   const listResponse =
     (await postTaskApi<{
       data?: { data?: MonitorListRow[]; contentList?: MonitorListRow[]; list?: MonitorListRow[] };
-    }>(page, "/dassets/v1/valid/monitor/pageQuery", {
+    }>(page, "/dassets/v1/valid/monitorRecord/pageQuery", {
       pageIndex: 1,
-      pageSize: TASK_API_PAGE_SIZE,
+      pageSize: 20,
+      name: actualTaskName,
     })) ?? {};
 
-  const taskRow = extractMonitorRows(listResponse).find(
-    (row) => getMonitorName(row) === actualTaskName,
+  return (
+    extractMonitorRows(listResponse).find((row) => getMonitorName(row) === actualTaskName) ?? null
   );
-  if (!taskRow) {
-    throw new Error(`Task "${actualTaskName}" not found in monitor list`);
-  }
-  return taskRow;
+}
+
+async function listBatchRuns(page: Page, jobKey: string): Promise<BatchRunRecord[]> {
+  const response =
+    (await postBatchApi<{
+      success?: boolean;
+      data?: BatchRunRecord[];
+    }>(page, "/api/rdos/batch/batchServerLog/runNumList", {
+      jobId: jobKey,
+      pageInfo: 1,
+    })) ?? {};
+
+  return response.success && Array.isArray(response.data) ? response.data : [];
 }
 
 async function getTaskDetail(page: Page, taskName: string): Promise<TaskDetailPayload> {
@@ -979,6 +1581,11 @@ async function triggerQualityReportToday(page: Page, taskName: string): Promise<
 }
 
 export async function executeTaskFromList(page: Page, taskName: string): Promise<void> {
+  if (isOfflineMode()) {
+    await markOfflineTaskExecuted(page, taskName);
+    executedTasks.add(resolveTaskName(taskName));
+    return;
+  }
   const taskMonitorRow = await getTaskMonitorRow(page, taskName);
   const monitorId = getMonitorId(taskMonitorRow);
   if (monitorId !== null) {
@@ -1017,6 +1624,9 @@ export async function executeTaskFromList(page: Page, taskName: string): Promise
 }
 
 export async function openTaskInstanceDetail(page: Page, instanceRow: Locator): Promise<Locator> {
+  if (isOfflineMode()) {
+    return openOfflineTaskInstanceDetail(page, instanceRow);
+  }
   const detailResponsePromise = page.waitForResponse((response) => {
     return (
       response.url().includes("/monitorRecord/detailReport") &&
@@ -1046,6 +1656,9 @@ export async function openTaskRuleDetailDataDrawer(
   page: Page,
   detailDrawer: Locator,
 ): Promise<Locator> {
+  if (isOfflineMode()) {
+    return openOfflineTaskRuleDetailDataDrawer(page, detailDrawer);
+  }
   const viewDetailButton = detailDrawer.getByRole("button", { name: "查看明细" }).first();
   await expect(viewDetailButton).toBeVisible({ timeout: 10000 });
   await viewDetailButton.click();
@@ -1063,9 +1676,19 @@ export async function waitForTaskInstanceFinished(
   taskName: string,
   timeout = 180000,
 ): Promise<Locator> {
+  if (isOfflineMode()) {
+    await markOfflineTaskExecuted(page, taskName);
+    executedTasks.add(resolveTaskName(taskName));
+    await gotoOfflineValidationResults(page);
+    const row = getTableRowByTaskName(page, taskName);
+    await expect(row).toBeVisible({ timeout: Math.min(timeout, 10000) });
+    return row;
+  }
   await gotoValidationResults(page);
   const actualTaskName = resolveTaskName(taskName);
   const deadline = Date.now() + timeout;
+  let finishedBatchRun: BatchRunRecord | null = null;
+  let finishedBatchDetectedAt = 0;
 
   while (Date.now() < deadline) {
     const instanceRow = getTableRowByTaskName(page, taskName);
@@ -1074,6 +1697,25 @@ export async function waitForTaskInstanceFinished(
       const rowText = (await instanceRow.innerText()).replace(/\s+/g, "");
       if (!rowText.includes("执行中") && !rowText.includes("运行中")) {
         return instanceRow;
+      }
+    }
+
+    const taskRecord = await getTaskInstanceRecord(page, taskName);
+    const jobKey = String(taskRecord?.jobKey ?? "");
+    if (jobKey) {
+      const latestRun = [...(await listBatchRuns(page, jobKey))]
+        .filter((run) => Number.isFinite(run.runNum))
+        .sort((left, right) => Number(right.runNum ?? 0) - Number(left.runNum ?? 0))[0];
+
+      if (latestRun?.execEndTime) {
+        if (!finishedBatchRun || finishedBatchRun.runNum !== latestRun.runNum) {
+          finishedBatchRun = latestRun;
+          finishedBatchDetectedAt = Date.now();
+        }
+
+        if (Date.now() - finishedBatchDetectedAt >= 15_000 && visible) {
+          return instanceRow;
+        }
       }
     }
 
@@ -1095,6 +1737,14 @@ export async function executeTaskAndWaitForResult(
 }
 
 export async function ensureExecutedRuleTasks(page: Page, taskNames: string[]): Promise<void> {
+  if (isOfflineMode()) {
+    await ensureRuleTasks(page, taskNames);
+    for (const taskName of taskNames) {
+      await markOfflineTaskExecuted(page, taskName);
+      executedTasks.add(resolveTaskName(taskName));
+    }
+    return;
+  }
   await ensureRuleTasks(page, taskNames);
 
   for (const taskName of taskNames) {
@@ -1112,6 +1762,14 @@ export async function waitForQualityReportRow(
   taskName: string,
   timeout = 180000,
 ): Promise<Locator> {
+  if (isOfflineMode()) {
+    await markOfflineReportReady(page, taskName);
+    readyQualityReports.add(resolveTaskName(taskName));
+    await gotoOfflineQualityReport(page);
+    const row = getTableRowByTaskName(page, getReportName(taskName));
+    await expect(row).toBeVisible({ timeout: Math.min(timeout, 10000) });
+    return row;
+  }
   const deadline = Date.now() + timeout;
   const reportName = getReportName(taskName);
 
@@ -1159,6 +1817,16 @@ async function waitForGeneratedQualityReport(
 }
 
 export async function ensureQualityReportsReady(page: Page, taskNames: string[]): Promise<void> {
+  if (isOfflineMode()) {
+    await ensureRuleTasks(page, taskNames);
+    for (const taskName of taskNames) {
+      await markOfflineReportReady(page, taskName);
+      executedTasks.add(resolveTaskName(taskName));
+      readyQualityReports.add(resolveTaskName(taskName));
+    }
+    await gotoOfflineQualityReport(page);
+    return;
+  }
   await ensureRuleTasks(page, taskNames);
 
   for (const taskName of taskNames) {
@@ -1179,6 +1847,10 @@ export async function ensureQualityReportsReady(page: Page, taskNames: string[])
 }
 
 export async function openQualityReportDetail(page: Page, taskName: string): Promise<Locator> {
+  if (isOfflineMode()) {
+    await markOfflineReportReady(page, taskName);
+    return openOfflineQualityReportDetail(page, taskName);
+  }
   await gotoQualityReport(page);
   const reportRow = await waitForQualityReportRow(page, taskName);
   const viewReportButton = reportRow
@@ -1198,6 +1870,12 @@ export function getQualityReportRuleRow(page: Page, ruleName: string): Locator {
 }
 
 export async function openQualityReportRuleDetail(page: Page, ruleRow: Locator): Promise<Locator> {
+  if (isOfflineMode()) {
+    const taskName =
+      (await page.locator(".qualityInspection").first().getAttribute("data-task-name")) ??
+      "task_15695_enum_fail";
+    return openOfflineQualityReportRuleDetail(page, taskName);
+  }
   await suppressGuideOverlay(page);
   await ruleRow.getByRole("button", { name: "查看详情" }).first().click({ force: true });
   const dataDrawer = page.locator(".ant-drawer:visible").last();

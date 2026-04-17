@@ -1,7 +1,7 @@
 // META: {"id":"t21","priority":"P1","title":"验证规则库中新增取值范围&枚举范围内置规则展示正确"}
 import { expect, test } from "../../fixtures/step-screenshot";
-import { applyRuntimeCookies, buildDataAssetsUrl } from "../../helpers/test-setup";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
+import { gotoRuleBase } from "./rule-editor-helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 test.setTimeout(120000);
@@ -24,9 +24,7 @@ for (const datasource of ACTIVE_DATASOURCES) {
       await step(
         "步骤1: 进入【数据质量 → 规则库配置】页面 → 规则库配置页面打开，列表显示规则数据",
         async () => {
-          await applyRuntimeCookies(page);
-          await page.goto(buildDataAssetsUrl("/dq/ruleBase"));
-          await page.waitForLoadState("networkidle");
+          await gotoRuleBase(page);
           await expect(page.locator(".ant-table-row").first()).toBeVisible({
             timeout: 15000,
           });

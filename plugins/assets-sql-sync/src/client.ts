@@ -25,6 +25,18 @@ export interface DtStackClientLike {
   ): Promise<DtStackResponse<T>>;
 }
 
+const RETRYABLE_HTTP_STATUS = new Set([502, 503, 504]);
+const MAX_RETRY_ATTEMPTS = 6;
+const RETRY_DELAY_MS = 2_000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableHttpStatus(status: number): boolean {
+  return RETRYABLE_HTTP_STATUS.has(status);
+}
+
 export class DtStackClient implements DtStackClientLike {
   private readonly baseUrl: string;
   private readonly cookie: string;
@@ -49,18 +61,29 @@ export class DtStackClient implements DtStackClientLike {
     extraHeaders?: Record<string, string>,
   ): Promise<DtStackResponse<T>> {
     const url = `${this.baseUrl}${path}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: this.buildHeaders(extraHeaders),
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    let lastError: Error | null = null;
 
-    if (!response.ok) {
+    for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt += 1) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: this.buildHeaders(extraHeaders),
+        body: data ? JSON.stringify(data) : undefined,
+      });
+
+      if (response.ok) {
+        return response.json() as Promise<DtStackResponse<T>>;
+      }
+
       const text = await response.text();
-      throw new Error(`HTTP ${response.status} ${response.statusText}: ${text}`);
+      lastError = new Error(`HTTP ${response.status} ${response.statusText}: ${text}`);
+      if (!isRetryableHttpStatus(response.status) || attempt === MAX_RETRY_ATTEMPTS) {
+        throw lastError;
+      }
+
+      await sleep(RETRY_DELAY_MS * attempt);
     }
 
-    return response.json() as Promise<DtStackResponse<T>>;
+    throw lastError ?? new Error(`Request failed: ${url}`);
   }
 
   async postWithProjectId<T = unknown>(
@@ -88,38 +111,52 @@ export class BrowserDtStackClient implements DtStackClientLike {
     extraHeaders?: Record<string, string>,
   ): Promise<DtStackResponse<T>> {
     const url = `${this.baseUrl}${path}`;
-    const response = await this.page.evaluate(
-      async ({ requestUrl, requestBody, requestHeaders }) => {
-        const result = await fetch(requestUrl, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "content-type": "application/json;charset=UTF-8",
-            "Accept-Language": "zh-CN",
-            ...requestHeaders,
-          },
-          body: requestBody === undefined ? undefined : JSON.stringify(requestBody),
-        });
-        const text = await result.text();
-        return {
-          ok: result.ok,
-          status: result.status,
-          statusText: result.statusText,
-          text,
-        };
-      },
-      {
-        requestUrl: url,
-        requestBody: data,
-        requestHeaders: extraHeaders ?? {},
-      },
-    );
+    let lastError: Error | null = null;
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} ${response.statusText}: ${response.text}`);
+    for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt += 1) {
+      const response = await this.page.evaluate(
+        async ({ requestUrl, requestBody, requestHeaders }) => {
+          const result = await fetch(requestUrl, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json;charset=UTF-8",
+              "Accept-Language": "zh-CN",
+              ...requestHeaders,
+            },
+            body: requestBody === undefined ? undefined : JSON.stringify(requestBody),
+          });
+          const text = await result.text();
+          return {
+            ok: result.ok,
+            status: result.status,
+            statusText: result.statusText,
+            text,
+          };
+        },
+        {
+          requestUrl: url,
+          requestBody: data,
+          requestHeaders: extraHeaders ?? {},
+        },
+      );
+
+      if (response.ok) {
+        if (!response.text.trim()) {
+          return {} as DtStackResponse<T>;
+        }
+        return JSON.parse(response.text) as DtStackResponse<T>;
+      }
+
+      lastError = new Error(`HTTP ${response.status} ${response.statusText}: ${response.text}`);
+      if (!isRetryableHttpStatus(response.status) || attempt === MAX_RETRY_ATTEMPTS) {
+        throw lastError;
+      }
+
+      await sleep(RETRY_DELAY_MS * attempt);
     }
 
-    return JSON.parse(response.text) as DtStackResponse<T>;
+    throw lastError ?? new Error(`Request failed: ${url}`);
   }
 
   async postWithProjectId<T = unknown>(

@@ -25,7 +25,9 @@ function loadDotEnv() {
 loadDotEnv();
 
 const env = (
-  process.env.ACTIVE_ENV ?? process.env.QA_ACTIVE_ENV ?? "ltqc"
+  process.env.ACTIVE_ENV ??
+  process.env.QA_ACTIVE_ENV ??
+  "ltqc"
 ).toUpperCase();
 const envLower = env.toLowerCase();
 
@@ -51,19 +53,25 @@ const yyyymm = new Date().toISOString().slice(0, 7).replace(/-/g, "");
 const suiteName = process.env.QA_SUITE_NAME ?? "selftest";
 const project = process.env.QA_PROJECT ?? "dataAssets";
 const reportDir = `workspace/${project}/reports/playwright/${yyyymm}/${suiteName}/${envLower}`;
+const htmlReportDir = `${reportDir}/html`;
+const jsonReportFile = `${reportDir}/${suiteName}.json`;
 
 export default defineConfig({
   testMatch: "**/*.ts",
+  fullyParallel: false,
+  workers: 1,
+  testIgnore: [
+    "**/*helpers.ts",
+    "**/*utils.ts",
+    "**/test-data.ts",
+    "**/test-data-*.ts",
+    "**/data-*.ts",
+  ],
   timeout: 60000,
   reporter: [
     ["line"],
-    [
-      "monocart-reporter",
-      {
-        name: `${suiteName} - UI自动化测试报告 (${envLower})`,
-        outputFile: `${reportDir}/${suiteName}.html`,
-      },
-    ],
+    ["json", { outputFile: jsonReportFile }],
+    ["html", { outputFolder: htmlReportDir, open: "never" }],
   ],
   use: {
     headless: process.env.HEADLESS !== "false",
