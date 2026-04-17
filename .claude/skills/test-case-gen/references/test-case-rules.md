@@ -1,7 +1,7 @@
 # 测试用例编写硬性规则
 
 <precedence>
-用户当前指令 > 项目级 preferences > 全局 preferences > 本文件
+用户当前指令 > 项目级 rules > 全局 rules > 本文件
 </precedence>
 
 <artifact_contract>

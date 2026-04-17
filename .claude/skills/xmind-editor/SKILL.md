@@ -28,11 +28,11 @@ argument-hint: "[操作] [用例标题或关键词]"
 
 按读取顺序加载偏好（后者覆盖前者）：
 
-1. 全局 `preferences/` 目录下所有 `.md` 文件
-2. 项目级 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件
+1. 全局 `rules/` 目录下所有 `.md` 文件
+2. 项目级 `workspace/{{project}}/rules/` 目录下所有 `.md` 文件
 
 <precedence>
-用户当前指令 > 项目级 preferences > 全局 preferences > 本文件
+用户当前指令 > 项目级 rules > 全局 rules > 本文件
 </precedence>
 
 <artifact_contract>
@@ -81,7 +81,7 @@ bun run .claude/scripts/xmind-edit.ts show --file {{file}} --title "{{title}}"
 
 1. 执行 `show` 展示当前内容
 2. 用户说明修改意图
-3. AI 构造 `case-json`（遵循 `preferences/` 规则及用例编写规范）
+3. AI 构造 `case-json`（遵循 `rules/` 规则及用例编写规范）
 4. 先执行预览：
 
 ```bash
@@ -142,8 +142,8 @@ bun run .claude/scripts/xmind-edit.ts delete \
 
 1. AI 提炼本次修改中的可复用规则
 2. AI 判断该规则的归属：
-   - **项目特定**（如特定产品的菜单结构、字段命名、业务术语）→ 写入 `workspace/{{project}}/preferences/` 下对应文件
-   - **跨项目通用**（如用例编写格式规范、通用步骤模板）→ 写入全局 `preferences/` 下对应文件
+   - **项目特定**（如特定产品的菜单结构、字段命名、业务术语）→ 写入 `workspace/{{project}}/rules/` 下对应文件
+   - **跨项目通用**（如用例编写格式规范、通用步骤模板）→ 写入全局 `rules/` 下对应文件
 3. AI 判断写入哪个偏好文件（如 `case-writing.md`、`xmind-structure.md`、`hotfix-frontmatter.md`，或新建文件）
 4. 使用 AskUser 向用户确认判断结果：
 
@@ -152,7 +152,7 @@ bun run .claude/scripts/xmind-edit.ts delete \
 「导出按钮的预期结果应包含文件命名规则」
 
 判断归属：项目级偏好（数据资产特定的按钮命名规范）
-写入目标：workspace/dataAssets/preferences/case-writing.md
+写入目标：workspace/dataAssets/rules/case-writing.md
 
 选项：[确认写入] [更换目标文件] [调整规则内容] [跳过]
 ```

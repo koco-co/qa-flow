@@ -18,12 +18,12 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 
 工作流启动时一次性加载偏好：
 ```bash
-bun run .claude/scripts/preference-loader.ts load --project {{project}} > workspace/{{project}}/.temp/preferences-merged.json
+bun run .claude/scripts/rule-loader.ts load --project {{project}} > workspace/{{project}}/.temp/rules-merged.json
 ```
-后续节点通过此 JSON 传递偏好给 sub-agent，不再各自读 preferences/ 目录。
+后续节点通过此 JSON 传递规则给 sub-agent，不再各自读 `rules/` 目录。
 
 <precedence>
-用户当前指令 > 项目级 preferences > 全局 preferences > 本文件
+用户当前指令 > 项目级 rules > 全局 rules > 本文件
 </precedence>
 
 <artifact_contract>
@@ -49,7 +49,7 @@ bun run .claude/scripts/preference-loader.ts load --project {{project}} > worksp
 
 <inputs>
 - PRD 路径、蓝湖 URL、XMind/CSV 文件、模块重跑指令、反向同步指令
-- 项目级与全局 `preferences/`
+- 项目级与全局 `rules/`
 - `config.ts`、`state.ts`、`workspace/{{project}}/`、只读源码仓库
 </inputs>
 
@@ -569,7 +569,7 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 
 - 增强后 PRD 对应模块内容
 - 该模块已确认的测试点清单
-- 合并后偏好 JSON（来自 `workspace/{{project}}/.temp/preferences-merged.json`）
+- 合并后规则 JSON（来自 `workspace/{{project}}/.temp/rules-merged.json`）
 - 历史归档用例参考（来自 analyze 步骤）
 - 已确认上下文（来自 `<confirmed_context>`）
 - 源码上下文（来自 transform 步骤的源码分析结果，包括按钮名称、表单结构、字段定义、导航路径等 🔵 标注信息。若 transform 阶段完成了 B 级分析，须将关键 UI 结构摘要传给 Writer）

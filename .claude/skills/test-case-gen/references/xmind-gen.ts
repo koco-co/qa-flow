@@ -113,7 +113,7 @@ function loadPreferences(): XmindPreferences {
   try {
     const prefPath = resolve(
       dirname(new URL(import.meta.url).pathname),
-      "../../preferences/xmind-structure.md",
+      "../../rules/xmind-structure.md",
     );
     if (!existsSync(prefPath)) return defaults;
 

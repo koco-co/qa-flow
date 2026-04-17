@@ -179,10 +179,10 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 工作流启动时一次性加载偏好：
 
 ```bash
-bun run .claude/scripts/preference-loader.ts load --project {{project}} > workspace/{{project}}/.temp/preferences-merged.json
+bun run .claude/scripts/rule-loader.ts load --project {{project}} > workspace/{{project}}/.temp/rules-merged.json
 ```
 
-后续步骤通过此 JSON 传递偏好给 sub-agent，不再各自读 preferences/ 目录。
+后续步骤通过此 JSON 传递规则给 sub-agent，不再各自读 `rules/` 目录。
 
 ---
 

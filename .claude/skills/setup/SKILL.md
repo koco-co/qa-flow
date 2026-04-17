@@ -6,13 +6,13 @@ argument-hint: "[step-number]"
 
 <!-- 前置加载 -->
 
-执行前先加载全局偏好并读取基础配置：
+执行前先加载全局规则并读取基础配置：
 
-1. 全局 `preferences/` 目录下所有 `.md` 文件
+1. 全局 `rules/` 目录下所有 `.md` 文件
 2. 执行 `bun run .claude/scripts/config.ts`（从 `config.json` 和 `.env` 读取模块、仓库、路径配置）
 
 偏好优先级：用户当前指令 > 项目级偏好 > 全局偏好 > 本 skill 内置规则。
-在步骤 2 选定或创建 `{{project}}` 后，再加载 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件。
+在步骤 2 选定或创建 `{{project}}` 后，再加载 `workspace/{{project}}/rules/` 目录下所有 `.md` 文件。
 
 ---
 
@@ -98,7 +98,7 @@ bun run .claude/skills/setup/scripts/init-wizard.ts scan
 - 创建目录结构：
 
 ```bash
-mkdir -p workspace/{{project}}/{prds,xmind,archive,issues,historys,reports,tests,preferences,.repos,.temp}
+mkdir -p workspace/{{project}}/{prds,xmind,archive,issues,historys,reports,tests,rules,knowledge,.repos,.temp}
 ```
 
 - 将项目注册到 `config.json` 的 `projects.{{project}}` 下
@@ -109,7 +109,7 @@ mkdir -p workspace/{{project}}/{prds,xmind,archive,issues,historys,reports,tests
 
 ### 2.4 加载项目级偏好
 
-在 `{{project}}` 确定后，再加载 `workspace/{{project}}/preferences/` 目录下所有 `.md` 文件；若目录不存在则按空目录处理。
+在 `{{project}}` 确定后，再加载 `workspace/{{project}}/rules/` 目录下所有 `.md` 文件；若目录不存在则按空目录处理。
 
 ---
 
@@ -120,7 +120,7 @@ mkdir -p workspace/{{project}}/{prds,xmind,archive,issues,historys,reports,tests
 ### 3.1 创建目录结构
 
 ```bash
-mkdir -p workspace/{{project}}/{prds,xmind,archive,issues,historys,reports,tests,preferences,.repos,.temp}
+mkdir -p workspace/{{project}}/{prds,xmind,archive,issues,historys,reports,tests,rules,knowledge,.repos,.temp}
 ```
 
 创建成功后展示目录树：
@@ -134,7 +134,8 @@ workspace/{{project}}/
 ├── historys/      # 历史 CSV 原始资料
 ├── reports/       # 代码分析报告
 ├── tests/         # 测试产物
-├── preferences/   # 用户偏好规则
+├── rules/         # 规则库（编写规范/格式约束）
+├── knowledge/     # 业务知识库
 ├── .repos/        # 源码仓库（只读）
 └── .temp/         # 临时状态文件
 ```
