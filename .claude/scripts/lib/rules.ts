@@ -24,7 +24,7 @@ function parsePrefsFromContent(content: string, base: XmindRules): XmindRules {
 export function loadXmindRules(project?: string): XmindRules {
   let result = { ...DEFAULTS };
 
-  // 1. Load global preferences
+  // 1. Load global rules
   try {
     const globalPath = resolve(repoRoot(), "rules/xmind-structure.md");
     if (existsSync(globalPath)) {
@@ -35,7 +35,7 @@ export function loadXmindRules(project?: string): XmindRules {
     // fallback to defaults
   }
 
-  // 2. Overlay project-level preferences if project is specified
+  // 2. Overlay project-level rules if project is specified
   if (project) {
     try {
       const projPath = resolve(projectRulesDir(project), "xmind-structure.md");
