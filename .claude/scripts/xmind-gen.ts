@@ -22,7 +22,7 @@ import { basename, dirname, extname, join, resolve } from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
 import { repoRoot, validateFilePath } from "./lib/paths.ts";
-import { loadXmindPreferences } from "./lib/preferences.ts";
+import { loadXmindRules } from "./lib/rules.ts";
 import type {
   IntermediateJson,
   Meta,
@@ -64,7 +64,7 @@ const PRIORITY_MAP: Record<string, MarkerId> = {
   P2: Marker.Priority.p3,
 };
 
-// ─── Preferences loader ──────────────────────────────────────────────────────
+// ─── Rules loader ────────────────────────────────────────────────────────────
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 
@@ -99,11 +99,11 @@ function buildRootTitle(meta: RootAwareMeta, project?: string): string {
     return meta.root_name;
   }
   if (meta.version) {
-    const prefs = loadXmindPreferences(project);
+    const rules = loadXmindRules(project);
     const ver = normalizeVersion(meta.version);
-    return prefs.root_title_template
+    return rules.root_title_template
       .replace("{{prd_version}}", ver)
-      .replace("{{iteration_id}}", prefs.iteration_id);
+      .replace("{{iteration_id}}", rules.iteration_id);
   }
   return meta.project_name;
 }

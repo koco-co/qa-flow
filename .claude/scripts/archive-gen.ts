@@ -19,7 +19,7 @@ import {
 } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { repoRoot, validateFilePath } from "./lib/paths.ts";
-import { buildRootName } from "./lib/preferences.ts";
+import { buildRootName } from "./lib/rules.ts";
 import type {
   IntermediateJson,
   Meta,
