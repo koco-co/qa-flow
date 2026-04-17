@@ -1188,8 +1188,16 @@ describe("suite-slug command", () => {
 // ── uiBlocksDir() ─────────────────────────────────────────────────────────────
 
 describe("uiBlocksDir()", () => {
+  let savedWorkspaceDir: string | undefined;
+
   before(() => {
+    savedWorkspaceDir = process.env.WORKSPACE_DIR;
     process.env.WORKSPACE_DIR = join(TMP_DIR, "workspace");
+  });
+
+  after(() => {
+    if (savedWorkspaceDir === undefined) delete process.env.WORKSPACE_DIR;
+    else process.env.WORKSPACE_DIR = savedWorkspaceDir;
   });
 
   it("returns {tempDir}/ui-blocks/{slug} for given project+suite", () => {
