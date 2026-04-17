@@ -160,14 +160,20 @@ export const test = base.extend<{ step: StepFn }>({
             return;
           }
 
-          // 高亮目标元素（可选，元素不存在时静默跳过）
+          // 高亮目标元素（可选，元素不存在时静默跳过；加超时保护避免 evaluate 等待消失的元素）
           if (highlightTarget) {
-            await highlightTarget.scrollIntoViewIfNeeded().catch(() => {});
-            await highlightTarget
-              .evaluate((el, style) => {
-                (el as HTMLElement).style.cssText += style;
-              }, HIGHLIGHT_STYLE)
-              .catch(() => {});
+            await Promise.race([
+              highlightTarget.scrollIntoViewIfNeeded().catch(() => {}),
+              new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+            ]);
+            await Promise.race([
+              highlightTarget
+                .evaluate((el, style) => {
+                  (el as HTMLElement).style.cssText += style;
+                }, HIGHLIGHT_STYLE)
+                .catch(() => {}),
+              new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+            ]);
           }
 
           await renderStepBadge(page, badgeLabel);
@@ -179,14 +185,17 @@ export const test = base.extend<{ step: StepFn }>({
             new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
           ]);
 
-          // 移除高亮
+          // 移除高亮（加超时保护）
           if (highlightTarget) {
-            await highlightTarget
-              .evaluate((el) => {
-                (el as HTMLElement).style.outline = "";
-                (el as HTMLElement).style.outlineOffset = "";
-              })
-              .catch(() => {});
+            await Promise.race([
+              highlightTarget
+                .evaluate((el) => {
+                  (el as HTMLElement).style.outline = "";
+                  (el as HTMLElement).style.outlineOffset = "";
+                })
+                .catch(() => {}),
+              new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+            ]);
           }
           await clearStepBadge(page);
 
