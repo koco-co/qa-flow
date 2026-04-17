@@ -17,6 +17,10 @@ import {
   reposDir,
   tempDir,
   projectRulesDir,
+  knowledgeDir,
+  knowledgePath,
+  knowledgeModulesDir,
+  knowledgePitfallsDir,
   listProjects,
   repoRoot,
   scriptsDir,
@@ -200,6 +204,39 @@ describe("projectRulesDir", () => {
   it("returns workspace/{project}/rules", () => {
     const dir = projectRulesDir("dataAssets");
     assert.ok(dir.endsWith("workspace/dataAssets/rules"));
+  });
+});
+
+describe("knowledgeDir", () => {
+  it("returns <workspace>/<project>/knowledge", () => {
+    const dir = knowledgeDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/knowledge"), `got: ${dir}`);
+  });
+});
+
+describe("knowledgePath", () => {
+  it("joins segments under knowledge dir", () => {
+    const p = knowledgePath("dataAssets", "modules", "data-source.md");
+    assert.ok(p.endsWith("workspace/dataAssets/knowledge/modules/data-source.md"), `got: ${p}`);
+  });
+
+  it("returns knowledge dir itself when no segments", () => {
+    const p = knowledgePath("dataAssets");
+    assert.ok(p.endsWith("workspace/dataAssets/knowledge"), `got: ${p}`);
+  });
+});
+
+describe("knowledgeModulesDir", () => {
+  it("returns <knowledge>/modules", () => {
+    const dir = knowledgeModulesDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/knowledge/modules"), `got: ${dir}`);
+  });
+});
+
+describe("knowledgePitfallsDir", () => {
+  it("returns <knowledge>/pitfalls", () => {
+    const dir = knowledgePitfallsDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/knowledge/pitfalls"), `got: ${dir}`);
   });
 });
 

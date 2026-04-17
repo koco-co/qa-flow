@@ -65,6 +65,22 @@ export function projectRulesDir(project: string): string {
   return join(projectDir(project), "rules");
 }
 
+export function knowledgeDir(project: string): string {
+  return join(projectDir(project), "knowledge");
+}
+
+export function knowledgePath(project: string, ...segments: string[]): string {
+  return join(knowledgeDir(project), ...segments);
+}
+
+export function knowledgeModulesDir(project: string): string {
+  return join(knowledgeDir(project), "modules");
+}
+
+export function knowledgePitfallsDir(project: string): string {
+  return join(knowledgeDir(project), "pitfalls");
+}
+
 export function scriptsDir(): string {
   return resolve(repoRoot(), ".claude/scripts");
 }
