@@ -1,5 +1,8 @@
 // lib/knowledge.ts
 
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { basename, join } from "node:path";
+
 export interface Frontmatter {
   title: string;
   type: "overview" | "term" | "module" | "pitfall";
@@ -309,4 +312,81 @@ export function autoFixFrontmatter(
 
   const content = serializeFrontmatter(fm) + "\n" + rawContent;
   return { fixed: true, content };
+}
+
+export interface LintError {
+  file: string;
+  rule: string;
+  detail: string;
+}
+
+export interface LintResult {
+  errors: LintError[];
+  warnings: LintError[];
+}
+
+const KEBAB_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+function checkKebabCase(fileBase: string): boolean {
+  const name = fileBase.replace(/^private-/, "");
+  return KEBAB_RE.test(name);
+}
+
+function listMd(dir: string): string[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((f) => f.endsWith(".md"));
+}
+
+export function lintChecks(_project: string, knowledgeDirPath: string): LintResult {
+  const errors: LintError[] = [];
+  const warnings: LintError[] = [];
+
+  const indexPath = join(knowledgeDirPath, "_index.md");
+  const indexContent = existsSync(indexPath) ? readFileSync(indexPath, "utf8") : "";
+
+  const check = (subdir: "modules" | "pitfalls", expectedType: "module" | "pitfall") => {
+    const dir = join(knowledgeDirPath, subdir);
+    for (const fname of listMd(dir)) {
+      const relPath = `${subdir}/${fname}`;
+      const raw = readFileSync(join(dir, fname), "utf8");
+      const parsed = parseFrontmatter(raw);
+
+      const base = basename(fname, ".md");
+      if (!checkKebabCase(base)) {
+        errors.push({ file: relPath, rule: "non-kebab-case-name", detail: base });
+      }
+
+      if (parsed.frontmatter === null) {
+        errors.push({ file: relPath, rule: "missing-frontmatter-field", detail: "all fields" });
+        continue;
+      }
+      const fm = parsed.frontmatter;
+      for (const field of ["title", "type", "confidence", "updated"] as const) {
+        if (!fm[field]) {
+          errors.push({ file: relPath, rule: "missing-frontmatter-field", detail: field });
+        }
+      }
+      if (fm.type !== expectedType) {
+        errors.push({
+          file: relPath,
+          rule: "type-dir-mismatch",
+          detail: `expected ${expectedType}, got ${fm.type}`,
+        });
+      }
+      if (fm.tags.length === 0) {
+        warnings.push({ file: relPath, rule: "empty-tags", detail: "" });
+      }
+      if (fm.source === "") {
+        warnings.push({ file: relPath, rule: "empty-source", detail: "" });
+      }
+      if (!indexContent.includes(fname)) {
+        warnings.push({ file: relPath, rule: "orphan-file", detail: "not listed in _index.md" });
+      }
+    }
+  };
+
+  check("modules", "module");
+  check("pitfalls", "pitfall");
+
+  return { errors, warnings };
 }

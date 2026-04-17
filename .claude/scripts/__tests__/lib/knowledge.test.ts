@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, before, after } from "node:test";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   parseFrontmatter,
   serializeFrontmatter,
@@ -9,6 +12,7 @@ import {
   searchPitfalls,
   confidenceGate,
   autoFixFrontmatter,
+  lintChecks,
   type Frontmatter,
   type ContentTerm,
   type ContentOverview,
@@ -380,5 +384,151 @@ body`;
     const result = autoFixFrontmatter(raw, "/w/p/knowledge/modules/my-module.md", "2026-04-17");
     assert.equal(result.fixed, true);
     assert.ok(result.content.includes("title: my-module"));
+  });
+});
+
+describe("lintChecks", () => {
+  const TMP = join(tmpdir(), `kk-lint-test-${process.pid}`);
+  const knowledgeDirPath = join(TMP, "knowledge");
+
+  before(() => {
+    mkdirSync(join(knowledgeDirPath, "modules"), { recursive: true });
+    mkdirSync(join(knowledgeDirPath, "pitfalls"), { recursive: true });
+  });
+  after(() => {
+    try { rmSync(TMP, { recursive: true, force: true }); } catch { /* ignore */ }
+  });
+
+  it("reports missing frontmatter field as error", () => {
+    writeFileSync(
+      join(knowledgeDirPath, "modules", "broken.md"),
+      `---
+type: module
+tags: []
+confidence: high
+source: ""
+updated: 2026-04-17
+---
+body`,
+    );
+    writeFileSync(
+      join(knowledgeDirPath, "_index.md"),
+      "# p Knowledge Index\n\n- [broken.md](modules/broken.md)\n",
+    );
+    const result = lintChecks("p", knowledgeDirPath);
+    assert.ok(result.errors.some((e) => e.rule === "missing-frontmatter-field"),
+      `expected missing-frontmatter-field error, got errors: ${JSON.stringify(result.errors)}`);
+    rmSync(join(knowledgeDirPath, "modules", "broken.md"));
+  });
+
+  it("reports type mismatch as error", () => {
+    writeFileSync(
+      join(knowledgeDirPath, "modules", "wrong-type.md"),
+      `---
+title: x
+type: pitfall
+tags: []
+confidence: high
+source: ""
+updated: 2026-04-17
+---
+body`,
+    );
+    writeFileSync(
+      join(knowledgeDirPath, "_index.md"),
+      "# p\n\n- [wrong-type.md](modules/wrong-type.md)\n",
+    );
+    const result = lintChecks("p", knowledgeDirPath);
+    assert.ok(result.errors.some((e) => e.rule === "type-dir-mismatch"));
+    rmSync(join(knowledgeDirPath, "modules", "wrong-type.md"));
+  });
+
+  it("reports non-kebab-case name as error", () => {
+    writeFileSync(
+      join(knowledgeDirPath, "modules", "Bad_Name.md"),
+      `---
+title: bad
+type: module
+tags: []
+confidence: high
+source: ""
+updated: 2026-04-17
+---
+body`,
+    );
+    writeFileSync(
+      join(knowledgeDirPath, "_index.md"),
+      "# p\n\n- [Bad_Name.md](modules/Bad_Name.md)\n",
+    );
+    const result = lintChecks("p", knowledgeDirPath);
+    assert.ok(result.errors.some((e) => e.rule === "non-kebab-case-name"));
+    rmSync(join(knowledgeDirPath, "modules", "Bad_Name.md"));
+  });
+
+  it("reports empty tags as warning", () => {
+    writeFileSync(
+      join(knowledgeDirPath, "modules", "notag.md"),
+      `---
+title: x
+type: module
+tags: []
+confidence: high
+source: "src.ts"
+updated: 2026-04-17
+---
+body`,
+    );
+    writeFileSync(
+      join(knowledgeDirPath, "_index.md"),
+      "# p\n\n- [notag.md](modules/notag.md)\n",
+    );
+    const result = lintChecks("p", knowledgeDirPath);
+    assert.equal(result.errors.length, 0);
+    assert.ok(result.warnings.some((w) => w.rule === "empty-tags"));
+    rmSync(join(knowledgeDirPath, "modules", "notag.md"));
+  });
+
+  it("reports empty source as warning", () => {
+    writeFileSync(
+      join(knowledgeDirPath, "modules", "nosrc.md"),
+      `---
+title: x
+type: module
+tags: [a]
+confidence: high
+source: ""
+updated: 2026-04-17
+---
+body`,
+    );
+    writeFileSync(
+      join(knowledgeDirPath, "_index.md"),
+      "# p\n\n- [nosrc.md](modules/nosrc.md)\n",
+    );
+    const result = lintChecks("p", knowledgeDirPath);
+    assert.ok(result.warnings.some((w) => w.rule === "empty-source"));
+    rmSync(join(knowledgeDirPath, "modules", "nosrc.md"));
+  });
+
+  it("reports orphan file (present but not in _index.md) as warning", () => {
+    writeFileSync(
+      join(knowledgeDirPath, "modules", "orphan.md"),
+      `---
+title: orphan
+type: module
+tags: [a]
+confidence: high
+source: "x"
+updated: 2026-04-17
+---
+body`,
+    );
+    writeFileSync(
+      join(knowledgeDirPath, "_index.md"),
+      "# p Knowledge Index\n\n## Modules\n_（暂无）_\n",
+    );
+    const result = lintChecks("p", knowledgeDirPath);
+    assert.ok(result.warnings.some((w) => w.rule === "orphan-file"));
+    rmSync(join(knowledgeDirPath, "modules", "orphan.md"));
   });
 });
