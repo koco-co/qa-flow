@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
 
 // 手动解析 .env，确保 worker 继承时变量已就绪
@@ -46,16 +46,29 @@ const baseUrl =
 process.env.UI_AUTOTEST_COOKIE = cookie;
 if (baseUrl) process.env.UI_AUTOTEST_BASE_URL = baseUrl;
 
-// 环境隔离 session 路径
-const sessionPath = `.auth/session-${envLower}.json`;
-process.env.UI_AUTOTEST_SESSION_PATH = sessionPath;
-
-// 报告路径：workspace/{project}/reports/playwright/YYYYMM/{suiteName}/{env}/
+// 报告路径：workspace/{project}/reports/allure/YYYYMM/{suiteName}/{env}/
 // 通过环境变量 QA_SUITE_NAME 传入需求名称，默认 report
 const yyyymm = new Date().toISOString().slice(0, 7).replace(/-/g, ""); // YYYYMM
 const suiteName = process.env.QA_SUITE_NAME ?? "report";
 const project = process.env.QA_PROJECT ?? "dataAssets";
-const reportDir = `workspace/${project}/reports/playwright/${yyyymm}/${suiteName}/${envLower}`;
+const reportDir = `workspace/${project}/reports/allure/${yyyymm}/${suiteName}/${envLower}`;
+const allureResultsDir = `${reportDir}/allure-results`;
+
+// 多项目 session 路径：.auth/{project}/session-{env}.json
+// 兼容窗口：新路径不存在且旧路径存在时回退旧路径，并 stderr 提示用户跑 migrate
+const newSessionPath = `.auth/${project}/session-${envLower}.json`;
+const legacySessionPath = `.auth/session-${envLower}.json`;
+const sessionPath =
+  existsSync(newSessionPath) || !existsSync(legacySessionPath)
+    ? newSessionPath
+    : legacySessionPath;
+
+if (sessionPath === legacySessionPath) {
+  process.stderr.write(
+    `[playwright.config] 使用旧 session 路径 ${legacySessionPath}。建议运行：bun run .claude/scripts/migrate-session-paths.ts\n`,
+  );
+}
+process.env.UI_AUTOTEST_SESSION_PATH = sessionPath;
 
 export default defineConfig({
   testMatch: [
@@ -66,10 +79,11 @@ export default defineConfig({
   reporter: [
     ["line"],
     [
-      "monocart-reporter",
+      "allure-playwright",
       {
-        name: `${suiteName} - UI自动化测试报告 (${envLower})`,
-        outputFile: `${reportDir}/${suiteName}.html`,
+        detail: true,
+        outputFolder: allureResultsDir,
+        suiteTitle: `${suiteName} - UI自动化测试 (${envLower})`,
       },
     ],
   ],
