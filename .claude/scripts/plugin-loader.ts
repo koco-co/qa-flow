@@ -7,6 +7,7 @@
  *   bun run .claude/scripts/plugin-loader.ts check --input "https://lanhuapp.com/..."
  *   bun run .claude/scripts/plugin-loader.ts resolve --url "https://lanhuapp.com/..."
  *   bun run .claude/scripts/plugin-loader.ts notify --event case-generated --data '{"count":42}'
+ *   bun run .claude/scripts/plugin-loader.ts notify --event ui-test-completed --data '{"reportFile":"workspace/.../allure-report/index.html"}'
  *   bun run .claude/scripts/plugin-loader.ts --help
  */
 
