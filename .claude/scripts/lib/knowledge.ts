@@ -379,7 +379,7 @@ export function lintChecks(_project: string, knowledgeDirPath: string): LintResu
       if (fm.source === "") {
         warnings.push({ file: relPath, rule: "empty-source", detail: "" });
       }
-      if (!indexContent.includes(fname)) {
+      if (!indexContent.includes(`${subdir}/${fname}`)) {
         warnings.push({ file: relPath, rule: "orphan-file", detail: "not listed in _index.md" });
       }
     }

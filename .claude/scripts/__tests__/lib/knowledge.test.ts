@@ -400,9 +400,11 @@ describe("lintChecks", () => {
   });
 
   it("reports missing frontmatter field as error", () => {
-    writeFileSync(
-      join(knowledgeDirPath, "modules", "broken.md"),
-      `---
+    const modulePath = join(knowledgeDirPath, "modules", "broken.md");
+    try {
+      writeFileSync(
+        modulePath,
+        `---
 type: module
 tags: []
 confidence: high
@@ -410,21 +412,25 @@ source: ""
 updated: 2026-04-17
 ---
 body`,
-    );
-    writeFileSync(
-      join(knowledgeDirPath, "_index.md"),
-      "# p Knowledge Index\n\n- [broken.md](modules/broken.md)\n",
-    );
-    const result = lintChecks("p", knowledgeDirPath);
-    assert.ok(result.errors.some((e) => e.rule === "missing-frontmatter-field"),
-      `expected missing-frontmatter-field error, got errors: ${JSON.stringify(result.errors)}`);
-    rmSync(join(knowledgeDirPath, "modules", "broken.md"));
+      );
+      writeFileSync(
+        join(knowledgeDirPath, "_index.md"),
+        "# p Knowledge Index\n\n- [modules/broken.md](modules/broken.md)\n",
+      );
+      const result = lintChecks("p", knowledgeDirPath);
+      assert.ok(result.errors.some((e) => e.rule === "missing-frontmatter-field"),
+        `expected missing-frontmatter-field error, got errors: ${JSON.stringify(result.errors)}`);
+    } finally {
+      try { rmSync(modulePath); } catch { /* ignore */ }
+    }
   });
 
   it("reports type mismatch as error", () => {
-    writeFileSync(
-      join(knowledgeDirPath, "modules", "wrong-type.md"),
-      `---
+    const modulePath = join(knowledgeDirPath, "modules", "wrong-type.md");
+    try {
+      writeFileSync(
+        modulePath,
+        `---
 title: x
 type: pitfall
 tags: []
@@ -433,20 +439,24 @@ source: ""
 updated: 2026-04-17
 ---
 body`,
-    );
-    writeFileSync(
-      join(knowledgeDirPath, "_index.md"),
-      "# p\n\n- [wrong-type.md](modules/wrong-type.md)\n",
-    );
-    const result = lintChecks("p", knowledgeDirPath);
-    assert.ok(result.errors.some((e) => e.rule === "type-dir-mismatch"));
-    rmSync(join(knowledgeDirPath, "modules", "wrong-type.md"));
+      );
+      writeFileSync(
+        join(knowledgeDirPath, "_index.md"),
+        "# p\n\n- [modules/wrong-type.md](modules/wrong-type.md)\n",
+      );
+      const result = lintChecks("p", knowledgeDirPath);
+      assert.ok(result.errors.some((e) => e.rule === "type-dir-mismatch"));
+    } finally {
+      try { rmSync(modulePath); } catch { /* ignore */ }
+    }
   });
 
   it("reports non-kebab-case name as error", () => {
-    writeFileSync(
-      join(knowledgeDirPath, "modules", "Bad_Name.md"),
-      `---
+    const modulePath = join(knowledgeDirPath, "modules", "Bad_Name.md");
+    try {
+      writeFileSync(
+        modulePath,
+        `---
 title: bad
 type: module
 tags: []
@@ -455,20 +465,24 @@ source: ""
 updated: 2026-04-17
 ---
 body`,
-    );
-    writeFileSync(
-      join(knowledgeDirPath, "_index.md"),
-      "# p\n\n- [Bad_Name.md](modules/Bad_Name.md)\n",
-    );
-    const result = lintChecks("p", knowledgeDirPath);
-    assert.ok(result.errors.some((e) => e.rule === "non-kebab-case-name"));
-    rmSync(join(knowledgeDirPath, "modules", "Bad_Name.md"));
+      );
+      writeFileSync(
+        join(knowledgeDirPath, "_index.md"),
+        "# p\n\n- [modules/Bad_Name.md](modules/Bad_Name.md)\n",
+      );
+      const result = lintChecks("p", knowledgeDirPath);
+      assert.ok(result.errors.some((e) => e.rule === "non-kebab-case-name"));
+    } finally {
+      try { rmSync(modulePath); } catch { /* ignore */ }
+    }
   });
 
   it("reports empty tags as warning", () => {
-    writeFileSync(
-      join(knowledgeDirPath, "modules", "notag.md"),
-      `---
+    const modulePath = join(knowledgeDirPath, "modules", "notag.md");
+    try {
+      writeFileSync(
+        modulePath,
+        `---
 title: x
 type: module
 tags: []
@@ -477,21 +491,25 @@ source: "src.ts"
 updated: 2026-04-17
 ---
 body`,
-    );
-    writeFileSync(
-      join(knowledgeDirPath, "_index.md"),
-      "# p\n\n- [notag.md](modules/notag.md)\n",
-    );
-    const result = lintChecks("p", knowledgeDirPath);
-    assert.equal(result.errors.length, 0);
-    assert.ok(result.warnings.some((w) => w.rule === "empty-tags"));
-    rmSync(join(knowledgeDirPath, "modules", "notag.md"));
+      );
+      writeFileSync(
+        join(knowledgeDirPath, "_index.md"),
+        "# p\n\n- [modules/notag.md](modules/notag.md)\n",
+      );
+      const result = lintChecks("p", knowledgeDirPath);
+      assert.equal(result.errors.length, 0);
+      assert.ok(result.warnings.some((w) => w.rule === "empty-tags"));
+    } finally {
+      try { rmSync(modulePath); } catch { /* ignore */ }
+    }
   });
 
   it("reports empty source as warning", () => {
-    writeFileSync(
-      join(knowledgeDirPath, "modules", "nosrc.md"),
-      `---
+    const modulePath = join(knowledgeDirPath, "modules", "nosrc.md");
+    try {
+      writeFileSync(
+        modulePath,
+        `---
 title: x
 type: module
 tags: [a]
@@ -500,20 +518,24 @@ source: ""
 updated: 2026-04-17
 ---
 body`,
-    );
-    writeFileSync(
-      join(knowledgeDirPath, "_index.md"),
-      "# p\n\n- [nosrc.md](modules/nosrc.md)\n",
-    );
-    const result = lintChecks("p", knowledgeDirPath);
-    assert.ok(result.warnings.some((w) => w.rule === "empty-source"));
-    rmSync(join(knowledgeDirPath, "modules", "nosrc.md"));
+      );
+      writeFileSync(
+        join(knowledgeDirPath, "_index.md"),
+        "# p\n\n- [modules/nosrc.md](modules/nosrc.md)\n",
+      );
+      const result = lintChecks("p", knowledgeDirPath);
+      assert.ok(result.warnings.some((w) => w.rule === "empty-source"));
+    } finally {
+      try { rmSync(modulePath); } catch { /* ignore */ }
+    }
   });
 
   it("reports orphan file (present but not in _index.md) as warning", () => {
-    writeFileSync(
-      join(knowledgeDirPath, "modules", "orphan.md"),
-      `---
+    const modulePath = join(knowledgeDirPath, "modules", "orphan.md");
+    try {
+      writeFileSync(
+        modulePath,
+        `---
 title: orphan
 type: module
 tags: [a]
@@ -522,13 +544,15 @@ source: "x"
 updated: 2026-04-17
 ---
 body`,
-    );
-    writeFileSync(
-      join(knowledgeDirPath, "_index.md"),
-      "# p Knowledge Index\n\n## Modules\n_（暂无）_\n",
-    );
-    const result = lintChecks("p", knowledgeDirPath);
-    assert.ok(result.warnings.some((w) => w.rule === "orphan-file"));
-    rmSync(join(knowledgeDirPath, "modules", "orphan.md"));
+      );
+      writeFileSync(
+        join(knowledgeDirPath, "_index.md"),
+        "# p Knowledge Index\n\n## Modules\n_（暂无）_\n",
+      );
+      const result = lintChecks("p", knowledgeDirPath);
+      assert.ok(result.warnings.some((w) => w.rule === "orphan-file"));
+    } finally {
+      try { rmSync(modulePath); } catch { /* ignore */ }
+    }
   });
 });
