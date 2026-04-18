@@ -12,10 +12,27 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
   error: 3,
 };
 
+const LOG_LEVELS: readonly LogLevel[] = ["debug", "info", "warn", "error"];
+
 let currentLevel: LogLevel = "info";
 
 export function setLogLevel(level: LogLevel): void {
   currentLevel = level;
+}
+
+export function getLogLevel(): LogLevel {
+  return currentLevel;
+}
+
+/**
+ * Read `LOG_LEVEL` environment variable and apply it to the global level.
+ * Permissive: invalid values are ignored silently.
+ */
+export function initLogLevel(): void {
+  const raw = process.env["LOG_LEVEL"]?.toLowerCase();
+  if (raw && (LOG_LEVELS as readonly string[]).includes(raw)) {
+    currentLevel = raw as LogLevel;
+  }
 }
 
 function shouldLog(level: LogLevel): boolean {

@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { initEnv } from "./env.ts";
-import { createLogger, setLogLevel, type Logger, type LogLevel } from "./logger.ts";
+import { createLogger, initLogLevel, type Logger } from "./logger.ts";
 
 export interface CliOption {
   flag: string;
@@ -43,15 +43,6 @@ export interface CliConfig {
   rootAction?: CliRootActionSpec;
   initEnv?: boolean;
   onError?: (err: unknown, ctx: CliContext) => void;
-}
-
-const LOG_LEVELS: readonly LogLevel[] = ["debug", "info", "warn", "error"];
-
-function applyLogLevel(): void {
-  const raw = process.env["LOG_LEVEL"]?.toLowerCase();
-  if (raw && (LOG_LEVELS as readonly string[]).includes(raw)) {
-    setLogLevel(raw as LogLevel);
-  }
 }
 
 function attachOption(cmd: Command, opt: CliOption): void {
@@ -136,7 +127,7 @@ export function createCli(config: CliConfig): Command {
   if (config.initEnv !== false) {
     initEnv();
   }
-  applyLogLevel();
+  initLogLevel();
 
   const logger = createLogger(config.name);
   const ctx: CliContext = { log: logger, cwd: process.cwd() };
