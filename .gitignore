@@ -4,6 +4,7 @@ node_modules/
 
 # ── 环境与敏感配置 ────────────────────────────────────────
 .env
+.env.envs
 .env.local
 .auth/
 config.json

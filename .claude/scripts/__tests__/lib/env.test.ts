@@ -157,3 +157,73 @@ describe("initEnv", () => {
     delete process.env["INIT_TEST_KEY_EXISTING"];
   });
 });
+
+describe("initEnv three-layer mode", () => {
+  const KEYS = [
+    "TL_ONLY_ENV",
+    "TL_ONLY_ENVS",
+    "TL_ONLY_LOCAL",
+    "TL_ENV_AND_ENVS",
+    "TL_ALL_THREE",
+    "TL_SHELL_WINS",
+  ];
+
+  function cleanKeys(): void {
+    for (const k of KEYS) delete process.env[k];
+  }
+
+  it("loads .env.local > .env.envs > .env in priority order", async () => {
+    makeTmp();
+    writeFileSync(
+      join(TMP_DIR, ".env"),
+      ["TL_ONLY_ENV=env", "TL_ENV_AND_ENVS=from-env", "TL_ALL_THREE=from-env"].join("\n") + "\n",
+    );
+    writeFileSync(
+      join(TMP_DIR, ".env.envs"),
+      ["TL_ONLY_ENVS=envs", "TL_ENV_AND_ENVS=from-envs", "TL_ALL_THREE=from-envs"].join("\n") + "\n",
+    );
+    writeFileSync(
+      join(TMP_DIR, ".env.local"),
+      ["TL_ONLY_LOCAL=local", "TL_ALL_THREE=from-local"].join("\n") + "\n",
+    );
+
+    cleanKeys();
+    const { initEnv } = await import("../../lib/env.ts");
+    const merged = initEnv({ cwd: TMP_DIR });
+
+    assert.equal(merged["TL_ONLY_ENV"], "env");
+    assert.equal(merged["TL_ONLY_ENVS"], "envs");
+    assert.equal(merged["TL_ONLY_LOCAL"], "local");
+    assert.equal(merged["TL_ENV_AND_ENVS"], "from-envs", ".env.envs overrides .env");
+    assert.equal(merged["TL_ALL_THREE"], "from-local", ".env.local overrides all");
+
+    assert.equal(process.env["TL_ALL_THREE"], "from-local");
+    cleanKeys();
+  });
+
+  it("permissive when files missing", async () => {
+    makeTmp();
+    writeFileSync(join(TMP_DIR, ".env"), "TL_ONLY_ENV=only\n");
+    // no .env.envs, no .env.local
+
+    cleanKeys();
+    const { initEnv } = await import("../../lib/env.ts");
+    const merged = initEnv({ cwd: TMP_DIR });
+    assert.equal(merged["TL_ONLY_ENV"], "only");
+    cleanKeys();
+  });
+
+  it("process.env keys win over all three layers", async () => {
+    makeTmp();
+    writeFileSync(join(TMP_DIR, ".env"), "TL_SHELL_WINS=from-env\n");
+    writeFileSync(join(TMP_DIR, ".env.envs"), "TL_SHELL_WINS=from-envs\n");
+    writeFileSync(join(TMP_DIR, ".env.local"), "TL_SHELL_WINS=from-local\n");
+
+    cleanKeys();
+    process.env["TL_SHELL_WINS"] = "from-shell";
+    const { initEnv } = await import("../../lib/env.ts");
+    initEnv({ cwd: TMP_DIR });
+    assert.equal(process.env["TL_SHELL_WINS"], "from-shell");
+    cleanKeys();
+  });
+});
