@@ -8,6 +8,7 @@ import {
   planSplit,
   renderCompatibilityShim,
   renderIndexBarrel,
+  renderTargetFile,
 } from "../migrate-helpers-split.ts";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
@@ -415,6 +416,253 @@ describe("E2E fixture test: CLI splits test-setup.ts", () => {
     assert.ok(
       setupContent.includes("export function getEnv"),
       "Original test-setup.ts should be unchanged in dry-run",
+    );
+  });
+});
+
+// ── Cross-file fixture tests ───────────────────────────────────────────────────
+
+const XFILE_FIXTURE_PROJECT = `helpers-split-xfile-fixture-${process.pid}`;
+const XFILE_FIXTURE_DIR = join(REPO_ROOT, "workspace", XFILE_FIXTURE_PROJECT);
+const XFILE_FIXTURE_HELPERS = join(XFILE_FIXTURE_DIR, "tests", "helpers");
+
+after(() => {
+  rmSync(XFILE_FIXTURE_DIR, { recursive: true, force: true });
+});
+
+describe("renderTargetFile: typeAlias propagation", () => {
+  it("emits typeAliases into target file that uses them", () => {
+    // getEnv lives in env-setup.ts (FUNCTION_TO_FILE mapped)
+    // Use RuntimeEnv type alias (same as real file)
+    const src = `import type { Page } from "@playwright/test";
+
+type Foo = string;
+
+export function getEnv(name: string): Foo | undefined {
+  return process.env[name] as Foo | undefined;
+}
+`;
+    const parsed = parseTestSetup(src);
+    assert.equal(parsed.typeAliases.length, 1, "should parse type alias");
+    assert.ok(parsed.typeAliases[0].includes("type Foo"), "typeAlias should be 'type Foo'");
+
+    const plan = planSplit(parsed);
+    const envFunctions = plan.get("env-setup.ts") ?? [];
+
+    const content = renderTargetFile(
+      "env-setup.ts",
+      parsed.imports,
+      parsed.typeAliases,
+      envFunctions,
+    );
+
+    assert.ok(content.includes("type Foo"), "emitted env-setup.ts should contain 'type Foo'");
+    assert.ok(content.includes("export function getEnv"), "emitted env-setup.ts should contain getEnv");
+  });
+
+  it("emits typeAliases into ALL target files (even if no direct usage)", () => {
+    // batch-sql.ts functions with type aliases at top
+    const src = `import type { Page } from "@playwright/test";
+
+type Foo = string;
+
+export async function executeSqlViaBatchDoris(page: Page, sql: string): Promise<void> {
+  await page.fill(".editor", sql);
+}
+`;
+    const parsed = parseTestSetup(src);
+    const plan = planSplit(parsed);
+    const batchFunctions = plan.get("batch-sql.ts") ?? [];
+
+    const content = renderTargetFile(
+      "batch-sql.ts",
+      parsed.imports,
+      parsed.typeAliases,
+      batchFunctions,
+    );
+
+    assert.ok(content.includes("type Foo"), "emitted batch-sql.ts should contain 'type Foo'");
+  });
+
+  it("CLI split propagates typeAliases into each emitted file", () => {
+    // Use real CLI via runCli to verify end-to-end typeAlias propagation
+    // Source uses type RuntimeEnv alias (matches real file pattern)
+    const src = `import type { Page } from "@playwright/test";
+
+type RuntimeEnv = Record<string, string | undefined>;
+
+export function getEnv(name: string): string | undefined {
+  return (globalThis as typeof globalThis & { process?: { env?: RuntimeEnv } }).process?.env?.[name];
+}
+
+export async function syncMetadata(page: Page): Promise<void> {
+  await page.click(".sync-btn");
+}
+
+export async function getAccessibleProjectIds(page: Page): Promise<number[]> {
+  return [1, 2, 3];
+}
+
+export async function executeSqlViaBatchDoris(page: Page, sql: string): Promise<void> {
+  await page.fill(".sql-editor", sql);
+}
+`;
+    rmSync(XFILE_FIXTURE_DIR, { recursive: true, force: true });
+    mkdirSync(XFILE_FIXTURE_HELPERS, { recursive: true });
+    writeFileSync(join(XFILE_FIXTURE_HELPERS, "test-setup.ts"), src, "utf8");
+
+    const { stdout, code } = runCli(["--project", XFILE_FIXTURE_PROJECT]);
+    assert.equal(code, 0, `CLI failed:\n${stdout}`);
+
+    // env-setup.ts should contain the type alias
+    const envContent = readFileSync(join(XFILE_FIXTURE_HELPERS, "env-setup.ts"), "utf8");
+    assert.ok(envContent.includes("type RuntimeEnv"), "env-setup.ts should contain type RuntimeEnv");
+
+    // metadata-sync.ts should also have it (all files get it)
+    const metaContent = readFileSync(join(XFILE_FIXTURE_HELPERS, "metadata-sync.ts"), "utf8");
+    assert.ok(metaContent.includes("type RuntimeEnv"), "metadata-sync.ts should also contain type RuntimeEnv");
+
+    // batch-sql.ts should also have it
+    const batchContent = readFileSync(join(XFILE_FIXTURE_HELPERS, "batch-sql.ts"), "utf8");
+    assert.ok(batchContent.includes("type RuntimeEnv"), "batch-sql.ts should also contain type RuntimeEnv");
+  });
+});
+
+describe("renderTargetFile: cross-file import generation", () => {
+  it("detects cross-file usage and emits import statement", () => {
+    // getEnv (env-setup) calling selectBatchProject (batch-sql) is artificial but validates mechanism
+    // Use the real mapped names: put getEnv in a source that calls selectBatchProject
+    // getEnv → env-setup.ts, selectBatchProject → batch-sql.ts
+    // So we place selectBatchProject calling getEnv (getEnv is in env-setup, selectBatchProject is in batch-sql)
+    // batch-sql.ts functions calling env-setup.ts functions = cross-file import for env-setup
+    const src = `import type { Page } from "@playwright/test";
+
+export function getEnv(name: string): string | undefined {
+  return process.env[name];
+}
+
+export async function selectBatchProject(page: Page, name: string): Promise<void> {
+  const env = getEnv("TEST_VAR");
+  await page.goto(\`/batch?env=\${env}\`);
+}
+`;
+    const parsed = parseTestSetup(src);
+    const plan = planSplit(parsed);
+
+    const batchFunctions = plan.get("batch-sql.ts") ?? [];
+    const content = renderTargetFile(
+      "batch-sql.ts",
+      parsed.imports,
+      parsed.typeAliases,
+      batchFunctions,
+    );
+
+    // batch-sql.ts should import getEnv from env-setup (since selectBatchProject calls getEnv)
+    assert.ok(
+      content.includes('from "./env-setup"'),
+      `batch-sql.ts should import from env-setup; got:\n${content}`,
+    );
+    assert.ok(
+      content.includes("getEnv"),
+      "the cross-file import should include getEnv",
+    );
+    // The import line should be a proper import statement
+    assert.ok(
+      /import \{[^}]*getEnv[^}]*\} from "\.\/env-setup"/.test(content),
+      `expected import statement with getEnv from env-setup; got:\n${content}`,
+    );
+  });
+
+  it("does NOT emit cross-file import for functions in the same file", () => {
+    // openBatchDorisEditor (batch-sql private) calls selectBatchProject (batch-sql)
+    // They are in the same file — no cross-file import should appear for selectBatchProject
+    const src = `import type { Page } from "@playwright/test";
+
+export async function selectBatchProject(page: Page, name: string): Promise<void> {
+  await page.goto(\`/batch/\${name}\`);
+}
+
+async function openBatchDorisEditor(page: Page, name: string, project: string): Promise<void> {
+  await selectBatchProject(page, project);
+  await page.click(".editor");
+}
+`;
+    const parsed = parseTestSetup(src);
+    const plan = planSplit(parsed);
+
+    const batchFunctions = plan.get("batch-sql.ts") ?? [];
+    const content = renderTargetFile(
+      "batch-sql.ts",
+      parsed.imports,
+      parsed.typeAliases,
+      batchFunctions,
+    );
+
+    // NO cross-file import needed — selectBatchProject is in same file
+    assert.ok(
+      !content.includes('import { selectBatchProject }'),
+      "should NOT emit import for same-file function selectBatchProject",
+    );
+  });
+
+  it("CLI split emits cross-file import for selectBatchProject using applyRuntimeCookies", () => {
+    // Use a source where selectBatchProject calls applyRuntimeCookies (cross-file: batch → env-setup)
+    // This mirrors the real test-setup.ts scenario
+    const src = `import type { Page } from "@playwright/test";
+
+export async function applyRuntimeCookies(page: Page, product?: string): Promise<void> {
+  await page.context().addCookies([]);
+}
+
+export function buildOfflineUrl(path: string): string {
+  return \`http://offline/\${path}\`;
+}
+
+export async function selectBatchProject(page: Page, projectName: string): Promise<void> {
+  await applyRuntimeCookies(page, "batch");
+  await page.goto(buildOfflineUrl("/projects"));
+}
+
+export async function syncMetadata(page: Page): Promise<void> {
+  await applyRuntimeCookies(page);
+}
+
+export async function getAccessibleProjectIds(page: Page): Promise<number[]> {
+  return [1, 2, 3];
+}
+
+export async function executeSqlViaBatchDoris(page: Page, sql: string): Promise<void> {
+  await page.fill(".editor", sql);
+}
+`;
+    // Re-use xfile fixture dir (already set up or reset it)
+    rmSync(XFILE_FIXTURE_DIR, { recursive: true, force: true });
+    mkdirSync(XFILE_FIXTURE_HELPERS, { recursive: true });
+    writeFileSync(join(XFILE_FIXTURE_HELPERS, "test-setup.ts"), src, "utf8");
+
+    const { stdout, code } = runCli(["--project", XFILE_FIXTURE_PROJECT]);
+    assert.equal(code, 0, `CLI failed:\n${stdout}`);
+
+    // batch-sql.ts should import applyRuntimeCookies and buildOfflineUrl from env-setup
+    const batchContent = readFileSync(join(XFILE_FIXTURE_HELPERS, "batch-sql.ts"), "utf8");
+    assert.ok(
+      batchContent.includes('from "./env-setup"'),
+      `batch-sql.ts should import from env-setup; got:\n${batchContent.slice(0, 500)}`,
+    );
+    assert.ok(
+      batchContent.includes("applyRuntimeCookies"),
+      "cross-file import should include applyRuntimeCookies",
+    );
+    assert.ok(
+      batchContent.includes("buildOfflineUrl"),
+      "cross-file import should include buildOfflineUrl",
+    );
+
+    // metadata-sync.ts should import applyRuntimeCookies from env-setup
+    const metaContent = readFileSync(join(XFILE_FIXTURE_HELPERS, "metadata-sync.ts"), "utf8");
+    assert.ok(
+      metaContent.includes('from "./env-setup"'),
+      `metadata-sync.ts should import from env-setup; got:\n${metaContent.slice(0, 500)}`,
     );
   });
 });

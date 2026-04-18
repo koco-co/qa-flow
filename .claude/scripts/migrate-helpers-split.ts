@@ -304,15 +304,80 @@ export function planSplit(parsed: ParsedSetup): Map<string, ParsedFunction[]> {
   return plan;
 }
 
+// ── Cross-file import resolver ─────────────────────────────────────────────────
+
+/** Build a reverse map: functionName → targetFile from all known mappings. */
+function buildFunctionToFileMap(): Record<string, string> {
+  return { ...FUNCTION_TO_FILE, ...PRIVATE_HELPER_TARGETS };
+}
+
+/**
+ * Given the set of functions assigned to `target`, scan their sources for
+ * identifiers that belong to OTHER target files and return the needed imports.
+ *
+ * Returns an array of import statements, e.g.:
+ *   ['import { applyRuntimeCookies, buildOfflineUrl } from "./env-setup";']
+ */
+function resolveCrossFileImports(
+  target: string,
+  functions: readonly ParsedFunction[],
+): string[] {
+  const reverseMap = buildFunctionToFileMap();
+
+  // Collect all function names that belong to OTHER targets
+  const otherFileNames: Record<string, string[]> = {};
+
+  for (const [name, ownerFile] of Object.entries(reverseMap)) {
+    if (ownerFile === target) continue;
+    if (!otherFileNames[ownerFile]) {
+      otherFileNames[ownerFile] = [];
+    }
+    otherFileNames[ownerFile].push(name);
+  }
+
+  // For each function in this target, check which other-file names are used
+  const needed: Record<string, Set<string>> = {};
+
+  for (const fn of functions) {
+    for (const [ownerFile, names] of Object.entries(otherFileNames)) {
+      for (const name of names) {
+        const regex = new RegExp(`\\b${name}\\b`);
+        if (regex.test(fn.source)) {
+          if (!needed[ownerFile]) {
+            needed[ownerFile] = new Set();
+          }
+          needed[ownerFile].add(name);
+        }
+      }
+    }
+  }
+
+  // Render import statements (only for exported functions — private helpers are not importable)
+  const exportedFunctions = new Set(Object.keys(FUNCTION_TO_FILE));
+
+  return Object.entries(needed)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([ownerFile, names]) => {
+      const importableNames = [...names]
+        .filter((n) => exportedFunctions.has(n))
+        .sort();
+      if (importableNames.length === 0) return null;
+      const base = ownerFile.replace(/\.ts$/, "");
+      return `import { ${importableNames.join(", ")} } from "./${base}";`;
+    })
+    .filter((s): s is string => s !== null);
+}
+
 // ── Renderers ──────────────────────────────────────────────────────────────────
 
 /**
  * Renders the contents for a target split file.
- * Includes the full imports block and all assigned functions.
+ * Includes the full imports block, type aliases, cross-file imports, and all assigned functions.
  */
 export function renderTargetFile(
   target: string,
   imports: readonly string[],
+  typeAliases: readonly string[],
   functions: readonly ParsedFunction[],
 ): string {
   const parts: string[] = [];
@@ -324,6 +389,19 @@ export function renderTargetFile(
   // Full imports block (not filtered — intentional duplication)
   if (imports.length > 0) {
     parts.push(imports.join("\n"));
+    parts.push("");
+  }
+
+  // Cross-file imports (functions from other split files used by this file)
+  const crossFileImports = resolveCrossFileImports(target, functions);
+  if (crossFileImports.length > 0) {
+    parts.push(crossFileImports.join("\n"));
+    parts.push("");
+  }
+
+  // Type aliases (emitted into every target file to avoid cross-file type deps)
+  if (typeAliases.length > 0) {
+    parts.push(typeAliases.join("\n"));
     parts.push("");
   }
 
@@ -418,7 +496,7 @@ export function runSplit(options: {
   // Write target files
   for (const target of ALL_TARGETS) {
     const functions = plan.get(target) ?? [];
-    const content = renderTargetFile(target, parsed.imports, functions);
+    const content = renderTargetFile(target, parsed.imports, parsed.typeAliases, functions);
     const outPath = join(helpersDir, target);
 
     if (!dryRun) {
