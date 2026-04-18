@@ -4,11 +4,14 @@
  * Usage:
  *   bun run .claude/scripts/writer-context-builder.ts build \
  *     --prd <path> --test-points <path> --writer-id <module> [--rules <path>]
+ *     [--strategy-id <id>] [--knowledge-injection <mode>] [--project <name>]
  */
 
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { Command } from "commander";
+import { repoRoot } from "./lib/paths.ts";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -21,11 +24,18 @@ interface TestPointsJson {
   modules: TestPointModule[];
 }
 
+interface KnowledgePayload {
+  core?: { overview: string; terms: string };
+  module?: { frontmatter: Record<string, unknown>; content: string };
+}
+
 interface WriterContext {
   writer_id: string;
   module_prd_section: string;
   test_points: unknown[];
   rules: Record<string, unknown>;
+  strategy_id: string;
+  knowledge: KnowledgePayload;
   fallback: boolean;
 }
 
@@ -94,6 +104,85 @@ function filterTestPoints(tp: TestPointsJson, writerId: string): unknown[] {
   return matched?.test_points ?? [];
 }
 
+// ─── Knowledge injection ───────────────────────────────────────────────────────
+
+const KNOWLEDGE_TRUNCATE_LIMIT = 8 * 1024; // 8KB
+
+function truncateString(s: string, limit: number): string {
+  if (s.length <= limit) return s;
+  return s.slice(0, limit);
+}
+
+function invokeKnowledgeKeeper(args: string[]): unknown | null {
+  const result = spawnSync(
+    "bun",
+    ["run", ".claude/scripts/knowledge-keeper.ts", ...args],
+    {
+      encoding: "utf8",
+      cwd: repoRoot(),
+    },
+  );
+  if (result.status !== 0) return null;
+  try {
+    return JSON.parse(result.stdout);
+  } catch {
+    return null;
+  }
+}
+
+function readKnowledgeCore(
+  project: string,
+): { overview: string; terms: string } | null {
+  const result = invokeKnowledgeKeeper([
+    "read-core",
+    "--project",
+    project,
+  ]) as {
+    overview?: { content?: string } | string;
+    terms?: unknown;
+  } | null;
+  if (!result) return null;
+
+  const overviewContent =
+    typeof result.overview === "string"
+      ? result.overview
+      : result.overview && typeof result.overview === "object" && "content" in result.overview
+        ? String(result.overview.content ?? "")
+        : "";
+  const termsStr = JSON.stringify(result.terms ?? []);
+
+  return {
+    overview: truncateString(overviewContent, KNOWLEDGE_TRUNCATE_LIMIT),
+    terms: truncateString(termsStr, KNOWLEDGE_TRUNCATE_LIMIT),
+  };
+}
+
+function readKnowledgeModule(
+  project: string,
+  moduleKebab: string,
+): { frontmatter: Record<string, unknown>; content: string } | null {
+  const result = invokeKnowledgeKeeper([
+    "read-module",
+    "--project",
+    project,
+    "--module",
+    moduleKebab,
+  ]) as { frontmatter?: Record<string, unknown>; content?: string } | null;
+  if (!result) return null;
+
+  return {
+    frontmatter: result.frontmatter ?? {},
+    content: truncateString(String(result.content ?? ""), KNOWLEDGE_TRUNCATE_LIMIT),
+  };
+}
+
+function writerIdToKebab(writerId: string): string {
+  return writerId
+    .trim()
+    .replace(/[ _]+/g, "-")
+    .replace(/[A-Z]/g, (c) => c.toLowerCase());
+}
+
 // ─── Command ───────────────────────────────────────────────────────────────────
 
 const program = new Command("writer-context-builder");
@@ -106,12 +195,18 @@ const buildCmd = program
   .requiredOption("--test-points <path>", "Path to the test-points JSON file")
   .requiredOption("--writer-id <module>", "Module name (fuzzy-matched against PRD ## headings)")
   .option("--rules <path>", "Optional path to merged rules JSON")
+  .option("--strategy-id <id>", "Strategy id from router", "S1")
+  .option("--knowledge-injection <mode>", "read-core|read-module|none", "read-core")
+  .option("--project <name>", "Project name (for knowledge-keeper)")
   .action(
     (opts: {
       prd: string;
       testPoints: string;
       writerId: string;
       rules?: string;
+      strategyId: string;
+      knowledgeInjection: string;
+      project?: string;
     }) => {
       const prdPath = resolve(opts.prd);
       const tpPath = resolve(opts.testPoints);
@@ -166,11 +261,33 @@ const buildCmd = program
         fallback = true;
       }
 
+      // Build knowledge payload
+      let knowledge: KnowledgePayload = {};
+      if (opts.knowledgeInjection === "none") {
+        knowledge = {};
+      } else if (opts.project) {
+        if (opts.knowledgeInjection === "read-core") {
+          const core = readKnowledgeCore(opts.project);
+          if (core) knowledge = { core };
+        } else if (opts.knowledgeInjection === "read-module") {
+          const core = readKnowledgeCore(opts.project);
+          const moduleKebab = writerIdToKebab(opts.writerId);
+          const mod = readKnowledgeModule(opts.project, moduleKebab);
+          knowledge = {
+            ...(core ? { core } : {}),
+            ...(mod ? { module: mod } : {}),
+          };
+        }
+      }
+      // else (!opts.project && knowledge-injection !== "none") → knowledge = {}, no error
+
       const context: WriterContext = {
         writer_id: opts.writerId,
         module_prd_section: modulePrdSection,
         test_points: testPoints,
         rules,
+        strategy_id: opts.strategyId ?? "S1",
+        knowledge,
         fallback,
       };
 

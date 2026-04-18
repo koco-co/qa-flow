@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it } from "node:test";
+import { after, afterEach, before, describe, it } from "node:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 const TMP_DIR = join(tmpdir(), `qa-flow-writer-context-builder-test-${process.pid}`);
@@ -278,5 +278,225 @@ describe("writer-context-builder build — errors", () => {
 
     assert.equal(code, 1);
     assert.match(stderr, /cannot read|Error/i);
+  });
+});
+
+// ─── Knowledge injection tests ─────────────────────────────────────────────────
+
+const REPO_ROOT_FOR_FIXTURE = resolve(import.meta.dirname, "../../..");
+const FIXTURE_PROJECT = "writer-ctx-fixture";
+const FIXTURE_KNOWLEDGE_DIR = join(
+  REPO_ROOT_FOR_FIXTURE,
+  "workspace",
+  FIXTURE_PROJECT,
+  "knowledge",
+);
+
+function setupFixtureKnowledge(overviewContent?: string): void {
+  mkdirSync(FIXTURE_KNOWLEDGE_DIR, { recursive: true });
+
+  const overview = overviewContent ?? "\n# Fixture Overview\n\n## 业务概览\n\n这是测试项目的概览内容。\n";
+  const overviewFm = [
+    "---",
+    `title: ${FIXTURE_PROJECT} 业务概览`,
+    "type: overview",
+    "tags: []",
+    "confidence: high",
+    "source: test",
+    "updated: 2026-04-18",
+    "---",
+  ].join("\n");
+
+  writeFileSync(
+    join(FIXTURE_KNOWLEDGE_DIR, "overview.md"),
+    `${overviewFm}${overview}`,
+    "utf8",
+  );
+
+  const termsFm = [
+    "---",
+    `title: ${FIXTURE_PROJECT} 术语表`,
+    "type: term",
+    "tags: []",
+    "confidence: high",
+    "source: test",
+    "updated: 2026-04-18",
+    "---",
+  ].join("\n");
+  const termsBody = "\n# 术语表\n\n| 术语 | 中文 | 解释 | 别名 |\n|---|---|---|---|\n| TestTerm | 测试术语 | 用于测试 |  |\n";
+  writeFileSync(
+    join(FIXTURE_KNOWLEDGE_DIR, "terms.md"),
+    `${termsFm}${termsBody}`,
+    "utf8",
+  );
+}
+
+function cleanupFixtureKnowledge(): void {
+  try {
+    rmSync(join(REPO_ROOT_FOR_FIXTURE, "workspace", FIXTURE_PROJECT), {
+      recursive: true,
+      force: true,
+    });
+  } catch {
+    // ignore
+  }
+}
+
+describe("writer-context-builder build — strategy_id and knowledge defaults", () => {
+  it("outputs default strategy_id=S1 and knowledge is object when no flags provided", () => {
+    const prdPath = join(TMP_DIR, "strat-default.md");
+    const tpPath = join(TMP_DIR, "strat-default-tp.json");
+    writeFileSync(prdPath, MOCK_PRD, "utf8");
+    writeFileSync(tpPath, JSON.stringify(MOCK_TEST_POINTS), "utf8");
+
+    const { code, stdout } = run([
+      "build",
+      "--prd", prdPath,
+      "--test-points", tpPath,
+      "--writer-id", "商品管理",
+    ]);
+
+    assert.equal(code, 0);
+    const out = JSON.parse(stdout) as {
+      strategy_id: string;
+      knowledge: Record<string, unknown>;
+    };
+
+    assert.equal(out.strategy_id, "S1", "default strategy_id should be S1");
+    assert.ok(
+      out.knowledge !== null && typeof out.knowledge === "object",
+      "knowledge should be an object",
+    );
+  });
+});
+
+describe("writer-context-builder build — knowledge-injection none", () => {
+  afterEach(() => {
+    cleanupFixtureKnowledge();
+  });
+
+  it("knowledge is empty object when --knowledge-injection none even if --project is provided", () => {
+    setupFixtureKnowledge();
+
+    const prdPath = join(TMP_DIR, "ki-none.md");
+    const tpPath = join(TMP_DIR, "ki-none-tp.json");
+    writeFileSync(prdPath, MOCK_PRD, "utf8");
+    writeFileSync(tpPath, JSON.stringify(MOCK_TEST_POINTS), "utf8");
+
+    const { code, stdout } = run([
+      "build",
+      "--prd", prdPath,
+      "--test-points", tpPath,
+      "--writer-id", "商品管理",
+      "--knowledge-injection", "none",
+      "--project", FIXTURE_PROJECT,
+    ]);
+
+    assert.equal(code, 0);
+    const out = JSON.parse(stdout) as { knowledge: Record<string, unknown> };
+    assert.deepEqual(out.knowledge, {}, "knowledge should be empty when injection mode is none");
+  });
+});
+
+describe("writer-context-builder build — knowledge-injection read-core with fixture", () => {
+  afterEach(() => {
+    cleanupFixtureKnowledge();
+  });
+
+  it("knowledge.core is non-empty when --knowledge-injection read-core + valid project", () => {
+    setupFixtureKnowledge();
+
+    const prdPath = join(TMP_DIR, "ki-core.md");
+    const tpPath = join(TMP_DIR, "ki-core-tp.json");
+    writeFileSync(prdPath, MOCK_PRD, "utf8");
+    writeFileSync(tpPath, JSON.stringify(MOCK_TEST_POINTS), "utf8");
+
+    const { code, stdout } = run([
+      "build",
+      "--prd", prdPath,
+      "--test-points", tpPath,
+      "--writer-id", "商品管理",
+      "--knowledge-injection", "read-core",
+      "--project", FIXTURE_PROJECT,
+    ]);
+
+    assert.equal(code, 0);
+    const out = JSON.parse(stdout) as {
+      knowledge: { core?: { overview: string; terms: string } };
+    };
+
+    assert.ok(out.knowledge.core, "knowledge.core should be present");
+    assert.ok(
+      typeof out.knowledge.core.overview === "string" && out.knowledge.core.overview.length > 0,
+      "knowledge.core.overview should be non-empty string",
+    );
+    assert.ok(
+      typeof out.knowledge.core.terms === "string",
+      "knowledge.core.terms should be a string",
+    );
+  });
+});
+
+describe("writer-context-builder build — knowledge fallback when project not found", () => {
+  it("exits 0 and knowledge is an object when project does not exist", () => {
+    const prdPath = join(TMP_DIR, "ki-no-proj.md");
+    const tpPath = join(TMP_DIR, "ki-no-proj-tp.json");
+    writeFileSync(prdPath, MOCK_PRD, "utf8");
+    writeFileSync(tpPath, JSON.stringify(MOCK_TEST_POINTS), "utf8");
+
+    const { code, stdout } = run([
+      "build",
+      "--prd", prdPath,
+      "--test-points", tpPath,
+      "--writer-id", "商品管理",
+      "--knowledge-injection", "read-core",
+      "--project", "nonexistent-project-xyz-9999",
+    ]);
+
+    // knowledge-keeper returns empty content (status 0) for nonexistent project
+    // so the script should not crash and should return a valid knowledge object
+    assert.equal(code, 0, "should not crash when project does not exist");
+    const out = JSON.parse(stdout) as { knowledge: Record<string, unknown> };
+    assert.ok(
+      out.knowledge !== null && typeof out.knowledge === "object",
+      "knowledge should be an object even when project does not exist",
+    );
+  });
+});
+
+describe("writer-context-builder build — 8KB truncation", () => {
+  afterEach(() => {
+    cleanupFixtureKnowledge();
+  });
+
+  it("knowledge.core.overview is truncated to <= 8192 bytes when overview > 8KB", () => {
+    // Build an overview content larger than 8KB
+    const longContent = "X".repeat(10 * 1024); // 10KB of content
+    setupFixtureKnowledge(longContent);
+
+    const prdPath = join(TMP_DIR, "ki-trunc.md");
+    const tpPath = join(TMP_DIR, "ki-trunc-tp.json");
+    writeFileSync(prdPath, MOCK_PRD, "utf8");
+    writeFileSync(tpPath, JSON.stringify(MOCK_TEST_POINTS), "utf8");
+
+    const { code, stdout } = run([
+      "build",
+      "--prd", prdPath,
+      "--test-points", tpPath,
+      "--writer-id", "商品管理",
+      "--knowledge-injection", "read-core",
+      "--project", FIXTURE_PROJECT,
+    ]);
+
+    assert.equal(code, 0);
+    const out = JSON.parse(stdout) as {
+      knowledge: { core?: { overview: string; terms: string } };
+    };
+
+    assert.ok(out.knowledge.core, "knowledge.core should be present");
+    assert.ok(
+      out.knowledge.core.overview.length <= 8192,
+      `overview should be <= 8192 chars, got ${out.knowledge.core.overview.length}`,
+    );
   });
 });
