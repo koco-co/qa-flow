@@ -7,7 +7,7 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { basename, dirname, join, resolve } from "node:path";
-import { Command } from "commander";
+import { createCli } from "./lib/cli-runner.ts";
 import { probeCachePath, repoRoot } from "./lib/paths.ts";
 import {
   buildCacheEntry,
@@ -393,30 +393,48 @@ function outputProfile(profile: SignalProfile, format: string): void {
 // CLI
 // ---------------------------------------------------------------------------
 
-const program = new Command("signal-probe");
+async function probeAction(opts: {
+  project: string;
+  prd: string;
+  cache?: boolean;
+  output: string;
+}): Promise<void> {
+  try {
+    await runProbe(opts);
+  } catch (error) {
+    process.stderr.write(
+      `[signal-probe] Unexpected error: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exit(1);
+  }
+}
 
-program
-  .command("probe")
-  .requiredOption("--project <name>", "Project name under workspace/")
-  .requiredOption("--prd <path>", "Absolute or relative path to PRD markdown")
-  .option("--no-cache", "Bypass cache and re-run probe")
-  .option("--output <format>", "Output format (json|summary)", "json")
-  .action(
-    async (opts: {
-      project: string;
-      prd: string;
-      cache?: boolean;
-      output: string;
-    }) => {
-      try {
-        await runProbe(opts);
-      } catch (error) {
-        process.stderr.write(
-          `[signal-probe] Unexpected error: ${error instanceof Error ? error.message : String(error)}\n`,
-        );
-        process.exit(1);
-      }
+createCli({
+  name: "signal-probe",
+  description: "4-dimensional signal probe (source / PRD / history / knowledge)",
+  commands: [
+    {
+      name: "probe",
+      description: "Run the probe for a PRD",
+      options: [
+        {
+          flag: "--project <name>",
+          description: "Project name under workspace/",
+          required: true,
+        },
+        {
+          flag: "--prd <path>",
+          description: "Absolute or relative path to PRD markdown",
+          required: true,
+        },
+        { flag: "--no-cache", description: "Bypass cache and re-run probe" },
+        {
+          flag: "--output <format>",
+          description: "Output format (json|summary)",
+          defaultValue: "json",
+        },
+      ],
+      action: probeAction,
     },
-  );
-
-program.parse(process.argv);
+  ],
+}).parseAsync(process.argv);

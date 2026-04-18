@@ -15,8 +15,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, isAbsolute, resolve } from "node:path";
-import { Command } from "commander";
-import { initEnv } from "./lib/env.ts";
+import { createCli } from "./lib/cli-runner.ts";
 import {
   appendClarificationToPlan,
   buildInitialPlan,
@@ -29,8 +28,6 @@ import {
 } from "./lib/discuss.ts";
 import { parseFrontMatter } from "./lib/frontmatter.ts";
 import { planPath, plansDir, repoRoot } from "./lib/paths.ts";
-
-initEnv();
 
 function fail(message: string, code = 1): never {
   process.stderr.write(`[discuss] ${message}\n`);
@@ -349,66 +346,90 @@ function runSetStrategy(opts: {
 // CLI wiring
 // ============================================================================
 
-const program = new Command();
-program
-  .name("discuss")
-  .description("PRD 需求讨论 plan.md 管理 CLI")
-  .showHelpAfterError();
-
-program
-  .command("init")
-  .description("初始化 plan.md")
-  .requiredOption("--project <name>", "项目名")
-  .requiredOption("--prd <path>", "PRD 文件路径")
-  .option("--force", "已存在时备份并重建", false)
-  .action((opts) => runInit(opts));
-
-program
-  .command("read")
-  .description("读取 plan.md 完整结构")
-  .requiredOption("--project <name>", "项目名")
-  .requiredOption("--prd <path>", "PRD 文件路径")
-  .action((opts) => runRead(opts));
-
-program
-  .command("append-clarify")
-  .description("追加或替换一条澄清记录")
-  .requiredOption("--project <name>", "项目名")
-  .requiredOption("--prd <path>", "PRD 文件路径")
-  .requiredOption("--content <json>", "Clarification JSON")
-  .action((opts) => runAppendClarify(opts));
-
-program
-  .command("complete")
-  .description("完成讨论，标记 status=ready")
-  .requiredOption("--project <name>", "项目名")
-  .requiredOption("--prd <path>", "PRD 文件路径")
-  .option("--knowledge-summary <json>", "已沉淀的 knowledge 列表 JSON")
-  .action((opts) =>
-    runComplete({
-      project: opts.project,
-      prd: opts.prd,
-      knowledgeSummary: opts.knowledgeSummary,
-    }),
-  );
-
-program
-  .command("reset")
-  .description("备份并清除当前 plan.md")
-  .requiredOption("--project <name>", "项目名")
-  .requiredOption("--prd <path>", "PRD 文件路径")
-  .action((opts) => runReset(opts));
-
-program
-  .command("set-strategy")
-  .description("Write strategy resolution into plan.md frontmatter")
-  .requiredOption("--project <name>", "项目名")
-  .requiredOption("--prd <path>", "PRD 文件路径")
-  .requiredOption("--strategy-resolution <json>", "StrategyResolution JSON or @<path>")
-  .action((opts: { project: string; prd: string; strategyResolution: string }) =>
-    runSetStrategy(opts),
-  );
-
-program.parseAsync(process.argv).catch((err) => {
+createCli({
+  name: "discuss",
+  description: "PRD 需求讨论 plan.md 管理 CLI",
+  commands: [
+    {
+      name: "init",
+      description: "初始化 plan.md",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
+        { flag: "--force", description: "已存在时备份并重建", defaultValue: false },
+      ],
+      action: (opts: { project: string; prd: string; force: boolean }) => runInit(opts),
+    },
+    {
+      name: "read",
+      description: "读取 plan.md 完整结构",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
+      ],
+      action: (opts: { project: string; prd: string }) => runRead(opts),
+    },
+    {
+      name: "append-clarify",
+      description: "追加或替换一条澄清记录",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
+        { flag: "--content <json>", description: "Clarification JSON", required: true },
+      ],
+      action: (opts: { project: string; prd: string; content: string }) =>
+        runAppendClarify(opts),
+    },
+    {
+      name: "complete",
+      description: "完成讨论，标记 status=ready",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
+        {
+          flag: "--knowledge-summary <json>",
+          description: "已沉淀的 knowledge 列表 JSON",
+        },
+      ],
+      action: (opts: {
+        project: string;
+        prd: string;
+        knowledgeSummary?: string;
+      }) =>
+        runComplete({
+          project: opts.project,
+          prd: opts.prd,
+          knowledgeSummary: opts.knowledgeSummary,
+        }),
+    },
+    {
+      name: "reset",
+      description: "备份并清除当前 plan.md",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
+      ],
+      action: (opts: { project: string; prd: string }) => runReset(opts),
+    },
+    {
+      name: "set-strategy",
+      description: "Write strategy resolution into plan.md frontmatter",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
+        {
+          flag: "--strategy-resolution <json>",
+          description: "StrategyResolution JSON or @<path>",
+          required: true,
+        },
+      ],
+      action: (opts: {
+        project: string;
+        prd: string;
+        strategyResolution: string;
+      }) => runSetStrategy(opts),
+    },
+  ],
+}).parseAsync(process.argv).catch((err) => {
   fail(`Unhandled error: ${(err as Error).message}`);
 });
