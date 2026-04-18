@@ -308,7 +308,8 @@
     "prd_slug": "string",
     "project": "string",
     "mode": "string — normal|quick",
-    "current_node": "string — transform|enhance|analyze|write|review|format-check|output",
+    "current_node": "string — probe|discuss|transform|enhance|analyze|write|review|format-check|output",
+    "strategy_resolution": "object? — phase 4 probe 节点产出，见 signal_profile / strategy_resolution schema（strategy-schema.json）。旧 state 文件缺失字段时为 undefined，向后兼容",
     "transform": { "confidence": "number", "clarify_count": "number" },
     "enhance": { "health_warnings": "string[]", "image_count": "number" },
     "analyze": { "checklist": "object" },
@@ -321,6 +322,16 @@
       "verdict": "string"
     },
     "source_context": { "branch": "string", "commit": "string" }
+  },
+
+  "signal_profile": {
+    "_description": "signal-probe.ts 输出：4 维信号档位（phase 4）。完整结构见 strategy-schema.json#/definitions/SignalProfile",
+    "$ref": "./strategy-schema.json#/definitions/SignalProfile"
+  },
+
+  "strategy_resolution": {
+    "_description": "strategy-router.ts 输出：策略派发结果（phase 4）。完整结构见 strategy-schema.json#/definitions/StrategyResolution",
+    "$ref": "./strategy-schema.json#/definitions/StrategyResolution"
   },
 
   "frontend_bug_json": {
