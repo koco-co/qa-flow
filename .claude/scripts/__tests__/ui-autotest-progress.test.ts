@@ -1185,6 +1185,112 @@ describe("suite-slug command", () => {
   });
 });
 
+// ── convergence schema ────────────────────────────────────────────────────────
+
+describe("convergence schema", () => {
+  it("read on file without convergence_status auto-fills default 'skipped'", () => {
+    const suiteName = "conv-default";
+    // Manually write a progress file without convergence_status
+    const filePath = join(
+      TMP_DIR, "workspace", "dataAssets", ".temp",
+      `ui-autotest-progress-${slugify(suiteName)}.json`,
+    );
+    const progressWithoutConvergence = {
+      version: 1,
+      suite_name: suiteName,
+      archive_md: "test.md",
+      url: "http://localhost",
+      selected_priorities: ["P0"],
+      output_dir: "tests/",
+      started_at: "2024-01-01T00:00:00.000Z",
+      updated_at: "2024-01-01T00:00:00.000Z",
+      current_step: 4,
+      preconditions_ready: false,
+      cases: {
+        t1: {
+          title: "c1",
+          priority: "P0",
+          generated: false,
+          script_path: null,
+          test_status: "pending",
+          attempts: 0,
+          error_history: [],
+        },
+      },
+      merge_status: "pending",
+      // convergence_status intentionally absent
+    };
+    writeFileSync(filePath, `${JSON.stringify(progressWithoutConvergence, null, 2)}\n`, "utf8");
+
+    const { stdout, code } = run([
+      "read", "--project", "dataAssets", "--suite", suiteName,
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    assert.equal(progress.convergence_status, "skipped", "convergence_status should default to 'skipped'");
+  });
+
+  it("update --field convergence_status --value active writes and reads back correctly", () => {
+    createTestSuite("conv-update");
+
+    const { code: updateCode } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "conv-update",
+      "--field", "convergence_status",
+      "--value", "active",
+    ]);
+    assert.equal(updateCode, 0);
+
+    const { stdout, code } = run([
+      "read", "--project", "dataAssets", "--suite", "conv-update",
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    assert.equal(progress.convergence_status, "active");
+  });
+
+  it("update --field convergence_status --value invalid rejects with exit 1 and stderr", () => {
+    createTestSuite("conv-invalid");
+
+    const { code, stderr } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "conv-invalid",
+      "--field", "convergence_status",
+      "--value", "bad-value",
+    ]);
+    assert.equal(code, 1);
+    assert.ok(
+      stderr.includes("convergence_status"),
+      `expected "convergence_status" in stderr, got: ${stderr}`,
+    );
+  });
+
+  it("update --field convergence --value <json> writes nested object successfully", () => {
+    createTestSuite("conv-nested");
+    const convergenceJson = JSON.stringify({ probe_attempts: ["t1"], common_patterns: [] });
+
+    const { code: updateCode } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "conv-nested",
+      "--field", "convergence",
+      "--value", convergenceJson,
+    ]);
+    assert.equal(updateCode, 0);
+
+    const { stdout, code } = run([
+      "read", "--project", "dataAssets", "--suite", "conv-nested",
+    ]);
+    assert.equal(code, 0);
+    const progress = JSON.parse(stdout);
+    assert.ok(progress.convergence, "convergence should be present");
+    assert.equal(progress.convergence.probe_attempts[0], "t1");
+    assert.deepEqual(progress.convergence.common_patterns, []);
+  });
+});
+
 // ── uiBlocksDir() ─────────────────────────────────────────────────────────────
 
 describe("uiBlocksDir()", () => {

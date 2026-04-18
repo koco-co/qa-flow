@@ -20,6 +20,23 @@ import { tempDir } from "./lib/paths.ts";
 
 type TestStatus = "pending" | "running" | "passed" | "failed";
 type MergeStatus = "pending" | "completed";
+type ConvergenceStatus = "skipped" | "active" | "completed";
+
+interface ConvergencePattern {
+  readonly id: string;
+  readonly summary: string;
+  readonly helper_target: string;
+  readonly diff_kind: "patch" | "add_function" | "rewrite";
+  readonly applied: boolean;
+  readonly confidence: "high" | "medium" | "low";
+}
+
+interface ConvergenceState {
+  readonly triggered_at?: string;
+  readonly probe_attempts: readonly string[];
+  readonly common_patterns: readonly ConvergencePattern[];
+  readonly completed_at?: string;
+}
 
 interface ErrorEntry {
   readonly at: string;
@@ -52,6 +69,8 @@ interface Progress {
   readonly merge_status: MergeStatus;
   readonly cached_parse_result?: unknown;
   readonly source_mtime?: string;
+  readonly convergence_status?: ConvergenceStatus;
+  readonly convergence?: ConvergenceState;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -109,6 +128,11 @@ function migrateCaseState(
   return { ...(rest as Omit<CaseState, "error_history">), error_history: errorHistory };
 }
 
+function applyConvergenceDefaults(progress: Progress): Progress {
+  if (progress.convergence_status !== undefined) return progress;
+  return { ...progress, convergence_status: "skipped" };
+}
+
 function readProgress(project: string, suiteName: string, env?: string): Progress | null {
   const filePath = progressFilePath(project, suiteName, env);
   if (!existsSync(filePath)) return null;
@@ -120,7 +144,7 @@ function readProgress(project: string, suiteName: string, env?: string): Progres
     const needsMigration = Object.values(parsed.cases).some(
       (c) => "last_error" in c,
     );
-    if (!needsMigration) return parsed as unknown as Progress;
+    if (!needsMigration) return applyConvergenceDefaults(parsed as unknown as Progress);
 
     const migratedCases: Record<string, CaseState> = Object.fromEntries(
       Object.entries(parsed.cases).map(([id, c]) => [
@@ -128,7 +152,7 @@ function readProgress(project: string, suiteName: string, env?: string): Progres
         migrateCaseState(c, parsed.updated_at),
       ]),
     );
-    return { ...(parsed as unknown as Progress), cases: migratedCases };
+    return applyConvergenceDefaults({ ...(parsed as unknown as Progress), cases: migratedCases });
   } catch (err) {
     throw new Error(`Failed to parse progress file: ${err}`);
   }
@@ -280,10 +304,26 @@ program
         if (raw === "null") return null;
         if (["generated", "preconditions_ready"].includes(field)) return raw === "true";
         if (["current_step", "attempts"].includes(field)) return Number(raw);
+        if (field === "convergence_status") {
+          const allowed = ["skipped", "active", "completed"];
+          if (!allowed.includes(raw)) {
+            throw new Error(`convergence_status must be one of ${allowed.join(",")}`);
+          }
+          return raw;
+        }
+        if (field === "convergence") {
+          return JSON.parse(raw);
+        }
         return raw;
       };
 
-      const coercedValue = coerce(opts.field, opts.value);
+      let coercedValue: unknown = undefined;
+      try {
+        coercedValue = coerce(opts.field, opts.value);
+      } catch (err) {
+        process.stderr.write(`[ui-autotest-progress:update] ${(err as Error).message}\n`);
+        process.exit(1);
+      }
 
       let updated: Progress;
 
