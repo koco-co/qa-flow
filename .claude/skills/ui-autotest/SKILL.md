@@ -63,6 +63,12 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 
 ## 约定
 
+### 共性收敛阈值
+
+`convergence_threshold` 默认 `5`：步骤 5 累计失败用例数 ≥ 此值时触发步骤 5.5 共性收敛流程。
+
+可被环境变量覆盖：`UI_AUTOTEST_CONVERGENCE_THRESHOLD=3 ./run-ui-autotest.sh`（小套件想更早收敛时使用）。
+
 ### Task Schema
 
 > 全流程使用 `TaskCreate` / `TaskUpdate` 工具展示实时进度。
@@ -76,6 +82,7 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 | `步骤 3 — 登录态准备` | `准备登录 session`     |
 | `步骤 4 — 脚本生成`   | `生成 Playwright 脚本` |
 | `步骤 5 — 逐条自测`   | `执行自测验证`         |
+| `步骤 5.5 — 共性收敛`   | `分析共性失败模式`     |
 | `步骤 6 — 合并脚本`   | `合并验证通过的脚本`   |
 | `步骤 7 — 执行测试`   | `执行全量回归`         |
 | `步骤 8 — 处理结果`   | `处理测试结果`         |
@@ -94,6 +101,8 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 步骤 4 进入后，为每条用例创建子任务（subject: `[脚本] {{title}}`），Sub-Agent 完成时标记 `completed`。
 
 步骤 5 进入后，为每条待验证用例创建独立子任务（subject: `[自测] {{title}}`，activeForm: `执行「{{title}}」`）。每条用例：开始执行 → `in_progress`；修复重试 → subject 追加 `— 第 {{n}} 轮修复中`；通过 → `completed`（subject: `[自测] {{title}} — 通过`）；3 轮失败 → `completed`（subject: `[自测] {{title}} — 失败（{{原因}}）`）。
+
+**步骤 5.5（共性收敛，条件触发）**：步骤 5 失败数 ≥ `convergence_threshold` 时插入。任务初始 subject 为 `步骤 5.5 — 待评估`；触发时推进 `步骤 5.5 — 探路中` → `步骤 5.5 — 分析中` → `步骤 5.5 — 应用 N 项 helpers` → `步骤 5.5 — 完成`；不触发时 subject 设为 `步骤 5.5 — 未触发（失败<{{threshold}}）` 后 `completed`。
 
 ### 命令别名
 
@@ -331,7 +340,7 @@ bun run .claude/scripts/ui-autotest-progress.ts resume --project {{project}} --s
 **3.1 检查已有 session**
 
 ```bash
-bun run .claude/skills/ui-autotest/scripts/session-login.ts --url {{url}} --output .auth/session-{{env}}.json
+bun run .claude/skills/ui-autotest/scripts/session-login.ts --project {{project}} --url {{url}} --output .auth/{{project}}/session-{{env}}.json
 ```
 
 若返回 `{ "valid": true }`，直接复用，跳过登录。
@@ -505,6 +514,22 @@ bun run .claude/scripts/ui-autotest-progress.ts update \
 
 断点恢复时，跳过 `test_status === "passed"` 的用例。对于 `test_status === "failed"` 且 `attempts >= 3` 的用例，也跳过（除非用户选择「重试失败项」）。
 
+**5.2.0 共性收敛触发判断**
+
+每条用例自测完成后，主 agent 检查：
+
+```typescript
+const failedCount = Object.values(progress.cases)
+  .filter(c => c.test_status === "failed").length;
+
+if (failedCount >= convergenceThreshold &&
+    progress.convergence_status !== "completed") {
+  // 跳出主流，进入步骤 5.5
+}
+```
+
+如触发，按下文步骤 5.5 执行；不触发则继续走 5.2 单条修复。
+
 **5.2 失败处理（派发 Sub-Agent，最多重试 3 轮）**
 
 > **⚠️ 主 agent 上下文保护规则：主 agent 绝不自行调试脚本。** 失败时派发 `script-fixer-agent`，仅传递精简错误信息（见下文错误分类）。详细修复流程见 script-fixer-agent 自身定义。
@@ -600,6 +625,123 @@ Sub-Agent 在修复过程中若发现 MD 用例描述与实际系统行为不一
 bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field current_step --value 6
 ```
 
+## 步骤 5.5：共性收敛（条件触发）
+
+> **触发条件**：步骤 5 累计失败用例数 ≥ `convergence_threshold`（默认 5）且 `convergence_status !== "completed"`。
+> **目的**：失败规模较大时，先识别共性问题（多个 case 共同踩到同一 helper bug），固化 helpers，再让剩余 fixer 在 `helpers_locked=true` 状态下只改单脚本。
+> **基础**：memory `feedback_fixer_batch_strategy`（2026-04-17 事故复盘）。
+
+按 Task Schema 更新：将 `步骤 5.5` 标记为 `in_progress`（subject `步骤 5.5 — 探路中`）。
+
+**5.5.1 标记进入收敛态**
+
+```bash
+bun run .claude/scripts/ui-autotest-progress.ts update \
+  --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
+  --field convergence_status --value active
+```
+
+**5.5.2 选择 1-2 个探路 case**
+
+从 `test_status === "failed"` 且 `attempts === 0` 的用例中，按以下优先级取 1-2 个：
+- 不同 page 的（覆盖更多场景）
+- 最近失败的
+- 错误签名彼此最不同的
+
+**5.5.3 派探路 fixer（最多 2 并发）**
+
+派发 `script-fixer-agent`，输入加 `"helpers_locked": false`（探路允许改 helpers 用于诊断）：
+
+```json
+{
+  "error_type": "...",
+  "script_path": "...",
+  "stderr_last_20_lines": "...",
+  "attempt": 1,
+  "url": "{{url}}",
+  "repos_dir": "workspace/{{project}}/.repos/",
+  "helpers_locked": false
+}
+```
+
+收集每个 fixer 的 `summary` 字段（fixer 自述本次修了什么、踩了什么坑）。
+
+按 Task Schema 更新：subject 推进 `步骤 5.5 — 分析中`。
+
+**5.5.4 收集所有失败签名（精简）**
+
+主 agent 遍历所有 `test_status === "failed"` 的 case，正则提取 error_type + stderr_last_5_lines（不读完整 stderr，保护上下文）。
+
+**5.5.5 派 pattern-analyzer-agent**
+
+派发 `pattern-analyzer-agent`，输入：
+
+```json
+{
+  "probe_summaries": [/* 步骤 5.5.3 收集 */],
+  "all_failure_signatures": [/* 步骤 5.5.4 提取 */],
+  "helpers_inventory": {
+    "lib/playwright/ant-interactions.ts": [/* 函数名列表 */],
+    "workspace/{{project}}/tests/helpers/batch-sql.ts": [/* 函数名列表 */]
+  }
+}
+```
+
+`helpers_inventory` 由主 agent 用 `Grep "^export (async )?function" lib/playwright/ workspace/{{project}}/tests/helpers/` 自动构造。
+
+接收 `common_patterns[]` + `no_common_pattern_cases` + 可选 `skip_reason`。
+
+按 Task Schema 更新：subject 推进 `步骤 5.5 — 应用 {{N}} 项 helpers`。
+
+**5.5.6 应用 helpers diff**
+
+主 agent 按 `common_patterns[]` 逐条用 Edit 工具修改 `helper_target`：
+
+- `diff_kind: "patch"` → 直接 Edit 改既有函数
+- `diff_kind: "add_function"` → 在目标文件追加新函数
+- `diff_kind: "rewrite"` → 主 agent 评估后决定是否拒绝（拒绝时记入 `convergence.common_patterns[].applied=false`）
+- `confidence: "low"` → 必须用 AskUserQuestion 让用户拨
+
+每条改完跑 `bunx tsc --noEmit -p tsconfig.json` 校验编译通过。失败则回滚该条改动并 stderr 警告。
+
+**5.5.7 重置探路 case 的 test_status**
+
+```bash
+bun run .claude/scripts/ui-autotest-progress.ts update \
+  --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
+  --case {{probe_id}} --field test_status --value pending
+```
+
+让主流重跑这些 case，检验 helpers 修复是否真的解决问题。
+
+**5.5.8 标记收敛完成**
+
+```bash
+bun run .claude/scripts/ui-autotest-progress.ts update \
+  --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
+  --field convergence_status --value completed
+
+bun run .claude/scripts/ui-autotest-progress.ts update \
+  --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
+  --field convergence \
+  --value '{"triggered_at":"...","probe_attempts":[...],"common_patterns":[...],"completed_at":"..."}'
+```
+
+按 Task Schema 更新：将 `步骤 5.5` 标记为 `completed`（subject `步骤 5.5 — 完成 ({{N}} 项 helpers)`）。
+
+**5.5.9 回到步骤 5 主流**
+
+继续派剩余失败 case 的 fixer，**所有 fixer 输入 `helpers_locked: true`**（禁止改 helpers，只允许改单脚本）。
+
+**短路退出场景**：
+- `convergence_status === "completed"` → 跳过 5.5 整段（断点续传时）
+- `pattern-analyzer` 返回 `skip_reason === "all_individual"` → 5.5 直接 `completed`，不应用任何 diff
+
+**禁止行为**：
+- 主 agent 自行读多份 fixer summary 识别共性 → 必须派 pattern-analyzer
+- 同一 suite run 内 5.5 触发 ≥ 2 次 → `convergence_status` 守卫禁止
+- 探路 fixer 的 helpers 修改在 5.5.6 之后保留 → 5.5.6 以 analyzer 输出为准，覆盖探路修改
+
 ## 步骤 6：合并脚本
 
 按 Task Schema 更新：将 `步骤 6` 标记为 `in_progress`。
@@ -650,15 +792,23 @@ bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --s
 
 ```bash
 # 冒烟测试
-ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" bunx playwright test workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/smoke.spec.ts \
+ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" \
+  bunx playwright test workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/smoke.spec.ts \
   --project=chromium
 
 # 完整测试
-ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" bunx playwright test workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
+ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" \
+  bunx playwright test workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
   --project=chromium
+
+# 生成 Allure HTML 报告（合并 / 回归后必跑）
+npx allure generate \
+  workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-results \
+  --output workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report \
+  --clean
 ```
 
-> `QA_SUITE_NAME` 用于动态生成报告路径和标题，报告输出至 `workspace/{{project}}/reports/playwright/{{YYYYMM}}/{{suite_name}}/{{env}}/`。
+> 报告输出至 `workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/`，含 `allure-results/`（原始数据）和 `allure-report/`（HTML 入口 `index.html`）两个子目录。
 
 记录执行开始时间，计算 `duration`。
 
@@ -683,7 +833,7 @@ ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" bunx pl
 
 通过：{{passed}} / {{total}}
 耗时：{{duration}}
-报告：workspace/{{project}}/reports/playwright/{{YYYYMM}}/{{suite_name}}/{{env}}/{{suite_name}}.html
+报告：workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report/index.html
 
 验收命令（可直接复制运行）：
 ACTIVE_ENV={{env}} QA_SUITE_NAME="{{suite_name}}" bunx playwright test {{full_spec_path}} --project=chromium
@@ -695,7 +845,7 @@ ACTIVE_ENV={{env}} QA_SUITE_NAME="{{suite_name}}" bunx playwright test {{full_sp
 
 - 失败的测试用例数据
 - Playwright 错误信息
-- 截图路径（`workspace/{{project}}/reports/playwright/{{YYYYMM}}/{{suite_name}}/{{env}}/` 下的截图）
+- 截图路径（`workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report/` 下的截图）
 - Console 错误日志
 
 Bug 报告输出至：`workspace/{{project}}/reports/bugs/{{YYYYMM}}/ui-autotest-{{suite_name}}.html`
@@ -733,7 +883,7 @@ bun run .claude/scripts/plugin-loader.ts notify \
     "passed": {{passed}},
     "failed": {{failed}},
     "specFiles": ["{{spec_file}}"],
-    "reportFile": "workspace/{{project}}/reports/playwright/{{YYYYMM}}/{{suite_name}}/{{env}}/{{suite_name}}.html",
+    "reportFile": "workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report/index.html",
     "duration": "{{duration}}"
   }'
 ```
@@ -765,6 +915,6 @@ bun run .claude/scripts/plugin-loader.ts notify \
 | -------------------- | --------------------------------------------------------------------------- |
 | 临时代码块           | `workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/`                     |
 | E2E spec 文件        | `workspace/{{project}}/tests/YYYYMM/{{suite_name}}/`                        |
-| Playwright HTML 报告 | `workspace/{{project}}/reports/playwright/YYYYMM/{{suite_name}}/{{env}}/`   |
+| Playwright HTML 报告 | `workspace/{{project}}/reports/allure/YYYYMM/{{suite_name}}/{{env}}/allure-report/index.html` |
 | Bug 报告             | `workspace/{{project}}/reports/bugs/YYYYMM/ui-autotest-{{suite_name}}.html` |
-| Session 文件         | `.auth/session-{{env}}.json`                                                |
+| Session 文件         | `.auth/{{project}}/session-{{env}}.json`                                    |
