@@ -56,6 +56,18 @@ model: sonnet
 - `workspace/{{project}}/.repos/` 下的源码仓库（只读）
 - `rules/` 目录下的偏好规则文件
 
+## 策略模板（phase 4）
+
+任务提示中包含 `strategy_id`（S1–S5 之一）。按以下规则读取并套用：
+
+1. 读取 `.claude/references/strategy-templates.md`
+2. 定位 `## {{strategy_id}} / {{agent_name}}` section（{{agent_name}} = `transform` / `analyze` / `writer`）
+3. 按 section 内 `prompt_variant` / 其他 override 字段调整本次执行
+4. 未提供 `strategy_id` 时，默认走 S1（向后兼容）
+5. strategy_id === "S5" 时：transform 与 analyze 应立即停止并在 stderr 输出 `[<agent>] blocked by S5`；writer 不被派发
+
+> **重要**：本 section 是单点入口；具体差异不在本 agent 文件内内联。修改策略行为请改 strategy-templates.md。
+
 ## 步骤
 
 ### 步骤 1：解析蓝湖原始素材

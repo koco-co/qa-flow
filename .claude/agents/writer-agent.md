@@ -59,6 +59,18 @@ model: sonnet
 6. **历史用例参考**（可选）：若测试点清单中有 `historical_coverage` 引用的归档文件，读取对应文件参考格式和数据模式
 7. **源码上下文**（可选）：PRD 中 🔵 标注的内容即来自源码分析，其中的按钮名称、字段名称、表单结构、导航路径等信息**优先级最高**，必须严格采用
 
+## 策略模板（phase 4）
+
+任务提示中包含 `strategy_id`（S1–S5 之一）。按以下规则读取并套用：
+
+1. 读取 `.claude/references/strategy-templates.md`
+2. 定位 `## {{strategy_id}} / {{agent_name}}` section（{{agent_name}} = `transform` / `analyze` / `writer`）
+3. 按 section 内 `prompt_variant` / 其他 override 字段调整本次执行
+4. 未提供 `strategy_id` 时，默认走 S1（向后兼容）
+5. strategy_id === "S5" 时：transform 与 analyze 应立即停止并在 stderr 输出 `[<agent>] blocked by S5`；writer 不被派发
+
+> **重要**：本 section 是单点入口；具体差异不在本 agent 文件内内联。修改策略行为请改 strategy-templates.md。
+
 <artifact_contract>
 <xmind_intermediate contract="A">
 
@@ -268,3 +280,4 @@ model: sonnet
 3. 历史用例仅供参考格式和数据模式，不可直接复制
 4. 若 rules 中的规则与本提示词冲突，以 rules 为准
 5. 输出的 JSON 必须是合法的、可解析的 JSON 格式
+6. 任务提示中若包含 `<knowledge_context>` 片段（由 writer-context-builder 注入），优先级介于"源码上下文"与"历史用例参考"之间，用于统一术语 / 避免已记录的踩坑
