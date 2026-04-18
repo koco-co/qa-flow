@@ -1,3 +1,12 @@
+---
+title: dataAssets 术语表
+type: term
+tags: []
+confidence: high
+source: ""
+updated: 2026-04-18
+---
+
 # dataAssets 术语表
 
 > 由 `knowledge-keeper` skill（阶段 1 实施后）维护。

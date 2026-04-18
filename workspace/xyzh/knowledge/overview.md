@@ -1,3 +1,12 @@
+---
+title: xyzh 业务概览
+type: overview
+tags: []
+confidence: high
+source: ""
+updated: 2026-04-18
+---
+
 # xyzh 业务概览
 
 > 本文件由 `knowledge-keeper` skill（阶段 1 实施后）维护。

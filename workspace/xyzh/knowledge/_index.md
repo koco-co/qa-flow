@@ -1,17 +1,18 @@
 # xyzh Knowledge Index
 
-> 由 `knowledge-keeper` skill（阶段 1 实施后）自动维护。
-> 本文件是知识库目录页，AI 读取 `knowledge/` 时优先读此文件。
+> 由 knowledge-keeper 自动维护，请勿手动编辑。
 
-## Core（启动时默认注入）
+## Core
 
-- [overview.md](overview.md) — 产品定位 + 主流程（最后更新：2026-04-17）
-- [terms.md](terms.md) — 术语表（最后更新：2026-04-17）
+- [overview.md](overview.md) — 产品定位 + 主流程（updated: 2026-04-18）
+- [terms.md](terms.md) — 术语表（1 条，updated: 2026-04-18）
 
-## Modules（懒加载）
+## Modules
 
-（knowledge-keeper 将在阶段 1 实施后自动维护此节）
+_（暂无）_
 
-## Pitfalls（按关键词检索）
+## Pitfalls
 
-（knowledge-keeper 将在阶段 1 实施后自动维护此节）
+_（暂无）_
+
+<!-- last-indexed: 2026-04-18T10:01:13.093Z -->
