@@ -41,6 +41,14 @@ export function prdsDir(project: string): string {
   return join(projectDir(project), "prds");
 }
 
+export function plansDir(project: string, yyyymm: string): string {
+  return join(prdsDir(project), yyyymm);
+}
+
+export function planPath(project: string, yyyymm: string, slug: string): string {
+  return join(plansDir(project, yyyymm), `${slug}.plan.md`);
+}
+
 export function issuesDir(project: string): string {
   return join(projectDir(project), "issues");
 }
