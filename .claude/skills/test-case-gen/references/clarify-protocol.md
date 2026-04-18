@@ -1,5 +1,12 @@
 # 结构化澄清中转协议
 
+> **⚠️ DEPRECATED（自 phase 2 起）**
+>
+> 本协议在 phase 2「PRD 需求讨论阶段」之后由 plan.md 机制取代。
+> - 新流程见 `references/discuss-protocol.md` 与全局 `rules/prd-discussion.md`
+> - transform-agent 不再产出 `<clarify_envelope>`；discuss 节点用 plan.md §3 持久化澄清
+> - 本文件保留供历史 PRD（无 plan.md）回退或文档考古使用
+
 > transform subagent 与主 agent 之间的需求澄清交互协议。
 
 <clarify_protocol>
