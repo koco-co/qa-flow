@@ -15,6 +15,7 @@ import {
   configJsonPath,
   diffProjectSkeleton,
   mergeProjectConfig,
+  migrateLegacyHistorys,
   renderTemplate,
   SKELETON_SPEC,
   TEMPLATE_ROOT_REL,
@@ -155,9 +156,24 @@ function applyCreate(project: string): {
   registered_config: boolean;
   index_generated: boolean;
   index_path: string;
+  legacy_renamed: boolean;
+  legacy_conflict: boolean;
 } {
   const projDir = projectDir(project);
   const tplRoot = resolve(repoRoot(), TEMPLATE_ROOT_REL);
+
+  const migration = migrateLegacyHistorys(projDir);
+  const legacyConflict = !migration.renamed && migration.from !== undefined;
+  if (migration.renamed) {
+    process.stderr.write(
+      `[create-project] renamed legacy directory: historys → history\n`,
+    );
+  } else if (legacyConflict) {
+    process.stderr.write(
+      `[create-project] warn: both historys/ and history/ exist; keeping history/ and leaving historys/ intact — please merge manually\n`,
+    );
+  }
+
   const diff = diffProjectSkeleton(projDir, tplRoot);
 
   const created_dirs: string[] = [];
@@ -221,6 +237,8 @@ function applyCreate(project: string): {
     registered_config: added,
     index_generated: existsSync(indexPath),
     index_path: indexPath,
+    legacy_renamed: migration.renamed,
+    legacy_conflict: legacyConflict,
   };
 }
 

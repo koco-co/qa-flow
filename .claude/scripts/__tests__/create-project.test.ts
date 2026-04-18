@@ -96,7 +96,7 @@ describe("create-project create --dry-run", () => {
       "xmind",
       "archive",
       "issues",
-      "historys",
+      "history",
       "reports",
       "tests",
       "rules",
@@ -111,7 +111,7 @@ describe("create-project create --dry-run", () => {
       "xmind",
       "archive",
       "issues",
-      "historys",
+      "history",
       "reports",
       "tests",
       "knowledge/modules",
@@ -192,7 +192,7 @@ describe("create-project scan", () => {
       "xmind",
       "archive",
       "issues",
-      "historys",
+      "history",
       "reports",
       "tests",
       "rules",
@@ -208,7 +208,7 @@ describe("create-project scan", () => {
       "xmind",
       "archive",
       "issues",
-      "historys",
+      "history",
       "reports",
       "tests",
       "knowledge/modules",
@@ -262,7 +262,7 @@ describe("create-project create --confirmed", () => {
       "xmind",
       "archive",
       "issues",
-      "historys",
+      "history",
       "reports",
       "tests",
       "rules",
@@ -357,6 +357,52 @@ describe("create-project create --confirmed", () => {
       content.includes("user-customised"),
       "overview.md must still contain user content",
     );
+  });
+
+  it("renames legacy historys/ → history/ on repair", () => {
+    const projDir = join(WORKSPACE_DIR, "legacyProj");
+    mkdirSync(join(projDir, "historys"), { recursive: true });
+    writeFileSync(join(projDir, "historys", "old-notes.md"), "legacy data");
+
+    const { stdout, code } = runCp([
+      "create",
+      "--project",
+      "legacyProj",
+      "--confirmed",
+    ]);
+    assert.equal(code, 0);
+    const data = JSON.parse(stdout);
+    assert.equal(data.legacy_renamed, true);
+    assert.equal(data.legacy_conflict, false);
+    assert.equal(existsSync(join(projDir, "history")), true);
+    assert.equal(existsSync(join(projDir, "historys")), false);
+    // Legacy content is preserved
+    assert.equal(
+      readFileSync(join(projDir, "history", "old-notes.md"), "utf8"),
+      "legacy data",
+    );
+  });
+
+  it("flags conflict without clobbering when both historys/ and history/ coexist", () => {
+    const projDir = join(WORKSPACE_DIR, "bothDirs");
+    mkdirSync(join(projDir, "historys"), { recursive: true });
+    mkdirSync(join(projDir, "history"), { recursive: true });
+    writeFileSync(join(projDir, "historys", "legacy.md"), "legacy");
+    writeFileSync(join(projDir, "history", "current.md"), "current");
+
+    const { stdout, code } = runCp([
+      "create",
+      "--project",
+      "bothDirs",
+      "--confirmed",
+    ]);
+    assert.equal(code, 0);
+    const data = JSON.parse(stdout);
+    assert.equal(data.legacy_renamed, false);
+    assert.equal(data.legacy_conflict, true);
+    // Both survive intact
+    assert.equal(existsSync(join(projDir, "historys", "legacy.md")), true);
+    assert.equal(existsSync(join(projDir, "history", "current.md")), true);
   });
 
   it("registers config.json alongside other existing projects", () => {

@@ -1,6 +1,6 @@
 // lib/create-project.ts
 
-import { existsSync } from "node:fs";
+import { existsSync, renameSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,7 +10,7 @@ export const SKELETON_SPEC = {
     "xmind",
     "archive",
     "issues",
-    "historys",
+    "history",
     "reports",
     "tests",
     "rules",
@@ -25,7 +25,7 @@ export const SKELETON_SPEC = {
     "xmind",
     "archive",
     "issues",
-    "historys",
+    "history",
     "reports",
     "tests",
     "knowledge/modules",
@@ -52,13 +52,44 @@ export const RESERVED_NAMES = [
   "prds",
   "issues",
   "reports",
-  "historys",
+  "history",
   "tests",
   "templates",
   "scripts",
   "plugins",
   "skills",
 ] as const;
+
+/**
+ * Legacy directory name used before phase 6. Kept as a constant for the
+ * one-shot migration routine; not part of the active skeleton spec.
+ */
+const LEGACY_HISTORYS_DIR = "historys";
+const CURRENT_HISTORY_DIR = "history";
+
+export interface LegacyMigrationResult {
+  renamed: boolean;
+  from?: string;
+  to?: string;
+}
+
+/**
+ * Renames the legacy `historys/` directory to `history/` when present and the
+ * new name is still free. Idempotent: returns `{ renamed: false }` when there
+ * is nothing to do or when both names coexist (caller must resolve manually).
+ */
+export function migrateLegacyHistorys(
+  projectDirAbs: string,
+): LegacyMigrationResult {
+  const legacy = join(projectDirAbs, LEGACY_HISTORYS_DIR);
+  const current = join(projectDirAbs, CURRENT_HISTORY_DIR);
+  if (!existsSync(legacy)) return { renamed: false };
+  if (existsSync(current)) {
+    return { renamed: false, from: legacy, to: current };
+  }
+  renameSync(legacy, current);
+  return { renamed: true, from: legacy, to: current };
+}
 
 export const TEMPLATE_ROOT_REL = "templates/project-skeleton";
 
