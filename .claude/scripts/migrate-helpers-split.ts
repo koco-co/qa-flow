@@ -185,11 +185,14 @@ export function parseTestSetup(source: string): ParsedSetup {
         // Collect function body
         const funcLines: string[] = [lines[k]];
         let depth = (lines[k].match(/\{/g) ?? []).length - (lines[k].match(/\}/g) ?? []).length;
+        let seenOpen = depth > 0;
         let m = k + 1;
-        while (m < lines.length && depth > 0) {
+        while (m < lines.length && (!seenOpen || depth > 0)) {
           funcLines.push(lines[m]);
-          depth += (lines[m].match(/\{/g) ?? []).length;
-          depth -= (lines[m].match(/\}/g) ?? []).length;
+          const opens = (lines[m].match(/\{/g) ?? []).length;
+          const closes = (lines[m].match(/\}/g) ?? []).length;
+          if (opens > 0) seenOpen = true;
+          depth += opens - closes;
           m++;
         }
 
@@ -214,11 +217,14 @@ export function parseTestSetup(source: string): ParsedSetup {
     if (funcMatch) {
       const funcLines: string[] = [line];
       let depth = (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
+      let seenOpen = depth > 0;
       let j = i + 1;
-      while (j < lines.length && depth > 0) {
+      while (j < lines.length && (!seenOpen || depth > 0)) {
         funcLines.push(lines[j]);
-        depth += (lines[j].match(/\{/g) ?? []).length;
-        depth -= (lines[j].match(/\}/g) ?? []).length;
+        const opens = (lines[j].match(/\{/g) ?? []).length;
+        const closes = (lines[j].match(/\}/g) ?? []).length;
+        if (opens > 0) seenOpen = true;
+        depth += opens - closes;
         j++;
       }
       functions.push({

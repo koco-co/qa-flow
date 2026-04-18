@@ -164,6 +164,46 @@ export function getEnv(name: string): string | undefined {
     assert.ok(parsed.imports[0].includes("Browser"));
     assert.ok(parsed.imports[0].includes("Locator"));
   });
+
+  it("parses function with multi-line signature (opening brace on later line)", () => {
+    const source = `import type { Page } from "@playwright/test";
+
+export async function syncMetadata(
+  page: Page,
+  datasourceName?: string,
+  database?: string,
+): Promise<void> {
+  const inner = async (): Promise<string> => {
+    return "x";
+  };
+  await inner();
+}
+`;
+    const parsed = parseTestSetup(source);
+    assert.equal(parsed.functions.length, 1);
+    assert.equal(parsed.functions[0].name, "syncMetadata");
+    // Body must include the inner arrow function AND the closing brace
+    assert.ok(parsed.functions[0].source.includes("const inner"));
+    assert.ok(parsed.functions[0].source.includes("await inner()"));
+    assert.ok(parsed.functions[0].source.trimEnd().endsWith("}"));
+  });
+
+  it("parses JSDoc-prefixed function with multi-line signature", () => {
+    const source = `/**
+ * Does a thing.
+ */
+export async function doThing(
+  arg: string,
+): Promise<void> {
+  await Promise.resolve();
+}
+`;
+    const parsed = parseTestSetup(source);
+    assert.equal(parsed.functions.length, 1);
+    assert.equal(parsed.functions[0].name, "doThing");
+    assert.ok(parsed.functions[0].source.includes("/**"));
+    assert.ok(parsed.functions[0].source.includes("await Promise.resolve()"));
+  });
 });
 
 // ── planSplit tests ────────────────────────────────────────────────────────────
