@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, before, describe, it } from "node:test";
 
 import {
   configJsonPath,
+  diffProjectSkeleton,
   RESERVED_NAMES,
+  resolveSkeletonPaths,
+  SKELETON_SPEC,
   validateProjectName,
 } from "../../lib/create-project.ts";
 
@@ -122,5 +128,107 @@ describe("configJsonPath", () => {
     } finally {
       if (original !== undefined) process.env.CONFIG_JSON_PATH = original;
     }
+  });
+});
+
+describe("SKELETON_SPEC shape", () => {
+  it("has 13 directories", () => {
+    assert.equal(SKELETON_SPEC.dirs.length, 13);
+  });
+
+  it("has 11 gitkeep directories", () => {
+    assert.equal(SKELETON_SPEC.gitkeep_dirs.length, 11);
+  });
+
+  it("has 3 template files", () => {
+    assert.equal(Object.keys(SKELETON_SPEC.template_files).length, 3);
+  });
+
+  it("gitkeep_dirs is a subset of dirs", () => {
+    for (const d of SKELETON_SPEC.gitkeep_dirs) {
+      assert.ok(
+        SKELETON_SPEC.dirs.includes(d as (typeof SKELETON_SPEC.dirs)[number]),
+        `${d} not in dirs`,
+      );
+    }
+  });
+
+  it("template_files dst paths are not in gitkeep_dirs' directories of same file", () => {
+    assert.ok(!SKELETON_SPEC.gitkeep_dirs.includes("rules"));
+  });
+});
+
+describe("resolveSkeletonPaths", () => {
+  it("returns absolute paths derived from projectDir", () => {
+    const projDir = "/tmp/x/workspace/demoProj";
+    const r = resolveSkeletonPaths(projDir);
+    assert.ok(r.dirs.every((d) => d.startsWith(projDir + "/")));
+    assert.ok(r.gitkeeps.every((g) => g.endsWith(".gitkeep")));
+    assert.ok(r.templates.every((t) => t.dst_abs.startsWith(projDir + "/")));
+  });
+
+  it("produces 13 dirs, 11 gitkeeps, 3 templates", () => {
+    const r = resolveSkeletonPaths("/tmp/foo");
+    assert.equal(r.dirs.length, 13);
+    assert.equal(r.gitkeeps.length, 11);
+    assert.equal(r.templates.length, 3);
+  });
+});
+
+describe("diffProjectSkeleton", () => {
+  const TMP = join(tmpdir(), `qa-flow-cp-unit-${process.pid}`);
+  const TPL = join(TMP, "templates", "project-skeleton");
+  const EMPTY_PROJ = join(TMP, "empty-proj");
+  const FULL_PROJ = join(TMP, "full-proj");
+
+  before(() => {
+    mkdirSync(join(TPL, "rules"), { recursive: true });
+    mkdirSync(join(TPL, "knowledge"), { recursive: true });
+    writeFileSync(join(TPL, "rules", "README.md"), "# {{project}}");
+    writeFileSync(join(TPL, "knowledge", "overview.md"), "# {{project}}");
+    writeFileSync(join(TPL, "knowledge", "terms.md"), "# {{project}}");
+
+    for (const d of SKELETON_SPEC.dirs) {
+      mkdirSync(join(FULL_PROJ, d), { recursive: true });
+    }
+    for (const g of SKELETON_SPEC.gitkeep_dirs) {
+      writeFileSync(join(FULL_PROJ, g, ".gitkeep"), "");
+    }
+    for (const rel of Object.keys(SKELETON_SPEC.template_files)) {
+      writeFileSync(join(FULL_PROJ, rel), "# existing");
+    }
+  });
+
+  after(() => {
+    rmSync(TMP, { recursive: true, force: true });
+  });
+
+  it("empty project: exists=false, all missing", () => {
+    const diff = diffProjectSkeleton(EMPTY_PROJ, TPL);
+    assert.equal(diff.exists, false);
+    assert.equal(diff.missing_dirs.length, 13);
+    assert.equal(diff.missing_gitkeeps.length, 11);
+    assert.equal(diff.missing_files.length, 3);
+    assert.equal(diff.skeleton_complete, false);
+  });
+
+  it("full project: exists=true, nothing missing, skeleton_complete", () => {
+    const diff = diffProjectSkeleton(FULL_PROJ, TPL);
+    assert.equal(diff.exists, true);
+    assert.equal(diff.missing_dirs.length, 0);
+    assert.equal(diff.missing_gitkeeps.length, 0);
+    assert.equal(diff.missing_files.length, 0);
+    assert.equal(diff.skeleton_complete, true);
+  });
+
+  it("partial project: only missing what's absent", () => {
+    rmSync(join(FULL_PROJ, "knowledge", "modules"), { recursive: true });
+    const diff = diffProjectSkeleton(FULL_PROJ, TPL);
+    assert.equal(diff.exists, true);
+    assert.deepEqual(diff.missing_dirs, ["knowledge/modules"]);
+    assert.deepEqual(diff.missing_gitkeeps, ["knowledge/modules/.gitkeep"]);
+    assert.equal(diff.skeleton_complete, false);
+    mkdirSync(join(FULL_PROJ, "knowledge", "modules"), { recursive: true });
+    writeFileSync(join(FULL_PROJ, "knowledge", "modules", ".gitkeep"), "");
   });
 });
