@@ -400,5 +400,48 @@
         "recommended": "string | null — 推荐选项（若有）"
       }
     ]
+  },
+
+  "pattern_analyzer_input": {
+    "_description": "pattern-analyzer-agent 的输入 schema（由 ui-autotest skill 步骤 5.5 装配）",
+    "probe_summaries": [
+      {
+        "case_id": "string — 用例 ID（如 t1）",
+        "case_title": "string — 用例标题",
+        "fixer_attempts": "number — 探路 fixer 修复轮次",
+        "final_status": "string — FIXED | STILL_FAILING",
+        "summary": "string — fixer 自述本次修了什么、踩了什么坑（最多 1500 字）",
+        "corrections": "object[] — fixer 收集的 archive MD 校正建议（与 script-fixer 现有 corrections 结构一致）"
+      }
+    ],
+    "all_failure_signatures": [
+      {
+        "case_id": "string",
+        "error_type": "string — timeout | locator | assertion | unknown",
+        "stderr_last_5_lines": "string"
+      }
+    ],
+    "helpers_inventory": {
+      "_description": "当前 helpers 函数清单（路径 → 函数名数组）",
+      "<helper_path>": "string[] — 该文件导出的函数名"
+    }
+  },
+
+  "pattern_analyzer_output": {
+    "_description": "pattern-analyzer-agent 的输出 schema（被主 agent 消费应用 helpers diff）",
+    "common_patterns": [
+      {
+        "id": "string — 模式 ID（如 P1）",
+        "summary": "string — 一句话描述共性",
+        "evidence": "string[] — 至少 2 个 case_id 证据",
+        "helper_target": "string — 必须在 helpers_inventory 中的路径",
+        "function_name": "string — 目标函数名",
+        "diff_kind": "string — patch | add_function | rewrite",
+        "diff_suggestion": "string — 改动描述（自然语言或代码片段）",
+        "confidence": "string — high | medium | low"
+      }
+    ],
+    "no_common_pattern_cases": "string[] — 个例失败 case_id 列表",
+    "skip_reason": "string — 整批个例时返回 'all_individual'，否则缺省"
   }
 }
