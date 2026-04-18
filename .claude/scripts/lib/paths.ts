@@ -69,6 +69,14 @@ export function tempDir(project: string): string {
   return join(projectDir(project), ".temp");
 }
 
+export function probeCacheDir(project: string): string {
+  return join(tempDir(project), "probe-cache");
+}
+
+export function probeCachePath(project: string, prdSlug: string): string {
+  return join(probeCacheDir(project), `${prdSlug}.json`);
+}
+
 export function projectRulesDir(project: string): string {
   return join(projectDir(project), "rules");
 }

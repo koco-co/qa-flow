@@ -16,6 +16,8 @@ import {
   testsDir,
   reposDir,
   tempDir,
+  probeCacheDir,
+  probeCachePath,
   projectRulesDir,
   knowledgeDir,
   knowledgePath,
@@ -199,6 +201,25 @@ describe("tempDir", () => {
   it("returns workspace/{project}/.temp", () => {
     const dir = tempDir("xyzh");
     assert.ok(dir.endsWith("workspace/xyzh/.temp"));
+  });
+});
+
+describe("probeCacheDir", () => {
+  it("returns workspace/{project}/.temp/probe-cache", () => {
+    const dir = probeCacheDir("dataAssets");
+    assert.ok(dir.endsWith("workspace/dataAssets/.temp/probe-cache"));
+  });
+});
+
+describe("probeCachePath", () => {
+  it("returns workspace/{project}/.temp/probe-cache/{prdSlug}.json", () => {
+    const path = probeCachePath("dataAssets", "15695-quality");
+    assert.ok(path.endsWith("workspace/dataAssets/.temp/probe-cache/15695-quality.json"));
+  });
+
+  it("preserves slug verbatim including dashes and digits", () => {
+    const path = probeCachePath("xyzh", "abc-123-xyz");
+    assert.ok(path.endsWith("workspace/xyzh/.temp/probe-cache/abc-123-xyz.json"));
   });
 });
 
