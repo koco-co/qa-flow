@@ -301,7 +301,6 @@ program
 
       // Type coercion
       const coerce = (field: string, raw: string): unknown => {
-        if (raw === "null") return null;
         if (["generated", "preconditions_ready"].includes(field)) return raw === "true";
         if (["current_step", "attempts"].includes(field)) return Number(raw);
         if (field === "convergence_status") {
@@ -312,8 +311,18 @@ program
           return raw;
         }
         if (field === "convergence") {
-          return JSON.parse(raw);
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(raw);
+          } catch (err) {
+            throw new Error(`convergence must be valid JSON: ${(err as Error).message}`);
+          }
+          if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+            throw new Error("convergence must be a JSON object");
+          }
+          return parsed;
         }
+        if (raw === "null") return null;
         return raw;
       };
 

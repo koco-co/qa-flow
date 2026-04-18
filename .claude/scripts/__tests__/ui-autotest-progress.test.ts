@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, before, describe, it } from "node:test";
@@ -579,8 +579,7 @@ describe("cached_parse_result and source_mtime", () => {
     writeFileSync(archivePath, "# Archive\n", "utf8");
 
     // Capture the actual mtime
-    const { statSync: nodeStat } = require("node:fs");
-    const { mtime } = nodeStat(archivePath);
+    const { mtime } = statSync(archivePath);
     const actualMtime = mtime.toISOString();
 
     run([
@@ -608,7 +607,7 @@ describe("cached_parse_result and source_mtime", () => {
       TMP_DIR, "workspace", "dataAssets", ".temp",
       "ui-autotest-progress-cache-preserve-suite.json",
     );
-    const existing = JSON.parse(require("node:fs").readFileSync(progressFilePath, "utf8"));
+    const existing = JSON.parse(readFileSync(progressFilePath, "utf8"));
     const withCache = { ...existing, cached_parse_result: { tasks: ["t1"] } };
     writeFileSync(progressFilePath, `${JSON.stringify(withCache, null, 2)}\n`, "utf8");
 
@@ -1288,6 +1287,23 @@ describe("convergence schema", () => {
     assert.ok(progress.convergence, "convergence should be present");
     assert.equal(progress.convergence.probe_attempts[0], "t1");
     assert.deepEqual(progress.convergence.common_patterns, []);
+  });
+
+  it("update --field convergence --value 'null' is rejected with exit 1 and stderr", () => {
+    createTestSuite("conv-null-reject");
+
+    const { code, stderr } = run([
+      "update",
+      "--project", "dataAssets",
+      "--suite", "conv-null-reject",
+      "--field", "convergence",
+      "--value", "null",
+    ]);
+    assert.equal(code, 1);
+    assert.ok(
+      stderr.includes("convergence"),
+      `expected "convergence" in stderr, got: ${stderr}`,
+    );
   });
 });
 
