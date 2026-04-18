@@ -54,7 +54,7 @@ bun run .claude/scripts/rule-loader.ts load --project {{project}} > workspace/{{
 </inputs>
 
 <workflow>
-  <primary>init → discuss → transform → enhance → analyze → write → review → format-check → output</primary>
+  <primary>init → probe → discuss → transform → enhance → analyze → write → review → format-check → output</primary>
   <standardize>parse → standardize → review → output</standardize>
   <reverse_sync>confirm_xmind → parse → locate_archive → preview_or_write → report</reverse_sync>
 </workflow>
@@ -99,21 +99,22 @@ bun run .claude/scripts/rule-loader.ts load --project {{project}} > workspace/{{
 
 > 全流程使用 `TaskCreate` / `TaskUpdate` 工具展示实时进度，让用户在终端看到全局视图。
 
-### 主流程（9 节点）
+### 主流程（10 节点）
 
-workflow 启动时（节点 1 开始前），使用 `TaskCreate` 一次性创建 9 个任务（含 discuss 与 format-check），按顺序设置 `addBlockedBy` 依赖：
+workflow 启动时（节点 1 开始前），使用 `TaskCreate` 一次性创建 10 个任务（含 discuss 与 format-check），按顺序设置 `addBlockedBy` 依赖：
 
-| 任务 subject                        | activeForm                       |
-| ----------------------------------- | -------------------------------- |
-| `init — 输入解析与环境准备`         | `解析输入与检测断点`             |
-| `discuss — 主 agent 主持需求讨论`   | `主持需求讨论与 plan.md 落地`    |
-| `transform — 源码分析与 PRD 结构化` | `分析源码与结构化 PRD`           |
-| `enhance — PRD 增强`                | `增强 PRD（图片识别、要点提取）` |
-| `analyze — 测试点规划`              | `生成测试点清单`                 |
-| `write — 并行生成用例`              | `派发 Writer 生成用例`           |
-| `review — 质量审查`                 | `执行质量审查与修正`             |
-| `format-check — 格式合规检查`       | `检查格式合规性`                 |
-| `output — 产物生成`                 | `生成 XMind + Archive MD`        |
+| 任务 subject                              | activeForm                           |
+| ----------------------------------------- | ------------------------------------ |
+| `init — 输入解析与环境准备`               | `解析输入与检测断点`                 |
+| `probe — 4 维信号探针与策略派发`          | `采集 4 维信号并路由策略`            |
+| `discuss — 主 agent 主持需求讨论`         | `主持需求讨论与 plan.md 落地`        |
+| `transform — 源码分析与 PRD 结构化`       | `分析源码与结构化 PRD`               |
+| `enhance — PRD 增强`                      | `增强 PRD（图片识别、要点提取）`     |
+| `analyze — 测试点规划`                    | `生成测试点清单`                     |
+| `write — 并行生成用例`                    | `派发 Writer 生成用例`               |
+| `review — 质量审查`                       | `执行质量审查与修正`                 |
+| `format-check — 格式合规检查`             | `检查格式合规性`                     |
+| `output — 产物生成`                       | `生成 XMind + Archive MD`            |
 
 **状态推进规则**：
 
@@ -304,7 +305,7 @@ bun run .claude/scripts/history-convert.ts --path {{xmind_file}} --project {{pro
 
 **目标**：解析用户输入、检查插件、检测断点、确认运行参数。
 
-**⏳ Task**：使用 `TaskCreate` 创建 9 个主流程任务（见「任务可视化」章节），然后将 `init` 任务标记为 `in_progress`。
+**⏳ Task**：使用 `TaskCreate` 创建 10 个主流程任务（见「任务可视化」章节），然后将 `init` 任务标记为 `in_progress`。
 
 ### 1.1 断点续传检测
 
@@ -357,6 +358,83 @@ bun run .claude/scripts/state.ts init --prd {{prd_path}} --project {{project}} -
 - 选项 3：指定其他 PRD 文件
 
 完成分歧处理后，将 `init` 任务标记为 `completed`（subject 更新为 `init — 已识别 PRD，{{mode}} 模式`），按节点 1.2 的路由结论进入节点 1.5（discuss）或直接跳到节点 2（transform）。
+
+---
+
+## 节点 1.75: probe — 4 维信号探针与策略派发
+
+**目标**：采集 4 维信号（源码 / PRD / 历史 / 知识库），派发到 5 套策略模板之一（S1–S5），结果写入 state + plan.md。
+
+**⏳ Task**：将 `probe` 任务标记为 `in_progress`。
+
+### 1.75.1 触发探针
+
+```bash
+bun run .claude/scripts/signal-probe.ts probe \
+  --project {{project}} \
+  --prd {{prd_path}} \
+  --output json
+```
+
+stdout 输出完整 SignalProfile JSON。
+
+### 1.75.2 策略路由
+
+```bash
+bun run .claude/scripts/strategy-router.ts resolve \
+  --profile '{{signal_profile_json}}' \
+  --output json
+```
+
+或用文件形式（profile 已缓存在 probe-cache）：
+
+```bash
+bun run .claude/scripts/strategy-router.ts resolve \
+  --profile @workspace/{{project}}/.temp/probe-cache/{{prd_slug}}.json \
+  --output json
+```
+
+stdout 输出 StrategyResolution JSON。
+
+### 1.75.3 落盘
+
+- **state.ts**：
+
+  ```bash
+  bun run .claude/scripts/state.ts update \
+    --project {{project}} --prd-slug {{prd_slug}} \
+    --node probe \
+    --data '{"strategy_resolution": {{resolution_json}}}'
+  ```
+
+- **plan.md**（若已存在）：
+
+  ```bash
+  bun run .claude/scripts/discuss.ts set-strategy \
+    --project {{project}} --prd {{prd_path}} \
+    --strategy-resolution '{{resolution_json}}'
+  ```
+
+  plan.md 不存在时跳过（discuss init 时会自动带上 strategy 字段）。
+
+### 1.75.4 S5 外转处理（交互点 P1）
+
+当 `strategy_resolution.strategy_id === "S5"`：使用 AskUserQuestion 工具，按以下格式提问：
+
+- 问题：`检测到 PRD 缺失但源码变更明显（信号：{{signal_summary}}）。建议切换到 Hotfix 用例生成流程。如何处理？`
+- 选项 1：切换到 `hotfix-case-gen`（推荐）
+- 选项 2：继续主流程（降级为 S4 保守模式）
+- 选项 3：取消本次执行
+
+**选项 1**：主 agent 立即停止当前 workflow，引导用户重新输入 `/hotfix-case-gen <Bug URL>`
+**选项 2**：调 `strategy-router.ts resolve --profile ... --force-strategy S4`（CLI 已支持）把 resolution 覆盖为 S4 后继续
+**选项 3**：`state.ts clean` + 退出
+
+### 1.75.5 非 S5 情况
+
+直接进入节点 1.5 discuss，把 `strategy_id` 作为下游节点 task prompt 的一部分传递。
+
+**✅ Task**：将 `probe` 任务标记为 `completed`（subject 更新为 `probe — {{strategy_id}} {{strategy_name}}`）。
 
 ---
 
@@ -442,6 +520,18 @@ bun run .claude/scripts/discuss.ts complete \
 若返回 exit 1（仍有未答 blocking）→ 回 1.5.4 续问后再 complete。
 
 **✅ Task**：将 `discuss` 任务标记为 `completed`（subject 更新为 `discuss — {{n}} 条澄清，{{m}} 条自动默认`）。
+
+### 1.5.7 strategy_id 传递（phase 4）
+
+从本节点起，派发下游 subagent（transform / analyze / writer）时，task prompt 必须包含：
+
+```
+strategy_id: {{resolution.strategy_id}}
+```
+
+（若 probe 节点返回空 resolution，默认 S1）
+
+subagent 按 `.claude/references/strategy-templates.md` 对应 section 调整行为。
 
 ---
 
@@ -656,7 +746,20 @@ bun run .claude/scripts/state.ts update --prd-slug {{slug}} --project {{project}
 
 ### 5.1 派发 Writer Sub-Agent
 
-为每个模块派发独立 `writer-agent`（model: sonnet），输入包含：
+为每个模块派发独立 `writer-agent`（model: sonnet），派发前先构建 writer 上下文：
+
+```bash
+bun run .claude/scripts/writer-context-builder.ts build \
+  --prd {{enhanced_prd}} \
+  --test-points {{test_points}} \
+  --writer-id {{module}} \
+  --rules {{rules_merged}} \
+  --strategy-id {{resolution.strategy_id}} \
+  --knowledge-injection {{resolution.overrides.writer.knowledge_injection}} \
+  --project {{project}}
+```
+
+输入包含：
 
 - 增强后 PRD 对应模块内容
 - 该模块已确认的测试点清单
