@@ -520,6 +520,7 @@ program
 
     mkdirSync(dirname(targetPath), { recursive: true });
     writeFileSync(targetPath, afterContent);
+    writeIndexFile(opts.project);
     process.stdout.write(
       JSON.stringify(
         {
@@ -644,6 +645,7 @@ program
 
     // 10. 真实写
     writeFileSync(full, afterContent);
+    writeIndexFile(opts.project);
     process.stdout.write(
       JSON.stringify(
         {

@@ -504,3 +504,45 @@ updated: 2026-04-15
     assert.ok(stderr.includes("not found") || stderr.includes("does not exist"));
   });
 });
+
+describe("write/update auto-triggers index", () => {
+  before(resetFixture);
+
+  it("after write module, _index.md is regenerated", () => {
+    // Remove existing _index.md so we can verify re-creation
+    const idxPath = join(PROJECT_KNOWLEDGE, "_index.md");
+    if (existsSync(idxPath)) rmSync(idxPath);
+
+    runKk([
+      "write", "--project", PROJECT,
+      "--type", "module",
+      "--content", JSON.stringify({ name: "auto-idx", title: "自动索引测试", tags: ["t"], body: "x", source: "" }),
+      "--confidence", "high",
+    ]);
+
+    const idx = readFileSync(idxPath, "utf8");
+    assert.ok(idx.includes("auto-idx.md"));
+    assert.ok(idx.includes("<!-- last-indexed: "));
+  });
+
+  it("after update module, _index.md last-indexed timestamp advances", () => {
+    const idxPath = join(PROJECT_KNOWLEDGE, "_index.md");
+    const before = readFileSync(idxPath, "utf8");
+    const beforeTs = before.match(/last-indexed: (\S+)/)?.[1];
+
+    // Sleep 1ms to ensure timestamp changes
+    const t = Date.now();
+    while (Date.now() - t < 10) { /* busy wait 10ms */ }
+
+    runKk([
+      "update", "--project", PROJECT,
+      "--path", "modules/auto-idx.md",
+      "--content", JSON.stringify({ frontmatter_patch: { title: "变更标题" }, mode: "patch" }),
+      "--confirmed",
+    ]);
+
+    const after = readFileSync(idxPath, "utf8");
+    const afterTs = after.match(/last-indexed: (\S+)/)?.[1];
+    assert.notEqual(beforeTs, afterTs, "last-indexed should change");
+  });
+});
