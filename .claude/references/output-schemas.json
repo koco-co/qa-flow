@@ -99,8 +99,16 @@
       ],
       "metadata": {
         "total_cases": "number",
-        "priority_distribution": { "P0": "number", "P1": "number", "P2": "number" },
-        "type_distribution": { "positive": "number", "negative": "number", "boundary": "number" }
+        "priority_distribution": {
+          "P0": "number",
+          "P1": "number",
+          "P2": "number"
+        },
+        "type_distribution": {
+          "positive": "number",
+          "negative": "number",
+          "boundary": "number"
+        }
       }
     },
     "report": {

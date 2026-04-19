@@ -10,7 +10,15 @@
     },
     "SignalProfile": {
       "type": "object",
-      "required": ["source", "prd", "history", "knowledge", "probed_at", "project", "prd_path"],
+      "required": [
+        "source",
+        "prd",
+        "history",
+        "knowledge",
+        "probed_at",
+        "project",
+        "prd_path"
+      ],
       "properties": {
         "source": { "$ref": "#/definitions/SignalEntry" },
         "prd": { "$ref": "#/definitions/SignalEntry" },
@@ -31,7 +39,13 @@
     },
     "StrategyResolution": {
       "type": "object",
-      "required": ["strategy_id", "strategy_name", "signal_profile", "overrides", "resolved_at"],
+      "required": [
+        "strategy_id",
+        "strategy_name",
+        "signal_profile",
+        "overrides",
+        "resolved_at"
+      ],
       "properties": {
         "strategy_id": { "$ref": "#/definitions/StrategyId" },
         "strategy_name": { "type": "string" },

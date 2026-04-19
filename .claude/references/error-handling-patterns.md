@@ -4,13 +4,13 @@
 
 ## 错误分类
 
-| 类型 | 描述 | 恢复策略 |
-|------|------|----------|
-| `invalid_input` | 输入格式不合法（JSON 解析失败、必填字段缺失、类型不匹配、文件不存在） | 返回 `status: "invalid_input"` 的 JSON envelope，说明错误位置和原因，不继续处理 |
-| `blocking_unknown` | 无法推断的关键信息（核心业务逻辑不明、导航路径未知、字段枚举值缺失、按钮名称不确定） | 生成 blocked_envelope 或 clarify_envelope，标记待确认项，中止当前条目，交由上游处理 |
-| `defaultable_unknown` | 可推断或有合理默认值的信息（非必填字段、可从上下文推导的值、源码/历史归档可佐证） | 使用默认值并在输出中标记 🟡（默认推断）或 🔴（待确认），记录推断依据，继续处理 |
-| `external_failure` | 外部依赖失败（文件不存在、网络超时、脚本执行错误、source code 不可读） | 重试 1 次，失败则输出错误详情并中止当前步骤；若为非关键路径，记录为 `defaultable_unknown` 并跳过 |
-| `partial_result` | 处理过程中部分条目成功、部分失败 | 输出已成功部分 + 失败条目清单，计数统计（success/failed），不丢弃成功结果 |
+| 类型                  | 描述                                                                                 | 恢复策略                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `invalid_input`       | 输入格式不合法（JSON 解析失败、必填字段缺失、类型不匹配、文件不存在）                | 返回 `status: "invalid_input"` 的 JSON envelope，说明错误位置和原因，不继续处理                  |
+| `blocking_unknown`    | 无法推断的关键信息（核心业务逻辑不明、导航路径未知、字段枚举值缺失、按钮名称不确定） | 生成 blocked_envelope 或 clarify_envelope，标记待确认项，中止当前条目，交由上游处理              |
+| `defaultable_unknown` | 可推断或有合理默认值的信息（非必填字段、可从上下文推导的值、源码/历史归档可佐证）    | 使用默认值并在输出中标记 🟡（默认推断）或 🔴（待确认），记录推断依据，继续处理                   |
+| `external_failure`    | 外部依赖失败（文件不存在、网络超时、脚本执行错误、source code 不可读）               | 重试 1 次，失败则输出错误详情并中止当前步骤；若为非关键路径，记录为 `defaultable_unknown` 并跳过 |
+| `partial_result`      | 处理过程中部分条目成功、部分失败                                                     | 输出已成功部分 + 失败条目清单，计数统计（success/failed），不丢弃成功结果                        |
 
 ## Agent 应用规则
 
@@ -23,14 +23,14 @@
 
 ### 按 Agent 职责分工
 
-| Agent | 负责阶段 | 处理方式 |
-|-------|---------|---------|
-| **transform-agent** | PRD 增强 | `invalid_input` → clarify_envelope；`blocking_unknown` → clarify_envelope 且标记 🔴；`defaultable_unknown` → PRD 中标记 🟡 |
-| **analyze-agent** | 测试分析 | `invalid_input` → 输出警告并失败；`defaultable_unknown` → 继续分析并记录；外部脚本失败 → 跳过该步骤 |
-| **writer-agent** | 用例编写 | `blocking_unknown` → blocked_envelope；`defaultable_unknown` → 继续并在思路中保留依据 |
-| **reviewer-agent** | 用例审查 | `invalid_input` → 返回 envelope；`blocking_unknown` → context_gaps；自动修正时若无法修正 → 标记 `[FXX-MANUAL]` |
-| **format-checker-agent** | 格式检查 | `invalid_input` → JSON envelope 的 `uncertainty` 数组；无用例 → 警告 + pass |
-| **standardize-agent** | 用例标准化 | `invalid_input` → 输出错误信息并失败；无法推断 → 标注 `[待确认：xxx]` |
+| Agent                    | 负责阶段   | 处理方式                                                                                                                   |
+| ------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **transform-agent**      | PRD 增强   | `invalid_input` → clarify_envelope；`blocking_unknown` → clarify_envelope 且标记 🔴；`defaultable_unknown` → PRD 中标记 🟡 |
+| **analyze-agent**        | 测试分析   | `invalid_input` → 输出警告并失败；`defaultable_unknown` → 继续分析并记录；外部脚本失败 → 跳过该步骤                        |
+| **writer-agent**         | 用例编写   | `blocking_unknown` → blocked_envelope；`defaultable_unknown` → 继续并在思路中保留依据                                      |
+| **reviewer-agent**       | 用例审查   | `invalid_input` → 返回 envelope；`blocking_unknown` → context_gaps；自动修正时若无法修正 → 标记 `[FXX-MANUAL]`             |
+| **format-checker-agent** | 格式检查   | `invalid_input` → JSON envelope 的 `uncertainty` 数组；无用例 → 警告 + pass                                                |
+| **standardize-agent**    | 用例标准化 | `invalid_input` → 输出错误信息并失败；无法推断 → 标注 `[待确认：xxx]`                                                      |
 
 ## blocked_envelope / clarify_envelope 结构
 
@@ -106,19 +106,23 @@
 **分类**：`invalid_input`
 
 **处理**：
+
 - 输出错误 envelope，说明文件路径和原因
 - 不继续处理
 - 若是可选文件（如历史用例参考），改为 `defaultable_unknown`，跳过该步骤
 
 **示例**（transform-agent）：
+
 ```json
 {
   "status": "invalid_input",
-  "items": [{
-    "severity": "invalid_input",
-    "field": "prd_path",
-    "description": "增强 PRD 文件不存在：workspace/xxx/prds/202604/xxx.md"
-  }]
+  "items": [
+    {
+      "severity": "invalid_input",
+      "field": "prd_path",
+      "description": "增强 PRD 文件不存在：workspace/xxx/prds/202604/xxx.md"
+    }
+  ]
 }
 ```
 
@@ -127,18 +131,22 @@
 **分类**：`invalid_input`
 
 **处理**：
+
 - 输出 envelope 说明错误位置（行号、字段名）
 - 不继续处理
 
 **示例**（reviewer-agent）：
+
 ```json
 {
   "status": "invalid_input",
-  "items": [{
-    "severity": "invalid_input",
-    "field": "writer_json",
-    "description": "JSON 结构不匹配：缺少 modules 字段"
-  }]
+  "items": [
+    {
+      "severity": "invalid_input",
+      "field": "writer_json",
+      "description": "JSON 结构不匹配：缺少 modules 字段"
+    }
+  ]
 }
 ```
 
@@ -147,26 +155,34 @@
 **分类**：`blocking_unknown`
 
 **处理**：
+
 - 输出 blocked_envelope 或 clarify_envelope
 - 列出具体缺失项
 - 提供推荐答案（若有源码/历史参考）
 - 等待上游确认
 
 **示例**（writer-agent）：
+
 ```json
 {
   "status": "needs_confirmation",
-  "items": [{
-    "id": "B1",
-    "severity": "blocking_unknown",
-    "type": "field_enum",
-    "location": "列表页 → 状态筛选",
-    "question": "「审批状态」字段的可选值有哪些？",
-    "recommended_option": "A",
-    "options": [
-      { "id": "A", "description": "待审批/审批中/已通过/已驳回", "reason": "历史归档出现驳回" }
-    ]
-  }]
+  "items": [
+    {
+      "id": "B1",
+      "severity": "blocking_unknown",
+      "type": "field_enum",
+      "location": "列表页 → 状态筛选",
+      "question": "「审批状态」字段的可选值有哪些？",
+      "recommended_option": "A",
+      "options": [
+        {
+          "id": "A",
+          "description": "待审批/审批中/已通过/已驳回",
+          "reason": "历史归档出现驳回"
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -175,11 +191,13 @@
 **分类**：`defaultable_unknown`
 
 **处理**：
+
 - 在输出中标记 🟡（源码推测）或 🔴（仅历史参考）
 - 记录推断的依据和置信度
 - 继续处理，不阻断
 
 **示例**（transform-agent）：
+
 ```
 🟡 [推测：基于同模块 UserListPage 组件推断] 导航路径为「用户管理 → 用户列表」
 
@@ -191,6 +209,7 @@
 **分类**：`external_failure`
 
 **处理**：
+
 - 重试 1 次
 - 失败则：
   - 若为关键路径（如 PRD 是必需），输出 `invalid_input` envelope
@@ -198,6 +217,7 @@
   - 记录错误日志（stderr、exit code）
 
 **示例**（analyze-agent）：
+
 ```
 若 `archive-gen.ts search` 失败：
   → 记录：`defaultable_unknown`
@@ -210,12 +230,14 @@
 **分类**：`partial_result`
 
 **处理**：
+
 - 输出已成功部分的 JSON 结构
 - 在 `summary` 或 `issues` 中列出失败条目清单
 - 统计：`success_count` / `failed_count` / `total_count`
 - 不丢弃成功结果
 
 **示例**（format-checker-agent）：
+
 ```json
 {
   "total_cases": 42,

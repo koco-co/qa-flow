@@ -22,11 +22,11 @@ workspace/{project}/tests/{YYYYMM}/{suite}/  ← 套件专属层
 
 ### 1.2 函数归属判断标准
 
-| 归属 | 判断条件 | 示例 |
-|------|---------|------|
-| **共享层** `lib/playwright/` | 只依赖 Ant Design 组件结构，不涉及任何业务 API 或项目 URL | `selectAntOption`, `confirmPopconfirm`, `waitForTableLoaded`, `switchAntTab` |
-| **项目层** `helpers/test-setup.ts` | 涉及项目特有的 URL 构建、API 端点、环境变量 | `buildDataAssetsUrl`, `applyRuntimeCookies`, `syncMetadata` |
-| **套件层** `{suite}/xxx-helpers.ts` | 涉及特定需求的业务流程组合 | `saveRuleSet`, `configureRangeEnumRule` |
+| 归属                                | 判断条件                                                  | 示例                                                                         |
+| ----------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **共享层** `lib/playwright/`        | 只依赖 Ant Design 组件结构，不涉及任何业务 API 或项目 URL | `selectAntOption`, `confirmPopconfirm`, `waitForTableLoaded`, `switchAntTab` |
+| **项目层** `helpers/test-setup.ts`  | 涉及项目特有的 URL 构建、API 端点、环境变量               | `buildDataAssetsUrl`, `applyRuntimeCookies`, `syncMetadata`                  |
+| **套件层** `{suite}/xxx-helpers.ts` | 涉及特定需求的业务流程组合                                | `saveRuleSet`, `configureRangeEnumRule`                                      |
 
 ### 1.3 使用方式
 
@@ -37,7 +37,10 @@ workspace/{project}/tests/{YYYYMM}/{suite}/  ← 套件专属层
 import { selectAntOption, expectAntMessage } from "../../helpers/test-setup";
 
 // 或直接从共享库引用（新项目推荐）
-import { selectAntOption, expectAntMessage } from "../../../../lib/playwright/index";
+import {
+  selectAntOption,
+  expectAntMessage,
+} from "../../../../lib/playwright/index";
 ```
 
 ### 1.4 新增函数规则
@@ -67,8 +70,8 @@ import { selectAntOption, expectAntMessage } from "../../../../lib/playwright/in
 当语义化定位器无法确定时，使用测试 ID（元素中的 `data-testid` 属性）：
 
 ```typescript
-page.getByTestId('search-btn')
-page.getByTestId('user-profile-avatar')
+page.getByTestId("search-btn");
+page.getByTestId("user-profile-avatar");
 ```
 
 ### 2.3 第三优先级：CSS 选择器
@@ -76,8 +79,8 @@ page.getByTestId('user-profile-avatar')
 仅在前两种方式无法使用时采用 CSS 选择器：
 
 ```typescript
-page.locator('.ant-btn-primary')
-page.locator('table tbody tr').first()
+page.locator(".ant-btn-primary");
+page.locator("table tbody tr").first();
 ```
 
 ### 2.4 无法确定时的处理
@@ -86,7 +89,7 @@ page.locator('table tbody tr').first()
 
 ```typescript
 // TODO: 需通过 playwright-cli snapshot 获取实际选择器
-page.locator('text={{按钮文本}}')
+page.locator("text={{按钮文本}}");
 ```
 
 ## 3. step() 函数规范
@@ -137,13 +140,13 @@ await step(
 await step("步骤1: 填写表单 → 成功提交", async () => {
   // 填写文本输入框
   await page.getByLabel("商品名称").fill("2026春季新款运动鞋");
-  
+
   // 选择下拉框
   await page.getByLabel("商品分类").selectOption("运动鞋");
-  
+
   // 点击提交按钮
   await page.getByRole("button", { name: "提交" }).click();
-  
+
   // 等待提交完成和响应消息
   await page.waitForLoadState("networkidle");
   await expect(page.getByText("保存成功")).toBeVisible({ timeout: 5000 });
@@ -153,18 +156,22 @@ await step("步骤1: 填写表单 → 成功提交", async () => {
 ### 4.2 表格数据验证
 
 ```typescript
-await step("步骤2: 查看列表数据 → 表格有数据", async () => {
-  // 等待表格加载
-  const tableRows = page.locator("table tbody tr");
-  await expect(tableRows.first()).toBeVisible();
-  
-  // 验证表格有数据
-  await expect(tableRows).not.toHaveCount(0);
-  
-  // 验证首行的特定列值
-  const firstRow = tableRows.first();
-  await expect(firstRow.locator("td").nth(0)).toContainText("期望值");
-}, tableRows.first());
+await step(
+  "步骤2: 查看列表数据 → 表格有数据",
+  async () => {
+    // 等待表格加载
+    const tableRows = page.locator("table tbody tr");
+    await expect(tableRows.first()).toBeVisible();
+
+    // 验证表格有数据
+    await expect(tableRows).not.toHaveCount(0);
+
+    // 验证首行的特定列值
+    const firstRow = tableRows.first();
+    await expect(firstRow.locator("td").nth(0)).toContainText("期望值");
+  },
+  tableRows.first(),
+);
 ```
 
 ## 5. 等待策略
@@ -247,12 +254,16 @@ test.describe("功能名称 - 页面名", () => {
     });
 
     // 步骤2：执行操作
-    await step("步骤2: 填写表单 → 成功提交", async () => {
-      await page.getByLabel("字段名").fill("输入值");
-      const submitBtn = page.getByRole("button", { name: "提交" });
-      await submitBtn.click();
-      await expect(page.getByText("成功")).toBeVisible({ timeout: 5000 });
-    }, submitBtn);
+    await step(
+      "步骤2: 填写表单 → 成功提交",
+      async () => {
+        await page.getByLabel("字段名").fill("输入值");
+        const submitBtn = page.getByRole("button", { name: "提交" });
+        await submitBtn.click();
+        await expect(page.getByText("成功")).toBeVisible({ timeout: 5000 });
+      },
+      submitBtn,
+    );
   });
 });
 ```

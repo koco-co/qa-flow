@@ -3,9 +3,9 @@
 > 供 `bug-report` / `hotfix-case-gen` 等 skill 在分析 Bug 时参考，辅助判断问题根源所在。
 
 <classification_contract>
-  <defaultable_unknown>上下文略有缺口，但仍可给出倾向性判断；需在报告中附带后续检查项。</defaultable_unknown>
-  <blocking_unknown>缺少完整堆栈、触发步骤或关键上下文，无法安全判断根因归属。</blocking_unknown>
-  <invalid_input>输入为空、日志被截断到无法识别、或内容与分析模式不匹配。</invalid_input>
+<defaultable_unknown>上下文略有缺口，但仍可给出倾向性判断；需在报告中附带后续检查项。</defaultable_unknown>
+<blocking_unknown>缺少完整堆栈、触发步骤或关键上下文，无法安全判断根因归属。</blocking_unknown>
+<invalid_input>输入为空、日志被截断到无法识别、或内容与分析模式不匹配。</invalid_input>
 </classification_contract>
 
 建议输出结构化判断载荷：
@@ -106,6 +106,7 @@
 2. 但在特定环境下（如测试环境与生产环境配置差异）才会触发
 
 混合问题需在报告中分别描述：
+
 - 代码侧的修复建议
 - 环境侧的配置检查项
 
