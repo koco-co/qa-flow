@@ -6,8 +6,12 @@
 import type { Page, Locator } from "@playwright/test";
 import { expect } from "@playwright/test";
 
-const PAGE_URL =
-  "http://shuzhan63-test-ltqc.k8s.dtstack.cn/dataAssets/#/dq/generalConfig/jsonValidationConfig";
+const PATH = "/dataAssets/#/dq/generalConfig/jsonValidationConfig";
+function getPageUrl(): string {
+  const baseUrl = process.env.UI_AUTOTEST_BASE_URL;
+  if (!baseUrl) throw new Error("UI_AUTOTEST_BASE_URL 未设置，无法拼接 PAGE_URL");
+  return baseUrl.replace(/\/$/, "") + PATH;
+}
 
 async function dismissTopModal(page: Page): Promise<boolean> {
   const modalWrap = page.locator(".ant-modal-wrap:visible").last();
@@ -29,7 +33,7 @@ async function dismissTopModal(page: Page): Promise<boolean> {
 
 /** 进入 json格式校验管理页面并关闭可能出现的欢迎弹窗 */
 export async function gotoJsonConfigPage(page: Page): Promise<void> {
-  await page.goto(PAGE_URL);
+  await page.goto(getPageUrl());
   await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
 
   // 关闭欢迎弹窗

@@ -1,10 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
 
-// 手动解析 .env，确保 worker 继承时变量已就绪
-function loadDotEnv() {
+// 手动解析 .env / .env.envs / .env.local，确保 worker 继承时变量已就绪
+// 加载顺序（低 → 高）：.env → .env.envs → .env.local，后加载的不覆盖已有 process.env 值
+function loadDotEnvFile(filename: string) {
   try {
-    const content = readFileSync(`${process.cwd()}/.env`, "utf8");
+    const content = readFileSync(`${process.cwd()}/${filename}`, "utf8");
     for (const line of content.split("\n")) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith("#")) continue;
@@ -15,8 +16,14 @@ function loadDotEnv() {
       if (!(key in process.env)) process.env[key] = val;
     }
   } catch {
-    // .env 不存在时静默跳过
+    // 文件不存在时静默跳过
   }
+}
+
+function loadDotEnv() {
+  loadDotEnvFile(".env");
+  loadDotEnvFile(".env.envs");
+  loadDotEnvFile(".env.local");
 }
 
 loadDotEnv();

@@ -5,10 +5,7 @@ import {
   confirmPopconfirm,
   uniqueName,
 } from "../../helpers/test-setup";
-
-
-const BASE_URL =
-  "http://shuzhan63-test-ltqc.k8s.dtstack.cn/dataAssets/#/dq/generalConfig/jsonValidationConfig";
+import { gotoJsonConfigPage } from "./json-config-helpers";
 
 async function addKey(
   page: import("@playwright/test").Page,
@@ -41,19 +38,7 @@ async function addKey(
     await modal.getByRole("button", { name: /^确\s*定$/ }).click();
     await modal.waitFor({ state: "hidden", timeout: 10000 });
     await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
-      await dismissWelcomeDialog(page);
   });
-}
-
-async function dismissWelcomeDialog(page: import("@playwright/test").Page) {
-  const dialog = page.locator("dialog, .ant-modal").filter({ hasText: "欢迎使用" });
-  if (await dialog.isVisible({ timeout: 3000 }).catch(() => false)) {
-    const btn = dialog.getByRole("button", { name: "知道了" });
-    if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await btn.click();
-      await dialog.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
-    }
-  }
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
@@ -63,9 +48,7 @@ test.describe("【通用配置】json格式配置 - 通用配置-json格式校�
     const hiveKey = uniqueName("hiveKey");
 
     await step("步骤1: 进入json格式校验管理页面 → 页面正常加载", async () => {
-      await page.goto(BASE_URL);
-      await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
-      await dismissWelcomeDialog(page);
+      await gotoJsonConfigPage(page);
       const table = page.locator(".ant-table");
       await table.waitFor({ state: "visible", timeout: 15000 });
       await waitForTableLoaded(page, table);
@@ -83,7 +66,6 @@ test.describe("【通用配置】json格式配置 - 通用配置-json格式校�
         await page.waitForTimeout(500);
         await page.keyboard.press("Enter");
         await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
-      await dismissWelcomeDialog(page);
         await waitForTableLoaded(page, page.locator(".ant-table"));
         const sparkRow = page.locator(".ant-table-row").filter({ hasText: sparkKey }).first();
         await expect(sparkRow).toBeVisible({ timeout: 10000 });

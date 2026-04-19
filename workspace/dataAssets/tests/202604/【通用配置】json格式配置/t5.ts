@@ -11,10 +11,6 @@ import {
   searchKey,
 } from "./json-config-helpers";
 
-const BASE_URL =
-  "http://shuzhan63-test-ltqc.k8s.dtstack.cn/dataAssets/#/dq/generalConfig/jsonValidationConfig";
-
-
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
   test("【P2】验证新增key时数据源类型三种选项可正常切换", async ({ page, step }) => {
     const typeTestKey = uniqueName("typeTestKey");

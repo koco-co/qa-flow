@@ -4,31 +4,15 @@ import {
   waitForTableLoaded,
   confirmPopconfirm,
 } from "../../helpers/test-setup";
-
-
-const BASE_URL =
-  "http://shuzhan63-test-ltqc.k8s.dtstack.cn/dataAssets/#/dq/generalConfig/jsonValidationConfig";
+import { gotoJsonConfigPage } from "./json-config-helpers";
 
 // 注意：简化为验证导出功能不报错。
 // 完整验证（下载条数限制）需结合大量数据并解析 xlsx，超出 E2E 范围，建议手动验证。
 
-async function dismissWelcomeDialog(page: import("@playwright/test").Page) {
-  const dialog = page.locator("dialog, .ant-modal").filter({ hasText: "欢迎使用" });
-  if (await dialog.isVisible({ timeout: 3000 }).catch(() => false)) {
-    const btn = dialog.getByRole("button", { name: "知道了" });
-    if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await btn.click();
-      await dialog.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
-    }
-  }
-}
-
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
   test("【P1】验证大数据量场景key记录下载数量是否存在限制", async ({ page, step }) => {
     await step("步骤1: 进入json格式校验管理页面 → 页面正常加载", async () => {
-      await page.goto(BASE_URL);
-      await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
-      await dismissWelcomeDialog(page);
+      await gotoJsonConfigPage(page);
       const table = page.locator(".ant-table");
       await table.waitFor({ state: "visible", timeout: 15000 });
       await waitForTableLoaded(page, table);

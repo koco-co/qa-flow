@@ -3,13 +3,10 @@ import { test, expect } from "../../fixtures/step-screenshot";
 import {
   uniqueName,
 } from "../../helpers/test-setup";
+import { gotoJsonConfigPage } from "./json-config-helpers";
 import ExcelJS from "exceljs";
 import * as path from "path";
 import * as fs from "fs";
-
-
-const BASE_URL =
-  "http://shuzhan63-test-ltqc.k8s.dtstack.cn/dataAssets/#/dq/generalConfig/jsonValidationConfig";
 
 async function createImportXlsx(
   filePath: string,
@@ -70,11 +67,9 @@ test.describe("【通用配置】json格式配置 - 通用配置-json格式校�
 
     try {
       await step("步骤1: 进入json格式校验管理页面 → 页面正常加载", async () => {
-        await page.goto(BASE_URL);
-        await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
-      await dismissWelcomeDialog(page);
+        await gotoJsonConfigPage(page);
         await expect(
-          page.locator(".ant-table, .json-validation-config, [class*='jsonValid']").first(),
+          page.locator(".ant-table, .json-format-check, .json-validation-config, [class*='jsonValid']").first(),
         ).toBeVisible({ timeout: 15000 });
       });
 

@@ -7,9 +7,6 @@ import * as path from "path";
 import * as fs from "fs";
 
 
-const BASE_URL =
-  "http://shuzhan63-test-ltqc.k8s.dtstack.cn/dataAssets/#/dq/generalConfig/jsonValidationConfig";
-
 /** 生成测试用 xlsx，sheet 含一行 key 为空的数据 */
 async function createImportXlsx(
   filePath: string,

@@ -13,9 +13,6 @@ import * as path from "path";
 import * as fs from "fs";
 
 
-const BASE_URL =
-  "http://shuzhan63-test-ltqc.k8s.dtstack.cn/dataAssets/#/dq/generalConfig/jsonValidationConfig";
-
 async function createImportXlsx(
   filePath: string,
   sheets: { name: string; headers: string[]; rows: string[][] }[],
