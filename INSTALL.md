@@ -81,22 +81,24 @@ bunx playwright install
 ### Step 7 — 完成汇报
 
 向用户输出一张摘要表：
+
 - 各步骤状态（✅ / ❌）
 - 下一步动作：`在 Claude Code 中打开项目目录并输入 /qa-flow init`
 - 如需对接蓝湖 / 禅道 / IM 通知，提示用户手工编辑 `.env` 并参考 README 的「环境配置」章节
 
 ## Plugin Credentials (不要自动填写，仅提示)
 
-| 场景                 | `.env` 变量                                                  |
-| -------------------- | ------------------------------------------------------------ |
-| 蓝湖 PRD 导入        | `LANHU_COOKIE`                                               |
-| 禅道 Bug             | `ZENTAO_BASE_URL` / `ZENTAO_ACCOUNT` / `ZENTAO_PASSWORD`     |
-| 钉钉/飞书/企微通知   | `DINGTALK_WEBHOOK_URL` / `FEISHU_WEBHOOK_URL` / `WECOM_WEBHOOK_URL` |
-| SMTP 邮件            | `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` / `SMTP_TO` |
+| 场景               | `.env` 变量                                                         |
+| ------------------ | ------------------------------------------------------------------- |
+| 蓝湖 PRD 导入      | `LANHU_COOKIE`                                                      |
+| 禅道 Bug           | `ZENTAO_BASE_URL` / `ZENTAO_ACCOUNT` / `ZENTAO_PASSWORD`            |
+| 钉钉/飞书/企微通知 | `DINGTALK_WEBHOOK_URL` / `FEISHU_WEBHOOK_URL` / `WECOM_WEBHOOK_URL` |
+| SMTP 邮件          | `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` / `SMTP_TO`   |
 
 ## Failure Protocol
 
 遇到任何步骤失败：
+
 1. 停止后续步骤。
 2. 原样复述失败命令与 stderr 片段。
 3. 给出 1–2 条最可能的修复建议（不要超过 3 条，不要自行执行）。
