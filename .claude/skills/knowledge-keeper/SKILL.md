@@ -30,26 +30,26 @@ bun run .claude/scripts/rule-loader.ts load --project {{project}}
 
 ## 知识层级
 
-| 层级     | 存储路径                                          | 典型内容                       |
-| -------- | ------------------------------------------------- | ------------------------------ |
-| overview | `workspace/{{project}}/knowledge/_overview.md`    | 业务概览、主流程               |
-| terms    | `workspace/{{project}}/knowledge/_core.json`      | 术语表（中英对照、别名）       |
-| modules  | `workspace/{{project}}/knowledge/modules/*.md`    | 模块业务知识（带 frontmatter） |
-| pitfalls | `workspace/{{project}}/knowledge/pitfalls/*.md`   | 踩坑记录（带 frontmatter）     |
+| 层级     | 存储路径                                        | 典型内容                       |
+| -------- | ----------------------------------------------- | ------------------------------ |
+| overview | `workspace/{{project}}/knowledge/_overview.md`  | 业务概览、主流程               |
+| terms    | `workspace/{{project}}/knowledge/_core.json`    | 术语表（中英对照、别名）       |
+| modules  | `workspace/{{project}}/knowledge/modules/*.md`  | 模块业务知识（带 frontmatter） |
+| pitfalls | `workspace/{{project}}/knowledge/pitfalls/*.md` | 踩坑记录（带 frontmatter）     |
 
 ---
 
 ## CLI 命令总览
 
-| 命令           | 用途                       | 写入? |
-| -------------- | -------------------------- | ----- |
-| `read-core`    | 读 overview + terms + index | 否   |
-| `read-module`  | 读单个 module               | 否   |
-| `read-pitfall` | 检索 pitfall（按关键词）   | 否    |
-| `write`        | 新增 term/overview/module/pitfall | 是 |
-| `update`       | 精细更新 frontmatter / body | 是   |
-| `index`        | 刷新 `_index.md`           | 是    |
-| `lint`         | 健康检查                   | 否    |
+| 命令           | 用途                              | 写入? |
+| -------------- | --------------------------------- | ----- |
+| `read-core`    | 读 overview + terms + index       | 否    |
+| `read-module`  | 读单个 module                     | 否    |
+| `read-pitfall` | 检索 pitfall（按关键词）          | 否    |
+| `write`        | 新增 term/overview/module/pitfall | 是    |
+| `update`       | 精细更新 frontmatter / body       | 是    |
+| `index`        | 刷新 `_index.md`                  | 是    |
+| `lint`         | 健康检查                          | 否    |
 
 ---
 
