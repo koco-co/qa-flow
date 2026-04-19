@@ -105,8 +105,9 @@ interface XmindPreferences {
 }
 
 function loadPreferences(): XmindPreferences {
+  // 中性默认值。如需带产品名前缀，在项目级 rules/xmind-structure.md override
   const defaults: XmindPreferences = {
-    root_title_template: "数据资产v{{prd_version}}迭代用例(#{{iteration_id}})",
+    root_title_template: "{{project_name}}v{{prd_version}}迭代用例(#{{iteration_id}})",
     iteration_id: "23",
   };
 

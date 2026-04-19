@@ -65,7 +65,7 @@ const sessionPath =
 
 if (sessionPath === legacySessionPath) {
   process.stderr.write(
-    `[playwright.config] 使用旧 session 路径 ${legacySessionPath}。建议运行：bun run .claude/scripts/migrate-session-paths.ts\n`,
+    `[playwright.config] 使用旧 session 路径 ${legacySessionPath}。建议手动迁移到 .auth/${project}/session-${envLower}.json\n`,
   );
 }
 process.env.UI_AUTOTEST_SESSION_PATH = sessionPath;

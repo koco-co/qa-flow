@@ -15,10 +15,10 @@ argument-hint: "[报错日志 / 堆栈文本 / 前端 Console 错误 | --templat
 </inputs>
 
 <pre_guard>
-  <hard_required>报错主堆栈/主报错文本不可为空；必须包含可识别的异常关键字或用户明确声明后端/前端</hard_required>
-  <soft>缺少环境信息（JDK 版本、浏览器版本）/ 接口 curl / 重现步骤仍可继续分析，但需在报告中标注"未提供"</soft>
-  <blocking_unknown>仅有一句"报错了"、无堆栈、无错误文本 → 追问必填项，不进入 agent 派发</blocking_unknown>
-  <invalid_input>输入为空、纯截图无可解析文本 → 立即返回输入无效</invalid_input>
+<hard_required>报错主堆栈/主报错文本不可为空；必须包含可识别的异常关键字或用户明确声明后端/前端</hard_required>
+<soft>缺少环境信息（JDK 版本、浏览器版本）/ 接口 curl / 重现步骤仍可继续分析，但需在报告中标注"未提供"</soft>
+<blocking_unknown>仅有一句"报错了"、无堆栈、无错误文本 → 追问必填项，不进入 agent 派发</blocking_unknown>
+<invalid_input>输入为空、纯截图无可解析文本 → 立即返回输入无效</invalid_input>
 </pre_guard>
 
 <routing>

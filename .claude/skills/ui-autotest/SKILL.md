@@ -82,7 +82,7 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 | `步骤 3 — 登录态准备` | `准备登录 session`     |
 | `步骤 4 — 脚本生成`   | `生成 Playwright 脚本` |
 | `步骤 5 — 逐条自测`   | `执行自测验证`         |
-| `步骤 5.5 — 共性收敛`   | `分析共性失败模式`     |
+| `步骤 5.5 — 共性收敛` | `分析共性失败模式`     |
 | `步骤 6 — 合并脚本`   | `合并验证通过的脚本`   |
 | `步骤 7 — 执行测试`   | `执行全量回归`         |
 | `步骤 8 — 处理结果`   | `处理测试结果`         |
@@ -90,11 +90,11 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 **状态推进规则**：
 
-| 时机 | 操作 | subject 格式 |
-|------|------|-------------|
-| 步骤开始 | `TaskUpdate status=in_progress` | `步骤 N — 开始` |
-| 步骤完成 | `TaskUpdate status=completed` | `步骤 N — {{结果摘要}}` |
-| 步骤 5 子任务 | 每条用例创建子任务 | `自测 {{case_id}} — {{title}}` |
+| 时机          | 操作                            | subject 格式                   |
+| ------------- | ------------------------------- | ------------------------------ |
+| 步骤开始      | `TaskUpdate status=in_progress` | `步骤 N — 开始`                |
+| 步骤完成      | `TaskUpdate status=completed`   | `步骤 N — {{结果摘要}}`        |
+| 步骤 5 子任务 | 每条用例创建子任务              | `自测 {{case_id}} — {{title}}` |
 
 各步骤遵循此 schema，不再单独说明。
 
@@ -106,15 +106,15 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 ### 命令别名
 
-| 别名 | 完整命令 |
-|------|----------|
-| `@progress:create` | `bun run .claude/scripts/ui-autotest-progress.ts create --project {{project}} --suite "{{suite}}" ...` |
-| `@progress:update` | `bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite}}" ...` |
-| `@progress:summary` | `bun run .claude/scripts/ui-autotest-progress.ts summary --project {{project}} --suite "{{suite}}"` |
-| `@progress:reset` | `bun run .claude/scripts/ui-autotest-progress.ts reset --project {{project}} --suite "{{suite}}"` |
-| `@progress:resume` | `bun run .claude/scripts/ui-autotest-progress.ts resume --project {{project}} --suite "{{suite}}"` |
-| `@parse-cases` | `bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}` |
-| `@merge-specs` | `bun run .claude/skills/ui-autotest/scripts/merge-specs.ts ...` |
+| 别名                | 完整命令                                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| `@progress:create`  | `bun run .claude/scripts/ui-autotest-progress.ts create --project {{project}} --suite "{{suite}}" ...` |
+| `@progress:update`  | `bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite}}" ...` |
+| `@progress:summary` | `bun run .claude/scripts/ui-autotest-progress.ts summary --project {{project}} --suite "{{suite}}"`    |
+| `@progress:reset`   | `bun run .claude/scripts/ui-autotest-progress.ts reset --project {{project}} --suite "{{suite}}"`      |
+| `@progress:resume`  | `bun run .claude/scripts/ui-autotest-progress.ts resume --project {{project}} --suite "{{suite}}"`     |
+| `@parse-cases`      | `bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}`                         |
+| `@merge-specs`      | `bun run .claude/skills/ui-autotest/scripts/merge-specs.ts ...`                                        |
 
 > 当 `{{env}}` 已确定时，所有 `@progress:*` 命令均追加 `--env {{env}}` 参数。
 
@@ -129,21 +129,21 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 `lib/playwright/` 提供跨项目通用的 Ant Design 交互函数，所有 sub-agent 生成脚本时**必须优先使用**，禁止内联重新实现：
 
-| 分类 | 函数 | 用途 |
-|------|------|------|
-| Select | `selectAntOption` | 下拉选择（含虚拟滚动 fallback） |
-| Message | `expectAntMessage` | 等待 Message/Notification 提示 |
-| Modal | `waitForAntModal` / `confirmAntModal` / `closeAntModal` | 弹窗操作 |
-| Drawer | `waitForAntDrawer` / `closeAntDrawer` / `waitForOverlay` | 抽屉 & 浮层 |
-| Popconfirm | `confirmPopconfirm` / `cancelPopconfirm` | 气泡确认框 |
-| Table | `waitForTableLoaded` / `findTableRow` | 表格加载 & 行定位 |
-| Form | `locateFormItem` / `expectFormError` / `expectNoFormError` | 表单字段 & 验证 |
-| Tabs | `switchAntTab` | 标签页切换 |
-| Checkbox | `checkAntCheckbox` / `uncheckAntCheckbox` | 复选框（幂等） |
-| Radio | `clickAntRadio` | 单选 |
-| Dropdown | `clickDropdownMenuItem` | 下拉菜单项点击 |
-| Navigation | `navigateViaMenu` | 侧边栏菜单导航 |
-| Utils | `uniqueName` / `todayStr` | 测试数据工具 |
+| 分类       | 函数                                                       | 用途                            |
+| ---------- | ---------------------------------------------------------- | ------------------------------- |
+| Select     | `selectAntOption`                                          | 下拉选择（含虚拟滚动 fallback） |
+| Message    | `expectAntMessage`                                         | 等待 Message/Notification 提示  |
+| Modal      | `waitForAntModal` / `confirmAntModal` / `closeAntModal`    | 弹窗操作                        |
+| Drawer     | `waitForAntDrawer` / `closeAntDrawer` / `waitForOverlay`   | 抽屉 & 浮层                     |
+| Popconfirm | `confirmPopconfirm` / `cancelPopconfirm`                   | 气泡确认框                      |
+| Table      | `waitForTableLoaded` / `findTableRow`                      | 表格加载 & 行定位               |
+| Form       | `locateFormItem` / `expectFormError` / `expectNoFormError` | 表单字段 & 验证                 |
+| Tabs       | `switchAntTab`                                             | 标签页切换                      |
+| Checkbox   | `checkAntCheckbox` / `uncheckAntCheckbox`                  | 复选框（幂等）                  |
+| Radio      | `clickAntRadio`                                            | 单选                            |
+| Dropdown   | `clickDropdownMenuItem`                                    | 下拉菜单项点击                  |
+| Navigation | `navigateViaMenu`                                          | 侧边栏菜单导航                  |
+| Utils      | `uniqueName` / `todayStr`                                  | 测试数据工具                    |
 
 引用方式：`import { selectAntOption } from "../../helpers/test-setup"` （通过项目 helpers re-export）。
 
@@ -195,7 +195,6 @@ bun run .claude/scripts/rule-loader.ts load --project {{project}} > workspace/{{
 
 ---
 
-
 ## 步骤 1：解析输入
 
 按照 `workflow/step-1-parse-input.md` 执行。该文件定义 Archive MD 解析、case_id 生成、suite_name 推导、断点续传检测。
@@ -228,14 +227,23 @@ bun run .claude/scripts/ui-autotest-progress.ts summary --project {{project}} --
 bun run .claude/scripts/ui-autotest-progress.ts resume --project {{project}} --suite "{{suite_name}}" --env "{{env}}"
 ```
 
-然后读取 summary，向用户展示：
+然后读取 summary，向用户展示（步骤进度条 + 用例统计）：
 
 ```
 检测到上次未完成的执行进度：
 
 套件：{{suite_name}}
-中断于：步骤 {{current_step}}
-进度：{{passed}} 通过, {{failed}} 失败, {{pending}} 待执行
+
+步骤进度：
+  ✓ 步骤 1   解析输入
+  ✓ 步骤 2   范围确认
+  ✓ 步骤 3   登录态准备
+  {{#each completedSteps as step}}✓ 步骤 {{step.id}}   {{step.name}}
+  {{/each}}➜ 步骤 {{current_step}}   {{current_step_name}}（中断于此）
+  {{#each pendingSteps as step}}░ 步骤 {{step.id}}   {{step.name}}
+  {{/each}}
+
+用例进度：{{passed}} 通过 · {{failed}} 失败 · {{pending}} 待执行（共 {{total}}）
 上次更新：{{updated_at}}
 {{#if expired}}⚠️ 上次进度已超过 7 天，环境可能已变化。建议选择「全部重新开始」。{{/if}}
 
@@ -244,6 +252,8 @@ bun run .claude/scripts/ui-autotest-progress.ts resume --project {{project}} --s
 2. 重试失败项（重跑失败用例，再继续待执行的）
 3. 全部重新开始（清空进度，从头来）
 ```
+
+> 步骤名称参照 SKILL.md 顶部「主流程任务列表」(步骤 1-8)。`completedSteps` 为 ID < `current_step` 的步骤，`pendingSteps` 为 ID > `current_step` 的步骤。
 
 - 选 1：直接跳到 `current_step` 对应的步骤（4/5/6），已 passed 的用例自动跳过
 - 选 2：执行 `bun run .claude/scripts/ui-autotest-progress.ts resume --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --retry-failed`，然后跳到 `current_step`
@@ -312,7 +322,6 @@ bun run .claude/skills/ui-autotest/scripts/session-login.ts --project {{project}
 ---
 
 按 Task Schema 更新：将 `步骤 3` 标记为 `completed`（subject: `步骤 3 — 登录态就绪`）。
-
 
 ## 步骤 4：脚本生成（Sub-Agent 并发）
 
@@ -402,7 +411,6 @@ npx allure generate \
 
 按 Task Schema 更新：将 `步骤 7` 标记为 `completed`（subject: `步骤 7 — 回归完成，{{passed}}/{{total}} 通过`）。
 
-
 ## 步骤 8：处理测试结果
 
 按照 `workflow/step-8-result-processing.md` 执行。该文件定义 Allure 报告解析、失败分类、Bug 报告生成入口、通知 payload 构造。
@@ -446,10 +454,10 @@ bun run .claude/scripts/plugin-loader.ts notify \
 
 ## 输出目录约定
 
-| 类型                 | 路径                                                                        |
-| -------------------- | --------------------------------------------------------------------------- |
-| 临时代码块           | `workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/`                     |
-| E2E spec 文件        | `workspace/{{project}}/tests/YYYYMM/{{suite_name}}/`                        |
+| 类型                 | 路径                                                                                          |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| 临时代码块           | `workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/`                                       |
+| E2E spec 文件        | `workspace/{{project}}/tests/YYYYMM/{{suite_name}}/`                                          |
 | Playwright HTML 报告 | `workspace/{{project}}/reports/allure/YYYYMM/{{suite_name}}/{{env}}/allure-report/index.html` |
-| Bug 报告             | `workspace/{{project}}/reports/bugs/YYYYMM/ui-autotest-{{suite_name}}.html` |
-| Session 文件         | `.auth/{{project}}/session-{{env}}.json`                                    |
+| Bug 报告             | `workspace/{{project}}/reports/bugs/YYYYMM/ui-autotest-{{suite_name}}.html`                   |
+| Session 文件         | `.auth/{{project}}/session-{{env}}.json`                                                      |

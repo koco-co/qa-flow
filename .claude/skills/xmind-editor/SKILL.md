@@ -151,8 +151,8 @@ bun run .claude/scripts/xmind-edit.ts delete \
 📝 检测到可复用的偏好规则：
 「导出按钮的预期结果应包含文件命名规则」
 
-判断归属：项目级偏好（数据资产特定的按钮命名规范）
-写入目标：workspace/dataAssets/rules/case-writing.md
+判断归属：项目级偏好（本项目特定的按钮命名规范）
+写入目标：workspace/{{project}}/rules/case-writing.md
 
 选项：[确认写入] [更换目标文件] [调整规则内容] [跳过]
 ```

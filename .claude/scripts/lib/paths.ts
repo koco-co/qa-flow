@@ -12,11 +12,6 @@ export function workspaceDir(): string {
   return resolve(repoRoot(), dir);
 }
 
-/** @deprecated Use project-scoped functions instead. Will be removed once all callers are migrated. */
-export function workspacePath(...segments: string[]): string {
-  return join(workspaceDir(), ...segments);
-}
-
 export function projectDir(project: string): string {
   return join(workspaceDir(), project);
 }

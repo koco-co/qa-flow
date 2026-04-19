@@ -102,6 +102,7 @@ function buildRootTitle(meta: RootAwareMeta, project?: string): string {
     const rules = loadXmindRules(project);
     const ver = normalizeVersion(meta.version);
     return rules.root_title_template
+      .replace("{{project_name}}", meta.project_name ?? "")
       .replace("{{prd_version}}", ver)
       .replace("{{iteration_id}}", rules.iteration_id);
   }

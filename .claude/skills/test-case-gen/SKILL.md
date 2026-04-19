@@ -153,16 +153,15 @@ Writer Sub-Agent 完成时更新：`[write] {{模块名}} — {{n}} 条用例`
 
 ---
 
-
 ## 流程路由（根据输入类型加载对应 workflow）
 
 init 节点识别到输入类型后，按下表加载对应的 workflow 文件，并按其指引继续执行：
 
-| 输入类型 / 触发词 | 场景 | 读取文件 |
-|---|---|---|
-| PRD 路径 / 蓝湖 URL / 模块重跑指令 | `primary` | `workflow/main.md` |
-| `.xmind` 或 `.csv` 文件 / 「标准化归档」 | `standardize` | `workflow/standardize.md` |
-| 「同步 xmind」/「反向同步」指令 | `reverse_sync` | `workflow/reverse-sync.md` |
+| 输入类型 / 触发词                        | 场景           | 读取文件                   |
+| ---------------------------------------- | -------------- | -------------------------- |
+| PRD 路径 / 蓝湖 URL / 模块重跑指令       | `primary`      | `workflow/main.md`         |
+| `.xmind` 或 `.csv` 文件 / 「标准化归档」 | `standardize`  | `workflow/standardize.md`  |
+| 「同步 xmind」/「反向同步」指令          | `reverse_sync` | `workflow/reverse-sync.md` |
 
 **加载方式**：使用 `Read` 工具读取 `.claude/skills/test-case-gen/workflow/{{scenario}}.md` 全文，然后按文件指引继续执行。三个 workflow 共享本 SKILL.md 后半段定义的 **Writer 阻断中转协议**、**断点续传说明**、**异常处理**——遇到相关情形时回查本文件，不在 workflow 文件中重复。
 
