@@ -1,6 +1,6 @@
 # qa-flow 重构 Roadmap
 
-> 最后更新：2026-04-19（phase 7 完成）
+> 最后更新：2026-04-19（phase 8 完成）
 > 本文档为整轮重构的索引入口。每阶段独立 spec → plan → 实施 → smoke → commit 循环。
 
 ---
@@ -27,6 +27,7 @@
 | **5** | 横切基础设施 | ✅ DONE | [`2026-04-19-cross-cutting-infrastructure-design.md`](refactor/specs/2026-04-19-cross-cutting-infrastructure-design.md) | `lib/cli-runner.ts` 工厂（commander 封装 + initEnv + logger + onError）；27/28 CLI 迁移（`report-to-pdf` 保留）；`.env` 三段式（`.env` + `.env.envs` + `.env.local`）；`env-schema` 增 `validateActiveEnv`；state.ts 多环境隔离（`.qa-state-{slug}-{env}.json`）+ 自动迁移 + plan.md 仲裁；`logger.ts` 提升 `initLogLevel` 为 public API（LOG_LEVEL 支持）；821 测试绿 |
 | **6** | 命名迁移 + README + 架构图 | ✅ DONE | [`2026-04-19-naming-readme-diagrams-design.md`](refactor/specs/2026-04-19-naming-readme-diagrams-design.md) | `historys → history` 全仓统一 + legacy auto-rename；README 中英同步 phase 0-5 终态 + 新增「横切基础设施」章节；architecture / test-case-gen / ui-autotest drawio 重绘；删除 code-analysis 僵尸图；823 测试绿 |
 | **7** | Phase 1 完备性审计 | ✅ DONE | [`2026-04-19-phase1-completeness-audit-design.md`](refactor/specs/2026-04-19-phase1-completeness-audit-design.md) | Smoke 验证归档（knowledge-keeper / create-project / legacy historys 三链路）+ init-wizard `/using-qa-flow init` → `/qa-flow init` 文案补丁 + roadmap 状态对齐；整轮重构主干 0-7 闭环；824 测试绿 |
+| **8** | `test-case-gen` / `ui-autotest` workflow 目录拆分 | ✅ DONE | [`2026-04-19-phase8-workflow-split-design.md`](refactor/specs/2026-04-19-phase8-workflow-split-design.md) | 回填 Phase 0 §Skill 全景承诺：`test-case-gen` 按 scenario 拆 `workflow/{main,standardize,reverse-sync}.md`（SKILL.md 1056→233 行）；`ui-autotest` 按痛点 step 拆 `workflow/step-{1,4,5,5.5,8}.md`（SKILL.md 920→455 行）；零语义改动，824 测试绿 |
 
 ---
 
