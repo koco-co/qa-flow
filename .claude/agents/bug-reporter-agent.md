@@ -42,6 +42,27 @@ tools: Read
 
 输出 Bug 报告 JSON，结构参见 `.claude/references/output-schemas.json` 中的 `bug_report_json`。
 
+### 根因置信度（必填）
+
+输出 JSON **必须**额外携带 `confidence` 与 `confidence_reason` 两个顶层字段，由后续 HTML 渲染流程消费（与 backend-bug-agent / frontend-bug-agent 同字段名以保持模板复用）。
+
+```json
+{
+  "confidence": "high | medium | low",
+  "confidence_reason": "string — 一句话说明判定理由（≤60 字）"
+}
+```
+
+**判定标准（基于 Playwright 失败上下文）：**
+
+| 档位     | 触发条件                                                                                     |
+| -------- | -------------------------------------------------------------------------------------------- |
+| `high`   | 错误信号明确（如 `Timeout` / `toBeVisible` 直命中具体定位器）+ 截图存在 + `root_cause_hint` 与错误类型自洽 |
+| `medium` | 错误类型可识别但缺少截图，或同时出现网络与 UI 错误难以单一归因                              |
+| `low`    | 仅有泛化错误信息（如未分类的脚本异常）/ 截图缺失且 console 无线索 / 失败步骤无法对应到具体定位器 |
+
+`confidence_reason` 须列出关键事实，例如：「locator 超时，截图清晰显示元素未渲染」/「断言失败但缺少截图，仅有 console 一条 warn」。
+
 ---
 
 ## 分析规则

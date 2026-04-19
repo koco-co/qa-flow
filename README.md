@@ -197,10 +197,10 @@ UI自动化测试 {{需求名称}} https://your-app.example.com
 
 | 节点 | 名称           | 说明                                                                   | 关键脚本                                              |
 | ---- | -------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
-| 1    | **init**       | 解析输入、恢复状态、加载项目/插件上下文                                | `state.ts`, `plugin-loader.ts`, `rule-loader.ts`      |
+| 1    | **init**       | 解析输入、恢复状态、加载项目/插件上下文                                | `qa-state.ts`, `plugin-loader.ts`, `rule-loader.ts`   |
 | 2    | **discuss**    | 主 agent 主持需求讨论，落盘 `plan.md`，对齐范围与策略                  | `discuss.ts`, `plan.ts`                               |
-| 3    | **probe**      | 4 维信号探针（bug / regression / feature-magnitude / reuse-score）     | `signal-probe.ts`                                     |
-| 4    | **strategy**   | 5 策略派发（S1–S5，S5 外转 `hotfix-case-gen`）                          | `strategy-router.ts`                                  |
+| 3    | **probe**      | 4 维信号探针（bug / regression / feature-magnitude / reuse-score）     | `case-signal-analyzer.ts`                             |
+| 4    | **strategy**   | 5 策略派发（S1–S5，S5 外转 `hotfix-case-gen`）                          | `case-strategy-resolver.ts`                           |
 | 5    | **transform**  | 源码分析 + PRD 结构化，使用结构化 `clarify_envelope` 表达阻断项        | `repo-profile.ts`, `repo-sync.ts`                     |
 | 6    | **enhance**    | 图片识别、frontmatter 标准化、健康度预检                               | `image-compress.ts`, `prd-frontmatter.ts`             |
 | 7    | **analyze**    | 历史用例检索 + QA 头脑风暴 → 测试点清单（含 `knowledge` 注入）         | `archive-gen.ts search`, `writer-context-builder.ts`  |
@@ -306,11 +306,11 @@ code-analysis 的一体化路由已按业务边界拆成三个专职 skill，触
 
 | 操作 | 命令示例                                | 预览 / 执行方式                                                                       |
 | ---- | --------------------------------------- | ------------------------------------------------------------------------------------- |
-| 搜索 | `搜索用例 "导出"`                       | `xmind-edit.ts search "keyword"`                                                      |
-| 查看 | `查看用例 "验证列表页默认加载"`         | `xmind-edit.ts show --file X --title "Y"`                                             |
-| 修改 | `修改用例 "验证导出仅导出当前筛选结果"` | `xmind-edit.ts patch --file X --title "Y" --case-json '{...}' --dry-run` → 确认后执行 |
-| 新增 | `新增用例 到 "规则列表页" 分组`         | `xmind-edit.ts add --file X --parent "Y" --case-json '{...}' --dry-run` → 确认后执行  |
-| 删除 | `删除用例 "验证xxx"`                    | `xmind-edit.ts delete --file X --title "Y" --dry-run` → 确认后执行                    |
+| 搜索 | `搜索用例 "导出"`                       | `xmind-patch.ts search "keyword"`                                                      |
+| 查看 | `查看用例 "验证列表页默认加载"`         | `xmind-patch.ts show --file X --title "Y"`                                             |
+| 修改 | `修改用例 "验证导出仅导出当前筛选结果"` | `xmind-patch.ts patch --file X --title "Y" --case-json '{...}' --dry-run` → 确认后执行 |
+| 新增 | `新增用例 到 "规则列表页" 分组`         | `xmind-patch.ts add --file X --parent "Y" --case-json '{...}' --dry-run` → 确认后执行  |
+| 删除 | `删除用例 "验证xxx"`                    | `xmind-patch.ts delete --file X --title "Y" --dry-run` → 确认后执行                    |
 
 #### 偏好学习
 
@@ -462,7 +462,7 @@ qa-flow/
 │   ├── scripts/                  # 核心 TypeScript CLI 脚本
 │   │   ├── state.ts              # 断点续传状态管理（含文件锁）
 │   │   ├── xmind-gen.ts          # XMind 文件生成
-│   │   ├── xmind-edit.ts         # XMind 增删改查
+│   │   ├── xmind-patch.ts        # XMind 增删改查
 │   │   ├── archive-gen.ts        # Archive MD 生成 + 搜索
 │   │   ├── plugin-loader.ts      # 插件加载与调度（含 shellEscape）
 │   │   ├── repo-sync.ts          # 源码仓库同步
@@ -537,14 +537,14 @@ qa-flow/
 
 | 脚本                        | 核心子命令                                          | 说明                                       |
 | --------------------------- | --------------------------------------------------- | ------------------------------------------ |
-| `state.ts`                  | `init` / `resume` / `update` / `clean`              | 断点状态管理（按 `ACTIVE_ENV` 隔离）       |
+| `qa-state.ts`               | `init` / `resume` / `update` / `clean`              | 断点状态管理（按 `ACTIVE_ENV` 隔离）       |
 | `plan.ts`                   | `read` / `write-strategy` / `hydrate`               | `plan.md` frontmatter 读写与仲裁           |
 | `discuss.ts`                | `start` / `close`                                   | 主 agent 主持的需求讨论会话                |
-| `signal-probe.ts`           | `run` / `cache-read`                                | 4 维信号探针（bug/regression/mag/reuse）   |
-| `strategy-router.ts`        | `resolve`                                           | 5 策略派发（S1–S5）                        |
+| `case-signal-analyzer.ts`   | `run` / `cache-read`                                | 4 维信号探针（bug/regression/mag/reuse）   |
+| `case-strategy-resolver.ts` | `resolve`                                           | 5 策略派发（S1–S5）                        |
 | `writer-context-builder.ts` | `--module <name>`                                   | Writer 上下文组装（含 knowledge 注入）     |
 | `xmind-gen.ts`              | `--input <json> --output <dir>`                     | 从 JSON 中间格式生成 XMind                 |
-| `xmind-edit.ts`             | `search` / `show` / `patch` / `add` / `delete`      | XMind 用例增删改查                         |
+| `xmind-patch.ts`             | `search` / `show` / `patch` / `add` / `delete`      | XMind 用例增删改查                         |
 | `archive-gen.ts`            | `--input <json> --output <dir>` / `search`          | 生成 Archive MD 或关键词搜索               |
 | `knowledge-keeper.ts`       | `index` / `read` / `write`                          | 业务知识库索引、读写                       |
 | `rule-loader.ts`            | `load --project <name>`                             | 双层规则加载（全局 + 项目级）              |
@@ -584,7 +584,7 @@ qa-flow/
 切换环境时直接改 `.env.envs` 中的 `ACTIVE_ENV`，或通过 shell 注入：
 
 ```bash
-ACTIVE_ENV=ci63 bun run .claude/scripts/state.ts resume --project dataAssets --prd-slug myPrd
+ACTIVE_ENV=ci63 bun run .claude/scripts/qa-state.ts resume --project dataAssets --prd-slug myPrd
 ```
 
 `qa-state` 文件名会附加 `-{env}` 后缀，多实例并行不互扰。

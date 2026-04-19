@@ -1,15 +1,15 @@
 #!/usr/bin/env bun
 /**
- * state.ts — Breakpoint resume state management CLI.
+ * qa-state.ts — Breakpoint resume state management CLI.
  *
  * Node lifecycle: init → transform → enhance → analyze → write → review → output
  *
  * Usage:
- *   bun run .claude/scripts/state.ts init --project dataAssets --prd workspace/dataAssets/prds/202604/xxx.md --mode normal
- *   bun run .claude/scripts/state.ts update --project dataAssets --prd-slug xxx --node transform --data '{"confidence":0.85}'
- *   bun run .claude/scripts/state.ts resume --project dataAssets --prd-slug xxx
- *   bun run .claude/scripts/state.ts clean --project dataAssets --prd-slug xxx
- *   bun run .claude/scripts/state.ts --help
+ *   bun run .claude/scripts/qa-state.ts init --project dataAssets --prd workspace/dataAssets/prds/202604/xxx.md --mode normal
+ *   bun run .claude/scripts/qa-state.ts update --project dataAssets --prd-slug xxx --node transform --data '{"confidence":0.85}'
+ *   bun run .claude/scripts/qa-state.ts resume --project dataAssets --prd-slug xxx
+ *   bun run .claude/scripts/qa-state.ts clean --project dataAssets --prd-slug xxx
+ *   bun run .claude/scripts/qa-state.ts --help
  */
 
 import {
@@ -80,7 +80,7 @@ function migrateLegacyStateIfPresent(
   mkdirSync(dirname(target), { recursive: true });
   renameSync(legacy, target);
   process.stderr.write(
-    `[state] INFO : migrated legacy state file ${basename(legacy)} → ${basename(target)}\n`,
+    `[qa-state] INFO : migrated legacy state file ${basename(legacy)} → ${basename(target)}\n`,
   );
   return { migrated: true, from: legacy, to: target };
 }
@@ -299,7 +299,7 @@ function runResume(opts: { project: string; prdSlug: string }): void {
   const { state: hydrated, hydratedFrom } = hydrateStrategyFromPlan(resolved);
   if (hydratedFrom === "plan") {
     process.stderr.write(
-      `[state] INFO : hydrated strategy_resolution from plan.md\n`,
+      `[qa-state] INFO : hydrated strategy_resolution from plan.md\n`,
     );
   }
   resolved = hydrated;
@@ -324,7 +324,7 @@ function runClean(opts: { project: string; prdSlug: string }): void {
 }
 
 createCli({
-  name: "state",
+  name: "qa-state",
   description:
     "Breakpoint resume state management for qa-flow test case generation",
   commands: [

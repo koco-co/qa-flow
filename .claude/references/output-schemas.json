@@ -143,6 +143,21 @@
           "suggestion": "string — 人工处理建议"
         }
       ],
+      "quality_report": {
+        "_description": "结构化质量评分摘要，与控制台「质量评分报告」一一对应",
+        "format_compliance_rate": "string — 格式合规率（如 92.0%）或 n/a",
+        "logic_rationality_rate": "string — 逻辑合理率（如 88.0%）",
+        "executability_rate": "string — 可执行性（如 95.0%）",
+        "overall_score": "string — 综合评分（加权平均后的百分比）",
+        "gate_verdict": "string — 门控判定（pass/pass_with_warnings/blocked + 比较结果）",
+        "top_issue_categories": [
+          {
+            "code": "string — 规则编号（F01-F15）",
+            "description": "string — 类问题描述",
+            "count": "number — 该类问题命中次数"
+          }
+        ]
+      },
       "summary": "string — 审查摘要文本"
     }
   },
@@ -227,7 +242,9 @@
     "screenshot": "string | null — 截图路径",
     "console_errors": "string[] — 相关控制台错误列表",
     "error_type": "string — 中文错误类型描述",
-    "root_cause_hint": "string — 可能的根因简述（不超过50字）"
+    "root_cause_hint": "string — 可能的根因简述（不超过50字）",
+    "confidence": "string — high/medium/low（根因置信度，必填）",
+    "confidence_reason": "string — 置信度判定理由（≤60 字，必填）"
   },
 
   "script_fixer_json": {
@@ -289,7 +306,9 @@
       "java_version": "string | null",
       "framework": "string | null",
       "deploy_env": "string | null"
-    }
+    },
+    "confidence": "string — high/medium/low（根因置信度，必填）",
+    "confidence_reason": "string — 置信度判定理由（≤60 字，必填）"
   },
 
   "state_transform_data": {
@@ -333,12 +352,12 @@
   },
 
   "signal_profile": {
-    "_description": "signal-probe.ts 输出：4 维信号档位（phase 4）。完整结构见 strategy-schema.json#/definitions/SignalProfile",
+    "_description": "case-signal-analyzer.ts 输出：4 维信号档位（phase 4）。完整结构见 strategy-schema.json#/definitions/SignalProfile",
     "$ref": "./strategy-schema.json#/definitions/SignalProfile"
   },
 
   "strategy_resolution": {
-    "_description": "strategy-router.ts 输出：策略派发结果（phase 4）。完整结构见 strategy-schema.json#/definitions/StrategyResolution",
+    "_description": "case-strategy-resolver.ts 输出：策略派发结果（phase 4）。完整结构见 strategy-schema.json#/definitions/StrategyResolution",
     "$ref": "./strategy-schema.json#/definitions/StrategyResolution"
   },
 
@@ -378,7 +397,9 @@
         "action": "string — 改什么",
         "reason": "string — 为什么"
       }
-    ]
+    ],
+    "confidence": "string — high/medium/low（根因置信度，必填）",
+    "confidence_reason": "string — 置信度判定理由（≤60 字，必填）"
   },
 
   "conflict_json": {

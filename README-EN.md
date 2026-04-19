@@ -189,10 +189,10 @@ Transforms PRD / Story documents into structured XMind and Archive Markdown test
 
 | Node | Name           | Description                                                                        | Key Scripts                                           |
 | ---- | -------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| 1    | **init**       | Parse input, restore state, and load project/plugin context                        | `state.ts`, `plugin-loader.ts`, `rule-loader.ts`      |
+| 1    | **init**       | Parse input, restore state, and load project/plugin context                        | `qa-state.ts`, `plugin-loader.ts`, `rule-loader.ts`   |
 | 2    | **discuss**    | Orchestrator-hosted requirements discussion; persists `plan.md`                    | `discuss.ts`, `plan.ts`                               |
-| 3    | **probe**      | 4-dimension signal probe (bug / regression / feature-magnitude / reuse-score)      | `signal-probe.ts`                                     |
-| 4    | **strategy**   | 5-strategy dispatch (S1–S5; S5 routes to `hotfix-case-gen`)                        | `strategy-router.ts`                                  |
+| 3    | **probe**      | 4-dimension signal probe (bug / regression / feature-magnitude / reuse-score)      | `case-signal-analyzer.ts`                             |
+| 4    | **strategy**   | 5-strategy dispatch (S1–S5; S5 routes to `hotfix-case-gen`)                        | `case-strategy-resolver.ts`                           |
 | 5    | **transform**  | Source code analysis + PRD structuring, with structured `clarify_envelope`         | `repo-profile.ts`, `repo-sync.ts`                     |
 | 6    | **enhance**    | Image recognition, frontmatter normalization, and health pre-check                 | `image-compress.ts`, `prd-frontmatter.ts`             |
 | 7    | **analyze**    | Historical case retrieval + QA brainstorming → test point checklist (w/ knowledge) | `archive-gen.ts search`, `writer-context-builder.ts`  |
@@ -298,11 +298,11 @@ Perform local edits on existing XMind files without re-reading PRDs. All write o
 
 | Operation | Command                                    | Preview / execution flow                                                           |
 | --------- | ------------------------------------------ | ---------------------------------------------------------------------------------- |
-| Search    | `搜索用例 "export"`                        | `xmind-edit.ts search "keyword"`                                                   |
-| Show      | `查看用例 "Verify list page default load"` | `xmind-edit.ts show --file X --title "Y"`                                          |
-| Modify    | `修改用例 "Verify export filters"`         | `xmind-edit.ts patch --file X --title "Y" --case-json '{...}' --dry-run` → confirm |
-| Add       | `新增用例 到 "Rule List Page" 分组`        | `xmind-edit.ts add --file X --parent "Y" --case-json '{...}' --dry-run` → confirm  |
-| Delete    | `删除用例 "Verify xxx"`                    | `xmind-edit.ts delete --file X --title "Y" --dry-run` → confirm                    |
+| Search    | `搜索用例 "export"`                        | `xmind-patch.ts search "keyword"`                                                   |
+| Show      | `查看用例 "Verify list page default load"` | `xmind-patch.ts show --file X --title "Y"`                                          |
+| Modify    | `修改用例 "Verify export filters"`         | `xmind-patch.ts patch --file X --title "Y" --case-json '{...}' --dry-run` → confirm |
+| Add       | `新增用例 到 "Rule List Page" 分组`        | `xmind-patch.ts add --file X --parent "Y" --case-json '{...}' --dry-run` → confirm  |
+| Delete    | `删除用例 "Verify xxx"`                    | `xmind-patch.ts delete --file X --title "Y" --dry-run` → confirm                    |
 
 #### Preference Learning
 
@@ -439,7 +439,7 @@ qa-flow/
 │   ├── scripts/                  # Core TypeScript CLI scripts
 │   │   ├── state.ts              # Breakpoint/resume state management
 │   │   ├── xmind-gen.ts          # XMind file generation
-│   │   ├── xmind-edit.ts         # XMind CRUD operations
+│   │   ├── xmind-patch.ts        # XMind CRUD operations
 │   │   ├── archive-gen.ts        # Archive MD generation + search
 │   │   ├── plugin-loader.ts      # Plugin detection & dispatch
 │   │   ├── repo-sync.ts          # Source repo sync
@@ -507,14 +507,14 @@ All scripts are located at `.claude/scripts/`. They share a unified entry factor
 
 | Script                      | Commands                                          | Description                                            |
 | --------------------------- | ------------------------------------------------- | ------------------------------------------------------ |
-| `state.ts`                  | `init` / `resume` / `update` / `clean`            | Breakpoint state (isolated per `ACTIVE_ENV`)           |
+| `qa-state.ts`               | `init` / `resume` / `update` / `clean`            | Breakpoint state (isolated per `ACTIVE_ENV`)           |
 | `plan.ts`                   | `read` / `write-strategy` / `hydrate`             | `plan.md` frontmatter read/write and arbitration       |
 | `discuss.ts`                | `start` / `close`                                 | Orchestrator-hosted requirements discussion session    |
-| `signal-probe.ts`           | `run` / `cache-read`                              | 4-dimension signal probe                               |
-| `strategy-router.ts`        | `resolve`                                         | 5-strategy dispatch (S1–S5)                            |
+| `case-signal-analyzer.ts`   | `run` / `cache-read`                              | 4-dimension signal probe                               |
+| `case-strategy-resolver.ts` | `resolve`                                         | 5-strategy dispatch (S1–S5)                            |
 | `writer-context-builder.ts` | `--module <name>`                                 | Writer context assembly with knowledge injection       |
 | `xmind-gen.ts`              | `--input <json> --output <dir>`                   | Generate XMind files from JSON intermediate format     |
-| `xmind-edit.ts`             | `search` / `show` / `patch` / `add` / `delete`    | XMind test case CRUD                                   |
+| `xmind-patch.ts`             | `search` / `show` / `patch` / `add` / `delete`    | XMind test case CRUD                                   |
 | `archive-gen.ts`            | `--input <json> --output <dir>` / `search`        | Generate Archive MD or keyword search                  |
 | `knowledge-keeper.ts`       | `index` / `read` / `write`                        | Business knowledge base index, read, and write         |
 | `rule-loader.ts`            | `load --project <name>`                           | Two-tier rule loader (global + project)                |
@@ -554,7 +554,7 @@ Copy `.env.example` to `.env`; for multi-environment setups also copy `.env.envs
 Switch environments by editing `.env.envs` directly, or inject via shell:
 
 ```bash
-ACTIVE_ENV=ci63 bun run .claude/scripts/state.ts resume --project dataAssets --prd-slug myPrd
+ACTIVE_ENV=ci63 bun run .claude/scripts/qa-state.ts resume --project dataAssets --prd-slug myPrd
 ```
 
 `qa-state` filenames include the `-{env}` suffix so parallel instances never collide.

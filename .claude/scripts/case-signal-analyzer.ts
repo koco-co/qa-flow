@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
- * signal-probe.ts — 4 维信号探针（源码 / PRD / 历史 / 知识库）
- * Usage: bun run .claude/scripts/signal-probe.ts probe \
+ * case-signal-analyzer.ts — 4 维信号探针（源码 / PRD / 历史 / 知识库）
+ * Usage: bun run .claude/scripts/case-signal-analyzer.ts probe \
  *   --project <name> --prd <path> [--no-cache] [--output json|summary]
  */
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -39,7 +39,7 @@ function invokeJson(args: string[], stdin?: string): unknown | null {
   });
   if (result.status !== 0) {
     process.stderr.write(
-      `[signal-probe] delegate exit ${result.status}: ${args.join(" ")}\n`,
+      `[case-signal-analyzer] delegate exit ${result.status}: ${args.join(" ")}\n`,
     );
     return null;
   }
@@ -295,7 +295,7 @@ async function runProbe(opts: {
     : resolve(repoRoot(), opts.prd);
 
   if (!existsSync(prdPath)) {
-    process.stderr.write(`[signal-probe] PRD not found: ${prdPath}\n`);
+    process.stderr.write(`[case-signal-analyzer] PRD not found: ${prdPath}\n`);
     process.exit(1);
     return;
   }
@@ -306,14 +306,14 @@ async function runProbe(opts: {
   const prdSlug = basename(prdPath).replace(/\.md$/, "");
   const cachePath = probeCachePath(opts.project, prdSlug);
   const prdMtimeMs = statSync(prdPath).mtimeMs;
-  const probeScriptPath = resolve(repoRoot(), ".claude/scripts/signal-probe.ts");
+  const probeScriptPath = resolve(repoRoot(), ".claude/scripts/case-signal-analyzer.ts");
   const probeScriptMtimeMs = statSync(probeScriptPath).mtimeMs;
 
   // Check cache
   if (!noCache) {
     const cached = resolveCache(cachePath);
     if (isCacheValid(cached, prdMtimeMs, probeScriptMtimeMs)) {
-      process.stderr.write("[signal-probe] cache hit\n");
+      process.stderr.write("[case-signal-analyzer] cache hit\n");
       const profile = cached!.profile;
       outputProfile(profile, opts.output);
       return;
@@ -382,7 +382,7 @@ async function runProbe(opts: {
 function outputProfile(profile: SignalProfile, format: string): void {
   if (format === "summary") {
     process.stderr.write(
-      `[signal-probe] source=${profile.source.level} prd=${profile.prd.level} history=${profile.history.level} knowledge=${profile.knowledge.level}\n`,
+      `[case-signal-analyzer] source=${profile.source.level} prd=${profile.prd.level} history=${profile.history.level} knowledge=${profile.knowledge.level}\n`,
     );
   }
   // Always output JSON to stdout (both json and summary modes)
@@ -403,14 +403,14 @@ async function probeAction(opts: {
     await runProbe(opts);
   } catch (error) {
     process.stderr.write(
-      `[signal-probe] Unexpected error: ${error instanceof Error ? error.message : String(error)}\n`,
+      `[case-signal-analyzer] Unexpected error: ${error instanceof Error ? error.message : String(error)}\n`,
     );
     process.exit(1);
   }
 }
 
 createCli({
-  name: "signal-probe",
+  name: "case-signal-analyzer",
   description: "4-dimensional signal probe (source / PRD / history / knowledge)",
   commands: [
     {

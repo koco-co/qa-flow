@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 /**
- * xmind-edit.ts — Search, view, patch, add, and delete test cases in existing .xmind files.
+ * xmind-patch.ts — Search, view, patch, add, and delete test cases in existing .xmind files.
  *
  * Usage:
- *   bun run .claude/scripts/xmind-edit.ts search <query> [--project <name>] [--dir <dir>] [--limit 20]
- *   bun run .claude/scripts/xmind-edit.ts show --file <xmind> --title <query>
- *   bun run .claude/scripts/xmind-edit.ts patch --file <xmind> --title <query> --case-json '<json>' [--dry-run]
- *   bun run .claude/scripts/xmind-edit.ts add --file <xmind> --parent <query> --case-json '<json>' [--dry-run]
- *   bun run .claude/scripts/xmind-edit.ts delete --file <xmind> --title <query> [--dry-run]
+ *   bun run .claude/scripts/xmind-patch.ts search <query> [--project <name>] [--dir <dir>] [--limit 20]
+ *   bun run .claude/scripts/xmind-patch.ts show --file <xmind> --title <query>
+ *   bun run .claude/scripts/xmind-patch.ts patch --file <xmind> --title <query> --case-json '<json>' [--dry-run]
+ *   bun run .claude/scripts/xmind-patch.ts add --file <xmind> --parent <query> --case-json '<json>' [--dry-run]
+ *   bun run .claude/scripts/xmind-patch.ts delete --file <xmind> --title <query> [--dry-run]
  */
 
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -318,7 +318,7 @@ async function cmdShow(opts: { file: string; title: string }): Promise<void> {
 
   if (matches.length === 0) {
     process.stderr.write(
-      `[xmind-edit] No topic found matching: ${opts.title}\n`,
+      `[xmind-patch] No topic found matching: ${opts.title}\n`,
     );
     process.exit(1);
   }
@@ -341,14 +341,14 @@ async function cmdPatch(opts: {
   try {
     patch = JSON.parse(opts.caseJson) as CaseData;
   } catch {
-    process.stderr.write(`[xmind-edit] Invalid --case-json: not valid JSON\n`);
+    process.stderr.write(`[xmind-patch] Invalid --case-json: not valid JSON\n`);
     process.exit(1);
   }
 
   const matches = findTopics(sheets, opts.title, filePath);
   if (matches.length === 0) {
     process.stderr.write(
-      `[xmind-edit] No topic found matching: ${opts.title}\n`,
+      `[xmind-patch] No topic found matching: ${opts.title}\n`,
     );
     process.exit(1);
   }
@@ -411,14 +411,14 @@ async function cmdAdd(opts: {
   try {
     caseData = JSON.parse(opts.caseJson) as CaseData;
   } catch {
-    process.stderr.write(`[xmind-edit] Invalid --case-json: not valid JSON\n`);
+    process.stderr.write(`[xmind-patch] Invalid --case-json: not valid JSON\n`);
     process.exit(1);
   }
 
   const matches = findTopics(sheets, opts.parent, filePath);
   if (matches.length === 0) {
     process.stderr.write(
-      `[xmind-edit] No parent topic found matching: ${opts.parent}\n`,
+      `[xmind-patch] No parent topic found matching: ${opts.parent}\n`,
     );
     process.exit(1);
   }
@@ -474,7 +474,7 @@ async function cmdDelete(opts: {
   const matches = findTopics(sheets, opts.title, filePath);
   if (matches.length === 0) {
     process.stderr.write(
-      `[xmind-edit] No topic found matching: ${opts.title}\n`,
+      `[xmind-patch] No topic found matching: ${opts.title}\n`,
     );
     process.exit(1);
   }
@@ -506,7 +506,7 @@ async function cmdDelete(opts: {
 
 async function main(): Promise<void> {
   createCli({
-    name: "xmind-edit",
+    name: "xmind-patch",
     description:
       "Search, view, patch, add, and delete test cases in .xmind files",
     commands: [
@@ -598,6 +598,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  process.stderr.write(`[xmind-edit] Unexpected error: ${err}\n`);
+  process.stderr.write(`[xmind-patch] Unexpected error: ${err}\n`);
   process.exit(1);
 });

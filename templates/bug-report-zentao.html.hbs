@@ -29,6 +29,16 @@
     </td>
   </tr>
 
+  {{#if confidence}}
+  <tr>
+    <td style="padding:12px 24px;{{#eq confidence 'high'}}background:#ecfdf5;border-left:4px solid #16a34a;color:#14532d;{{/eq}}{{#eq confidence 'medium'}}background:#fffbeb;border-left:4px solid #f59e0b;color:#78350f;{{/eq}}{{#eq confidence 'low'}}background:#fef2f2;border-left:4px solid #ef4444;color:#7f1d1d;{{/eq}}">
+      <strong>根因置信度：</strong>
+      <span style="display:inline-block;padding:1px 10px;margin:0 4px;border-radius:10px;font-size:11px;font-weight:bold;color:#fff;{{#eq confidence 'high'}}background:#16a34a;{{/eq}}{{#eq confidence 'medium'}}background:#f59e0b;{{/eq}}{{#eq confidence 'low'}}background:#ef4444;{{/eq}}">{{confidence}}</span>
+      {{#if confidence_reason}}<span style="font-size:12px;">（{{confidence_reason}}）</span>{{/if}}
+    </td>
+  </tr>
+  {{/if}}
+
   <tr><td style="height:16px;"></td></tr>
 
   <!-- 请求信息 -->

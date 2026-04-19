@@ -1,14 +1,6 @@
 ---
 name: test-case-gen
-description:
-  "QA 测试用例生成与标准化归档。将 PRD 需求文档转化为结构化 XMind + Markdown 测试用例。
-  7 节点工作流：init → transform → enhance → analyze → write → review → output。
-  触发词：生成测试用例、生成用例、写用例、为 <需求名称> 生成用例、test case、
-  重新生成 xxx 模块、追加用例。支持 --quick 快速模式和蓝湖 URL 输入。
-  也支持标准化归档：当用户提供 .xmind 或 .csv 文件时，触发归档标准化流程。
-  触发词：标准化归档、归档用例、转化用例、标准化 xmind、标准化 csv。
-  也支持 XMind 反向同步：将手动修改的 XMind 同步回 Archive MD。
-  触发词：同步 xmind、同步 XMind 文件、反向同步。"
+description: "QA 测试用例生成与标准化归档。支持 PRD→用例转化、文件标准化、XMind 反向同步。触发词：生成测试用例、标准化归档、同步 xmind、--quick 快速模式。"
 argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 ---
 
@@ -155,13 +147,15 @@ Writer Sub-Agent 完成时更新：`[write] {{模块名}} — {{n}} 条用例`
 
 ## 流程路由（根据输入类型加载对应 workflow）
 
-init 节点识别到输入类型后，按下表加载对应的 workflow 文件，并按其指引继续执行：
+本 skill 支持三个场景，init 节点根据输入识别后加载对应 workflow：
 
-| 输入类型 / 触发词                        | 场景           | 读取文件                   |
-| ---------------------------------------- | -------------- | -------------------------- |
-| PRD 路径 / 蓝湖 URL / 模块重跑指令       | `primary`      | `workflow/main.md`         |
-| `.xmind` 或 `.csv` 文件 / 「标准化归档」 | `standardize`  | `workflow/standardize.md`  |
-| 「同步 xmind」/「反向同步」指令          | `reverse_sync` | `workflow/reverse-sync.md` |
+| 场景                       | 触发词                                                                                            | 输入                          | 流程结构                                                                              | 读取文件                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------- | -------------------------- |
+| `primary`（主生成）        | 生成测试用例、生成用例、写用例、为 \<需求名称\> 生成用例、test case、重新生成 xxx 模块、追加用例 | PRD 路径 / 蓝湖 URL / 模块重跑指令 | 7 节点：init → transform → enhance → analyze → write → review → output（含 discuss、format-check） | `workflow/main.md`         |
+| `standardize`（标准化归档） | 标准化归档、归档用例、转化用例、标准化 xmind、标准化 csv                                          | `.xmind` 或 `.csv` 文件       | 4 节点：parse → standardize → review → output                                         | `workflow/standardize.md`  |
+| `reverse_sync`（反向同步） | 同步 xmind、同步 XMind 文件、反向同步                                                              | XMind 文件 + 已有 Archive MD  | 5 节点：confirm_xmind → parse → locate_archive → preview_or_write → report            | `workflow/reverse-sync.md` |
+
+`--quick` 参数对 `primary` 场景生效：跳过复审、format-check 仅 1 轮。
 
 **加载方式**：使用 `Read` 工具读取 `.claude/skills/test-case-gen/workflow/{{scenario}}.md` 全文，然后按文件指引继续执行。三个 workflow 共享本 SKILL.md 后半段定义的 **Writer 阻断中转协议**、**断点续传说明**、**异常处理**——遇到相关情形时回查本文件，不在 workflow 文件中重复。
 

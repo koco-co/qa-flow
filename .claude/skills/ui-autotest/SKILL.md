@@ -1,6 +1,6 @@
 ---
 name: ui-autotest
-description: "UI 自动化测试。将 Archive MD 测试用例转化为 Playwright TypeScript 脚本，执行验证，失败时生成 Bug 报告。触发词：UI自动化测试、自动化回归、执行UI测试、e2e回归、冒烟测试。依赖 playwright-cli skill。"
+description: "UI 自动化测试。Archive MD 用例 → Playwright 脚本 → 执行验证 → 失败转 Bug 报告。触发词：UI自动化、e2e回归、冒烟测试。依赖 playwright-cli skill。"
 argument-hint: "[功能名或 MD 路径] [目标 URL]"
 ---
 
@@ -332,6 +332,19 @@ bun run .claude/skills/ui-autotest/scripts/session-login.ts --project {{project}
 按照 `workflow/step-5-test-fix.md` 执行。该文件定义 3 轮修复策略、script-fixer-agent 调用、Archive MD 反向写回时机、失败计数规则。
 
 **达到 `convergence_threshold` 阈值时**：step 5 结束后紧接执行 `workflow/step-5.5-convergence.md`（共性收敛），否则跳过步骤 5.5 直接进入步骤 6。
+
+### 3 轮修复仍失败的结果路径
+
+若某条用例经过 3 轮 sub-agent 修复仍无法通过：
+
+1. step 5 阶段：标记为「环境/平台问题」，从待合并列表中移除（不影响其他用例），不在此阶段生成 Bug 报告
+2. step 8 阶段：若 step 7 全量回归依然存在失败用例，自动派发 `bug-reporter-agent` 生成 Bug 报告
+3. **失败结果路径速查**（用户可据此快速定位）：
+   - **HTML Bug 报告**：`workspace/{{project}}/reports/bugs/{{YYYYMM}}/ui-autotest-{{suite_name}}.html`
+   - **失败用例脚本与日志**：`workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/` 下的 `.spec.ts` 与 stderr 文本
+   - **Allure 报告（含截图、Console 日志、错误堆栈）**：`workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report/index.html`
+   - **进度状态**：`bun run .claude/scripts/ui-autotest-progress.ts summary --project {{project}} --suite "{{suite_name}}" --env "{{env}}"`
+4. 用户根据 HTML 报告与 Allure 截图判断：测试环境问题（数据/权限/网络）→ 修复环境后 `--retry-failed`；应用端 Bug → 已生成的 Bug 报告可直接交研发
 
 ## 步骤 5.5：共性收敛（条件触发）
 

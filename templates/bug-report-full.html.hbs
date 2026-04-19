@@ -195,6 +195,28 @@
       color: var(--text-secondary);
       font-size: 12px;
     }
+
+    /* 置信度 badge */
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-top: 16px;
+      border-left: 4px solid var(--border);
+      background: #f9fafb;
+      color: var(--text);
+    }
+    .confidence-badge strong { text-transform: uppercase; letter-spacing: 0.5px; }
+    .confidence-badge small { color: var(--text-secondary); font-size: 12px; }
+    .confidence-high   { background: #ecfdf5; border-left-color: var(--success); color: #14532d; }
+    .confidence-high small { color: #166534; }
+    .confidence-medium { background: #fffbeb; border-left-color: var(--warning); color: #78350f; }
+    .confidence-medium small { color: #92400e; }
+    .confidence-low    { background: #fef2f2; border-left-color: var(--critical); color: #7f1d1d; }
+    .confidence-low small { color: #991b1b; }
   </style>
 </head>
 <body>
@@ -212,6 +234,12 @@
 
   <div class="summary-box">
     <strong>根因概述：</strong>{{summary}}
+    {{#if confidence}}
+    <div class="confidence-badge confidence-{{confidence}}">
+      根因置信度: <strong>{{confidence}}</strong>
+      {{#if confidence_reason}}<small>（{{confidence_reason}}）</small>{{/if}}
+    </div>
+    {{/if}}
   </div>
 
   <!-- 请求信息 -->

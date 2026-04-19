@@ -32,7 +32,7 @@ function runState(
   try {
     const stdout = execFileSync(
       "bun",
-      ["run", ".claude/scripts/state.ts", ...args],
+      ["run", ".claude/scripts/qa-state.ts", ...args],
       {
         cwd: resolve(import.meta.dirname, "../../.."),
         encoding: "utf8",
@@ -87,7 +87,7 @@ beforeEach(() => {
   }
 });
 
-describe("state.ts init", () => {
+describe("qa-state.ts init", () => {
   it("creates state file and outputs JSON", () => {
     const slug = `init-test-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;
@@ -181,7 +181,7 @@ describe("state.ts init", () => {
   });
 });
 
-describe("state.ts update", () => {
+describe("qa-state.ts update", () => {
   it("advances current_node and appends to completed_nodes", () => {
     const slug = `update-test-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;
@@ -359,7 +359,7 @@ describe("state.ts update", () => {
   });
 });
 
-describe("state.ts resume", () => {
+describe("qa-state.ts resume", () => {
   it("returns current state JSON", () => {
     const slug = `resume-test-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;
@@ -390,7 +390,7 @@ describe("state.ts resume", () => {
   });
 });
 
-describe("state.ts update — multiple sequential node transitions", () => {
+describe("qa-state.ts update — multiple sequential node transitions", () => {
   it("tracks full lifecycle: init → transform → enhance → write", () => {
     const slug = `lifecycle-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;
@@ -452,7 +452,7 @@ describe("state.ts update — multiple sequential node transitions", () => {
   });
 });
 
-describe("state.ts update — invalid JSON data", () => {
+describe("qa-state.ts update — invalid JSON data", () => {
   it("exits 1 when --data is not valid JSON", () => {
     const slug = `bad-json-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;
@@ -475,7 +475,7 @@ describe("state.ts update — invalid JSON data", () => {
   });
 });
 
-describe("state.ts — cached_parse_result and source_mtime", () => {
+describe("qa-state.ts — cached_parse_result and source_mtime", () => {
   it("stores cached_parse_result via --data", () => {
     const slug = `cache-store-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;
@@ -598,7 +598,7 @@ describe("state.ts — cached_parse_result and source_mtime", () => {
   });
 });
 
-describe("state.ts — strategy_resolution", () => {
+describe("qa-state.ts — strategy_resolution", () => {
   it("update with strategy_resolution in --data promotes it to root level", () => {
     const slug = `strategy-root-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;
@@ -688,7 +688,7 @@ describe("state.ts — strategy_resolution", () => {
   });
 });
 
-describe("state.ts clean", () => {
+describe("qa-state.ts clean", () => {
   it("deletes state file and returns cleaned=true", () => {
     const slug = `clean-test-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;
@@ -737,7 +737,7 @@ describe("state.ts clean", () => {
   });
 });
 
-describe("state.ts — plan.md strategy hydration", () => {
+describe("qa-state.ts — plan.md strategy hydration", () => {
   function writePlanWithStrategy(
     project: string,
     slug: string,
@@ -886,7 +886,7 @@ empty
   });
 });
 
-describe("state.ts — multi-env isolation", () => {
+describe("qa-state.ts — multi-env isolation", () => {
   it("same slug under different ACTIVE_ENV writes to distinct files", () => {
     const slug = `env-iso-${Date.now()}`;
     const prd = `workspace/dataAssets/prds/202604/${slug}.md`;

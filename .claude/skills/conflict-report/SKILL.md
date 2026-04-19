@@ -1,6 +1,6 @@
 ---
 name: conflict-report
-description: "合并冲突分析。解析 git 合并冲突代码（含 <<<<<<< HEAD / ======= / >>>>>>> 标记），派发 conflict-agent 判断每处冲突的性质（逻辑 / 格式 / 依赖）并给出可直接执行的合并建议，输出 HTML 冲突报告。触发词：分析冲突、合并冲突、解决冲突、merge conflict、git conflict、<<<<<<< HEAD。"
+description: "合并冲突分析。解析 git 冲突代码（含 <<<<<<< HEAD 标记），派发 conflict-agent 判断冲突性质并给出合并建议，输出 HTML 报告。触发词：分析冲突、合并冲突、merge conflict、<<<<<<< HEAD。"
 argument-hint: "[冲突代码片段]"
 ---
 
@@ -19,6 +19,35 @@ argument-hint: "[冲突代码片段]"
   <soft>冲突涉及的分支信息（HEAD / incoming）可选；缺失时在报告中标注"未提供"</soft>
   <invalid_input>输入为空、非冲突格式文本、仅截图无可解析文本 → 立即返回输入无效</invalid_input>
 </pre_guard>
+
+### 输入格式示例
+
+输入文本必须包含 git 冲突三段标记，标准格式：
+
+```
+<<<<<<< HEAD
+（当前分支代码 — HEAD 侧）
+=======
+（合入分支代码 — incoming 侧）
+>>>>>>> feature-branch-name
+```
+
+若缺少任一标记，pre_guard 立即中止并返回提示，要求用户提供完整冲突片段。
+
+**一键提取所有冲突文件（用户可在自己的仓库执行）：**
+
+```bash
+# 列出所有未解决冲突的文件
+git diff --name-only --diff-filter=U
+
+# 批量列出含 HEAD 标记的冲突文件
+git diff --name-only --diff-filter=U | xargs grep -l "<<<<<<< HEAD"
+
+# 提取指定文件的冲突段（含上下文 3 行）
+git diff --name-only --diff-filter=U | xargs grep -n -A 50 "<<<<<<< HEAD"
+```
+
+**多冲突块输入**：单次输入可包含多个冲突块（同文件或跨文件），conflict-agent 会按顺序逐块分析并在报告中分组。
 
 <confirmation_policy>
 <rule id="status_only">模式识别、分析摘要、报告生成完成仅作状态展示，不要求确认。</rule>

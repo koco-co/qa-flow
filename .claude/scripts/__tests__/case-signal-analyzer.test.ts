@@ -7,7 +7,7 @@ import { join, resolve } from "node:path";
 const repoRoot = resolve(import.meta.dirname, "../../..");
 
 const project = "probe-fixture";
-const scriptPath = join(repoRoot, ".claude/scripts/signal-probe.ts");
+const scriptPath = join(repoRoot, ".claude/scripts/case-signal-analyzer.ts");
 
 // PRD content with no field-definition tables (fillRate=0), confidence=0.2
 const PRD_CONTENT = `---
@@ -56,7 +56,7 @@ afterEach(() => {
   rmSync(join(repoRoot, "workspace", project), { recursive: true, force: true });
 });
 
-describe("signal-probe CLI", () => {
+describe("case-signal-analyzer CLI", () => {
   test("probe with no repos / no history / no knowledge exits 0 and returns valid SignalProfile JSON", () => {
     const result = runCli([
       "probe",
@@ -215,7 +215,7 @@ describe("signal-probe CLI", () => {
     expect(profile).toHaveProperty("source");
 
     // stderr contains summary line
-    expect(result.stderr).toMatch(/\[signal-probe\] source=\w+ prd=\w+ history=\w+ knowledge=\w+/);
+    expect(result.stderr).toMatch(/\[case-signal-analyzer\] source=\w+ prd=\w+ history=\w+ knowledge=\w+/);
   });
 
   test("cache entry has correct prd_path in stored profile", () => {

@@ -8,7 +8,7 @@ import JSZip from "jszip";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 const FIXTURE = join(import.meta.dirname, "fixtures/sample-cases.json");
-const TMP_DIR = join(tmpdir(), `qa-flow-xmind-edit-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `qa-flow-xmind-patch-test-${process.pid}`);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ function runEdit(args: string[]): {
   try {
     const stdout = execFileSync(
       "bun",
-      ["run", ".claude/scripts/xmind-edit.ts", ...args],
+      ["run", ".claude/scripts/xmind-patch.ts", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",
@@ -99,7 +99,7 @@ after(() => {
 
 // ─── search ──────────────────────────────────────────────────────────────────
 
-describe("xmind-edit search", () => {
+describe("xmind-patch search", () => {
   it("finds cases by keyword across xmind files", () => {
     const xmindPath = createTestXmind("search-test");
     const { code, stdout, stderr } = runEdit([
@@ -168,7 +168,7 @@ describe("xmind-edit search", () => {
 
 // ─── show ─────────────────────────────────────────────────────────────────────
 
-describe("xmind-edit show", () => {
+describe("xmind-patch show", () => {
   it("displays full case details for a matching title", () => {
     const xmindPath = createTestXmind("show-test");
     const { code, stdout, stderr } = runEdit([
@@ -215,7 +215,7 @@ describe("xmind-edit show", () => {
 
 // ─── patch ────────────────────────────────────────────────────────────────────
 
-describe("xmind-edit patch", () => {
+describe("xmind-patch patch", () => {
   it("patches priority of an existing case", async () => {
     const xmindPath = createTestXmind("patch-priority");
     const patch = JSON.stringify({ priority: "P2" });
@@ -395,7 +395,7 @@ describe("xmind-edit patch", () => {
 
 // ─── add ──────────────────────────────────────────────────────────────────────
 
-describe("xmind-edit add", () => {
+describe("xmind-patch add", () => {
   it("inserts a new case under a parent topic", async () => {
     const xmindPath = createTestXmind("add-test");
     const newCase = JSON.stringify({
@@ -572,7 +572,7 @@ describe("xmind-edit add", () => {
 
 // ─── delete ───────────────────────────────────────────────────────────────────
 
-describe("xmind-edit delete", () => {
+describe("xmind-patch delete", () => {
   it("dry-run shows what would be deleted without modifying the file", async () => {
     const xmindPath = createTestXmind("delete-dry-run");
 
@@ -696,12 +696,12 @@ describe("xmind-edit delete", () => {
 
 // ─── --help ───────────────────────────────────────────────────────────────────
 
-describe("xmind-edit --help", () => {
+describe("xmind-patch --help", () => {
   it("outputs usage information", () => {
     const { stdout, stderr, code } = runEdit(["--help"]);
     const output = stdout + stderr;
     assert.equal(code, 0);
-    assert.match(output, /xmind-edit/);
+    assert.match(output, /xmind-patch/);
     assert.match(output, /search/);
     assert.match(output, /show/);
     assert.match(output, /patch/);

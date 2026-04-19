@@ -36,10 +36,10 @@ bun run ../scripts/config.ts
 
 ```bash
 # ✓ 正确
-bun run .claude/scripts/state.ts read --project {{project}}
+bun run .claude/scripts/qa-state.ts read --project {{project}}
 
 # ✗ 错误：缺少 --project，会读到错误项目状态
-bun run .claude/scripts/state.ts read
+bun run .claude/scripts/qa-state.ts read
 ```
 
 ### 2.3 多环境场景追加 `--env {{env}}`

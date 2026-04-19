@@ -106,6 +106,27 @@ JSON 结构参见 `.claude/references/output-schemas.json` 中的 `backend_bug_j
 
 符号使用遵循 `.claude/references/unicode-symbols.md`。
 
+### 根因置信度（必填）
+
+输出 JSON **必须**额外包含 `confidence` 与 `confidence_reason` 两个顶层字段，供 HTML 模板以 badge 形式渲染，使用户能够快速判断 AI 分析的可信度。
+
+```json
+{
+  "confidence": "high | medium | low",
+  "confidence_reason": "string — 一句话说明判定理由（≤60 字）"
+}
+```
+
+**判定标准（择一最贴近的档位）：**
+
+| 档位     | 触发条件                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------ |
+| `high`   | 堆栈完整 + 源码已同步可 grep + 异常类型与位置明确 + 根因帧来自业务代码                     |
+| `medium` | 堆栈或源码缺一 / 错误信息部分模糊 / 根因帧落在框架内需向上追溯但有迹可循                   |
+| `low`    | 仅有错误文本无堆栈 / 源码无法访问或 grep 未命中 / 异常类型不明 / 多个 `Caused by` 互相矛盾 |
+
+`confidence_reason` 须列出关键事实（例：「堆栈完整，根因帧 UserService:156 已 grep 命中」/「仅一行错误信息，无 Caused by 链」/「源码未同步，无法确认 SQL 异常具体位置」）。
+
 ---
 
 ## 错误处理

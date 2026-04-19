@@ -82,6 +82,101 @@ test.describe("{{suite_name}} - {{page}}", () => {
 
 ---
 
+<output_examples>
+<!-- 以下示例演示「Archive MD 单条用例 → Playwright TypeScript spec」的完整对照，以通用占位字段呈现，不代表特定项目。 -->
+
+<archive_md_input description="输入：一条 P1 正向用例（含前置条件 + 3 行 step/expected 表格）">
+
+```markdown
+### 【P1】验证按名称关键词搜索返回正确结果
+
+**前置条件**：列表中已存在名称含「示例项」的记录至少 3 条。
+
+| # | 步骤 | 预期结果 |
+|---|---|---|
+| 1 | 进入【{{module_name}} → 列表】页面 | 页面正常加载，列表展示所有记录 |
+| 2 | 在「名称」输入框输入「示例项」，从「状态」下拉选择「启用」 | 筛选条件已设置 |
+| 3 | 点击【搜索】按钮 | 列表仅显示名称含「示例项」且状态为「启用」的记录 |
+```
+
+</archive_md_input>
+
+<playwright_spec_output description="输出：完整 spec，定位器优先级 role > placeholder > text > css，断言用 expect">
+
+```typescript
+// META: {"id":"t1","priority":"P1","title":"验证按名称关键词搜索返回正确结果"}
+import { test, expect } from "../../fixtures/step-screenshot";
+import {
+  selectAntOption,
+  waitForTableLoaded,
+  navigateViaMenu,
+} from "../../helpers/test-setup";
+
+test.use({ storageState: ".auth/session.json" });
+
+test.describe("{{suite_name}} - 列表页", () => {
+  test("验证按名称关键词搜索返回正确结果", async ({ page, step }) => {
+    // 步骤1：导航 — 优先用语义化菜单导航工具
+    await step(
+      "步骤1: 进入【{{module_name}} → 列表】页面 → 页面正常加载，列表展示所有记录",
+      async () => {
+        await page.goto(process.env.APP_BASE_URL ?? "/");
+        await navigateViaMenu(page, ["{{module_name}}", "列表"]);
+        await waitForTableLoaded(page);
+        await expect(
+          page.getByRole("heading", { name: "{{module_name}}" }),
+        ).toBeVisible();
+      },
+    );
+
+    // 步骤2：填写筛选条件 — placeholder + 共享 selectAntOption
+    const nameInput = page.getByPlaceholder("请输入名称");
+    await step(
+      "步骤2: 在「名称」输入「示例项」并选择状态「启用」 → 筛选条件已设置",
+      async () => {
+        await nameInput.fill("示例项");
+        await selectAntOption(page, page.getByLabel("状态"), "启用");
+        await expect(nameInput).toHaveValue("示例项");
+      },
+      nameInput,
+    );
+
+    // 步骤3：点击【搜索】并校验结果 — role 定位 + 表格断言带高亮
+    const searchBtn = page.getByRole("button", { name: "搜索" });
+    const tableRows = page.locator("table tbody tr");
+    await step(
+      "步骤3: 点击【搜索】按钮 → 列表仅显示名称含「示例项」且状态为「启用」的记录",
+      async () => {
+        await searchBtn.click();
+        await waitForTableLoaded(page);
+        await expect(tableRows.first()).toBeVisible();
+        const count = await tableRows.count();
+        for (let i = 0; i < count; i++) {
+          await expect(tableRows.nth(i)).toContainText("示例项");
+          await expect(tableRows.nth(i)).toContainText("启用");
+        }
+      },
+      tableRows.first(),
+    );
+  });
+});
+```
+
+</playwright_spec_output>
+
+<key_points description="对照要点：可被复用为生成检查清单">
+
+- `step()` 名称严格对齐 `"步骤N: {{step}} → {{expected}}"`
+- 共享工具 (`selectAntOption` / `waitForTableLoaded` / `navigateViaMenu`) 直接 import，不在 spec 内联
+- 定位器优先级：role (`getByRole("button")`) > placeholder (`getByPlaceholder`) > label (`getByLabel`) > css fallback
+- 每步至少 1 条 `expect` 断言，避免空步骤
+- 高亮元素传入断言主目标 (输入框 / 表格首行)，URL 类断言不传
+
+</key_points>
+</output_examples>
+
+---
+
 ## step 函数使用规范
 
 `step(name, body, highlight?)` 是一个自定义 fixture，会在每步执行后自动截图并附加到测试报告。

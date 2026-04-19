@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 /**
- * strategy-router.ts — 策略路由：SignalProfile → StrategyResolution
+ * case-strategy-resolver.ts — 策略路由：SignalProfile → StrategyResolution
  * Usage:
- *   bun run .claude/scripts/strategy-router.ts resolve \
+ *   bun run .claude/scripts/case-strategy-resolver.ts resolve \
  *     --profile <json-string|@path> \
  *     [--force-strategy S1..S5] \
  *     [--output json|summary]
@@ -25,7 +25,7 @@ function runResolve(opts: { profile: string; forceStrategy?: string; output: str
     try {
       raw = readFileSync(opts.profile.slice(1), "utf8");
     } catch (err) {
-      process.stderr.write(`[strategy-router] failed to read profile file: ${String(err)}\n`);
+      process.stderr.write(`[case-strategy-resolver] failed to read profile file: ${String(err)}\n`);
       process.exit(1);
       return;
     }
@@ -38,7 +38,7 @@ function runResolve(opts: { profile: string; forceStrategy?: string; output: str
   try {
     profile = JSON.parse(raw) as SignalProfile;
   } catch (err) {
-    process.stderr.write(`[strategy-router] invalid profile JSON: ${String(err)}\n`);
+    process.stderr.write(`[case-strategy-resolver] invalid profile JSON: ${String(err)}\n`);
     process.exit(1);
     return;
   }
@@ -53,7 +53,7 @@ function runResolve(opts: { profile: string; forceStrategy?: string; output: str
     !profile.knowledge
   ) {
     process.stderr.write(
-      "[strategy-router] profile missing required fields (source/prd/history/knowledge)\n",
+      "[case-strategy-resolver] profile missing required fields (source/prd/history/knowledge)\n",
     );
     process.exit(1);
     return;
@@ -66,7 +66,7 @@ function runResolve(opts: { profile: string; forceStrategy?: string; output: str
     const id = opts.forceStrategy as StrategyId;
     if (!["S1", "S2", "S3", "S4", "S5"].includes(id)) {
       process.stderr.write(
-        `[strategy-router] invalid --force-strategy: ${opts.forceStrategy}\n`,
+        `[case-strategy-resolver] invalid --force-strategy: ${opts.forceStrategy}\n`,
       );
       process.exit(1);
       return;
@@ -85,14 +85,14 @@ function runResolve(opts: { profile: string; forceStrategy?: string; output: str
 
   if (opts.output === "summary") {
     process.stderr.write(
-      `[strategy-router] strategy=${resolution.strategy_id} name=${resolution.strategy_name}\n`,
+      `[case-strategy-resolver] strategy=${resolution.strategy_id} name=${resolution.strategy_name}\n`,
     );
   }
   process.stdout.write(`${JSON.stringify(resolution, null, 2)}\n`);
 }
 
 createCli({
-  name: "strategy-router",
+  name: "case-strategy-resolver",
   description: "策略路由：SignalProfile → StrategyResolution",
   commands: [
     {

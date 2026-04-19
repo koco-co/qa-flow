@@ -1,6 +1,6 @@
 ---
 name: bug-report
-description: "Bug 报告生成。解析后端 Java 异常堆栈或前端 Console 报错，按日志特征自动路由到 backend-bug-agent 或 frontend-bug-agent，输出结构化 HTML Bug 报告。触发词：分析这个报错、帮我看这个异常、生成 bug 报告、分析 Java 堆栈、分析前端报错、Exception、NullPointerException、TypeError、ReferenceError。默认用禅道兼容模板输出，可用 --template full 切换完整样式版。"
+description: "Bug 报告生成。解析后端 Java 堆栈或前端 Console 报错，自动路由到对应 agent，输出 HTML 报告。触发词：分析报错、生成 bug 报告、Exception、TypeError、--template full。"
 argument-hint: "[报错日志 / 堆栈文本 / 前端 Console 错误 | --template full]"
 ---
 
@@ -57,83 +57,20 @@ argument-hint: "[报错日志 / 堆栈文本 / 前端 Console 错误 | --templat
 
 ---
 
-## 步骤
+## 工作流总览
 
-### 1. 路由识别
+| 步骤 | 名称       | 职责                                                       |
+| ---- | ---------- | ---------------------------------------------------------- |
+| 1    | 路由识别   | 按 `<routing>` 信号判定后端/前端，歧义时 AskUser           |
+| 2    | 源码引用   | 双门策略：sync 与 writeback 独立确认                       |
+| 3    | 派发 Agent | 后端 → `backend-bug-agent` / 前端 → `frontend-bug-agent`   |
+| 4    | 渲染报告   | 选模板（zentao 默认 / `--template full`），写入 reports/ |
+| 5    | 发送通知   | 触发 plugin-loader notify 事件                             |
+| 6    | 完成摘要   | 状态展示，无需确认                                         |
 
-根据 `<routing>` 判定走后端分支（派发 `backend-bug-agent`）或前端分支（派发 `frontend-bug-agent`）。若歧义，AskUserQuestion 询问。
+## 路由分支
 
-### 2. 源码引用许可与可选写回（双门策略）
-
-> **⚠️ 强制规则：引用源码 / 执行 repo sync 与写回 `.env` / 分支映射是两道独立门禁，不得合并为一次确认。**
-
-执行流程：
-
-1. 根据报错信息中的包名、模块名，从 `config.repos` 推断最可能的仓库和分支
-2. 通过 AskUserQuestion 工具先展示"引用/同步"摘要并等待许可：
-
-   确认格式：`确认 [源码引用] 分析 → 目标: [repo_name @ branch] → 来源: [config.repos 推断]`
-
-3. 仅当用户允许同步时，执行：
-
-```bash
-bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
-```
-
-4. 若用户提供了新的仓库 URL 或纠正了分支信息，先展示写回预览，再单独确认是否持久化：
-   - `.env` 将追加的 `SOURCE_REPOS`：`{{repo_url}}`
-   - 分支映射文件：`{{repo_name}} -> {{branch}}`
-
-   AskUserQuestion 选项：
-   - 仅本次分析使用，不写回（默认）
-   - 允许写回 `.env` 与分支映射
-   - 取消新增的仓库 / 分支修正
-
-5. 若 config.repos 为空（无已配置仓库），改为询问用户是否需要提供源码路径；若用户拒绝，转为纯日志分析。
-
-### 3. 派发分析 Agent
-
-- **后端分支**：派发 `backend-bug-agent`（model: sonnet），传入报错日志和源码上下文，Agent 返回 `backend_bug_json`
-- **前端分支**：派发 `frontend-bug-agent`（model: sonnet），传入前端报错信息和源码上下文，Agent 返回 `frontend_bug_json`
-
-### 4. 渲染 HTML 报告
-
-将 JSON 数据写入 `workspace/{{project}}/reports/bugs/{{YYYYMMDD}}/{{Bug标题}}.html`。
-
-可用模板（位于 `templates/` 目录）：
-
-- `bug-report-zentao.html.hbs` — **默认**，禅道富文本编辑器兼容（全 inline style，table 布局，可直接粘贴到禅道）
-- `bug-report-full.html.hbs` — 完整样式版，独立 HTML 查看，含 CSS 变量、渐变、flexbox 等高级样式
-- `bug-report.html.hbs` — 旧版模板（保留兼容）
-
-默认使用禅道兼容模板。用户可通过 `--template full` 参数切换为完整样式版。
-
-若目录不存在则先创建：
-
-```bash
-mkdir -p workspace/{{project}}/reports/bugs/{{YYYYMMDD}}
-```
-
-### 5. 发送通知
-
-```bash
-bun run .claude/scripts/plugin-loader.ts notify --event bug-report --data '{"reportFile":"{{path}}","summary":"{{one_line_summary}}"}'
-```
-
-### 6. 完成摘要（状态展示，无需确认）
-
-```
-Bug 分析完成
-
-报告：{{report_path}}
-根因：{{root_cause_summary}}
-```
-
----
-
-## 输出目录约定
-
-| 类型                  | 目录                                           |
-| --------------------- | ---------------------------------------------- |
-| Bug 报告（后端/前端） | `workspace/{{project}}/reports/bugs/YYYYMMDD/` |
-| 临时文件              | `workspace/{{project}}/.temp/`                 |
+- 路由识别与回退（含错误纠正策略）：详见 [`workflow/routing.md`](workflow/routing.md)
+- 后端分支（步骤 2-3，含 `backend-bug-agent` 调用）：详见 [`workflow/backend.md`](workflow/backend.md)
+- 前端分支（步骤 2-3，含 `frontend-bug-agent` 调用）：详见 [`workflow/frontend.md`](workflow/frontend.md)
+- 渲染、通知与目录约定（步骤 4-6）：详见 [`workflow/rendering.md`](workflow/rendering.md)

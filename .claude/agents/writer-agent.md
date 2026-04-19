@@ -35,6 +35,119 @@ model: sonnet
 <confirmed_context>若已收到主 agent 的 `<confirmed_context>`，其答案优先级最高，不得被推测结果覆盖。</confirmed_context>
 </output_contract>
 
+<output_examples>
+<!-- 以下示例仅用于说明格式与字段，实际项目名/模块名请以任务提示中的 writer_id 与 PRD frontmatter 为准。 -->
+
+<success_example description="典型 Contract A 输出：1 个模块、1 个页面、含正向 P0 + 逆向 P1 各一条">
+
+```json
+{
+  "meta": {
+    "project_name": "{{PROJECT_PRODUCT_NAME}}",
+    "requirement_name": "{{requirement_name}}",
+    "version": "v1.0.0",
+    "module_key": "{{module_key}}",
+    "requirement_id": 10001,
+    "description": "示例：演示 Contract A 中间 JSON 的字段填充方式"
+  },
+  "modules": [
+    {
+      "name": "{{module_name}}",
+      "pages": [
+        {
+          "name": "新增页",
+          "sub_groups": [
+            {
+              "name": "字段校验",
+              "test_cases": [
+                {
+                  "title": "验证填写完整表单后成功新增记录",
+                  "priority": "P0",
+                  "preconditions": "当前账号具有「{{module_name}}」新增权限\n已存在可选的分类「示例分类A」",
+                  "steps": [
+                    {
+                      "step": "进入【{{module_name}} → 新增】页面",
+                      "expected": "页面正常加载，表单字段全部可见"
+                    },
+                    {
+                      "step": "在表单中按顺序填写：\n- *名称: 示例名称2026\n- *分类: 示例分类A\n- 描述: 自动化用例占位描述",
+                      "expected": "各字段均可正常输入/选择，无校验错误提示"
+                    },
+                    {
+                      "step": "点击【保存】按钮",
+                      "expected": "页面提示「新增成功」，列表新增一条记录，名称显示「示例名称2026」"
+                    }
+                  ]
+                },
+                {
+                  "title": "验证名称字段超过最大长度时提示错误",
+                  "priority": "P1",
+                  "preconditions": "当前账号具有「{{module_name}}」新增权限",
+                  "steps": [
+                    {
+                      "step": "进入【{{module_name}} → 新增】页面",
+                      "expected": "页面正常加载"
+                    },
+                    {
+                      "step": "在「*名称」输入框输入 51 个字符的字符串「a」x 51",
+                      "expected": "字段下方红色提示「名称长度不能超过 50 个字符」，【保存】按钮置灰"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+</success_example>
+
+<blocked_example description="阻断输出：导航路径与字段枚举均缺失，writer 拒绝半成品输出">
+
+```xml
+<blocked_envelope>
+{
+  "status": "needs_confirmation",
+  "writer_id": "{{module_key}}",
+  "items": [
+    {
+      "id": "B1",
+      "severity": "blocking_unknown",
+      "type": "navigation_path",
+      "location": "新增页 → 菜单入口",
+      "question": "「{{module_name}}」新增入口的完整菜单路径是什么？",
+      "recommended_option": "A",
+      "options": [
+        { "id": "A", "description": "工作台 → {{module_name}} → 新增", "reason": "前端路由 routes/index.ts:42 出现该路径" },
+        { "id": "B", "description": "管理中心 → {{module_name}}", "reason": "蓝湖截图标题如此显示" }
+      ],
+      "context": "PRD 第 2 节仅描述「点击新增按钮」，未给出完整菜单层级；首步「进入【...】页面」无法落地。"
+    },
+    {
+      "id": "B2",
+      "severity": "blocking_unknown",
+      "type": "field_enum",
+      "location": "新增页 → *状态 字段",
+      "question": "「*状态」下拉框的可选值有哪些？",
+      "options": [
+        { "id": "A", "description": "启用 / 停用" },
+        { "id": "B", "description": "草稿 / 待审核 / 已发布 / 已下线" }
+      ],
+      "context": "影响逆向用例（停用态下的操作约束）的设计。"
+    }
+  ],
+  "summary": "存在 2 个 blocking_unknown，需主 agent 在 discuss 节点确认后重跑 writer。"
+}
+</blocked_envelope>
+```
+
+</blocked_example>
+</output_examples>
+
 <error_handling>
 <defaultable_unknown>可以高置信度推断的导航、按钮、枚举值，应继续产出并在思路中保留依据。</defaultable_unknown>
 <blocking_unknown>关键信息缺失且会直接影响用例正确性时，返回 `<blocked_envelope status="needs_confirmation">`。</blocking_unknown>

@@ -1,6 +1,6 @@
 ---
 name: xmind-editor
-description: "XMind 测试用例局部编辑。无需 PRD，直接搜索、查看、修改、新增、删除已有 XMind 文件中的用例。触发词：修改用例、编辑用例、新增用例、更新步骤、删除用例。修改完成后触发偏好规则写入流程。"
+description: "XMind 测试用例局部编辑。无需 PRD，直接搜索/查看/修改/新增/删除已有 XMind 用例。触发词：修改用例、编辑用例、新增用例、删除用例。完成后触发偏好规则写入。"
 argument-hint: "[操作] [用例标题或关键词]"
 ---
 
@@ -57,107 +57,19 @@ argument-hint: "[操作] [用例标题或关键词]"
 
 ---
 
-## 场景一：搜索用例
+## 工作流总览
 
-```bash
-bun run .claude/scripts/xmind-edit.ts search "{{keyword}}" --project {{project}}
-```
+| 场景    | 名称     | 操作类型 |
+| ------- | -------- | -------- |
+| 场景一  | 搜索用例 | 只读     |
+| 场景二  | 查看用例 | 只读     |
+| 场景三  | 修改用例 | 写入     |
+| 场景四  | 新增用例 | 写入     |
+| 场景五  | 删除用例 | 写入     |
 
-展示所有匹配的用例列表（文件名 + 用例标题），用户选择后进入查看。
+五大场景的命令与执行细节详见 [`workflow/scenarios.md`](workflow/scenarios.md)。
 
----
-
-## 场景二：查看用例
-
-```bash
-bun run .claude/scripts/xmind-edit.ts show --file {{file}} --title "{{title}}"
-```
-
-展示该用例的完整内容（前置条件 + 步骤 + 预期结果），等待用户下一步指令。
-
----
-
-## 场景三：修改用例
-
-1. 执行 `show` 展示当前内容
-2. 用户说明修改意图
-3. AI 构造 `case-json`（遵循 `rules/` 规则及用例编写规范）
-4. 先执行预览：
-
-```bash
-bun run .claude/scripts/xmind-edit.ts patch \
-  --file {{file}} \
-  --title "{{title}}" \
-  --case-json '{{json}}' \
-  --dry-run
-```
-
-5. 展示修改前后对比，等待用户确认
-6. 用户确认后去掉 `--dry-run` 执行真实写入
-7. 展示写入结果摘要
-8. 触发**偏好写入流程**
-
----
-
-## 场景四：新增用例
-
-1. 与用户确认目标文件和父节点路径
-2. AI 生成 `case-json`（`title` 必填）
-3. 先执行预览：
-
-```bash
-bun run .claude/scripts/xmind-edit.ts add \
-  --file {{file}} \
-  --parent "{{parent}}" \
-  --case-json '{{json}}' \
-  --dry-run
-```
-
-4. 展示即将新增的节点内容，等待用户确认
-5. 用户确认后去掉 `--dry-run` 执行真实写入
-6. 展示写入结果摘要
-7. 触发**偏好写入流程**
-
----
-
-## 场景五：删除用例
-
-1. 先预览：
-
-```bash
-bun run .claude/scripts/xmind-edit.ts delete \
-  --file {{file}} \
-  --title "{{title}}" \
-  --dry-run
-```
-
-2. 展示将被删除的节点，等待用户确认
-3. 用户确认后去掉 `--dry-run` 执行
-
----
-
-## 偏好写入流程
-
-修改或新增用例完成、用户验收通过后触发：
-
-1. AI 提炼本次修改中的可复用规则
-2. AI 判断该规则的归属：
-   - **项目特定**（如特定产品的菜单结构、字段命名、业务术语）→ 写入 `workspace/{{project}}/rules/` 下对应文件
-   - **跨项目通用**（如用例编写格式规范、通用步骤模板）→ 写入全局 `rules/` 下对应文件
-3. AI 判断写入哪个偏好文件（如 `case-writing.md`、`xmind-structure.md`、`hotfix-frontmatter.md`，或新建文件）
-4. 使用 AskUser 向用户确认判断结果：
-
-```
-📝 检测到可复用的偏好规则：
-「导出按钮的预期结果应包含文件命名规则」
-
-判断归属：项目级偏好（本项目特定的按钮命名规范）
-写入目标：workspace/{{project}}/rules/case-writing.md
-
-选项：[确认写入] [更换目标文件] [调整规则内容] [跳过]
-```
-
-5. 用户确认后执行写入，追加到目标文件末尾
+修改/新增完成后的偏好规则写入流程（含归属判断、差异预览、AskUser 模板）详见 [`workflow/preference-writing.md`](workflow/preference-writing.md)。
 
 ---
 

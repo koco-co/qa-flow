@@ -111,6 +111,27 @@ JSON 结构参见 `.claude/references/output-schemas.json` 中的 `frontend_bug_
 
 符号使用遵循 `.claude/references/unicode-symbols.md`。
 
+### 根因置信度（必填）
+
+输出 JSON **必须**额外包含 `confidence` 与 `confidence_reason` 两个顶层字段，供 HTML 模板以 badge 形式渲染，使用户能够快速判断 AI 分析的可信度。
+
+```json
+{
+  "confidence": "high | medium | low",
+  "confidence_reason": "string — 一句话说明判定理由（≤60 字）"
+}
+```
+
+**判定标准（择一最贴近的档位）：**
+
+| 档位     | 触发条件                                                                                        |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| `high`   | 报错栈含原始文件名行号 + 源码已同步可 grep + 错误类型已识别 + 组件/数据层归因明确               |
+| `medium` | 仅有 sourcemap 后位置 / 源码部分可达 / React Minified Error 已查表还原 / 网络错误有响应体可参考 |
+| `low`    | 仅控制台一行错误 / 无 stack trace / 源码未同步无法 grep / 报错位于第三方依赖且无业务侧线索      |
+
+`confidence_reason` 须列出关键事实（例：「TypeError 栈完整，UserCard.tsx:45 已 grep 命中」/「Vue warn 仅一行，无组件栈」/「ChunkLoadError 无 stack，源码无法定位」）。
+
 ---
 
 ## 错误处理

@@ -43,6 +43,77 @@ model: sonnet
 <invalid_input>PRD 缺失、frontmatter 损坏或关键输入互相冲突时，stderr 报告并停止覆盖原文件；不再使用 clarify_envelope 协议。</invalid_input>
 </error_handling>
 
+<thinking_example description="演示 PRD 模糊段落 → 三步检索 → 标注后 plan.md 片段（以下为示例，与具体项目无关）">
+
+<input_excerpt>
+> PRD 第 4.2 节节选：
+> 「列表页支持导出报告功能，用户点击【导出】按钮即可下载当前筛选结果。
+>  支持 PDF 和 Excel 两种格式，导出后系统弹出下载完成提示。」
+</input_excerpt>
+
+<chain_of_thought>
+
+**第 1 步：检索源码确认实现状态**
+
+```bash
+grep -rn "export" workspace/{{project}}/.repos/{{repo}}/src/pages/{{module}}/ --include="*.tsx" -l
+grep -n "exportReport\|exportPdf\|exportExcel" workspace/{{project}}/.repos/{{repo}}/src/services/
+```
+
+发现：
+- 🔵 `src/pages/{{module}}/list.tsx:128` 含 `<Button onClick={handleExport}>导出</Button>`
+- 🔵 `src/services/{{module}}.ts:64` 暴露 `exportReport(params, format: 'pdf' | 'excel')`
+- 🔴 未找到「下载完成提示」对应的 message/notification 调用
+
+**第 2 步：检查历史用例是否覆盖类似功能**
+
+```bash
+bun run .claude/scripts/archive-gen.ts search --query "导出 PDF Excel" --project {{project}} --limit 5
+```
+
+发现：
+- 🟡 归档 #9821「报表导出」存在同模式用例：步骤为「点击【导出】→ 选择格式 → 下载文件」
+- 历史用例无「下载完成提示」描述，与源码缺失一致 → 该提示可能不存在
+
+**第 3 步：标注每个原子需求的状态**
+
+| 原子需求 | 状态 | 依据 |
+|---|---|---|
+| 列表页有【导出】按钮 | ✓ 已确认 | 🔵 list.tsx:128 |
+| 支持 PDF 与 Excel 两种格式 | ✓ 已确认 | 🔵 services/{{module}}.ts:64 + 🟡 归档同模式 |
+| 导出后弹出「下载完成」提示 | ⚠ 需澄清 | 🔴 源码无对应实现，PRD 描述与代码冲突 |
+
+</chain_of_thought>
+
+<output_plan_md_excerpt>
+
+```markdown
+## §3 clarifications
+
+### C1 导出完成提示行为（severity=blocking_unknown）
+
+- location: 列表页 → 异常处理 → 导出完成提示
+- question: PRD 描述「弹出下载完成提示」，但源码中未找到对应实现，是本次新增能力还是 PRD 描述有误？
+- options:
+  - A. 本次需要新增前端 message 提示
+  - B. PRD 描述有误，浏览器原生下载即视为完成
+- recommended_option: B
+- user_answer: <待 discuss 节点回填>
+
+## §4 default_policy
+
+- 「列表页【导出】按钮存在」已 ✓ 直接落入 PRD 字段定义表，标 🔵 `list.tsx:128`
+- 「支持 PDF/Excel 两种格式」已 ✓ 落入交互逻辑，标 🔵 + 🟡 归档参考
+
+## §6 downstream_hints.transform
+
+- 待 §3 C1 user_answer 落定后，再生成「导出完成提示」相关字段；当前 PRD 该项保持 🔴 占位。
+```
+
+</output_plan_md_excerpt>
+
+</thinking_example>
+
 ## 输入
 
 任务提示中会指定 PRD 文件路径（例如：`workspace/{{project}}/prds/202604/xxx.md`）。读取该文件并获取：
