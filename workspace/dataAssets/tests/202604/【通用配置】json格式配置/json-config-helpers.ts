@@ -290,23 +290,31 @@ export async function addKey(
   await ensureRowVisibleByKey(page, keyName, 15000).catch(() => undefined);
 }
 
-async function ensureRowVisibleByKey(
+export async function ensureRowVisibleByKey(
   page: Page,
   keyName: string,
   timeout = 15000,
 ): Promise<Locator> {
   const row = page.locator(".ant-table-row").filter({ hasText: keyName }).first();
-  if (await row.isVisible({ timeout: 1500 }).catch(() => false)) {
-    return row;
+  const attempts = Math.max(2, Math.ceil(timeout / 5000));
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    if (await row.isVisible({ timeout: 1500 }).catch(() => false)) {
+      return row;
+    }
+
+    if (attempt === 1) {
+      await searchKey(page, keyName);
+    } else {
+      await gotoJsonConfigPage(page);
+      await searchKey(page, keyName);
+    }
+
+    if (await row.isVisible({ timeout: 5000 }).catch(() => false)) {
+      return row;
+    }
   }
 
-  await searchKey(page, keyName);
-  if (await row.isVisible({ timeout: Math.min(timeout, 10000) }).catch(() => false)) {
-    return row;
-  }
-
-  await clearSearch(page);
-  await expect(row).toBeVisible({ timeout: Math.max(2000, timeout - 10000) });
+  await expect(row).toBeVisible({ timeout: 5000 });
   return row;
 }
 
@@ -353,8 +361,22 @@ export async function expandRow(
     .first();
   const collapsedIcon = row.locator(".ant-table-row-expand-icon-collapsed");
   if (await collapsedIcon.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await collapsedIcon.click();
-    await page.waitForTimeout(500);
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await page
+        .locator(".ant-spin-spinning")
+        .waitFor({ state: "hidden", timeout: 5000 })
+        .catch(() => undefined);
+      try {
+        await collapsedIcon.click({ timeout: 5000 });
+        await page.waitForTimeout(500);
+        break;
+      } catch (error) {
+        if (attempt === 3) {
+          throw error;
+        }
+        await searchKey(page, keyName).catch(() => undefined);
+      }
+    }
   }
 }
 
@@ -401,17 +423,31 @@ export async function deleteKey(page: Page, keyName: string): Promise<void> {
 async function triggerSearch(page: Page): Promise<void> {
   await dismissTopModal(page).catch(() => undefined);
 
-  const searchBtn = page.locator(".dt-search .ant-input-search-button").first();
-  if (await searchBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-    try {
-      await searchBtn.click();
-    } catch {
-      await dismissTopModal(page).catch(() => undefined);
-      await searchBtn.click();
+  const searchInput = page.locator(".dt-search input").first();
+  const submitByKeyboard = async () => {
+    await searchInput.press("Enter");
+  };
+  if (await searchInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+    const searchBtn = page.locator(".dt-search .ant-input-search-button").first();
+    if (await searchBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await page.locator(".ant-message").waitFor({ state: "hidden", timeout: 1500 }).catch(() => undefined);
+      try {
+        await searchBtn.click({ timeout: 2000 });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (/intercepts pointer events|Timeout/i.test(message)) {
+          await page.locator(".ant-message").waitFor({ state: "hidden", timeout: 3000 }).catch(() => undefined);
+          await submitByKeyboard();
+        } else {
+          throw error;
+        }
+      }
+    } else {
+      await submitByKeyboard();
     }
   } else {
-    const searchInput = page.locator(".dt-search input").first();
-    await searchInput.press("Enter");
+    const searchBtn = page.locator(".dt-search .ant-input-search-button").first();
+    await searchBtn.click({ timeout: 2000 });
   }
   await page
     .locator(".ant-spin-spinning")
@@ -431,13 +467,23 @@ export async function searchKey(page: Page, keyword: string): Promise<void> {
   if (!(await searchInput.isVisible({ timeout: 3000 }).catch(() => false))) {
     return;
   }
+  const runSearch = async () => {
+    await searchInput.fill(keyword);
+    await triggerSearch(page);
+    await expect(searchInput).toHaveValue(keyword, { timeout: 3000 }).catch(() => undefined);
+  };
   // 直接 fill(keyword) 而不先 clear()：
   // Ant Design Input.Search 的 onChange 只在 value 变为空时才触发 setSearchValue('')，
   // 若先 clear() 再 fill()，会触发两次 React 状态更新（searchValue='' 和 searchValue=keyword），
   // 导致两个并发 fetchTree 请求（空搜索 vs 目标搜索），后完成的空搜索会覆盖过滤结果，
   // 造成表格显示空数据（暂无数据）的竞态问题。
-  await searchInput.fill(keyword);
-  await triggerSearch(page);
+  await runSearch();
+
+  const emptyPlaceholder = page.locator(".ant-table-placeholder:visible").first();
+  if (await emptyPlaceholder.isVisible({ timeout: 800 }).catch(() => false)) {
+    await gotoJsonConfigPage(page);
+    await runSearch();
+  }
 }
 
 /** 清空搜索 */
