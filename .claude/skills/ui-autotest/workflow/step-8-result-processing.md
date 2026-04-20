@@ -24,6 +24,9 @@
 耗时：{{duration}}
 报告：workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report/index.html
 
+查看报告（本地启动 http 服务并自动打开浏览器）：
+npx allure open workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report
+
 验收命令（可直接复制运行）：
 ACTIVE_ENV={{env}} QA_SUITE_NAME="{{suite_name}}" bunx playwright test {{full_spec_path}} --project=chromium
 ```
@@ -52,6 +55,9 @@ Bug 报告输出至：`workspace/{{project}}/reports/bugs/{{YYYYMM}}/ui-autotest
 {{/each}}
 
 Bug 报告：workspace/{{project}}/reports/bugs/{{YYYYMM}}/ui-autotest-{{suite_name}}.html
+
+查看 Allure 报告（本地启动 http 服务并自动打开浏览器）：
+npx allure open workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report
 
 验收命令（可直接复制运行）：
 ACTIVE_ENV={{env}} QA_SUITE_NAME="{{suite_name}}" bunx playwright test {{full_spec_path}} --project=chromium
