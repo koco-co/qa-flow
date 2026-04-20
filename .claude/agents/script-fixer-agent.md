@@ -100,69 +100,20 @@ QA_PROJECT={{project}} bunx playwright test {{script_path}} --project=chromium -
 
 ---
 
-## 断言修复红线（CRITICAL，不可协商）
+## 断言修复红线（CRITICAL）
 
-**目标是复现 Bug，不是让测试变绿。** 步骤（操作）可依实际 DOM 修正，预期（断言文本）必须严格对齐 Archive MD 原始 `expected` 列。
+**目标是复现 Bug，不是让测试变绿。** 断言文本必须严格对齐 Archive MD 原始 `expected` 列，禁止通过放宽断言凑通过。
 
-<forbidden_fix_patterns description="以下"修复"手段一律禁止">
+完整规则（禁止的放宽手段、合法修复三类、corrections schema）详见 `.claude/references/assertion-fidelity.md`。
 
-- **禁止扩大断言匹配范围**
-  - ❌ 把 `toContainText("匹配成功")` 改成 `toContainText(/匹配成功|符合正则|通过/)`
-  - ❌ 把 `toContainText("匹配失败")` 改成 `toContainText(/匹配失败|不符合/)`
-  - ❌ 把 `toHaveText("X")` 改成 `toHaveText(/.+/)` 或 `toBeVisible()`
-  - ❌ 用 `.locator("*").filter({ hasText })` 或其他祖先全局搜文本替代精确结果区域
+### error_type === "assertion" 决策流程
 
-- **禁止用条件/捕获绕过断言**
-  - ❌ 包 `try/catch` 吞掉失败
-  - ❌ 用 `if (await el.isVisible()) await expect(...)` 让断言在元素缺失时不执行
-  - ❌ 把失败断言改成 `.not.toBeVisible()` 或反转语义
-
-- **禁止删除、跳过、`.skip()` 断言步骤**
-
-</forbidden_fix_patterns>
-
-<allowed_assertion_fixes description="这几类才是合法的断言修复">
-
-1. **定位器选错了元素**：页面预期文本确实存在，但原选择器找错地方 → 修正选择器到正确的结果区域，断言文本保持原文
-2. **时序问题**：结果是异步渲染的 → 加 `await expect(...).toBeVisible({ timeout })` 或等待 API 响应，断言文本保持原文
-3. **用例文案与 UI 文案差异是"同义 DOM 变更"**：如用例写"匹配成功"但前端最新实现改为"测试成功"，此时在 `corrections` 中记 `reason_type="frontend"`，由主 agent 决定是否写回 Archive MD；修复本轮**不**擅自改断言
-
-</allowed_assertion_fixes>
-
-<when_error_type_assertion>
-**输入 `error_type === "assertion"` 时的决策流程**：
-
-1. 读取 `original_steps`，确认该步骤用例原文的 `expected` 是什么
-2. 实际跑一下、获取 DOM，看页面真实渲染文本是什么
+1. 读取 `original_steps` 确认用例原文 `expected`
+2. 获取实际 DOM，看页面真实渲染文本
 3. 分支判断：
-   - **定位错误**（结果区域存在且文本正确，只是原脚本找错了位置）→ 修定位器，保留原断言文本，返回 `FIXED`
-   - **时序问题**（结果会出现，只是晚）→ 加等待，返回 `FIXED`
-   - **前端文案变更**（结果文本换了新词但语义不变，如"通过" → "校验成功"）→ 在 `corrections` 中记 `reason_type="frontend"`，脚本断言按新词更新，返回 `FIXED`
-   - **功能缺陷**（页面根本不显示预期文本，或显示相反结果）→ **不改脚本断言**，返回 `STILL_FAILING`，在 `corrections` 中记 `reason_type="potential_bug"`，附上 DOM 证据（实际显示文本 / 截图路径 / 错误上下文）
+   - **定位错误**（结果区域存在且文本正确，原脚本找错位置）→ 修定位器，保留原断言文本 → `FIXED`
+   - **时序问题**（结果会出现，只是晚）→ 加等待 → `FIXED`
+   - **前端文案同义变更**（"通过" → "校验成功"语义不变）→ 脚本按新词更新 + `corrections.reason_type="frontend"` → `FIXED`
+   - **功能缺陷**（页面根本不显示预期文本或显示相反结果）→ **不改脚本断言** → `STILL_FAILING` + `corrections.reason_type="potential_bug"` + DOM 证据
 
-**绝不允许**：为了让 `STILL_FAILING` 变 `FIXED`，偷偷放宽断言正则或切换元素到含歧义文本的祖先节点。
-</when_error_type_assertion>
-
-<corrections_schema description="corrections 字段 reason_type 扩展">
-
-```json
-{
-  "corrections": [
-    {
-      "case_id": "t15",
-      "field": "step.4.expected",
-      "current": "显示匹配结果为「匹配成功」",
-      "proposed": "显示匹配结果为「匹配成功」（实际页面显示：「校验结果：未匹配，含 6 位数字」）",
-      "reason_type": "potential_bug",
-      "evidence": "DOM 节点 .match-result 文本为「未匹配」，与正则 ^\\d{6}$ 对 123456 的结果矛盾"
-    }
-  ]
-}
-```
-
-`reason_type` 取值：
-- `frontend` — 前端 DOM/文案变更（自动写回 Archive MD）
-- `logic` — 需求逻辑变更（需用户确认）
-- `potential_bug` — 功能可能有缺陷（**不写回**，由主 agent 展示给用户判断是否提 Bug）
-
-</corrections_schema>
+**绝不允许**：为了让 `STILL_FAILING` 变 `FIXED`，偷偷放宽断言正则或切换到含歧义文本的祖先节点。

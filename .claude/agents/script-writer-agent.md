@@ -228,51 +228,7 @@ await step(
 
 ## 共享工具库（必读）
 
-**生成脚本前必须先读取 `lib/playwright/index.ts` 的导出列表**，了解已有的通用工具函数。
-
-### 可用函数清单
-
-生成脚本前**必须先读取 `lib/playwright/index.ts`** 确认最新导出。以下为当前清单：
-
-| 分类 | 函数 | 用途 |
-|------|------|------|
-| **Select** | `selectAntOption(page, trigger, text)` | 下拉选择（含虚拟滚动 fallback） |
-| **Message** | `expectAntMessage(page, text, timeout?)` | 等待 Message/Notification 提示 |
-| **Modal** | `waitForAntModal(page, title?)` | 等待 Modal 可见并返回 Locator |
-| | `confirmAntModal(page, modal?)` | 点击 Modal 主按钮确认 |
-| | `closeAntModal(page, modal?)` | 关闭 Modal |
-| **Drawer** | `waitForAntDrawer(page, title?)` | 等待 Drawer 可见并返回 Locator |
-| | `closeAntDrawer(page, drawer?)` | 关闭 Drawer |
-| | `waitForOverlay(page, title?)` | 等待 Modal 或 Drawer（形态不确定时） |
-| **Popconfirm** | `confirmPopconfirm(page, timeout?)` | 确认气泡确认框 |
-| | `cancelPopconfirm(page, timeout?)` | 取消气泡确认框 |
-| **Table** | `waitForTableLoaded(page, table?, timeout?)` | 等待表格加载完成（含 loading 消失） |
-| | `findTableRow(page, rowText, table?)` | 按文本定位表格行 |
-| **Form** | `locateFormItem(container, label)` | 按标签定位表单字段 |
-| | `expectFormError(container, errorText?, timeout?)` | 断言表单验证错误可见 |
-| | `expectNoFormError(container, timeout?)` | 断言无表单验证错误 |
-| **Tabs** | `switchAntTab(page, tabName, container?)` | 切换标签页 |
-| **Checkbox** | `checkAntCheckbox(checkbox)` | 勾选（幂等） |
-| | `uncheckAntCheckbox(checkbox)` | 取消勾选（幂等） |
-| **Radio** | `clickAntRadio(container, label)` | 点击 Radio 选项 |
-| **Dropdown** | `clickDropdownMenuItem(page, text, timeout?)` | 点击下拉菜单项（右键菜单等） |
-| **Navigation** | `navigateViaMenu(page, menuPath)` | 侧边栏菜单导航 |
-| **Utils** | `uniqueName(prefix)` | 带时间戳唯一名称 |
-| | `todayStr()` | 当天日期 "YYYYMMDD" |
-
-### 引用方式
-
-通过项目 helpers re-export 引用（推荐，路径更短）：
-
-```typescript
-import { selectAntOption, expectAntMessage } from "../../helpers/test-setup";
-```
-
-### 禁止事项
-
-- **禁止**在 spec 文件中内联定义上表中已有的函数
-- **禁止**复制粘贴共享库代码到 spec 文件
-- 如果需要的交互模式不在共享库中，先用共享库函数组合实现；实在无法满足时，在套件级 helpers 中新建
+函数清单、引用方式、禁止事项详见 `.claude/references/playwright-shared-lib.md`。生成脚本前先读该文件 + `lib/playwright/index.ts` 确认最新导出。
 
 ---
 
@@ -311,62 +267,11 @@ import { selectAntOption, expectAntMessage } from "../../helpers/test-setup";
 - 页面 URL：`await expect(page).toHaveURL(/pattern/)`
 - 元素禁用：`await expect(locator).toBeDisabled()`
 
-### 断言忠实原则（CRITICAL，不可协商）
+### 断言忠实原则（CRITICAL）
 
-**步骤可以根据实际 DOM 修正（前端结构、按钮文本、选择器变化），但预期（`expected` 列）必须严格忠实于用例原文。断言失败即潜在 Bug 信号，不得通过放宽断言去"凑通过"。**
+**步骤可以按实际 DOM 修正，预期（`expected` 列）必须严格忠实于用例原文。断言失败即潜在 Bug 信号，禁止放宽断言"凑通过"。**
 
-<forbidden_patterns description="以下写法一律禁止 — 它们把断言变成空壳，让 Bug 悄悄通过">
-
-1. **禁止用 `|` 枚举成功判定扩大范围**
-   ```typescript
-   // ❌ 错误：用例预期是「匹配成功」，却用正则兜底
-   await expect(result).toContainText(/匹配成功|符合正则|校验通过/);
-   // ✅ 正确：严格按用例原文
-   await expect(result).toContainText("匹配成功");
-   ```
-
-2. **禁止用 `.locator("*").filter({ hasText })` 全局搜文本**
-   ```typescript
-   // ❌ 错误：弹窗内任意祖先含「正则」都会命中，按钮文本本身就能命中
-   modal.locator("*").filter({ hasText: /匹配成功/ });
-   // ✅ 正确：精确定位到结果区域（message / alert / 专用结果标签）
-   modal.getByRole("alert").filter({ hasText: "匹配成功" });
-   modal.locator(".match-result").filter({ hasText: "匹配成功" });
-   ```
-
-3. **禁止用 `.toBeVisible()` 替代文本断言**
-   ```typescript
-   // ❌ 错误：控件原本就可见，断言恒真
-   await expect(resultBox).toBeVisible();
-   // ✅ 正确：同时断言存在 + 文本正确
-   await expect(resultBox).toContainText("匹配成功");
-   ```
-
-4. **禁止用超大正则 `.*` 或 `.+` 当作"某种响应"通过**
-   ```typescript
-   // ❌ 错误
-   await expect(result).toHaveText(/.+/);
-   // ✅ 正确：用例说什么就断言什么
-   await expect(result).toHaveText("匹配成功");
-   ```
-
-5. **禁止用 try/catch 吞掉断言**、禁止用 `if (await locator.isVisible()) await expect(...)` 这种条件断言跳过。
-
-</forbidden_patterns>
-
-<translation_rule>
-- 用例预期写 "显示匹配成功" → 断言用 `toContainText("匹配成功")`，不拆词、不加反义词兜底
-- 用例预期写 "显示匹配失败" → 断言用 `toContainText("匹配失败")`，**不得**写 `/匹配失败|不符合/`
-- 用例预期写 "按钮隐藏" → 用 `toHaveCount(0)` 或 `not.toBeVisible()`，不要改成 `toBeEnabled()` 或其它弱化判定
-- 用例预期写 "提示：{{原文}}" → 断言包含该原文字符串，多条提示就多条 expect
-</translation_rule>
-
-<when_dom_differs>
-**断言定位元素找不到时的正确做法**：
-- 允许调整**定位器**（选择哪个元素），只要定位到的确实是用例预期对应的那个结果区域
-- **不允许**调整断言文本以适配"页面实际显示了什么"，这会把 Bug 吞掉
-- 若页面根本不显示用例预期的文本，应返回失败，让 fixer/主 agent 判断是 DOM 变更还是 Bug
-</when_dom_differs>
+完整规则（禁止模式、翻译表、DOM 差异处理）详见 `.claude/references/assertion-fidelity.md`。写脚本前必读。
 
 ---
 

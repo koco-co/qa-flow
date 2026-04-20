@@ -128,25 +128,11 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 ### 共享工具库
 
-`lib/playwright/` 提供跨项目通用的 Ant Design 交互函数，所有 sub-agent 生成脚本时**必须优先使用**，禁止内联重新实现：
+`lib/playwright/` 提供跨项目通用的 Ant Design 交互函数，所有 sub-agent 生成脚本时**必须优先使用**，禁止内联重新实现。函数清单、引用方式、禁止事项详见 `.claude/references/playwright-shared-lib.md`。
 
-| 分类       | 函数                                                       | 用途                            |
-| ---------- | ---------------------------------------------------------- | ------------------------------- |
-| Select     | `selectAntOption`                                          | 下拉选择（含虚拟滚动 fallback） |
-| Message    | `expectAntMessage`                                         | 等待 Message/Notification 提示  |
-| Modal      | `waitForAntModal` / `confirmAntModal` / `closeAntModal`    | 弹窗操作                        |
-| Drawer     | `waitForAntDrawer` / `closeAntDrawer` / `waitForOverlay`   | 抽屉 & 浮层                     |
-| Popconfirm | `confirmPopconfirm` / `cancelPopconfirm`                   | 气泡确认框                      |
-| Table      | `waitForTableLoaded` / `findTableRow`                      | 表格加载 & 行定位               |
-| Form       | `locateFormItem` / `expectFormError` / `expectNoFormError` | 表单字段 & 验证                 |
-| Tabs       | `switchAntTab`                                             | 标签页切换                      |
-| Checkbox   | `checkAntCheckbox` / `uncheckAntCheckbox`                  | 复选框（幂等）                  |
-| Radio      | `clickAntRadio`                                            | 单选                            |
-| Dropdown   | `clickDropdownMenuItem`                                    | 下拉菜单项点击                  |
-| Navigation | `navigateViaMenu`                                          | 侧边栏菜单导航                  |
-| Utils      | `uniqueName` / `todayStr`                                  | 测试数据工具                    |
+### 断言忠实原则
 
-引用方式：`import { selectAntOption } from "../../helpers/test-setup"` （通过项目 helpers re-export）。
+脚本生成/修复必须严格对齐用例 `expected` 原文，禁止用 `|` 扩大正则、祖先 `filter({hasText})`、`toBeVisible` 替代文本断言、try/catch 吞断言。完整规则详见 `.claude/references/assertion-fidelity.md`。
 
 ---
 
