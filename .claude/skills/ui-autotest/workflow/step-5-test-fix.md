@@ -88,6 +88,8 @@ if (failedCount >= convergenceThreshold &&
 | `expect\(.*\)\.(toHave\|toBe\|toContain\|toMatch)` | assertion |
 | 以上均不匹配 | unknown |
 
+> **⚠️ assertion 类错误特别提醒**：派发 fixer 时，必须在输入中加 `"strict_assertion": true` 提示。fixer 不得通过放宽断言（扩大正则、换成 toBeVisible、包 try/catch、改用祖先元素 filter）绕过失败；详见 `script-fixer-agent` 的「断言修复红线」章节。预期文本必须严格对齐 Archive MD `expected` 列原文。
+
 派发给 script-fixer-agent 的精简信息：
 
 ```json
@@ -97,9 +99,13 @@ if (failedCount >= convergenceThreshold &&
   "stderr_last_20_lines": "...",
   "attempt": 1,
   "url": "{{url}}",
-  "repos_dir": "workspace/{{project}}/.repos/"
+  "repos_dir": "workspace/{{project}}/.repos/",
+  "strict_assertion": true,
+  "original_steps": [ /* 该用例的 Archive MD 步骤+预期原文数组 */ ]
 }
 ```
+
+> `original_steps` 必填：fixer 判断断言失败是 Bug 还是定位错误时，需要原始 `expected` 文本做对照。`strict_assertion` 恒为 `true`，fixer 不得放宽断言。
 
 Sub-Agent 返回 `FIXED` → 更新进度 `test_status = "passed"`；返回 `STILL_FAILING` → 更新 `test_status = "failed"` 并通过 `--error` 追加到 `error_history`，`attempts < 3` 则再派发一轮，否则标记放弃。
 
@@ -110,7 +116,7 @@ Sub-Agent 在修复过程中若发现 MD 用例描述与实际系统行为不一
 - `frontend`：前端 DOM 变化（页面结构、字段名、按钮文本、流程步骤、选项值等）
 - `logic`：需求逻辑变更（业务规则、预期结果等）
 
-主 agent 收集所有 corrections 后，按 `reason_type` 分两类处理：
+主 agent 收集所有 corrections 后，按 `reason_type` 分三类处理：
 
 **前端类（自动写回）**
 
@@ -139,6 +145,26 @@ Sub-Agent 在修复过程中若发现 MD 用例描述与实际系统行为不一
 1. 不更新（默认）
 2. 更新
 ```
+
+**potential_bug 类（不写回，上报用户）**
+
+Archive MD 不变，脚本断言保持原用例预期文本，该用例标记为失败。主 agent 在失败汇总中突出列出，附带 fixer 收集的 DOM 证据：
+
+```
+以下用例断言失败，脚本已按用例原文严格断言，页面实际表现与预期不符 — 可能是业务 Bug：
+
+{{#each potential_bug_corrections}}
+- {{case_title}}
+  步骤 {{step_no}}：{{field}}
+  用例预期：{{current}}
+  实际页面：{{proposed}}
+  证据：{{evidence}}
+{{/each}}
+
+建议手工复现确认；确为 Bug 可直接用 /bug-report 生成报告。
+```
+
+这些用例**不进入**合并脚本，在步骤 8 的失败分类中归为「业务缺陷疑似」。
 
 **5.4 3 次重试仍失败的处理**
 
