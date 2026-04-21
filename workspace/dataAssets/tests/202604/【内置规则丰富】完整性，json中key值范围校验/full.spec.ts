@@ -1,0 +1,15 @@
+// 全量测试（P0+P1+P2）
+import "./t1";
+import "./t2";
+import "./t3";
+import "./t4";
+import "./t5";
+import "./t6";
+import "./t7";
+import "./t8";
+import "./t9";
+import "./t10";
+import "./t11";
+import "./t12";
+import "./t13";
+import "./t14";

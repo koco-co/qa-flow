@@ -3,11 +3,11 @@ import { expect, test } from "../../fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,
-  clearAllRules,
   configureRangeEnumRule,
   getRulePackage,
   getRuleSetListRow,
   gotoRuleSetList,
+  keepOnlyRulePackages,
   openRuleSetEditor,
   saveRuleSet,
   selectRuleFieldAndFunction,
@@ -49,7 +49,7 @@ for (const datasource of ACTIVE_DATASOURCES) {
           await expect(
             page.locator(".ruleSetMonitor__package").filter({ hasText: "仅取值范围包" }).first(),
           ).toBeVisible({ timeout: 10000 });
-          await clearAllRules(page);
+          await keepOnlyRulePackages(page, ["仅取值范围包"]);
 
           const ruleForm = await addRuleToPackage(page, "仅取值范围包");
           const functionRow = await selectRuleFieldAndFunction(page, ruleForm, "score", "取值范围");

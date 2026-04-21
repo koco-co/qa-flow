@@ -3,10 +3,10 @@ import { expect, test } from "../../fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,
-  clearAllRules,
   configureRangeEnumRule,
   getRuleSetListRow,
   gotoRuleSetList,
+  keepOnlyRulePackages,
   openRuleSetEditor,
   saveRuleSet,
 } from "./rule-editor-helpers";
@@ -47,7 +47,7 @@ for (const datasource of ACTIVE_DATASOURCES) {
           await expect(
             page.locator(".ruleSetMonitor__package").filter({ hasText: "或关系校验包" }).first(),
           ).toBeVisible({ timeout: 10000 });
-          await clearAllRules(page);
+          await keepOnlyRulePackages(page, ["或关系校验包"]);
 
           const ruleForm = await addRuleToPackage(page, "或关系校验包");
           await configureRangeEnumRule(page, ruleForm, {

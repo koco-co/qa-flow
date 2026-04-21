@@ -1561,6 +1561,9 @@ async function ensureMonitorRulesStep(page: Page, requiredPackageNames: string[]
 
   await gotoMonitorRulesStep(page);
   await ensureRuleSetPackagesVisible(page, requiredPackageNames);
+  if (requiredPackageNames.length === 1) {
+    await keepOnlyRulePackages(page, requiredPackageNames);
+  }
 }
 
 export async function getRulePackage(page: Page, packageName: string): Promise<Locator> {
@@ -1641,6 +1644,56 @@ export async function clearAllRules(page: Page): Promise<void> {
   }
 
   throw new Error("Failed to clear existing rules from rule set editor.");
+}
+
+export async function keepOnlyRulePackages(
+  page: Page,
+  packageNamesToKeep: string[],
+): Promise<void> {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const packageSections = page.locator(".ruleSetMonitor__package");
+    const count = await packageSections.count().catch(() => 0);
+    let removedPackage = false;
+
+    for (let index = count - 1; index >= 0; index -= 1) {
+      const packageSection = packageSections.nth(index);
+      if (!(await packageSection.isVisible().catch(() => false))) {
+        continue;
+      }
+
+      const packageName = (
+        await packageSection
+          .locator(".ruleSetMonitor__packageSelect .ant-select-selection-item")
+          .first()
+          .textContent()
+          .catch(() => "")
+      ).trim();
+      if (packageNamesToKeep.includes(packageName)) {
+        continue;
+      }
+
+      const deleteBtn = packageSection.locator(".ruleSetMonitor__packageDeleteBtn").first();
+      if (!(await deleteBtn.isVisible().catch(() => false))) {
+        continue;
+      }
+
+      await deleteBtn.click();
+      await confirmAntModal(page);
+      await page.waitForTimeout(300);
+      removedPackage = true;
+      break;
+    }
+
+    if (!removedPackage) {
+      break;
+    }
+  }
+
+  for (const packageName of packageNamesToKeep) {
+    await expect(
+      page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first(),
+    ).toBeVisible({ timeout: 10000 });
+  }
 }
 
 export async function getRuleForm(page: Page, text: string | RegExp): Promise<Locator> {

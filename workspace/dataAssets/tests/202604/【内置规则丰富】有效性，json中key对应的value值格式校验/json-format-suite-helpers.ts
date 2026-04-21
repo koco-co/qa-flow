@@ -1,0 +1,412 @@
+import { expect, type Locator, type Page } from "@playwright/test";
+import { normalizeDataAssetsBaseUrl, selectAntOption } from "../../helpers/test-setup";
+import {
+  JSON_KEY_PRESETS,
+  getCurrentDatasource,
+  getJsonValidationDataSourceType,
+  runSuitePreconditions,
+  type JsonRuleScenario,
+} from "./test-data";
+import {
+  addRuleToPackage,
+  createRuleSetDraft,
+  deleteRuleSetsByTableNames,
+  getRulePackage,
+  getSelectOptions,
+  gotoRuleBase,
+  gotoRuleSetList,
+  keepOnlyRulePackages,
+  openRuleSetEditor,
+  saveRuleSet,
+  selectRuleFieldAndFunction,
+} from "./rule-editor-base";
+import { resolveEffectiveQualityProjectId } from "./test-data";
+
+const preparedPresets = new Set<string>();
+const preparedRuleSets = new Set<string>();
+
+export type JsonTreeNode = {
+  id: number | string;
+  jsonKey: string;
+  fullPath?: string;
+  level?: number;
+  name?: string;
+  value?: string;
+  dataSourceType?: number;
+  children?: JsonTreeNode[];
+};
+
+type JsonConfigPayload = {
+  id?: number | string;
+  jsonKey: string;
+  name?: string;
+  value?: string;
+  dataSourceType: number;
+  parentId: number | string;
+  level: number;
+  fullPath: string;
+};
+
+function buildApiUrl(path: string): string {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return new URL(normalizedPath, new URL(normalizeDataAssetsBaseUrl()).origin).toString();
+}
+
+function buildFullPath(pathSegments: readonly string[]): string {
+  return pathSegments.map((segment) => `['${segment}']`).join("");
+}
+
+export function buildKeyPath(pathSegments: readonly string[]): string {
+  return pathSegments.join("-");
+}
+
+async function postValidApi<T>(page: Page, path: string, body: unknown): Promise<T> {
+  const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
+  return page
+    .evaluate(
+      async ({ url, requestBody, projectId }) => {
+        const response = await fetch(url, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json;charset=UTF-8",
+            "Accept-Language": "zh-CN",
+            "X-Valid-Project-ID": String(projectId),
+          },
+          body: JSON.stringify(requestBody),
+        });
+        return {
+          ok: response.ok,
+          status: response.status,
+          text: await response.text(),
+        };
+      },
+      {
+        url: buildApiUrl(path),
+        requestBody: body,
+        projectId: effectiveProjectId,
+      },
+    )
+    .then((payload) => {
+      if (!payload.ok) {
+        throw new Error(`HTTP ${payload.status} from ${path}: ${payload.text.slice(0, 200)}`);
+      }
+      return JSON.parse(payload.text) as T;
+    });
+}
+
+async function getJsonTree(page: Page): Promise<JsonTreeNode[]> {
+  const response = await postValidApi<{ success?: boolean; data?: JsonTreeNode[] }>(
+    page,
+    "/dassets/v1/valid/jsonValidationConfig/getTree",
+    {},
+  );
+  if (!response.success) {
+    throw new Error("获取 json 格式校验树失败");
+  }
+  return response.data ?? [];
+}
+
+function findJsonNodeByPath(tree: JsonTreeNode[], path: readonly string[]): JsonTreeNode | null {
+  let levelNodes = tree;
+  let matched: JsonTreeNode | null = null;
+  for (const segment of path) {
+    matched = levelNodes.find((node) => node.jsonKey === segment) ?? null;
+    if (!matched) {
+      return null;
+    }
+    levelNodes = matched.children ?? [];
+  }
+  return matched;
+}
+
+async function addOrUpdateJsonNode(
+  page: Page,
+  existingNode: JsonTreeNode | null,
+  payload: JsonConfigPayload,
+): Promise<void> {
+  if (!existingNode) {
+    const response = await postValidApi<{ success?: boolean; data?: unknown; message?: string }>(
+      page,
+      "/dassets/v1/valid/jsonValidationConfig/add",
+      payload,
+    );
+    if (!response.success) {
+      throw new Error(`新增 json key 失败: ${response.message ?? payload.jsonKey}`);
+    }
+    return;
+  }
+
+  const shouldUpdate =
+    (payload.name ?? "") !== (existingNode.name ?? "") ||
+    (payload.value ?? "") !== (existingNode.value ?? "") ||
+    payload.dataSourceType !== Number(existingNode.dataSourceType ?? payload.dataSourceType);
+
+  if (!shouldUpdate) {
+    return;
+  }
+
+  const response = await postValidApi<{ success?: boolean; data?: unknown; message?: string }>(
+    page,
+    "/dassets/v1/valid/jsonValidationConfig/update",
+    {
+      id: existingNode.id,
+      jsonKey: payload.jsonKey,
+      name: payload.name,
+      value: payload.value,
+      dataSourceType: payload.dataSourceType,
+      ...(payload.parentId === 0 ? { parentId: 0 } : {}),
+    },
+  );
+  if (!response.success) {
+    throw new Error(`更新 json key 失败: ${response.message ?? payload.jsonKey}`);
+  }
+}
+
+export async function ensureJsonKeyPreset(
+  page: Page,
+  presetName: keyof typeof JSON_KEY_PRESETS,
+): Promise<void> {
+  const datasource = getCurrentDatasource();
+  const cacheKey = `${datasource.cacheKey}:${presetName}`;
+  if (preparedPresets.has(cacheKey)) {
+    return;
+  }
+
+  await runSuitePreconditions(page, datasource);
+  const dataSourceType = getJsonValidationDataSourceType(datasource);
+
+  for (const seed of JSON_KEY_PRESETS[presetName]) {
+    let tree = await getJsonTree(page);
+    for (let level = 0; level < seed.path.length; level += 1) {
+      const currentPath = seed.path.slice(0, level + 1);
+      const existingNode = findJsonNodeByPath(tree, currentPath);
+      const parentNode = level === 0 ? null : findJsonNodeByPath(tree, currentPath.slice(0, -1));
+      const isLeaf = level === seed.path.length - 1;
+      const payload: JsonConfigPayload = {
+        jsonKey: currentPath[currentPath.length - 1],
+        name: isLeaf ? seed.name : existingNode?.name,
+        value: isLeaf ? seed.value : existingNode?.value,
+        dataSourceType,
+        parentId: parentNode?.id ?? 0,
+        level: level + 1,
+        fullPath: buildFullPath(currentPath),
+      };
+      await addOrUpdateJsonNode(page, existingNode, payload);
+      tree = await getJsonTree(page);
+    }
+  }
+
+  preparedPresets.add(cacheKey);
+}
+
+export async function prepareJsonRuleSetDraft(
+  page: Page,
+  tableName: string,
+  packageName: string,
+  presetNames: readonly (keyof typeof JSON_KEY_PRESETS)[] = [],
+): Promise<void> {
+  await runSuitePreconditions(page);
+  for (const presetName of presetNames) {
+    await ensureJsonKeyPreset(page, presetName);
+  }
+  await gotoRuleSetList(page);
+  await deleteRuleSetsByTableNames(page, [tableName]);
+  await createRuleSetDraft(page, tableName, [packageName]);
+  await keepOnlyRulePackages(page, [packageName]);
+}
+
+function getKeySelect(ruleForm: Locator): Locator {
+  return ruleForm.locator(".rule__function-list__item").first().locator(".ant-select").nth(1);
+}
+
+async function getKeyDropdown(page: Page): Promise<Locator> {
+  const dropdown = page.locator(".ant-select-dropdown:visible, .ant-select-tree-dropdown:visible").last();
+  await expect(dropdown).toBeVisible({ timeout: 10000 });
+  return dropdown;
+}
+
+async function getTreeNodeByPath(dropdown: Locator, pathSegments: readonly string[]): Promise<Locator> {
+  let scope = dropdown;
+  let node = dropdown.locator(".ant-select-tree-treenode").first();
+  for (let index = 0; index < pathSegments.length; index += 1) {
+    const segment = pathSegments[index];
+    node = scope.locator(
+      `xpath=.//span[contains(@class,'ant-select-tree-title') and normalize-space(.)="${segment}"]/ancestor::li[contains(@class,'ant-select-tree-treenode')][1]`,
+    ).first();
+    await expect(node).toBeVisible({ timeout: 10000 });
+    if (index < pathSegments.length - 1) {
+      const switcher = node.locator(".ant-select-tree-switcher_close").first();
+      if (await switcher.isVisible().catch(() => false)) {
+        await switcher.click();
+        await node.page().waitForTimeout(200);
+      }
+      scope = node;
+    }
+  }
+  return node;
+}
+
+export async function openValidationKeyDropdown(page: Page, ruleForm: Locator): Promise<Locator> {
+  const keySelect = getKeySelect(ruleForm);
+  await keySelect.locator(".ant-select-selector, .ant-select-selection-overflow").first().click();
+  return getKeyDropdown(page);
+}
+
+export async function searchValidationKey(page: Page, keyword: string): Promise<Locator> {
+  const dropdown = await getKeyDropdown(page);
+  const searchInput = dropdown.locator("input").last();
+  await expect(searchInput).toBeVisible({ timeout: 5000 });
+  await searchInput.fill(keyword);
+  await page.waitForTimeout(400);
+  return dropdown;
+}
+
+export async function selectValidationKeyPaths(
+  page: Page,
+  ruleForm: Locator,
+  keyPaths: readonly string[],
+): Promise<void> {
+  const dropdown = await openValidationKeyDropdown(page, ruleForm);
+  for (const keyPath of keyPaths) {
+    const node = await getTreeNodeByPath(dropdown, keyPath.split("-"));
+    const checkbox = node.locator(".ant-select-tree-checkbox").first();
+    await checkbox.click();
+    await page.waitForTimeout(200);
+  }
+  await page.keyboard.press("Escape").catch(() => undefined);
+  await page.waitForTimeout(200);
+}
+
+export async function getValidationKeyState(
+  page: Page,
+  path: string,
+): Promise<{ checked: boolean; disabled: boolean }> {
+  const dropdown = await getKeyDropdown(page);
+  const node = await getTreeNodeByPath(dropdown, path.split("-"));
+  const checkbox = node.locator(".ant-select-tree-checkbox").first();
+  const className = (await checkbox.getAttribute("class")) ?? "";
+  return {
+    checked: /checked/.test(className),
+    disabled: /disabled/.test(className),
+  };
+}
+
+export async function getValidationKeyLabels(page: Page): Promise<string[]> {
+  const dropdown = await getKeyDropdown(page);
+  return dropdown
+    .locator(".ant-select-tree-title")
+    .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim() ?? "").filter(Boolean));
+}
+
+export async function getSelectedValidationKeyTexts(ruleForm: Locator): Promise<string[]> {
+  return ruleForm
+    .locator(".rule__function-list__item")
+    .first()
+    .locator(".ant-tag, .ant-select-selection-item")
+    .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim() ?? "").filter(Boolean));
+}
+
+export async function openValueFormatPreview(page: Page, ruleForm: Locator): Promise<Locator> {
+  await ruleForm.getByRole("button", { name: "value格式预览" }).click();
+  const modal = page.locator(".ant-modal:visible").last();
+  await expect(modal).toBeVisible({ timeout: 10000 });
+  return modal;
+}
+
+export async function hoverJsonFormatHelpIcon(page: Page, ruleForm: Locator): Promise<Locator> {
+  const icon = ruleForm
+    .locator(".rule__function-list__item")
+    .first()
+    .locator(".anticon-question-circle")
+    .last();
+  await expect(icon).toBeVisible({ timeout: 5000 });
+  await icon.hover();
+  const tooltip = page.locator(".ant-tooltip:visible, .ant-popover:visible").last();
+  await expect(tooltip).toBeVisible({ timeout: 10000 });
+  return tooltip;
+}
+
+export async function addJsonFormatRule(
+  page: Page,
+  packageName: string,
+  options: {
+    field: string;
+    selectedKeyPaths?: readonly string[];
+    ruleStrength?: "强规则" | "弱规则";
+  },
+): Promise<Locator> {
+  const ruleForm = await addRuleToPackage(page, packageName, "有效性校验");
+  await selectRuleFieldAndFunction(page, ruleForm, options.field, "格式-json格式校验");
+  await page.waitForTimeout(500);
+
+  if (options.selectedKeyPaths?.length) {
+    await selectValidationKeyPaths(page, ruleForm, options.selectedKeyPaths);
+  }
+
+  if (options.ruleStrength) {
+    const strengthSelect = ruleForm
+      .locator(".ant-form-item")
+      .filter({ hasText: /强弱规则/ })
+      .locator(".ant-select")
+      .first();
+    await selectAntOption(page, strengthSelect, options.ruleStrength);
+  }
+
+  return ruleForm;
+}
+
+export async function ensureSavedScenarioRuleSet(page: Page, scenario: JsonRuleScenario): Promise<void> {
+  const cacheKey = `${getCurrentDatasource().cacheKey}:${scenario.tableName}:${scenario.packageName}`;
+  if (preparedRuleSets.has(cacheKey)) {
+    return;
+  }
+
+  await prepareJsonRuleSetDraft(page, scenario.tableName, scenario.packageName, scenario.keyPresets);
+  await addJsonFormatRule(page, scenario.packageName, {
+    field: scenario.field,
+    selectedKeyPaths: scenario.selectedKeyPaths,
+    ruleStrength: scenario.ruleStrength,
+  });
+  await saveRuleSet(page);
+  preparedRuleSets.add(cacheKey);
+}
+
+export async function openScenarioRuleSetPackage(page: Page, scenario: JsonRuleScenario): Promise<Locator> {
+  await gotoRuleSetList(page);
+  await openRuleSetEditor(page, scenario.tableName, [scenario.packageName]);
+  return getRulePackage(page, scenario.packageName);
+}
+
+export async function getStatisticsOptionsForField(
+  page: Page,
+  ruleForm: Locator,
+  field: string,
+): Promise<string[]> {
+  await selectRuleFieldAndFunction(page, ruleForm, field, "非空值数");
+  const functionSelect = ruleForm
+    .locator(".rule__function-list__item")
+    .first()
+    .locator(".ant-select")
+    .first();
+  return getSelectOptions(page, functionSelect);
+}
+
+export async function gotoRuleBaseAndSearch(page: Page, keyword: string): Promise<void> {
+  await gotoRuleBase(page);
+  const searchBox = page.getByPlaceholder("请输入规则名称进行搜索");
+  await searchBox.fill(keyword);
+  await page.getByRole("button", { name: "search" }).click();
+  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => undefined);
+  await page.waitForTimeout(500);
+}
+
+export async function gotoRuleSetEditorByTable(
+  page: Page,
+  tableName: string,
+  packageName: string,
+): Promise<Locator> {
+  await gotoRuleSetList(page);
+  await openRuleSetEditor(page, tableName, [packageName]);
+  return getRulePackage(page, packageName);
+}
