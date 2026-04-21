@@ -62,7 +62,9 @@ const RULESET_ROW_FALLBACKS: Record<string, string> = {
 
 const compatibleDorisRoutingPages = new WeakSet<Page>();
 const RETRYABLE_HTTP_STATUS = new Set([502, 503, 504]);
-let cachedCompatibleMonitorDatasourcePayload: { data?: MonitorDatasourceItem[] } | null = null;
+let cachedCompatibleMonitorDatasourcePayload: {
+  data?: MonitorDatasourceItem[];
+} | null = null;
 
 type MonitorDatasourceItem = {
   id?: string;
@@ -74,7 +76,9 @@ type MonitorDatasourceItem = {
   type?: number;
 };
 
-function patchCompatibleDorisSource<T extends MonitorDatasourceItem>(item: T): T {
+function patchCompatibleDorisSource<T extends MonitorDatasourceItem>(
+  item: T,
+): T {
   const datasource = getCurrentDatasource();
   if (datasource.preconditionType !== "Doris") {
     return item;
@@ -164,12 +168,12 @@ async function prewarmMonitorDatasourceCache(page: Page): Promise<void> {
     new URL("/dassets/v1/dataSource/monitor/list", baseUrl).toString(),
   ];
   for (const monitorUrl of monitorListUrls) {
-    const monitorResponse = await postProjectApi<{ data?: MonitorDatasourceItem[] }>(
-      page,
-      monitorUrl,
-      {},
-    ).catch(() => null);
-    const monitorItems = Array.isArray(monitorResponse?.data) ? monitorResponse!.data! : [];
+    const monitorResponse = await postProjectApi<{
+      data?: MonitorDatasourceItem[];
+    }>(page, monitorUrl, {}).catch(() => null);
+    const monitorItems = Array.isArray(monitorResponse?.data)
+      ? monitorResponse!.data!
+      : [];
     if (monitorItems.length > 0) {
       // For Doris: validate that at least one item has the required schema.
       // If none do, we don't cache this result and instead look via pageQuery for the correct datasource.
@@ -180,14 +184,20 @@ async function prewarmMonitorDatasourceCache(page: Page): Promise<void> {
           (item) =>
             datasource.optionPattern.test(
               `${String(item.dataSourceName ?? "")} ${String(item.dtCenterSourceName ?? "")}`,
-            ) || datasource.sourceTypePattern.test(String(item.sourceTypeValue ?? "")),
+            ) ||
+            datasource.sourceTypePattern.test(
+              String(item.sourceTypeValue ?? ""),
+            ),
         );
-        const candidateItems = matchingItems.length > 0 ? matchingItems : monitorItems;
+        const candidateItems =
+          matchingItems.length > 0 ? matchingItems : monitorItems;
         let schemaValidItem: MonitorDatasourceItem | undefined;
         for (const item of candidateItems) {
           if (!item.id) continue;
           const hasSchema = await getDatasourceSchemas(page, item.id)
-            .then((schemas) => schemas.some((s) => schemaCandidates.includes(s)))
+            .then((schemas) =>
+              schemas.some((s) => schemaCandidates.includes(s)),
+            )
             .catch(() => false);
           if (hasSchema) {
             schemaValidItem = item;
@@ -223,14 +233,20 @@ async function prewarmMonitorDatasourceCache(page: Page): Promise<void> {
   }
 
   // monitor/list returned empty or no schema-valid item — try pageQuery fallback
-  const pageQueryUrl = new URL("/dassets/v1/dataSource/pageQuery", baseUrl).toString();
+  const pageQueryUrl = new URL(
+    "/dassets/v1/dataSource/pageQuery",
+    baseUrl,
+  ).toString();
   const pageQueryResponse = await postProjectApi<{
     data?: { contentList?: MonitorDatasourceItem[] };
-  }>(page, pageQueryUrl, { current: 1, size: 200, search: "" }).catch(() => null);
-  const matchingItems = (pageQueryResponse?.data?.contentList ?? []).filter((item) =>
-    datasource.optionPattern.test(
-      `${String(item.dataSourceName ?? "")} ${String(item.dtCenterSourceName ?? "")}`,
-    ),
+  }>(page, pageQueryUrl, { current: 1, size: 200, search: "" }).catch(
+    () => null,
+  );
+  const matchingItems = (pageQueryResponse?.data?.contentList ?? []).filter(
+    (item) =>
+      datasource.optionPattern.test(
+        `${String(item.dataSourceName ?? "")} ${String(item.dtCenterSourceName ?? "")}`,
+      ),
   );
 
   let fallbackItem: MonitorDatasourceItem | undefined;
@@ -276,7 +292,9 @@ async function prewarmMonitorDatasourceCache(page: Page): Promise<void> {
   );
 }
 
-export async function enableCompatibleMonitorDatasourceRouting(page: Page): Promise<void> {
+export async function enableCompatibleMonitorDatasourceRouting(
+  page: Page,
+): Promise<void> {
   if (compatibleDorisRoutingPages.has(page)) {
     return;
   }
@@ -286,7 +304,9 @@ export async function enableCompatibleMonitorDatasourceRouting(page: Page): Prom
   // trigger slow API calls inside the handler, blocking page rendering for many minutes.
   await prewarmMonitorDatasourceCache(page);
 
-  const handleCompatibleMonitorDatasourceRoute = async (route: import("@playwright/test").Route) => {
+  const handleCompatibleMonitorDatasourceRoute = async (
+    route: import("@playwright/test").Route,
+  ) => {
     // Always take fast path — cache is guaranteed to be populated by prewarmMonitorDatasourceCache.
     if (cachedCompatibleMonitorDatasourcePayload) {
       const payload = cachedCompatibleMonitorDatasourcePayload;
@@ -307,13 +327,23 @@ export async function enableCompatibleMonitorDatasourceRouting(page: Page): Prom
     await route.continue();
   };
 
-  await page.route("**/dmetadata/v1/dataSource/monitor/list", handleCompatibleMonitorDatasourceRoute);
-  await page.route("**/dassets/v1/dataSource/monitor/list", handleCompatibleMonitorDatasourceRoute);
+  await page.route(
+    "**/dmetadata/v1/dataSource/monitor/list",
+    handleCompatibleMonitorDatasourceRoute,
+  );
+  await page.route(
+    "**/dassets/v1/dataSource/monitor/list",
+    handleCompatibleMonitorDatasourceRoute,
+  );
 
   compatibleDorisRoutingPages.add(page);
 }
 
-async function postProjectApi<T>(page: Page, path: string, body: unknown): Promise<T> {
+async function postProjectApi<T>(
+  page: Page,
+  path: string,
+  body: unknown,
+): Promise<T> {
   const requestUrl = /^https?:\/\//.test(path)
     ? path
     : new URL(path, normalizeDataAssetsBaseUrl()).toString();
@@ -337,14 +367,17 @@ type DatasourceItem = {
  * The API returns string[] directly in data field.
  * Returns an empty array on error.
  */
-async function getDatasourceSchemas(page: Page, datasourceId: string | number): Promise<string[]> {
+async function getDatasourceSchemas(
+  page: Page,
+  datasourceId: string | number,
+): Promise<string[]> {
   try {
     // The getAllSchema API returns data as string[] (schema names directly)
-    const result = await postProjectApi<{ data?: string[] | Array<{ name?: string; schemaName?: string }> }>(
-      page,
-      "/dassets/v1/dataSource/getAllSchema",
-      { sourceId: Number(datasourceId) },
-    );
+    const result = await postProjectApi<{
+      data?: string[] | Array<{ name?: string; schemaName?: string }>;
+    }>(page, "/dassets/v1/dataSource/getAllSchema", {
+      sourceId: Number(datasourceId),
+    });
     const data = result.data ?? [];
     if (data.length === 0) return [];
     // Handle both string[] and object[] responses
@@ -377,7 +410,9 @@ type DatasourceTableItem = {
   view?: string;
 };
 
-function matchesCurrentDatasource(item: MonitorDatasourceItem | DatasourceItem): boolean {
+function matchesCurrentDatasource(
+  item: MonitorDatasourceItem | DatasourceItem,
+): boolean {
   const datasource = getCurrentDatasource();
   return (
     datasource.optionPattern.test(
@@ -386,9 +421,13 @@ function matchesCurrentDatasource(item: MonitorDatasourceItem | DatasourceItem):
   );
 }
 
-async function getCurrentMonitorDatasource(page: Page): Promise<MonitorDatasourceItem | undefined> {
+async function getCurrentMonitorDatasource(
+  page: Page,
+): Promise<MonitorDatasourceItem | undefined> {
   const cachedItems = cachedCompatibleMonitorDatasourcePayload?.data ?? [];
-  const cachedMatch = cachedItems.find((item) => item?.id && matchesCurrentDatasource(item));
+  const cachedMatch = cachedItems.find(
+    (item) => item?.id && matchesCurrentDatasource(item),
+  );
   if (cachedMatch?.id) {
     return cachedMatch;
   }
@@ -399,7 +438,9 @@ async function getCurrentMonitorDatasource(page: Page): Promise<MonitorDatasourc
     {},
   ).catch(() => null);
 
-  return (response?.data ?? []).find((item) => item?.id && matchesCurrentDatasource(item));
+  return (response?.data ?? []).find(
+    (item) => item?.id && matchesCurrentDatasource(item),
+  );
 }
 
 async function getDatasourceTables(
@@ -418,7 +459,9 @@ async function getDatasourceTables(
     },
   );
 
-  return (result.data ?? []).map((item) => item.tableName ?? "").filter(Boolean);
+  return (result.data ?? [])
+    .map((item) => item.tableName ?? "")
+    .filter(Boolean);
 }
 
 async function resolveSchemaForTable(
@@ -433,15 +476,22 @@ async function resolveSchemaForTable(
   );
 
   for (const schemaName of orderedSchemas) {
-    const tableNames = await getDatasourceTables(page, datasourceId, schemaName, tableName).catch(
-      () => [],
-    );
+    const tableNames = await getDatasourceTables(
+      page,
+      datasourceId,
+      schemaName,
+      tableName,
+    ).catch(() => []);
     if (tableNames.includes(tableName)) {
       return schemaName;
     }
   }
 
-  return preferredSchemas.find((schemaName) => allSchemas.includes(schemaName)) ?? orderedSchemas[0] ?? null;
+  return (
+    preferredSchemas.find((schemaName) => allSchemas.includes(schemaName)) ??
+    orderedSchemas[0] ??
+    null
+  );
 }
 
 async function ensureMonitorDatasource(page: Page): Promise<boolean> {
@@ -470,7 +520,9 @@ async function ensureMonitorDatasource(page: Page): Promise<boolean> {
     existingMonitorDatasource = await findMonitorDatasource();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (!/(HTTP (502|503|504)\b|Timeout \d+ms exceeded|ETIMEDOUT)/.test(message)) {
+    if (
+      !/(HTTP (502|503|504)\b|Timeout \d+ms exceeded|ETIMEDOUT)/.test(message)
+    ) {
       throw error;
     }
     process.stderr.write(
@@ -512,15 +564,18 @@ async function ensureMonitorDatasource(page: Page): Promise<boolean> {
 
   // For Doris: prefer the datasource that has the required schema over a random matching one.
   const matchingDatasources = (allDatasources.data?.contentList ?? []).filter(
-    (item) =>
-      matchesCurrentDatasource(item),
+    (item) => matchesCurrentDatasource(item),
   );
 
   let projectDatasource: DatasourceItem | undefined;
   if (shouldValidateSchema) {
     for (const candidate of matchingDatasources) {
       if (!candidate.id) continue;
-      const hasSchema = await datasourceHasCandidateSchema(page, candidate.id, schemaCandidates);
+      const hasSchema = await datasourceHasCandidateSchema(
+        page,
+        candidate.id,
+        schemaCandidates,
+      );
       if (hasSchema) {
         projectDatasource = candidate;
         process.stderr.write(
@@ -548,22 +603,26 @@ async function ensureMonitorDatasource(page: Page): Promise<boolean> {
     );
   }
 
-  const effectiveProjectIdForAuth = await resolveEffectiveQualityProjectId(page);
-  const authResponse = await postProjectApi<{ success?: boolean; message?: string }>(
-    page,
-    "/dmetadata/v1/dataSource/authDataSourceToProject",
-    {
-      dataSourceId: Number(projectDatasource.id),
-      projectList: [effectiveProjectIdForAuth],
-    },
-  );
+  const effectiveProjectIdForAuth =
+    await resolveEffectiveQualityProjectId(page);
+  const authResponse = await postProjectApi<{
+    success?: boolean;
+    message?: string;
+  }>(page, "/dmetadata/v1/dataSource/authDataSourceToProject", {
+    dataSourceId: Number(projectDatasource.id),
+    projectList: [effectiveProjectIdForAuth],
+  });
   let alreadyAuthorized = false;
   if (!authResponse.success) {
     const errMsg = authResponse.message ?? "";
     // "被规则所依赖，不能取消引入" means the datasource is already imported and rules depend on it.
     // This happens when the auth API is called on an already-authorized datasource (toggle behavior).
     // Treat this as "already authorized" and skip the monitor list poll.
-    if (/被规则所依赖|不能取消引入|already imported|already authorized/.test(errMsg)) {
+    if (
+      /被规则所依赖|不能取消引入|already imported|already authorized/.test(
+        errMsg,
+      )
+    ) {
       process.stderr.write(
         `[ruleset] auth API returned "${errMsg}", treating as already authorized — skipping reload.\n`,
       );
@@ -573,7 +632,8 @@ async function ensureMonitorDatasource(page: Page): Promise<boolean> {
       return false;
     } else {
       throw new Error(
-        errMsg || `Authorize ${datasource.reportName} datasource to project failed.`,
+        errMsg ||
+          `Authorize ${datasource.reportName} datasource to project failed.`,
       );
     }
   }
@@ -585,8 +645,13 @@ async function ensureMonitorDatasource(page: Page): Promise<boolean> {
           try {
             return Boolean(await findMonitorDatasource());
           } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            if (/(HTTP (502|503|504)\b|Timeout \d+ms exceeded|ETIMEDOUT)/.test(message)) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            if (
+              /(HTTP (502|503|504)\b|Timeout \d+ms exceeded|ETIMEDOUT)/.test(
+                message,
+              )
+            ) {
               return true;
             }
             throw error;
@@ -733,7 +798,11 @@ export function getRuleSetListRow(page: Page, rulesetName: string): Locator {
     .first();
 }
 
-async function postRuleSetApi<T>(page: Page, path: string, body: unknown): Promise<T> {
+async function postRuleSetApi<T>(
+  page: Page,
+  path: string,
+  body: unknown,
+): Promise<T> {
   let lastError: Error | null = null;
   const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
   for (let attempt = 1; attempt <= 4; attempt += 1) {
@@ -789,7 +858,10 @@ async function postRuleSetApi<T>(page: Page, path: string, body: unknown): Promi
   throw lastError ?? new Error(`Request failed: ${path}`);
 }
 
-export async function deleteRuleSetsByTableNames(page: Page, tableNames: string[]): Promise<void> {
+export async function deleteRuleSetsByTableNames(
+  page: Page,
+  tableNames: string[],
+): Promise<void> {
   if (isOfflineMode()) {
     await deleteOfflineRuleSetsByTableNames(page, tableNames);
     return;
@@ -798,7 +870,9 @@ export async function deleteRuleSetsByTableNames(page: Page, tableNames: string[
 
   for (let current = 1; current <= 20; current += 1) {
     const listResponse = (await postRuleSetApi<{
-      data?: { contentList?: Array<{ id?: number | string; tableName?: string }> };
+      data?: {
+        contentList?: Array<{ id?: number | string; tableName?: string }>;
+      };
     }>(page, "/dassets/v1/valid/monitorRuleSet/pageQuery", {
       current,
       size: 50,
@@ -806,7 +880,11 @@ export async function deleteRuleSetsByTableNames(page: Page, tableNames: string[
     })) ?? { data: { contentList: [] } };
 
     const pageRows = listResponse.data?.contentList ?? [];
-    rows.push(...pageRows.filter((item) => tableNames.includes(String(item.tableName ?? ""))));
+    rows.push(
+      ...pageRows.filter((item) =>
+        tableNames.includes(String(item.tableName ?? "")),
+      ),
+    );
     if (pageRows.length < 50) {
       break;
     }
@@ -831,22 +909,38 @@ export async function gotoRuleSetList(page: Page): Promise<void> {
   const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
   const targetUrl = buildDataAssetsUrl("/dq/ruleSet", effectiveProjectId);
   for (let attempt = 1; attempt <= 4; attempt += 1) {
-    await page.goto(targetUrl, { waitUntil: "domcontentloaded" }).catch(() => undefined);
-    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page
+      .goto(targetUrl, { waitUntil: "domcontentloaded" })
+      .catch(() => undefined);
+    await page
+      .locator("body")
+      .waitFor({ state: "visible", timeout: 15000 })
+      .catch(() => undefined);
     await page.waitForTimeout(500);
     await injectProjectContext(page, effectiveProjectId);
     await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);
-    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page
+      .locator("body")
+      .waitFor({ state: "visible", timeout: 15000 })
+      .catch(() => undefined);
     await page.waitForTimeout(1000);
 
-    const pageText = await page.locator("body").innerText().catch(() => "");
-    if (!page.url().startsWith("chrome-error://") && !/HTTP ERROR 502|Bad Gateway/i.test(pageText)) {
+    const pageText = await page
+      .locator("body")
+      .innerText()
+      .catch(() => "");
+    if (
+      !page.url().startsWith("chrome-error://") &&
+      !/HTTP ERROR 502|Bad Gateway/i.test(pageText)
+    ) {
       await dismissIntroDialog(page);
       return;
     }
 
     if (attempt === 4) {
-      throw new Error(`Rule set list page is unavailable: ${pageText.slice(0, 200)}`);
+      throw new Error(
+        `Rule set list page is unavailable: ${pageText.slice(0, 200)}`,
+      );
     }
     await page.waitForTimeout(2000 * attempt);
   }
@@ -870,22 +964,38 @@ export async function gotoRuleSetCreate(page: Page): Promise<void> {
   const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
   const targetUrl = buildDataAssetsUrl("/dq/ruleSet/add", effectiveProjectId);
   for (let attempt = 1; attempt <= 4; attempt += 1) {
-    await page.goto(targetUrl, { waitUntil: "domcontentloaded" }).catch(() => undefined);
-    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page
+      .goto(targetUrl, { waitUntil: "domcontentloaded" })
+      .catch(() => undefined);
+    await page
+      .locator("body")
+      .waitFor({ state: "visible", timeout: 15000 })
+      .catch(() => undefined);
     await page.waitForTimeout(500);
     await injectProjectContext(page, effectiveProjectId);
     await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);
-    await page.locator("body").waitFor({ state: "visible", timeout: 15000 }).catch(() => undefined);
+    await page
+      .locator("body")
+      .waitFor({ state: "visible", timeout: 15000 })
+      .catch(() => undefined);
     await page.waitForTimeout(1000);
 
-    const pageText = await page.locator("body").innerText().catch(() => "");
-    if (!page.url().startsWith("chrome-error://") && !/HTTP ERROR 502|Bad Gateway/i.test(pageText)) {
+    const pageText = await page
+      .locator("body")
+      .innerText()
+      .catch(() => "");
+    if (
+      !page.url().startsWith("chrome-error://") &&
+      !/HTTP ERROR 502|Bad Gateway/i.test(pageText)
+    ) {
       await dismissIntroDialog(page);
       return;
     }
 
     if (attempt === 4) {
-      throw new Error(`Rule set create page is unavailable: ${pageText.slice(0, 200)}`);
+      throw new Error(
+        `Rule set create page is unavailable: ${pageText.slice(0, 200)}`,
+      );
     }
     await page.waitForTimeout(2000 * attempt);
   }
@@ -895,7 +1005,9 @@ async function ensurePackageNamesInBaseInfo(
   page: Page,
   requiredPackageNames: string[],
 ): Promise<void> {
-  const packageNameInputs = page.locator('input[placeholder="请输入规则包名称"]');
+  const packageNameInputs = page.locator(
+    'input[placeholder="请输入规则包名称"]',
+  );
   const addPackageBtn = page
     .locator(".ant-table-footer")
     .getByRole("button", { name: /新增/ })
@@ -917,7 +1029,9 @@ async function ensurePackageNamesInBaseInfo(
     if (targetIndex === -1) {
       const beforeCount = await packageNameInputs.count();
       await addPackageBtn.click();
-      await expect(packageNameInputs).toHaveCount(beforeCount + 1, { timeout: 10000 });
+      await expect(packageNameInputs).toHaveCount(beforeCount + 1, {
+        timeout: 10000,
+      });
       targetIndex = beforeCount;
     }
 
@@ -931,7 +1045,9 @@ async function ensurePackageNamesInBaseInfo(
     await expect
       .poll(
         async () => {
-          const currentPackageNames = (await getPackageNameValues()).filter(Boolean);
+          const currentPackageNames = (await getPackageNameValues()).filter(
+            Boolean,
+          );
           return requiredPackageNames.every((packageName) =>
             currentPackageNames.includes(packageName),
           );
@@ -943,7 +1059,9 @@ async function ensurePackageNamesInBaseInfo(
 }
 
 async function gotoBaseInfoStep(page: Page): Promise<void> {
-  const packageNameInputs = page.locator('input[placeholder="请输入规则包名称"]');
+  const packageNameInputs = page.locator(
+    'input[placeholder="请输入规则包名称"]',
+  );
   if (
     await packageNameInputs
       .first()
@@ -969,11 +1087,15 @@ async function gotoBaseInfoStep(page: Page): Promise<void> {
   await page.waitForTimeout(500);
 }
 
-async function getBaseInfoValidationSummary(page: Page): Promise<string | null> {
+async function getBaseInfoValidationSummary(
+  page: Page,
+): Promise<string | null> {
   const messages = await page
     .locator(".ant-form-item-explain-error:visible")
     .evaluateAll((nodes) =>
-      nodes.map((node) => node.textContent?.trim()).filter((text): text is string => Boolean(text)),
+      nodes
+        .map((node) => node.textContent?.trim())
+        .filter((text): text is string => Boolean(text)),
     )
     .catch(() => [] as string[]);
 
@@ -998,7 +1120,9 @@ async function getBaseInfoValidationSummary(page: Page): Promise<string | null> 
 }
 
 async function gotoMonitorRulesStep(page: Page): Promise<void> {
-  const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
+  const newPackageBtn = page
+    .getByRole("button", { name: /新增规则包/ })
+    .first();
   const firstPackage = page.locator(".ruleSetMonitor__package").first();
   const isMonitorRulesVisible = async () =>
     (await firstPackage.isVisible().catch(() => false)) ||
@@ -1031,20 +1155,25 @@ async function gotoMonitorRulesStep(page: Page): Promise<void> {
     );
   }
 
-  const monitorRulesBtn = page.getByRole("button", { name: /监控规则/ }).first();
+  const monitorRulesBtn = page
+    .getByRole("button", { name: /监控规则/ })
+    .first();
   if (await monitorRulesBtn.isVisible().catch(() => false)) {
     await monitorRulesBtn.click();
     await page.waitForTimeout(1000);
   }
 
-  const afterStepClickValidationSummary = await getBaseInfoValidationSummary(page);
+  const afterStepClickValidationSummary =
+    await getBaseInfoValidationSummary(page);
   if (afterStepClickValidationSummary) {
     throw new Error(
       `Cannot enter 监控规则 step because 基础信息校验未通过: ${afterStepClickValidationSummary}`,
     );
   }
 
-  await expect.poll(async () => await isMonitorRulesVisible(), { timeout: 10000 }).toBe(true);
+  await expect
+    .poll(async () => await isMonitorRulesVisible(), { timeout: 10000 })
+    .toBe(true);
 }
 
 async function addPackageSlot(page: Page, packageName: string): Promise<void> {
@@ -1055,14 +1184,18 @@ async function addPackageSlot(page: Page, packageName: string): Promise<void> {
   await page.waitForTimeout(300);
 
   const packageSection = page.locator(".ruleSetMonitor__package").last();
-  const packageSelect = packageSection.locator(".ruleSetMonitor__packageSelect").first();
+  const packageSelect = packageSection
+    .locator(".ruleSetMonitor__packageSelect")
+    .first();
   await packageSelect.waitFor({ state: "visible", timeout: 10000 });
   try {
     await selectAntOption(page, packageSelect, packageName);
   } catch (error) {
     await page.keyboard.press("Escape").catch(() => undefined);
 
-    const deleteBtn = packageSection.locator(".ruleSetMonitor__packageDeleteBtn").first();
+    const deleteBtn = packageSection
+      .locator(".ruleSetMonitor__packageDeleteBtn")
+      .first();
     if (await deleteBtn.isVisible().catch(() => false)) {
       await deleteBtn.click();
       await confirmAntModal(page);
@@ -1078,7 +1211,9 @@ async function ensureRuleSetPackagesVisible(
   page: Page,
   requiredPackageNames: string[],
 ): Promise<void> {
-  const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
+  const newPackageBtn = page
+    .getByRole("button", { name: /新增规则包/ })
+    .first();
   const firstPackage = page.locator(".ruleSetMonitor__package").first();
   await expect
     .poll(
@@ -1111,7 +1246,10 @@ async function ensureRuleSetPackagesVisible(
       await addPackageSlot(page, packageName);
     }
     await expect(
-      page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first(),
+      page
+        .locator(".ruleSetMonitor__package")
+        .filter({ hasText: packageName })
+        .first(),
     ).toBeVisible({ timeout: 10000 });
   }
 }
@@ -1129,7 +1267,9 @@ export async function createRuleSetDraft(
   await gotoRuleSetCreate(page);
   if (await ensureMonitorDatasource(page)) {
     await page.reload({ waitUntil: "domcontentloaded" });
-    await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => undefined);
+    await page
+      .waitForLoadState("networkidle", { timeout: 10000 })
+      .catch(() => undefined);
     await page.waitForTimeout(1000);
     await dismissIntroDialog(page);
   }
@@ -1142,7 +1282,10 @@ export async function createRuleSetDraft(
   const formItemVisible = await sourceFormItem.isVisible().catch(() => false);
   if (!formItemVisible) {
     const pageUrl = page.url();
-    const pageBodySnippet = await page.locator("body").innerText({ timeout: 5000 }).catch(() => "");
+    const pageBodySnippet = await page
+      .locator("body")
+      .innerText({ timeout: 5000 })
+      .catch(() => "");
     process.stderr.write(
       `[ruleset] waiting for "选择数据源" form item. url=${pageUrl} body[0:200]=${pageBodySnippet.slice(0, 200)}\n`,
     );
@@ -1159,7 +1302,9 @@ export async function createRuleSetDraft(
     .filter({ hasText: /选择数据库/ })
     .first();
   // Wait for schema form item to appear after datasource selection (it may load async)
-  await schemaFormItem.waitFor({ state: "visible", timeout: 30000 }).catch(() => undefined);
+  await schemaFormItem
+    .waitFor({ state: "visible", timeout: 30000 })
+    .catch(() => undefined);
   // Poll until the schema select shows at least one option before attempting selection
   const schemaSelect = schemaFormItem.locator(".ant-select").first();
   let schemaOptions: string[] = [];
@@ -1171,7 +1316,9 @@ export async function createRuleSetDraft(
     const currentOptions = await dropdown
       .locator(".ant-select-item-option")
       .evaluateAll((els) =>
-        els.map((el) => el.textContent?.trim()).filter((t): t is string => Boolean(t)),
+        els
+          .map((el) => el.textContent?.trim())
+          .filter((t): t is string => Boolean(t)),
       )
       .catch(() => [] as string[]);
     await page.keyboard.press("Escape").catch(() => undefined);
@@ -1200,20 +1347,29 @@ export async function createRuleSetDraft(
     (v, i, a) => v && a.indexOf(v) === i,
   );
   // If the exact name was already found in the visible options, skip the stripped fallback.
-  const effectiveCandidates =
-    schemaOptions.includes(datasource.database) ? [datasource.database] : schemaCandidates;
-  const monitorDatasource = await getCurrentMonitorDatasource(page).catch(() => undefined);
+  const effectiveCandidates = schemaOptions.includes(datasource.database)
+    ? [datasource.database]
+    : schemaCandidates;
+  const monitorDatasource = await getCurrentMonitorDatasource(page).catch(
+    () => undefined,
+  );
   const resolvedSchemaForTable =
     monitorDatasource?.id && datasource.preconditionType === "Doris"
-      ? await resolveSchemaForTable(page, monitorDatasource.id, tableName, effectiveCandidates).catch(
-          () => null,
-        )
+      ? await resolveSchemaForTable(
+          page,
+          monitorDatasource.id,
+          tableName,
+          effectiveCandidates,
+        ).catch(() => null)
       : null;
   const schemaSelectionOrder = [
     resolvedSchemaForTable,
     ...effectiveCandidates,
     ...schemaOptions,
-  ].filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index);
+  ].filter(
+    (value, index, array): value is string =>
+      Boolean(value) && array.indexOf(value) === index,
+  );
 
   let schemaSelected = false;
   let selectedSchemaName = schemaSelectionOrder[0] ?? datasource.database;
@@ -1245,9 +1401,14 @@ export async function createRuleSetDraft(
     await expect
       .poll(
         async () =>
-          (await getDatasourceTables(page, monitorDatasource.id!, selectedSchemaName, tableName).catch(
-            () => [],
-          )).includes(tableName),
+          (
+            await getDatasourceTables(
+              page,
+              monitorDatasource.id!,
+              selectedSchemaName,
+              tableName,
+            ).catch(() => [])
+          ).includes(tableName),
         {
           timeout: 20000,
           message: `Waiting for table "${tableName}" to appear under schema "${selectedSchemaName}".`,
@@ -1261,7 +1422,9 @@ export async function createRuleSetDraft(
     .filter({ hasText: /选择数据表/ })
     .first();
   // Wait for table form item to appear after schema selection
-  await tableFormItem.waitFor({ state: "visible", timeout: 30000 }).catch(() => undefined);
+  await tableFormItem
+    .waitFor({ state: "visible", timeout: 30000 })
+    .catch(() => undefined);
   const tableSelect = tableFormItem.locator(".ant-select").first();
   // Poll until the table select shows at least one option before attempting selection
   let tableOptions: string[] = [];
@@ -1273,16 +1436,23 @@ export async function createRuleSetDraft(
     tableOptions = await tableDropdown
       .locator(".ant-select-item-option")
       .evaluateAll((els) =>
-        els.map((el) => el.textContent?.trim()).filter((t): t is string => Boolean(t)),
+        els
+          .map((el) => el.textContent?.trim())
+          .filter((t): t is string => Boolean(t)),
       )
       .catch(() => [] as string[]);
     if (tableOptions.length > 0) {
       process.stderr.write(
         `[ruleset] table dropdown loaded (attempt ${tableWait + 1}): ${tableOptions.slice(0, 10).join(", ")}\n`,
       );
-      const exactMatchIndex = tableOptions.findIndex((option) => option === tableName);
+      const exactMatchIndex = tableOptions.findIndex(
+        (option) => option === tableName,
+      );
       if (exactMatchIndex >= 0) {
-        await tableDropdown.locator(".ant-select-item-option").nth(exactMatchIndex).click();
+        await tableDropdown
+          .locator(".ant-select-item-option")
+          .nth(exactMatchIndex)
+          .click();
         await page.waitForTimeout(500);
         tableSelected = true;
         break;
@@ -1359,14 +1529,23 @@ async function tryOpenRuleSetRow(
       await page
         .waitForURL(/\/dq\/ruleSet\/edit\/\d+(?:\?.*)?$/, { timeout: 15000 })
         .catch(() => undefined);
-      await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => undefined);
-      const packageNameInputs = page.locator('input[placeholder="请输入规则包名称"]');
+      await page
+        .waitForLoadState("networkidle", { timeout: 10000 })
+        .catch(() => undefined);
+      const packageNameInputs = page.locator(
+        'input[placeholder="请输入规则包名称"]',
+      );
       const nextBtn = page.getByRole("button", { name: "下一步" }).first();
-      const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
+      const newPackageBtn = page
+        .getByRole("button", { name: /新增规则包/ })
+        .first();
       await expect
         .poll(
           async () =>
-            (await packageNameInputs.first().isVisible().catch(() => false)) ||
+            (await packageNameInputs
+              .first()
+              .isVisible()
+              .catch(() => false)) ||
             (await nextBtn.isVisible().catch(() => false)) ||
             (await newPackageBtn.isVisible().catch(() => false)),
           { timeout: 15000 },
@@ -1376,18 +1555,18 @@ async function tryOpenRuleSetRow(
 
       if (requiredPackageNames.length > 0) {
         await gotoMonitorRulesStep(page);
-        const currentPackageNames = (
-          await page
-            .locator(".ruleSetMonitor__package .ruleSetMonitor__packageSelect .ant-select-selection-item")
-            .evaluateAll((nodes) =>
-              nodes
-                .map((node) => node.textContent?.trim())
-                .filter((text): text is string => Boolean(text)),
-            )
-            .catch(() => [] as string[])
-        );
-        const hasAllRequiredPackages = requiredPackageNames.every((packageName) =>
-          currentPackageNames.includes(packageName),
+        const currentPackageNames = await page
+          .locator(
+            ".ruleSetMonitor__package .ruleSetMonitor__packageSelect .ant-select-selection-item",
+          )
+          .evaluateAll((nodes) =>
+            nodes
+              .map((node) => node.textContent?.trim())
+              .filter((text): text is string => Boolean(text)),
+          )
+          .catch(() => [] as string[]);
+        const hasAllRequiredPackages = requiredPackageNames.every(
+          (packageName) => currentPackageNames.includes(packageName),
         );
         if (!hasAllRequiredPackages) {
           process.stderr.write(
@@ -1396,7 +1575,9 @@ async function tryOpenRuleSetRow(
               `${requiredPackageNames.join(", ")}].\n`,
           );
           await gotoRuleSetList(page);
-          await page.locator(".ant-table-tbody").waitFor({ state: "visible", timeout: 15000 });
+          await page
+            .locator(".ant-table-tbody")
+            .waitFor({ state: "visible", timeout: 15000 });
           continue;
         }
       }
@@ -1415,7 +1596,9 @@ async function findRuleSetIdByTableName(
 ): Promise<number | string | null> {
   for (let current = 1; current <= 20; current += 1) {
     const response = await postRuleSetApi<{
-      data?: { contentList?: Array<{ id?: number | string; tableName?: string }> };
+      data?: {
+        contentList?: Array<{ id?: number | string; tableName?: string }>;
+      };
     }>(page, "/dassets/v1/valid/monitorRuleSet/pageQuery", {
       current,
       size: 50,
@@ -1423,7 +1606,9 @@ async function findRuleSetIdByTableName(
     }).catch(() => null);
 
     const rows = response?.data?.contentList ?? [];
-    const matchedRow = rows.find((row) => String(row.tableName ?? "") === tableName && row.id);
+    const matchedRow = rows.find(
+      (row) => String(row.tableName ?? "") === tableName && row.id,
+    );
     if (matchedRow?.id) {
       return matchedRow.id;
     }
@@ -1441,18 +1626,30 @@ async function openRuleSetEditorById(
   requiredPackageNames: string[],
 ): Promise<void> {
   const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
-  await page.goto(buildDataAssetsUrl(`/dq/ruleSet/edit/${ruleSetId}`, effectiveProjectId), {
-    waitUntil: "domcontentloaded",
-  });
-  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => undefined);
+  await page.goto(
+    buildDataAssetsUrl(`/dq/ruleSet/edit/${ruleSetId}`, effectiveProjectId),
+    {
+      waitUntil: "domcontentloaded",
+    },
+  );
+  await page
+    .waitForLoadState("networkidle", { timeout: 10000 })
+    .catch(() => undefined);
 
-  const packageNameInputs = page.locator('input[placeholder="请输入规则包名称"]');
+  const packageNameInputs = page.locator(
+    'input[placeholder="请输入规则包名称"]',
+  );
   const nextBtn = page.getByRole("button", { name: "下一步" }).first();
-  const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
+  const newPackageBtn = page
+    .getByRole("button", { name: /新增规则包/ })
+    .first();
   await expect
     .poll(
       async () =>
-        (await packageNameInputs.first().isVisible().catch(() => false)) ||
+        (await packageNameInputs
+          .first()
+          .isVisible()
+          .catch(() => false)) ||
         (await nextBtn.isVisible().catch(() => false)) ||
         (await newPackageBtn.isVisible().catch(() => false)),
       { timeout: 15000 },
@@ -1471,8 +1668,12 @@ export async function openRuleSetEditor(
     await openOfflineRuleSetEditor(page, rulesetName, requiredPackageNames);
     return;
   }
-  await page.locator(".ant-table-tbody").waitFor({ state: "visible", timeout: 15000 });
-  const dataRows = page.locator(".ant-table-tbody tr:not(.ant-table-measure-row)");
+  await page
+    .locator(".ant-table-tbody")
+    .waitFor({ state: "visible", timeout: 15000 });
+  const dataRows = page.locator(
+    ".ant-table-tbody tr:not(.ant-table-measure-row)",
+  );
   await expect(dataRows.first()).toBeVisible({ timeout: 15000 });
 
   const rowTexts = [rulesetName];
@@ -1486,27 +1687,46 @@ export async function openRuleSetEditor(
   }
 
   const targetTableName =
-    fallbackRowText ?? (rulesetName.startsWith("quality_test_") ? rulesetName : undefined);
+    fallbackRowText ??
+    (rulesetName.startsWith("quality_test_") ? rulesetName : undefined);
   const seedPackageName = requiredPackageNames[0];
-  const seedRuleConfig = seedPackageName ? RULESET_PACKAGE_SEEDS[seedPackageName] : undefined;
+  const seedRuleConfig = seedPackageName
+    ? RULESET_PACKAGE_SEEDS[seedPackageName]
+    : undefined;
 
   if (targetTableName) {
-    const existingRuleSetId = await findRuleSetIdByTableName(page, targetTableName);
+    const existingRuleSetId = await findRuleSetIdByTableName(
+      page,
+      targetTableName,
+    );
     if (existingRuleSetId) {
       process.stderr.write(
         `[ruleset] DOM lookup missed existing ruleset for table "${targetTableName}" (id=${existingRuleSetId}). Opening via API.\n`,
       );
-      await openRuleSetEditorById(page, existingRuleSetId, requiredPackageNames);
+      await openRuleSetEditorById(
+        page,
+        existingRuleSetId,
+        requiredPackageNames,
+      );
       return;
     }
   }
 
   if (targetTableName && seedPackageName && seedRuleConfig) {
     await runPreconditions(page);
-    await createRuleSetForTable(page, targetTableName, seedPackageName, seedRuleConfig);
+    await createRuleSetForTable(
+      page,
+      targetTableName,
+      seedPackageName,
+      seedRuleConfig,
+    );
     await gotoRuleSetList(page);
-    await page.locator(".ant-table-tbody").waitFor({ state: "visible", timeout: 15000 });
-    if (await tryOpenRuleSetRow(page, dataRows, rowTexts, requiredPackageNames)) {
+    await page
+      .locator(".ant-table-tbody")
+      .waitFor({ state: "visible", timeout: 15000 });
+    if (
+      await tryOpenRuleSetRow(page, dataRows, rowTexts, requiredPackageNames)
+    ) {
       return;
     }
   }
@@ -1522,10 +1742,17 @@ export async function openRuleSetEditor(
   );
 }
 
-async function ensureMonitorRulesStep(page: Page, requiredPackageNames: string[]): Promise<void> {
-  const packageNameInputs = page.locator('input[placeholder="请输入规则包名称"]');
+async function ensureMonitorRulesStep(
+  page: Page,
+  requiredPackageNames: string[],
+): Promise<void> {
+  const packageNameInputs = page.locator(
+    'input[placeholder="请输入规则包名称"]',
+  );
   const firstPackageSection = page.locator(".ruleSetMonitor__package").first();
-  const newPackageBtn = page.getByRole("button", { name: /新增规则包/ }).first();
+  const newPackageBtn = page
+    .getByRole("button", { name: /新增规则包/ })
+    .first();
 
   const isMonitorRulesStep =
     (await firstPackageSection.isVisible().catch(() => false)) ||
@@ -1566,14 +1793,19 @@ async function ensureMonitorRulesStep(page: Page, requiredPackageNames: string[]
   }
 }
 
-export async function getRulePackage(page: Page, packageName: string): Promise<Locator> {
+export async function getRulePackage(
+  page: Page,
+  packageName: string,
+): Promise<Locator> {
   const packageSection = page
     .locator(".ruleSetMonitor__package")
     .filter({ hasText: packageName })
     .first();
   await expect(packageSection).toBeVisible({ timeout: 10000 });
 
-  const expandBtn = packageSection.getByRole("button", { name: /展开/ }).first();
+  const expandBtn = packageSection
+    .getByRole("button", { name: /展开/ })
+    .first();
   if (await expandBtn.isVisible().catch(() => false)) {
     await expandBtn.click();
     await page.waitForTimeout(300);
@@ -1600,7 +1832,9 @@ export async function addRuleToPackage(
     .click();
   await page.waitForTimeout(300);
 
-  const ruleTypeMenu = page.locator(".ant-dropdown:visible, .ant-dropdown-menu:visible");
+  const ruleTypeMenu = page.locator(
+    ".ant-dropdown:visible, .ant-dropdown-menu:visible",
+  );
   await ruleTypeMenu.first().waitFor({ state: "visible", timeout: 10000 });
   await ruleTypeMenu.getByText(ruleType, { exact: false }).first().click();
 
@@ -1613,7 +1847,9 @@ export async function clearAllRules(page: Page): Promise<void> {
   const packageCount = await packageSections.count().catch(() => 0);
   for (let index = 0; index < packageCount; index += 1) {
     const packageSection = packageSections.nth(index);
-    const expandBtn = packageSection.getByRole("button", { name: /展开/ }).first();
+    const expandBtn = packageSection
+      .getByRole("button", { name: /展开/ })
+      .first();
     if (await expandBtn.isVisible().catch(() => false)) {
       await expandBtn.click();
       await page.waitForTimeout(200);
@@ -1629,7 +1865,10 @@ export async function clearAllRules(page: Page): Promise<void> {
       if (!(await ruleForm.isVisible().catch(() => false))) {
         continue;
       }
-      const deleteBtn = ruleForm.locator(".ruleForm__icon").locator("xpath=ancestor::button[1]").first();
+      const deleteBtn = ruleForm
+        .locator(".ruleForm__icon")
+        .locator("xpath=ancestor::button[1]")
+        .first();
       if (!(await deleteBtn.isVisible().catch(() => false))) {
         continue;
       }
@@ -1672,7 +1911,9 @@ export async function keepOnlyRulePackages(
         continue;
       }
 
-      const deleteBtn = packageSection.locator(".ruleSetMonitor__packageDeleteBtn").first();
+      const deleteBtn = packageSection
+        .locator(".ruleSetMonitor__packageDeleteBtn")
+        .first();
       if (!(await deleteBtn.isVisible().catch(() => false))) {
         continue;
       }
@@ -1691,12 +1932,18 @@ export async function keepOnlyRulePackages(
 
   for (const packageName of packageNamesToKeep) {
     await expect(
-      page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first(),
+      page
+        .locator(".ruleSetMonitor__package")
+        .filter({ hasText: packageName })
+        .first(),
     ).toBeVisible({ timeout: 10000 });
   }
 }
 
-export async function getRuleForm(page: Page, text: string | RegExp): Promise<Locator> {
+export async function getRuleForm(
+  page: Page,
+  text: string | RegExp,
+): Promise<Locator> {
   const ruleForm = page.locator(".ruleForm").filter({ hasText: text }).first();
   await expect(ruleForm).toBeVisible({ timeout: 10000 });
   return ruleForm;
@@ -1710,24 +1957,48 @@ export async function selectRuleFieldAndFunction(
 ): Promise<Locator> {
   if (isOfflineMode()) {
     const packageName = await ruleForm
-      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .locator(
+        "xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]",
+      )
       .getAttribute("data-package-name");
-    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index")) ?? "0");
+    const ruleIndex = Number(
+      (await ruleForm.getAttribute("data-rule-index")) ?? "0",
+    );
     if (!packageName) {
       throw new Error("Offline rule form is missing package name");
     }
-    return setOfflineRuleFieldAndFunction(page, packageName, ruleIndex, field, functionName);
+    return setOfflineRuleFieldAndFunction(
+      page,
+      packageName,
+      ruleIndex,
+      field,
+      functionName,
+    );
   }
-  const fieldSelect = ruleForm
+  const exactFieldSelect = ruleForm
     .locator(".ant-form-item")
-    .filter({ hasText: /字段/ })
+    .filter({
+      has: ruleForm.locator(".ant-form-item-label", { hasText: /^字段$/ }),
+    })
     .locator(".ant-select")
     .first();
+  const fieldSelect =
+    (await exactFieldSelect.count()) > 0
+      ? exactFieldSelect
+      : ruleForm
+          .locator(".ant-form-item")
+          .filter({ hasText: /^字段/ })
+          .locator(".ant-select")
+          .first();
   await selectAntOption(page, fieldSelect, field);
   await page.waitForTimeout(300);
 
   const functionRow = ruleForm.locator(".rule__function-list__item").first();
-  await selectAntOption(page, functionRow.locator(".ant-select").first(), functionName);
+  await selectAntOption(
+    page,
+    functionRow.locator(".ant-select").first(),
+    functionName,
+  );
   await page.waitForTimeout(300);
 
   return functionRow;
@@ -1740,9 +2011,13 @@ export async function configureRangeEnumRule(
 ): Promise<Locator> {
   if (isOfflineMode()) {
     const packageName = await ruleForm
-      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .locator(
+        "xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]",
+      )
       .getAttribute("data-package-name");
-    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index")) ?? "0");
+    const ruleIndex = Number(
+      (await ruleForm.getAttribute("data-rule-index")) ?? "0",
+    );
     if (!packageName) {
       throw new Error("Offline rule form is missing package name");
     }
@@ -1765,19 +2040,26 @@ export async function configureRangeEnumRule(
   let hasVerifyTypeAtNth1 = false;
   if (!isEnumOnlyFunction) {
     try {
-      await functionSelects.nth(1).click({ timeout: 3000 }).catch(() => undefined);
+      await functionSelects
+        .nth(1)
+        .click({ timeout: 3000 })
+        .catch(() => undefined);
       await page.waitForTimeout(300);
       const probeDropdown = page.locator(".ant-select-dropdown:visible").last();
       const probeOpts = await probeDropdown
         .locator(".ant-select-item-option")
         .evaluateAll((els) =>
-          els.map((el) => el.textContent?.trim()).filter((t): t is string => Boolean(t)),
+          els
+            .map((el) => el.textContent?.trim())
+            .filter((t): t is string => Boolean(t)),
         )
         .catch(() => [] as string[]);
       await page.keyboard.press("Escape").catch(() => undefined);
       await page.waitForTimeout(200);
       // verifyType options are "固定值" and/or "比例"; operator options contain ">" "<" "=" etc.
-      hasVerifyTypeAtNth1 = probeOpts.some((opt) => opt === "固定值" || opt === "比例");
+      hasVerifyTypeAtNth1 = probeOpts.some(
+        (opt) => opt === "固定值" || opt === "比例",
+      );
       if (hasVerifyTypeAtNth1) {
         process.stderr.write(
           `[ruleset] INFO: detected renderNormalFunction layout for "${config.functionName ?? "取值范围&枚举范围"}". ` +
@@ -1794,14 +2076,25 @@ export async function configureRangeEnumRule(
       // renderNormalFunction layout: set verifyType="固定值" first, then operator at nth(2).
       await selectAntOptionWithRetry(page, functionSelects.nth(1), "固定值", 2);
       await page.waitForTimeout(300);
-      await selectAntOption(page, functionSelects.nth(2), config.range.firstOperator);
+      await selectAntOption(
+        page,
+        functionSelects.nth(2),
+        config.range.firstOperator,
+      );
     } else {
-      await selectAntOption(page, functionSelects.nth(1), config.range.firstOperator);
+      await selectAntOption(
+        page,
+        functionSelects.nth(1),
+        config.range.firstOperator,
+      );
     }
     await page.waitForTimeout(200);
   }
   if (config.range?.firstValue !== undefined) {
-    await functionRow.getByPlaceholder("请输入数值").first().fill(config.range.firstValue);
+    await functionRow
+      .getByPlaceholder("请输入数值")
+      .first()
+      .fill(config.range.firstValue);
     await page.waitForTimeout(200);
   }
   if (config.range?.condition && !hasVerifyTypeAtNth1) {
@@ -1821,7 +2114,10 @@ export async function configureRangeEnumRule(
     await page.waitForTimeout(200);
   }
   if (config.range?.secondValue !== undefined && !hasVerifyTypeAtNth1) {
-    await functionRow.getByPlaceholder("请输入数值").nth(1).fill(config.range.secondValue);
+    await functionRow
+      .getByPlaceholder("请输入数值")
+      .nth(1)
+      .fill(config.range.secondValue);
     await page.waitForTimeout(200);
   }
 
@@ -1866,19 +2162,30 @@ export async function configureRangeEnumRule(
   }
 
   if (config.description !== undefined) {
-    await ruleForm.getByPlaceholder("请填写规则描述").first().fill(config.description);
+    await ruleForm
+      .getByPlaceholder("请填写规则描述")
+      .first()
+      .fill(config.description);
     await page.waitForTimeout(200);
   }
 
   return functionRow;
 }
 
-export async function selectRuleRelation(ruleForm: Locator, relation: "且" | "或"): Promise<void> {
+export async function selectRuleRelation(
+  ruleForm: Locator,
+  relation: "且" | "或",
+): Promise<void> {
   if (isOfflineMode()) {
     const page = ruleForm.page();
-    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index").catch(() => null)) ?? "-1");
+    const ruleIndex = Number(
+      (await ruleForm.getAttribute("data-rule-index").catch(() => null)) ??
+        "-1",
+    );
     const packageName = await ruleForm
-      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .locator(
+        "xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]",
+      )
       .getAttribute("data-package-name")
       .catch(() => null);
     const currentRuleForm =
@@ -1904,7 +2211,10 @@ export async function selectRuleRelation(ruleForm: Locator, relation: "且" | "�
     .click();
 }
 
-export async function getSelectOptions(page: Page, selectLocator: Locator): Promise<string[]> {
+export async function getSelectOptions(
+  page: Page,
+  selectLocator: Locator,
+): Promise<string[]> {
   await selectLocator.click();
   await page.waitForTimeout(200);
 
@@ -1914,7 +2224,9 @@ export async function getSelectOptions(page: Page, selectLocator: Locator): Prom
   const options = await dropdown
     .locator(".ant-select-item-option")
     .evaluateAll((els) =>
-      els.map((el) => el.textContent?.trim()).filter((text): text is string => Boolean(text)),
+      els
+        .map((el) => el.textContent?.trim())
+        .filter((text): text is string => Boolean(text)),
     );
 
   await page.keyboard.press("Escape");
@@ -1934,7 +2246,9 @@ export async function saveRuleSet(page: Page): Promise<void> {
         const request = response.request();
         return (
           request.method() === "POST" &&
-          /\/dassets\/v1\/valid\/monitorRuleSet\/(add|edit)/.test(response.url())
+          /\/dassets\/v1\/valid\/monitorRuleSet\/(add|edit)/.test(
+            response.url(),
+          )
         );
       },
       { timeout: 15000 },
@@ -1956,10 +2270,14 @@ export async function saveRuleSet(page: Page): Promise<void> {
   }
 
   const confirmSaveBtn = page
-    .locator(".ant-modal-confirm:visible .ant-btn-primary, .ant-modal:visible .ant-btn-primary")
+    .locator(
+      ".ant-modal-confirm:visible .ant-btn-primary, .ant-modal:visible .ant-btn-primary",
+    )
     .filter({ hasText: /保\s*存/ })
     .first();
-  await confirmSaveBtn.waitFor({ state: "visible", timeout: 3000 }).catch(() => undefined);
+  await confirmSaveBtn
+    .waitFor({ state: "visible", timeout: 3000 })
+    .catch(() => undefined);
   if (await confirmSaveBtn.isVisible().catch(() => false)) {
     await confirmSaveBtn.click();
   }
@@ -1969,11 +2287,15 @@ export async function saveRuleSet(page: Page): Promise<void> {
     const responseBody = await saveResponse.json().catch(() => null);
     const saveSucceeded =
       saveResponse.ok() &&
-      (!responseBody || typeof responseBody !== "object" || responseBody.success !== false);
+      (!responseBody ||
+        typeof responseBody !== "object" ||
+        responseBody.success !== false);
 
     if (!saveSucceeded) {
       const errorMessage =
-        responseBody && typeof responseBody === "object" && "message" in responseBody
+        responseBody &&
+        typeof responseBody === "object" &&
+        "message" in responseBody
           ? String(responseBody.message)
           : `HTTP ${saveResponse.status()}`;
       throw new Error(`Save rule set failed: ${errorMessage}`);
@@ -1987,7 +2309,9 @@ export async function saveRuleSet(page: Page): Promise<void> {
     .locator(".ant-message-notice, .ant-notification-notice, .ant-message")
     .filter({ hasText: /成功/ })
     .first();
-  const listRow = page.locator(".ant-table-tbody tr:not(.ant-table-measure-row)").first();
+  const listRow = page
+    .locator(".ant-table-tbody tr:not(.ant-table-measure-row)")
+    .first();
 
   await Promise.any([
     successToast.waitFor({ state: "visible", timeout: 15000 }),
@@ -1999,9 +2323,13 @@ export async function saveRuleSet(page: Page): Promise<void> {
 export async function cloneRule(ruleForm: Locator): Promise<void> {
   if (isOfflineMode()) {
     const packageName = await ruleForm
-      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .locator(
+        "xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]",
+      )
       .getAttribute("data-package-name");
-    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index")) ?? "0");
+    const ruleIndex = Number(
+      (await ruleForm.getAttribute("data-rule-index")) ?? "0",
+    );
     if (!packageName) {
       throw new Error("Offline rule form is missing package name");
     }
@@ -2014,20 +2342,29 @@ export async function cloneRule(ruleForm: Locator): Promise<void> {
 export async function deleteRule(page: Page, ruleForm: Locator): Promise<void> {
   if (isOfflineMode()) {
     const packageName = await ruleForm
-      .locator("xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]")
+      .locator(
+        "xpath=ancestor::*[contains(@class,'ruleSetMonitor__package')][1]",
+      )
       .getAttribute("data-package-name");
-    const ruleIndex = Number((await ruleForm.getAttribute("data-rule-index")) ?? "0");
+    const ruleIndex = Number(
+      (await ruleForm.getAttribute("data-rule-index")) ?? "0",
+    );
     if (!packageName) {
       throw new Error("Offline rule form is missing package name");
     }
     await deleteOfflineRule(page, packageName, ruleIndex);
     return;
   }
-  await ruleForm.locator(".ruleForm__icon").locator("xpath=ancestor::button[1]").click();
+  await ruleForm
+    .locator(".ruleForm__icon")
+    .locator("xpath=ancestor::button[1]")
+    .click();
   await page.waitForTimeout(200);
 
   const confirmBtn = page
-    .locator(".ant-popover:visible .ant-btn-primary, .ant-popconfirm .ant-btn-primary")
+    .locator(
+      ".ant-popover:visible .ant-btn-primary, .ant-popconfirm .ant-btn-primary",
+    )
     .first();
   if (await confirmBtn.isVisible().catch(() => false)) {
     await confirmBtn.click();
@@ -2044,7 +2381,9 @@ export async function gotoRuleBase(page: Page): Promise<void> {
   const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
   const targetUrl = buildDataAssetsUrl("/dq/ruleBase", effectiveProjectId);
   await page.goto(targetUrl, { waitUntil: "domcontentloaded" });
-  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => undefined);
+  await page
+    .waitForLoadState("networkidle", { timeout: 10000 })
+    .catch(() => undefined);
   await injectProjectContext(page, effectiveProjectId);
 }
 

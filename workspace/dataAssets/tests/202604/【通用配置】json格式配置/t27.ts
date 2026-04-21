@@ -9,26 +9,10 @@ import {
   deleteKey,
   searchKey,
   ensureRowVisibleByKey,
+  buildImportXlsx,
 } from "./json-config-helpers";
-import ExcelJS from "exceljs";
 import * as path from "path";
 import * as fs from "fs";
-
-
-async function createImportXlsx(
-  filePath: string,
-  sheets: { name: string; headers: string[]; rows: string[][] }[],
-) {
-  const workbook = new ExcelJS.Workbook();
-  for (const sheet of sheets) {
-    const ws = workbook.addWorksheet(sheet.name);
-    ws.addRow(sheet.headers);
-    for (const row of sheet.rows) ws.addRow(row);
-  }
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  await workbook.xlsx.writeFile(filePath);
-}
 
 async function dismissWelcomeDialog(page: import("@playwright/test").Page) {
   const dialog = page.locator("dialog, .ant-modal").filter({ hasText: "欢迎使用" });
@@ -94,18 +78,11 @@ test.describe("【通用配置】json格式配置 - 通用配置-json格式校�
       await step(
         "步骤3: 创建xlsx文件(二层sheet含parentA/childA/更新子键/^[0-9]+$) → 文件创建成功",
         async () => {
-          await createImportXlsx(xlsxPath, [
-            {
-              name: "一层",
-              headers: ["*key", "中文名称", "value格式"],
-              rows: [[parentA, "", ""]],
-            },
-            {
-              name: "二层",
-              headers: ["上一层级的key名", "key", "中文名称", "value格式"],
-              rows: [[parentA, childA, "更新子键", "^[0-9]+$"]],
-            },
-          ]);
+          await buildImportXlsx(
+            xlsxPath,
+            [[parentA, "", ""]],
+            [[parentA, childA, "更新子键", "^[0-9]+$"]],
+          );
           expect(fs.existsSync(xlsxPath)).toBe(true);
         },
       );

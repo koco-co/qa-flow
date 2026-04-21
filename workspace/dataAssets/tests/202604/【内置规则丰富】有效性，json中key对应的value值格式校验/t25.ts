@@ -1,64 +1,111 @@
 // META: {"id":"t25","priority":"P1","title":"【P1】验证校验不通过时明细数据下载功能中校验字段标红"}
+import * as fs from "node:fs";
+import * as path from "node:path";
+import ExcelJS from "exceljs";
 import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
 import {
-  addRuleToPackage,
-  configureJsonFormatRule,
-  createRuleSetDraft,
-  gotoRuleSetList,
-  DORIS_MONITOR_DATASOURCE,
-  SPARKTHRIFT_MONITOR_DATASOURCE,
-} from "./json-format-utils";
-import { FORMAT_JSON_VERIFICATION_FUNC, VALUE_FORMAT_TABLE } from "./data-15694";
+  ensureExecutedJsonTask,
+  openTaskInstanceDetail,
+  openTaskRuleDetailDataDrawer,
+  waitForVisibleTaskRow,
+} from "./json-format-task-helpers";
+import { describeByDatasource } from "./suite-case-helpers";
+import { P0_FAIL_SCENARIO } from "./test-data";
 
-test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
+test.use({
+  storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json",
+});
+test.setTimeout(600000);
 
-const SUITE_NAME = "【内置规则丰富】有效性，json中key对应的value值格式校验(#15694)";
-const PAGE_NAME = "规则集管理";
-const CASE_TITLE = '【P1】验证校验不通过时明细数据下载功能中校验字段标红';
-
-async function runJsonFormatCaseByDatasource(
-  page: import("@playwright/test").Page,
-  step: any,
-  datasourceLabel: string,
-  datasourceConfig: typeof SPARKTHRIFT_MONITOR_DATASOURCE,
-): Promise<void> {
-  const packageName = uniqueName('tt25_' + (datasourceLabel.includes("Spark") ? "spark" : "doris"));
-
-  await step('步骤1: 打开规则集管理页面（' + datasourceLabel + '）', async () => {
-    await gotoRuleSetList(page);
-    await expect(page.locator(".ant-table-tbody, .ant-empty").first()).toBeVisible({ timeout: 15000 });
-  });
-
-  await step('步骤2: 使用' + datasourceLabel + '创建规则集草稿并进入Step2', async () => {
-    await createRuleSetDraft(page, VALUE_FORMAT_TABLE, [packageName], datasourceConfig);
-    await expect(page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first()).toBeVisible({ timeout: 15000 });
-  });
-
-  const ruleForm = await step('步骤3: 新增有效性校验规则（' + datasourceLabel + '）', async () => {
-    const form = await addRuleToPackage(page, packageName, "有效性校验");
-    await expect(form).toBeVisible({ timeout: 10000 });
-    return form;
-  });
-
-  await step('步骤4: 配置格式-json格式校验规则（' + datasourceLabel + '）', async () => {
-    await configureJsonFormatRule(page, ruleForm, {
-      field: "info",
-      keyNames: ["key1"],
-      ruleStrength: "强规则",
-      description: '【P1】验证校验不通过时明细数据下载功能中校验字段标红-' + datasourceLabel,
-    });
-    await expect(ruleForm).toContainText(FORMAT_JSON_VERIFICATION_FUNC, { timeout: 5000 });
-  });
-
-  await step('步骤5: 校验规则配置区域可见且参数已回显（' + datasourceLabel + '）', async () => {
-    // TODO: 该用例的业务断言需要按 Archive 步骤细化；当前先保证双数据源主流程可执行。
-    await expect(ruleForm).toBeVisible({ timeout: 5000 });
-  });
+function getCellText(cell: ExcelJS.Cell): string {
+  const value = cell.value;
+  if (typeof value === "object" && value && "result" in value) {
+    return String(value.result ?? "").trim();
+  }
+  return String(value ?? "").trim();
 }
 
-test.describe(SUITE_NAME + " - " + PAGE_NAME, () => {
-  test(CASE_TITLE + "（SparkThrift2.x）", async ({ page, step }) => {
-    await runJsonFormatCaseByDatasource(page, step, "SparkThrift2.x", SPARKTHRIFT_MONITOR_DATASOURCE);
+function getCellHighlightColor(cell: ExcelJS.Cell): string {
+  return (
+    cell.font?.color?.argb ??
+    (cell.fill as ExcelJS.FillPattern | undefined)?.fgColor?.argb ??
+    ""
+  );
+}
+
+describeByDatasource("校验结果查询", () => {
+  test("验证校验不通过时明细数据下载功能中校验字段标红", async ({ page }) => {
+    const downloadPath = path.join("/tmp", `t25_${Date.now()}.xlsx`);
+
+    try {
+      await ensureExecutedJsonTask(page, P0_FAIL_SCENARIO);
+      const instanceRow = await waitForVisibleTaskRow(
+        page,
+        P0_FAIL_SCENARIO.taskName,
+      );
+      const detailDrawer = await openTaskInstanceDetail(page, instanceRow);
+      const dataDrawer = await openTaskRuleDetailDataDrawer(page, detailDrawer);
+
+      const downloadButton = dataDrawer
+        .getByRole("button", { name: /下载明细|下载明细数据/ })
+        .first();
+      await expect(downloadButton).toBeVisible({ timeout: 10000 });
+
+      const [download] = await Promise.all([
+        page.waitForEvent("download", { timeout: 30000 }),
+        downloadButton.click(),
+      ]);
+      await download.saveAs(downloadPath);
+
+      expect(download.suggestedFilename()).toMatch(/\.xlsx$/i);
+      expect(fs.existsSync(downloadPath)).toBe(true);
+
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.readFile(downloadPath);
+      const sheet = workbook.worksheets[0];
+      expect(sheet).toBeTruthy();
+
+      const headerTexts = sheet
+        .getRow(1)
+        .values.slice(1)
+        .map((value) => String(value ?? "").trim());
+      const infoColumnIndex =
+        headerTexts.findIndex((value) => value === "info") + 1;
+      const remarkColumnIndex =
+        headerTexts.findIndex((value) => value === "remark") + 1;
+
+      expect(infoColumnIndex).toBeGreaterThan(0);
+      expect(remarkColumnIndex).toBeGreaterThan(0);
+
+      let invalidRowIndex = -1;
+      for (let rowIndex = 2; rowIndex <= sheet.rowCount; rowIndex += 1) {
+        const row = sheet.getRow(rowIndex);
+        const rowTexts = row.values
+          .slice(1)
+          .map((value) => String(value ?? "").trim());
+        if (
+          rowTexts.some(
+            (value) => value.includes("Tom") || value.includes("1000"),
+          )
+        ) {
+          invalidRowIndex = rowIndex;
+          break;
+        }
+      }
+
+      expect(invalidRowIndex).toBeGreaterThan(1);
+
+      const invalidRow = sheet.getRow(invalidRowIndex);
+      const infoCell = invalidRow.getCell(infoColumnIndex);
+      const remarkCell = invalidRow.getCell(remarkColumnIndex);
+
+      expect(getCellText(infoCell)).toMatch(/Tom|1000/);
+      expect(getCellText(remarkCell)).not.toBe("");
+      expect(getCellHighlightColor(infoCell)).not.toBe("");
+    } finally {
+      if (fs.existsSync(downloadPath)) {
+        fs.unlinkSync(downloadPath);
+      }
+    }
   });
 });

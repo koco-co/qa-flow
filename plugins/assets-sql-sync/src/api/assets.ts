@@ -38,6 +38,30 @@ function sleep(ms: number): Promise<void> {
 export class AssetsApi {
   constructor(private readonly client: DtStackClientLike) {}
 
+  async hasSyncedTables(
+    dataSourceId: number,
+    expectedTables: ReadonlyArray<string>,
+  ): Promise<boolean> {
+    if (expectedTables.length === 0) {
+      return false;
+    }
+
+    const dbs = await this.listSyncedDbs(dataSourceId);
+    if (dbs.length === 0) {
+      return false;
+    }
+
+    const syncedNames = new Set<string>();
+    for (const db of dbs) {
+      const tables = await this.listSyncedTables(dataSourceId, db.id);
+      for (const table of tables) {
+        syncedNames.add(table.tableName);
+      }
+    }
+
+    return expectedTables.every((name) => syncedNames.has(name));
+  }
+
   async findImportedDatasource(name: string): Promise<AssetsDatasource | null> {
     const resp = await this.client.post<{ records: AssetsDatasource[] }>(
       "/dassets/v1/dataSource/pageQuery",
@@ -46,16 +70,21 @@ export class AssetsApi {
     if (resp.code !== 1 || !resp.data?.records) return null;
     return (
       resp.data.records.find((ds) =>
-        (ds.dataSourceName ?? ds.name ?? "").toLowerCase().includes(name.toLowerCase()),
+        (ds.dataSourceName ?? ds.name ?? "")
+          .toLowerCase()
+          .includes(name.toLowerCase()),
       ) ?? null
     );
   }
 
   async listUnusedDatasources(search: string): Promise<AssetsDatasource[]> {
-    const resp = await this.client.post<AssetsDatasource[] | AssetsPage<AssetsDatasource>>(
-      "/dassets/v1/dataSource/listUnusedCenterDataSource",
-      { search, current: 1, size: 50 },
-    );
+    const resp = await this.client.post<
+      AssetsDatasource[] | AssetsPage<AssetsDatasource>
+    >("/dassets/v1/dataSource/listUnusedCenterDataSource", {
+      search,
+      current: 1,
+      size: 50,
+    });
     if (resp.code !== 1 || !resp.data) return [];
     if (Array.isArray(resp.data)) return resp.data;
     if (Array.isArray(resp.data.contentList)) return resp.data.contentList;
@@ -72,9 +101,12 @@ export class AssetsApi {
       // checkSimilar may fail, non-blocking
     }
 
-    const resp = await this.client.post<boolean>("/dassets/v1/dataSource/importDataSource", {
-      dtCenterSourceIdList: [centerSourceId],
-    });
+    const resp = await this.client.post<boolean>(
+      "/dassets/v1/dataSource/importDataSource",
+      {
+        dtCenterSourceIdList: [centerSourceId],
+      },
+    );
     if (resp.code !== 1) {
       throw new Error(`Import datasource failed: ${resp.message ?? "unknown"}`);
     }
@@ -87,15 +119,23 @@ export class AssetsApi {
     );
     if (resp.code !== 1 || !resp.data) return null;
     return (
-      resp.data.find((ds) => ds.dataSourceName.toLowerCase().includes(name.toLowerCase())) ?? null
+      resp.data.find((ds) =>
+        ds.dataSourceName.toLowerCase().includes(name.toLowerCase()),
+      ) ?? null
     );
   }
 
-  async triggerSync(dataSourceId: number, dataSourceType: number): Promise<void> {
-    const resp = await this.client.post("/dmetadata/v1/scheduleJob/syncSourceJob", {
-      dataSourceId,
-      dataSourceType,
-    });
+  async triggerSync(
+    dataSourceId: number,
+    dataSourceType: number,
+  ): Promise<void> {
+    const resp = await this.client.post(
+      "/dmetadata/v1/scheduleJob/syncSourceJob",
+      {
+        dataSourceId,
+        dataSourceType,
+      },
+    );
     if (resp.code !== 1) {
       throw new Error(`Trigger sync failed: ${resp.message ?? "unknown"}`);
     }
@@ -110,7 +150,10 @@ export class AssetsApi {
     return resp.data;
   }
 
-  async listSyncedTables(dataSourceId: number, dbId: number): Promise<SyncedTable[]> {
+  async listSyncedTables(
+    dataSourceId: number,
+    dbId: number,
+  ): Promise<SyncedTable[]> {
     const resp = await this.client.post<{ records?: SyncedTable[] }>(
       "/dmetadata/v1/dataTable/listSyncTables",
       { current: 1, size: 200, dataSourceId, dbId },
@@ -153,7 +196,11 @@ export class AssetsApi {
       if (allFound) return true;
     }
 
-    const expected = expectedTables?.length ? expectedTables.join(", ") : "any synced table";
-    throw new Error(`Metadata sync timed out after ${timeoutMs}ms while waiting for ${expected}.`);
+    const expected = expectedTables?.length
+      ? expectedTables.join(", ")
+      : "any synced table";
+    throw new Error(
+      `Metadata sync timed out after ${timeoutMs}ms while waiting for ${expected}.`,
+    );
   }
 }

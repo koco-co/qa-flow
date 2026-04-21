@@ -12,26 +12,12 @@ import {
   confirmAndWaitClose,
   deleteKey,
   searchKey,
+  buildImportXlsx,
 } from "./json-config-helpers";
-import ExcelJS from "exceljs";
 import * as path from "path";
 import * as fs from "fs";
 
 
-async function createImportXlsx(
-  filePath: string,
-  sheets: { name: string; headers: string[]; rows: string[][] }[],
-) {
-  const workbook = new ExcelJS.Workbook();
-  for (const sheet of sheets) {
-    const ws = workbook.addWorksheet(sheet.name);
-    ws.addRow(sheet.headers);
-    for (const row of sheet.rows) ws.addRow(row);
-  }
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  await workbook.xlsx.writeFile(filePath);
-}
 
 async function dismissWelcomeDialog(page: import("@playwright/test").Page) {
   const dialog = page.locator("dialog, .ant-modal").filter({ hasText: "欢迎使用" });
@@ -119,13 +105,7 @@ test.describe("【通用配置】json格式配置 - 通用配置-json格式校�
       );
 
       await step("步骤3: 创建xlsx文件(一层Sheet含existKey1，中文名称=更新键，value格式=^[A-Z]+$) → 文件创建成功", async () => {
-        await createImportXlsx(xlsxPath, [
-          {
-            name: "一层",
-            headers: ["*key", "中文名称", "value格式"],
-            rows: [[existKey1, "更新键", "^[A-Z]+$"]],
-          },
-        ]);
+        await buildImportXlsx(xlsxPath, [[existKey1, "更新键", "^[A-Z]+$"]]);
         expect(fs.existsSync(xlsxPath)).toBe(true);
       });
 

@@ -5,11 +5,15 @@
  */
 import type { Page, Locator } from "@playwright/test";
 import { expect } from "@playwright/test";
+import ExcelJS from "exceljs";
+import * as fs from "fs";
+import * as path from "path";
 
 const PATH = "/dataAssets/#/dq/generalConfig/jsonValidationConfig";
 function getPageUrl(): string {
   const baseUrl = process.env.UI_AUTOTEST_BASE_URL;
-  if (!baseUrl) throw new Error("UI_AUTOTEST_BASE_URL 未设置，无法拼接 PAGE_URL");
+  if (!baseUrl)
+    throw new Error("UI_AUTOTEST_BASE_URL 未设置，无法拼接 PAGE_URL");
   return baseUrl.replace(/\/$/, "") + PATH;
 }
 
@@ -27,14 +31,18 @@ async function dismissTopModal(page: Page): Promise<boolean> {
   } else {
     await page.keyboard.press("Escape").catch(() => undefined);
   }
-  await modalWrap.waitFor({ state: "hidden", timeout: 5000 }).catch(() => undefined);
+  await modalWrap
+    .waitFor({ state: "hidden", timeout: 5000 })
+    .catch(() => undefined);
   return true;
 }
 
 /** 进入 json格式校验管理页面并关闭可能出现的欢迎弹窗 */
 export async function gotoJsonConfigPage(page: Page): Promise<void> {
   await page.goto(getPageUrl());
-  await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
+  await page
+    .waitForLoadState("networkidle", { timeout: 5000 })
+    .catch(() => undefined);
 
   // 关闭欢迎弹窗
   const welcomeDialog = page
@@ -63,22 +71,31 @@ export async function gotoJsonConfigPage(page: Page): Promise<void> {
     const keyword = (await searchInput.inputValue().catch(() => "")).trim();
     if (keyword) {
       await searchInput.clear();
-      const searchBtn = page.locator(".dt-search .ant-input-search-button").first();
+      const searchBtn = page
+        .locator(".dt-search .ant-input-search-button")
+        .first();
       if (await searchBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
         await searchBtn.click();
       } else {
         await searchInput.press("Enter");
       }
-      await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
+      await page
+        .waitForLoadState("networkidle", { timeout: 5000 })
+        .catch(() => undefined);
     }
   }
 
-  const pageOne = page.locator(".ant-pagination-item").filter({ hasText: /^1$/ }).first();
+  const pageOne = page
+    .locator(".ant-pagination-item")
+    .filter({ hasText: /^1$/ })
+    .first();
   if (await pageOne.isVisible({ timeout: 2000 }).catch(() => false)) {
     const className = (await pageOne.getAttribute("class")) ?? "";
     if (!className.includes("ant-pagination-item-active")) {
       await pageOne.click();
-      await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
+      await page
+        .waitForLoadState("networkidle", { timeout: 5000 })
+        .catch(() => undefined);
     }
   }
 }
@@ -89,9 +106,7 @@ export async function clickHeaderButton(
   name: string,
 ): Promise<void> {
   // 按钮文本可能含内部空格（如"新 增"），用精确正则匹配完整按钮名称，排除"新增子层级"等包含子串的行内按钮
-  const exactPattern = new RegExp(
-    `^${name.split("").join("\\s*")}$`,
-  );
+  const exactPattern = new RegExp(`^${name.split("").join("\\s*")}$`);
   const button = page.getByRole("button", { name: exactPattern }).first();
   await button.waitFor({ state: "visible", timeout: 10000 });
   await button.click();
@@ -110,9 +125,9 @@ export async function waitModal(
     timeout: 5000,
   });
   if (titleText) {
-    await expect(
-      modal.locator(".ant-modal-title"),
-    ).toContainText(titleText, { timeout: 5000 });
+    await expect(modal.locator(".ant-modal-title")).toContainText(titleText, {
+      timeout: 5000,
+    });
   }
   return modal;
 }
@@ -173,10 +188,15 @@ export async function selectDataSourceType(
   await select.locator(".ant-select-selector").click();
   const dropdown = page.locator(".ant-select-dropdown:visible").last();
   await dropdown.waitFor({ state: "visible", timeout: 5000 });
-  const option = dropdown.locator(".ant-select-item-option").filter({ hasText: typeName }).first();
+  const option = dropdown
+    .locator(".ant-select-item-option")
+    .filter({ hasText: typeName })
+    .first();
   await option.waitFor({ state: "visible", timeout: 5000 });
   await option.click();
-  await expect(select.locator(".ant-select-selection-item").first()).toContainText(typeName, {
+  await expect(
+    select.locator(".ant-select-selection-item").first(),
+  ).toContainText(typeName, {
     timeout: 5000,
   });
 }
@@ -184,9 +204,7 @@ export async function selectDataSourceType(
 /** 点击弹窗内的确定按钮 */
 export async function clickModalConfirm(modal: Locator): Promise<void> {
   // 优先使用 role=button 语义化定位，避免对 ant-modal-footer CSS 类的强依赖
-  const confirmBtn = modal
-    .getByRole("button", { name: /确\s*定/ })
-    .first();
+  const confirmBtn = modal.getByRole("button", { name: /确\s*定/ }).first();
   await confirmBtn.waitFor({ state: "visible", timeout: 5000 });
   await confirmBtn.click();
 }
@@ -209,13 +227,17 @@ export async function confirmAndWaitClose(
     }
     // 检查是否有表单校验错误或 API 错误消息，有则抛出以便调用方感知
     const hasValidationError = await page
-      .locator(".ant-modal:visible .ant-form-item-explain-error, .ant-modal:visible .ant-alert, .ant-modal:visible [role='alert']")
+      .locator(
+        ".ant-modal:visible .ant-form-item-explain-error, .ant-modal:visible .ant-alert, .ant-modal:visible [role='alert']",
+      )
       .first()
       .isVisible()
       .catch(() => false);
     if (hasValidationError) {
       const errText = await page
-        .locator(".ant-modal:visible .ant-form-item-explain-error, .ant-modal:visible .ant-alert, .ant-modal:visible [role='alert']")
+        .locator(
+          ".ant-modal:visible .ant-form-item-explain-error, .ant-modal:visible .ant-alert, .ant-modal:visible [role='alert']",
+        )
         .first()
         .textContent()
         .catch(() => "unknown validation error");
@@ -241,11 +263,16 @@ export async function confirmAndWaitClose(
   const stillOpen = await page.locator(".ant-modal-wrap:visible").count();
   if (stillOpen > 0) {
     await page.keyboard.press("Escape");
-    await page.locator(".ant-modal-wrap:visible").waitFor({ state: "hidden", timeout: 3000 }).catch(() => undefined);
+    await page
+      .locator(".ant-modal-wrap:visible")
+      .waitFor({ state: "hidden", timeout: 3000 })
+      .catch(() => undefined);
   }
 
   // networkidle 限时 8s，避免后台轮询请求阻塞测试进程
-  await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => undefined);
+  await page
+    .waitForLoadState("networkidle", { timeout: 3000 })
+    .catch(() => undefined);
   await page.waitForTimeout(300);
 }
 
@@ -263,10 +290,16 @@ export async function addKey(
   const modal = await waitModal(page, "新建");
 
   // 检查数据源类型是否已有值，若无则选择默认值（SparkThrift2.x），避免表单校验失败
-  const dsFormItem = modal.locator(".ant-form-item").filter({ hasText: "数据源类型" });
+  const dsFormItem = modal
+    .locator(".ant-form-item")
+    .filter({ hasText: "数据源类型" });
   const dsSelect = dsFormItem.locator(".ant-select").first();
-  const dsSelectionItem = dsSelect.locator(".ant-select-selection-item").first();
-  const hasDataSource = await dsSelectionItem.isVisible({ timeout: 1000 }).catch(() => false);
+  const dsSelectionItem = dsSelect
+    .locator(".ant-select-selection-item")
+    .first();
+  const hasDataSource = await dsSelectionItem
+    .isVisible({ timeout: 1000 })
+    .catch(() => false);
   const targetDataSourceType = opts?.dataSourceType ?? "SparkThrift2.x";
   if (!hasDataSource) {
     await selectDataSourceType(page, modal, targetDataSourceType);
@@ -295,7 +328,10 @@ export async function ensureRowVisibleByKey(
   keyName: string,
   timeout = 15000,
 ): Promise<Locator> {
-  const row = page.locator(".ant-table-row").filter({ hasText: keyName }).first();
+  const row = page
+    .locator(".ant-table-row")
+    .filter({ hasText: keyName })
+    .first();
   const attempts = Math.max(2, Math.ceil(timeout / 5000));
   for (let attempt = 1; attempt <= attempts; attempt++) {
     if (await row.isVisible({ timeout: 1500 }).catch(() => false)) {
@@ -351,10 +387,7 @@ export async function addChildKey(
 }
 
 /** 展开指定 key 的子层级（仅在折叠状态时点击，避免意外收起） */
-export async function expandRow(
-  page: Page,
-  keyName: string,
-): Promise<void> {
+export async function expandRow(page: Page, keyName: string): Promise<void> {
   const row = page
     .locator(".ant-table-row")
     .filter({ hasText: keyName })
@@ -381,8 +414,12 @@ export async function expandRow(
 }
 
 /** 删除指定 key（单条删除 + Popconfirm 确认） */
-export async function deleteKey(page: Page, keyName: string): Promise<void> {
-  if (process.env.UI_AUTOTEST_SKIP_CLEANUP === "true") {
+export async function deleteKey(
+  page: Page,
+  keyName: string,
+  options?: { force?: boolean },
+): Promise<void> {
+  if (process.env.UI_AUTOTEST_SKIP_CLEANUP === "true" && !options?.force) {
     return;
   }
 
@@ -393,22 +430,32 @@ export async function deleteKey(page: Page, keyName: string): Promise<void> {
   try {
     await searchKey(page, keyName);
 
-    const row = page.locator(".ant-table-row").filter({ hasText: keyName }).first();
+    const row = page
+      .locator(".ant-table-row")
+      .filter({ hasText: keyName })
+      .first();
     if (!(await row.isVisible({ timeout: 2000 }).catch(() => false))) {
       await clearSearch(page).catch(() => undefined);
       return;
     }
 
-    const deleteBtn = row.locator(".ant-btn-link").filter({ hasText: "删除" }).first();
+    const deleteBtn = row
+      .locator(".ant-btn-link")
+      .filter({ hasText: "删除" })
+      .first();
     await expect(deleteBtn).toBeVisible({ timeout: 3000 });
     await deleteBtn.click();
 
-    const popconfirm = page.locator(".ant-popover:visible, .ant-popconfirm:visible").last();
+    const popconfirm = page
+      .locator(".ant-popover:visible, .ant-popconfirm:visible")
+      .last();
     if (await popconfirm.isVisible({ timeout: 3000 }).catch(() => false)) {
       const okBtn = popconfirm.locator(".ant-btn-primary").first();
       await okBtn.click();
     }
-    await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => undefined);
+    await page
+      .waitForLoadState("networkidle", { timeout: 3000 })
+      .catch(() => undefined);
     await clearSearch(page).catch(() => undefined);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -428,15 +475,23 @@ async function triggerSearch(page: Page): Promise<void> {
     await searchInput.press("Enter");
   };
   if (await searchInput.isVisible({ timeout: 1000 }).catch(() => false)) {
-    const searchBtn = page.locator(".dt-search .ant-input-search-button").first();
+    const searchBtn = page
+      .locator(".dt-search .ant-input-search-button")
+      .first();
     if (await searchBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await page.locator(".ant-message").waitFor({ state: "hidden", timeout: 1500 }).catch(() => undefined);
+      await page
+        .locator(".ant-message")
+        .waitFor({ state: "hidden", timeout: 1500 })
+        .catch(() => undefined);
       try {
         await searchBtn.click({ timeout: 2000 });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         if (/intercepts pointer events|Timeout/i.test(message)) {
-          await page.locator(".ant-message").waitFor({ state: "hidden", timeout: 3000 }).catch(() => undefined);
+          await page
+            .locator(".ant-message")
+            .waitFor({ state: "hidden", timeout: 3000 })
+            .catch(() => undefined);
           await submitByKeyboard();
         } else {
           throw error;
@@ -446,7 +501,9 @@ async function triggerSearch(page: Page): Promise<void> {
       await submitByKeyboard();
     }
   } else {
-    const searchBtn = page.locator(".dt-search .ant-input-search-button").first();
+    const searchBtn = page
+      .locator(".dt-search .ant-input-search-button")
+      .first();
     await searchBtn.click({ timeout: 2000 });
   }
   await page
@@ -454,7 +511,9 @@ async function triggerSearch(page: Page): Promise<void> {
     .waitFor({ state: "hidden", timeout: 10000 })
     .catch(() => undefined);
   // networkidle 限时 8s，避免后台轮询请求阻塞测试进程
-  await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => undefined);
+  await page
+    .waitForLoadState("networkidle", { timeout: 3000 })
+    .catch(() => undefined);
   await page.waitForTimeout(300);
 }
 
@@ -470,7 +529,9 @@ export async function searchKey(page: Page, keyword: string): Promise<void> {
   const runSearch = async () => {
     await searchInput.fill(keyword);
     await triggerSearch(page);
-    await expect(searchInput).toHaveValue(keyword, { timeout: 3000 }).catch(() => undefined);
+    await expect(searchInput)
+      .toHaveValue(keyword, { timeout: 3000 })
+      .catch(() => undefined);
   };
   // 直接 fill(keyword) 而不先 clear()：
   // Ant Design Input.Search 的 onChange 只在 value 变为空时才触发 setSearchValue('')，
@@ -479,7 +540,9 @@ export async function searchKey(page: Page, keyword: string): Promise<void> {
   // 造成表格显示空数据（暂无数据）的竞态问题。
   await runSearch();
 
-  const emptyPlaceholder = page.locator(".ant-table-placeholder:visible").first();
+  const emptyPlaceholder = page
+    .locator(".ant-table-placeholder:visible")
+    .first();
   if (await emptyPlaceholder.isVisible({ timeout: 800 }).catch(() => false)) {
     await gotoJsonConfigPage(page);
     await runSearch();
@@ -497,4 +560,51 @@ export async function clearSearch(page: Page): Promise<void> {
   }
   await searchInput.clear();
   await triggerSearch(page);
+}
+
+/**
+ * 根据官方模板格式构建合规的导入 xlsx 文件。
+ *
+ * 服务端要求文件包含全部 5 个 Sheet（一层到五层），缺少任意层级会报 "导入文件缺少层级"。
+ * 各 Sheet 必须包含指定 header 行（以 * 开头表示必填列），数据行可为空。
+ *
+ * 列结构（来自服务端下载的 json_format_import_template.xlsx）：
+ *   一层: * key | 中文名称 | value格式
+ *   二层: * 第一层级key名 | * key | 中文名称 | value格式
+ *   三层: * 第一层级key名 | * 第二层级key名 | * key | 中文名称 | value格式
+ *   四层: * 第一层级key名 | * 第二层级key名 | * 第三层级key名 | * key | 中文名称 | value格式
+ *   五层: * 第一层级key名 | * 第二层级key名 | * 第三层级key名 | * 第四层级key名 | * key | 中文名称 | value格式
+ *
+ * @param outputPath  生成文件的完整路径
+ * @param layer1Rows  一层数据行，每行为 [key, 中文名称, value格式]
+ * @param layer2Rows  二层数据行，每行为 [第一层级key名, key, 中文名称, value格式]
+ */
+export async function buildImportXlsx(
+  outputPath: string,
+  layer1Rows: [string, string, string][],
+  layer2Rows?: [string, string, string, string][],
+): Promise<void> {
+  const workbook = new ExcelJS.Workbook();
+
+  const ws1 = workbook.addWorksheet("一层");
+  ws1.addRow(["* key", "中文名称", "value格式"]);
+  for (const row of layer1Rows) ws1.addRow(row);
+
+  const ws2 = workbook.addWorksheet("二层");
+  ws2.addRow(["* 第一层级key名", "* key", "中文名称", "value格式"]);
+  for (const row of layer2Rows ?? []) ws2.addRow(row);
+
+  // 三层/四层/五层：仅包含必要的 header，无数据行（服务端要求 5 个 sheet 都存在）
+  const ws3 = workbook.addWorksheet("三层");
+  ws3.addRow(["* 第一层级key名", "* 第二层级key名", "* key", "中文名称", "value格式"]);
+
+  const ws4 = workbook.addWorksheet("四层");
+  ws4.addRow(["* 第一层级key名", "* 第二层级key名", "* 第三层级key名", "* key", "中文名称", "value格式"]);
+
+  const ws5 = workbook.addWorksheet("五层");
+  ws5.addRow(["* 第一层级key名", "* 第二层级key名", "* 第三层级key名", "* 第四层级key名", "* key", "中文名称", "value格式"]);
+
+  const dir = path.dirname(outputPath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  await workbook.xlsx.writeFile(outputPath);
 }

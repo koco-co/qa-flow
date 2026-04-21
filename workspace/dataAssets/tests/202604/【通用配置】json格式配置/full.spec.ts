@@ -1,6 +1,6 @@
 // 全量测试（P0+P1+P2）
 // 生成时间：2026-04-17T08:42:41.077Z
-// 用例数量：43
+// 用例数量：46
 import "./t1.ts";
 import "./t2.ts";
 import "./t3.ts";
@@ -44,3 +44,6 @@ import "./t40.ts";
 import "./t41.ts";
 import "./t42.ts";
 import "./t43.ts";
+import "./t44.ts";
+import "./t45.ts";
+import "./t46.ts";

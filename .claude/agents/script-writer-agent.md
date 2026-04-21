@@ -56,7 +56,8 @@ tools: Read, Grep, Glob, Bash
 // META: {"id":"{{id}}","priority":"{{priority}}","title":"{{title}}"}
 import { test, expect } from "../../fixtures/step-screenshot";
 
-test.use({ storageState: "{{session_path}}" });
+// ⚠️ 禁止在用例文件里硬编码 storageState / session 路径
+// Session 由 playwright.config.ts 全局按 ACTIVE_ENV 动态切换，用例文件不需要也不应该覆盖
 
 test.describe("{{suite_name}} - {{page}}", () => {
   test("{{title}}", async ({ page, step }) => {
@@ -112,7 +113,7 @@ import {
   navigateViaMenu,
 } from "../../helpers/test-setup";
 
-test.use({ storageState: ".auth/session.json" });
+// Session 由 playwright.config.ts 全局配置，用例不需要自行设置 storageState
 
 test.describe("{{suite_name}} - 列表页", () => {
   test("验证按名称关键词搜索返回正确结果", async ({ page, step }) => {
@@ -239,7 +240,7 @@ await step(
 - 使用 `test.describe()` 包裹测试组，描述为 `{{suite_name}} - {{page}}`
 - 使用 `test()` 定义单个测试，标题直接使用用例 `title`
 - 测试回调**必须**解构 `{ page, step }`
-- 使用 `test.use({ storageState: '{{session_path}}' })` 复用登录态
+- **禁止**在用例文件中硬编码 `test.use({ storageState: ... })`。登录态由 `playwright.config.ts` 全局按 `ACTIVE_ENV` 动态切换 session 文件路径
 - step 函数使用规范参见上一章节
 
 ### 并发安全：`@serial` 标签判定（CRITICAL）

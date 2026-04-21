@@ -29,6 +29,22 @@ const RETRYABLE_HTTP_STATUS = new Set([502, 503, 504]);
 const MAX_RETRY_ATTEMPTS = 6;
 const RETRY_DELAY_MS = 2_000;
 
+function resolveRequestTimeoutMs(): number {
+  const raw = process.env.UI_AUTOTEST_API_REQUEST_TIMEOUT_MS;
+  if (!raw) {
+    return 30_000;
+  }
+
+  const parsed = Number(raw);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
+
+  return 30_000;
+}
+
+const REQUEST_TIMEOUT_MS = resolveRequestTimeoutMs();
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -75,8 +91,13 @@ export class DtStackClient implements DtStackClientLike {
       }
 
       const text = await response.text();
-      lastError = new Error(`HTTP ${response.status} ${response.statusText}: ${text}`);
-      if (!isRetryableHttpStatus(response.status) || attempt === MAX_RETRY_ATTEMPTS) {
+      lastError = new Error(
+        `HTTP ${response.status} ${response.statusText}: ${text}`,
+      );
+      if (
+        !isRetryableHttpStatus(response.status) ||
+        attempt === MAX_RETRY_ATTEMPTS
+      ) {
         throw lastError;
       }
 
@@ -114,42 +135,32 @@ export class BrowserDtStackClient implements DtStackClientLike {
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt += 1) {
-      const response = await this.page.evaluate(
-        async ({ requestUrl, requestBody, requestHeaders }) => {
-          const result = await fetch(requestUrl, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "content-type": "application/json;charset=UTF-8",
-              "Accept-Language": "zh-CN",
-              ...requestHeaders,
-            },
-            body: requestBody === undefined ? undefined : JSON.stringify(requestBody),
-          });
-          const text = await result.text();
-          return {
-            ok: result.ok,
-            status: result.status,
-            statusText: result.statusText,
-            text,
-          };
+      const response = await this.page.context().request.post(url, {
+        data,
+        failOnStatusCode: false,
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+          "Accept-Language": "zh-CN",
+          ...extraHeaders,
         },
-        {
-          requestUrl: url,
-          requestBody: data,
-          requestHeaders: extraHeaders ?? {},
-        },
-      );
+        timeout: REQUEST_TIMEOUT_MS,
+      });
+      const text = await response.text();
 
-      if (response.ok) {
-        if (!response.text.trim()) {
+      if (response.ok()) {
+        if (!text.trim()) {
           return {} as DtStackResponse<T>;
         }
-        return JSON.parse(response.text) as DtStackResponse<T>;
+        return JSON.parse(text) as DtStackResponse<T>;
       }
 
-      lastError = new Error(`HTTP ${response.status} ${response.statusText}: ${response.text}`);
-      if (!isRetryableHttpStatus(response.status) || attempt === MAX_RETRY_ATTEMPTS) {
+      lastError = new Error(
+        `HTTP ${response.status()} ${response.statusText()}: ${text}`,
+      );
+      if (
+        !isRetryableHttpStatus(response.status()) ||
+        attempt === MAX_RETRY_ATTEMPTS
+      ) {
         throw lastError;
       }
 

@@ -1,64 +1,64 @@
 // META: {"id":"t20","priority":"P1","title":"【P1】验证删除已被有效性规则引用的key后规则配置页面回显和编辑功能正常"}
 import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
 import {
-  addRuleToPackage,
-  configureJsonFormatRule,
-  createRuleSetDraft,
-  gotoRuleSetList,
-  DORIS_MONITOR_DATASOURCE,
-  SPARKTHRIFT_MONITOR_DATASOURCE,
-} from "./json-format-utils";
-import { FORMAT_JSON_VERIFICATION_FUNC, VALUE_FORMAT_TABLE } from "./data-15694";
+  deleteKey,
+  gotoJsonConfigPage,
+} from "../【通用配置】json格式配置/json-config-helpers";
+import {
+  getSelectedValidationKeyTexts,
+  getValidationKeyLabels,
+  getValidationKeyState,
+  openScenarioRuleSetPackage,
+  openValidationKeyDropdown,
+} from "./json-format-suite-helpers";
+import { ensureJsonFormatTask } from "./json-format-task-helpers";
+import { saveRuleSet } from "./rule-editor-base";
+import { describeByDatasource } from "./suite-case-helpers";
+import { DELETE_REFERENCE_SCENARIO } from "./test-data";
 
-test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
+test.use({
+  storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json",
+});
+test.setTimeout(600000);
 
-const SUITE_NAME = "【内置规则丰富】有效性，json中key对应的value值格式校验(#15694)";
-const PAGE_NAME = "规则集管理";
-const CASE_TITLE = '【P1】验证删除已被有效性规则引用的key后规则配置页面回显和编辑功能正常';
+describeByDatasource("规则集管理", () => {
+  test("验证删除已被有效性规则引用的key后规则配置页面回显和编辑功能正常", async ({
+    page,
+  }) => {
+    await ensureJsonFormatTask(page, DELETE_REFERENCE_SCENARIO);
 
-async function runJsonFormatCaseByDatasource(
-  page: import("@playwright/test").Page,
-  step: any,
-  datasourceLabel: string,
-  datasourceConfig: typeof SPARKTHRIFT_MONITOR_DATASOURCE,
-): Promise<void> {
-  const packageName = uniqueName('tt20_' + (datasourceLabel.includes("Spark") ? "spark" : "doris"));
+    await gotoJsonConfigPage(page);
+    await deleteKey(page, "del-key-a", { force: true });
 
-  await step('步骤1: 打开规则集管理页面（' + datasourceLabel + '）', async () => {
-    await gotoRuleSetList(page);
-    await expect(page.locator(".ant-table-tbody, .ant-empty").first()).toBeVisible({ timeout: 15000 });
-  });
+    const rulePackage = await openScenarioRuleSetPackage(
+      page,
+      DELETE_REFERENCE_SCENARIO,
+    );
+    const ruleForm = rulePackage.locator(".ruleForm").first();
+    await expect(ruleForm).toBeVisible({ timeout: 10000 });
 
-  await step('步骤2: 使用' + datasourceLabel + '创建规则集草稿并进入Step2', async () => {
-    await createRuleSetDraft(page, VALUE_FORMAT_TABLE, [packageName], datasourceConfig);
-    await expect(page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first()).toBeVisible({ timeout: 15000 });
-  });
+    const selectedKeys = await getSelectedValidationKeyTexts(ruleForm);
+    expect(selectedKeys).toContain("del-key-b");
+    expect(selectedKeys).not.toContain("del-key-a");
 
-  const ruleForm = await step('步骤3: 新增有效性校验规则（' + datasourceLabel + '）', async () => {
-    const form = await addRuleToPackage(page, packageName, "有效性校验");
-    await expect(form).toBeVisible({ timeout: 10000 });
-    return form;
-  });
+    await openValidationKeyDropdown(page, ruleForm);
+    const labels = await getValidationKeyLabels(page);
+    expect(labels).toContain("del-key-b");
+    expect(labels).not.toContain("del-key-a");
 
-  await step('步骤4: 配置格式-json格式校验规则（' + datasourceLabel + '）', async () => {
-    await configureJsonFormatRule(page, ruleForm, {
-      field: "info",
-      keyNames: ["key1"],
-      ruleStrength: "强规则",
-      description: '【P1】验证删除已被有效性规则引用的key后规则配置页面回显和编辑功能正常-' + datasourceLabel,
-    });
-    await expect(ruleForm).toContainText(FORMAT_JSON_VERIFICATION_FUNC, { timeout: 5000 });
-  });
+    const keyState = await getValidationKeyState(page, "del-key-b");
+    expect(keyState.checked).toBe(true);
+    await page.keyboard.press("Escape").catch(() => undefined);
 
-  await step('步骤5: 校验规则配置区域可见且参数已回显（' + datasourceLabel + '）', async () => {
-    // TODO: 该用例的业务断言需要按 Archive 步骤细化；当前先保证双数据源主流程可执行。
-    await expect(ruleForm).toBeVisible({ timeout: 5000 });
-  });
-}
+    await saveRuleSet(page);
 
-test.describe(SUITE_NAME + " - " + PAGE_NAME, () => {
-  test(CASE_TITLE + "（SparkThrift2.x）", async ({ page, step }) => {
-    await runJsonFormatCaseByDatasource(page, step, "SparkThrift2.x", SPARKTHRIFT_MONITOR_DATASOURCE);
+    const reopenedPackage = await openScenarioRuleSetPackage(
+      page,
+      DELETE_REFERENCE_SCENARIO,
+    );
+    const reopenedRuleForm = reopenedPackage.locator(".ruleForm").first();
+    const reopenedKeys = await getSelectedValidationKeyTexts(reopenedRuleForm);
+    expect(reopenedKeys).toContain("del-key-b");
+    expect(reopenedKeys).not.toContain("del-key-a");
   });
 });

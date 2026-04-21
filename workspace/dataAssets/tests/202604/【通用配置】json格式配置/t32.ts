@@ -3,25 +3,9 @@ import { test, expect } from "../../fixtures/step-screenshot";
 import {
   uniqueName,
 } from "../../helpers/test-setup";
-import { gotoJsonConfigPage, searchKey } from "./json-config-helpers";
-import ExcelJS from "exceljs";
+import { gotoJsonConfigPage, searchKey, buildImportXlsx } from "./json-config-helpers";
 import * as path from "path";
 import * as fs from "fs";
-
-async function createImportXlsx(
-  filePath: string,
-  sheets: { name: string; headers: string[]; rows: string[][] }[],
-) {
-  const workbook = new ExcelJS.Workbook();
-  for (const sheet of sheets) {
-    const ws = workbook.addWorksheet(sheet.name);
-    ws.addRow(sheet.headers);
-    for (const row of sheet.rows) ws.addRow(row);
-  }
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  await workbook.xlsx.writeFile(filePath);
-}
 
 async function importXlsx(
   page: import("@playwright/test").Page,
@@ -70,13 +54,7 @@ test.describe("【通用配置】json格式配置 - 通用配置-json格式校�
       });
 
       await step("步骤2: 创建xlsx文件(含全新key skipNewKey1，中文名称=全新键，value=^\\d+$) → 文件创建成功", async () => {
-        await createImportXlsx(xlsxPath, [
-          {
-            name: "一层",
-            headers: ["key", "中文名称", "value格式"],
-            rows: [[skipNewKey1, "全新键", "^\\d+$"]],
-          },
-        ]);
+        await buildImportXlsx(xlsxPath, [[skipNewKey1, "全新键", "^\\d+$"]]);
         expect(fs.existsSync(xlsxPath)).toBe(true);
       });
 

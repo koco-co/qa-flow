@@ -6,37 +6,10 @@ import {
   deleteKey,
   searchKey,
   ensureRowVisibleByKey,
+  buildImportXlsx,
 } from "./json-config-helpers";
-import ExcelJS from "exceljs";
 import * as path from "path";
 import * as fs from "fs";
-
-
-async function createImportXlsx(
-  filePath: string,
-  sheets: { name: string; headers: string[]; rows: string[][] }[],
-) {
-  const workbook = new ExcelJS.Workbook();
-  for (const sheet of sheets) {
-    const ws = workbook.addWorksheet(sheet.name);
-    ws.addRow(sheet.headers);
-    for (const row of sheet.rows) ws.addRow(row);
-  }
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  await workbook.xlsx.writeFile(filePath);
-}
-
-async function dismissWelcomeDialog(page: import("@playwright/test").Page) {
-  const dialog = page.locator("dialog, .ant-modal").filter({ hasText: "欢迎使用" });
-  if (await dialog.isVisible({ timeout: 3000 }).catch(() => false)) {
-    const btn = dialog.getByRole("button", { name: "知道了" });
-    if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await btn.click();
-      await dialog.waitFor({ state: "hidden", timeout: 5000 }).catch(() => {});
-    }
-  }
-}
 
 async function importXlsx(
   page: import("@playwright/test").Page,
@@ -56,7 +29,6 @@ async function importXlsx(
     await page.waitForTimeout(1000);
     await modal.getByRole("button", { name: /^确\s*定$/ }).click();
     await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
-    await dismissWelcomeDialog(page);
   });
 }
 
@@ -73,14 +45,8 @@ test.describe("【通用配置】json格式配置 - 通用配置-json格式校�
         ).toBeVisible({ timeout: 15000 });
       });
 
-      await step("步骤2: 创建xlsx文件(一层Sheet含全新key brandNewKey1，中文名称=全新键，value格式=^\\d+$) → 文件创建成功", async () => {
-        await createImportXlsx(xlsxPath, [
-          {
-            name: "一层",
-            headers: ["*key", "中文名称", "value格式"],
-            rows: [[brandNewKey1, "全新键", "^\\d+$"]],
-          },
-        ]);
+      await step("步骤2: 创建合规xlsx文件(5个Sheet，一层含全新key brandNewKey1，中文名称=全新键，value格式=^\\d+$) → 文件创建成功", async () => {
+        await buildImportXlsx(xlsxPath, [[brandNewKey1, "全新键", "^\\d+$"]]);
         expect(fs.existsSync(xlsxPath)).toBe(true);
       });
 

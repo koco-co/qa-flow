@@ -29,6 +29,13 @@ type MonitorListRow = {
   execEndTime?: string | null;
 };
 
+type ProjectDatasourceRow = {
+  id?: number | string;
+  dataSourceName?: string;
+  dtCenterSourceName?: string;
+  sourceTypeValue?: string;
+};
+
 type RulePackageRow = {
   id?: number | string;
   packageId?: number | string;
@@ -97,7 +104,10 @@ function encodeBase64(input: string): string {
 
 function buildTaskApiUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return new URL(normalizedPath, new URL(normalizeDataAssetsBaseUrl()).origin).toString();
+  return new URL(
+    normalizedPath,
+    new URL(normalizeDataAssetsBaseUrl()).origin,
+  ).toString();
 }
 
 async function postJsonApi<T>(
@@ -107,33 +117,29 @@ async function postJsonApi<T>(
   extraHeaders: Record<string, string> = {},
 ): Promise<T> {
   const requestUrl = /^https?:\/\//.test(path) ? path : buildTaskApiUrl(path);
-  const response = await page.evaluate(
-    async ({ url, requestBody, headers }) => {
-      const result = await fetch(url, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json;charset=UTF-8",
-          "Accept-Language": "zh-CN",
-          ...headers,
-        },
-        body: JSON.stringify(requestBody),
-      });
-      return {
-        ok: result.ok,
-        status: result.status,
-        text: await result.text(),
-      };
+  const response = await page.context().request.post(requestUrl, {
+    data: body,
+    failOnStatusCode: false,
+    headers: {
+      "content-type": "application/json;charset=UTF-8",
+      "Accept-Language": "zh-CN",
+      ...extraHeaders,
     },
-    { url: requestUrl, requestBody: body, headers: extraHeaders },
-  );
+  });
+  const responseText = await response.text();
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status} from ${requestUrl}: ${response.text.slice(0, 200)}`);
+    throw new Error(
+      `HTTP ${response.status()} from ${requestUrl}: ${responseText.slice(0, 200)}`,
+    );
   }
-  return JSON.parse(response.text) as T;
+  return JSON.parse(responseText) as T;
 }
 
-async function postTaskApi<T>(page: Page, path: string, body: unknown): Promise<T> {
+async function postTaskApi<T>(
+  page: Page,
+  path: string,
+  body: unknown,
+): Promise<T> {
   const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
   return postJsonApi<T>(page, path, body, {
     "X-Valid-Project-ID": String(effectiveProjectId),
@@ -148,22 +154,29 @@ function parseRuleTypeValue(item: RuleTypeRow): number {
 
 function serializeImportedRule(rule: ImportedRuleRow): Record<string, unknown> {
   const normalizedRule: ImportedRuleRow = { ...rule };
-  const standardRuleList = (normalizedRule.standardRules ?? normalizedRule.standardRuleList)?.map(
-    (item) => ({ ...item }),
-  );
+  const standardRuleList = (
+    normalizedRule.standardRules ?? normalizedRule.standardRuleList
+  )?.map((item) => ({ ...item }));
   if (standardRuleList) {
     normalizedRule.standardRuleList = standardRuleList;
   }
   delete normalizedRule.standardRules;
-  const { id, isNew, isTable, percentType, functionName, verifyTypeValue, ...serializedRule } =
-    normalizedRule as ImportedRuleRow & {
-      id?: unknown;
-      isNew?: unknown;
-      isTable?: unknown;
-      percentType?: unknown;
-      functionName?: unknown;
-      verifyTypeValue?: unknown;
-    };
+  const {
+    id,
+    isNew,
+    isTable,
+    percentType,
+    functionName,
+    verifyTypeValue,
+    ...serializedRule
+  } = normalizedRule as ImportedRuleRow & {
+    id?: unknown;
+    isNew?: unknown;
+    isTable?: unknown;
+    percentType?: unknown;
+    functionName?: unknown;
+    verifyTypeValue?: unknown;
+  };
   void id;
   void isNew;
   void isTable;
@@ -171,13 +184,22 @@ function serializeImportedRule(rule: ImportedRuleRow): Record<string, unknown> {
   void functionName;
   void verifyTypeValue;
 
-  if (typeof serializedRule.customSql === "string" && serializedRule.customSql) {
+  if (
+    typeof serializedRule.customSql === "string" &&
+    serializedRule.customSql
+  ) {
     serializedRule.customSql = encodeBase64(serializedRule.customSql);
   }
-  if (typeof serializedRule.selectDataSql === "string" && serializedRule.selectDataSql) {
+  if (
+    typeof serializedRule.selectDataSql === "string" &&
+    serializedRule.selectDataSql
+  ) {
     serializedRule.selectDataSql = encodeBase64(serializedRule.selectDataSql);
   }
-  if (typeof serializedRule.customizeSql === "string" && serializedRule.customizeSql) {
+  if (
+    typeof serializedRule.customizeSql === "string" &&
+    serializedRule.customizeSql
+  ) {
     serializedRule.customizeSql = encodeBase64(serializedRule.customizeSql);
   }
   if (serializedRule.ruleStrength !== undefined) {
@@ -187,9 +209,15 @@ function serializeImportedRule(rule: ImportedRuleRow): Record<string, unknown> {
 }
 
 function extractMonitorRows(payload: {
-  data?: { data?: MonitorListRow[]; contentList?: MonitorListRow[]; list?: MonitorListRow[] };
+  data?: {
+    data?: MonitorListRow[];
+    contentList?: MonitorListRow[];
+    list?: MonitorListRow[];
+  };
 }): MonitorListRow[] {
-  return payload.data?.data ?? payload.data?.contentList ?? payload.data?.list ?? [];
+  return (
+    payload.data?.data ?? payload.data?.contentList ?? payload.data?.list ?? []
+  );
 }
 
 function getMonitorId(row: MonitorListRow): number | null {
@@ -201,26 +229,64 @@ function getMonitorName(row: MonitorListRow): string {
   return String(row.ruleName ?? row.monitorName ?? row.name ?? "");
 }
 
-async function getProjectDatasourceId(page: Page): Promise<number> {
+function matchesCurrentDatasource(item: ProjectDatasourceRow): boolean {
   const datasource = getCurrentDatasource();
-  const response = await postTaskApi<{
-    data?: Array<{
-      id?: number | string;
-      dataSourceName?: string;
-      dtCenterSourceName?: string;
-      sourceTypeValue?: string;
-    }>;
-  }>(page, "/dassets/v1/dataSource/monitor/list", {});
-  const matched = (response.data ?? []).find((item) =>
+  return (
     datasource.optionPattern.test(
       `${String(item.dataSourceName ?? "")} ${String(item.dtCenterSourceName ?? "")}`,
-    ) || datasource.sourceTypePattern.test(String(item.sourceTypeValue ?? "")),
+    ) || datasource.sourceTypePattern.test(String(item.sourceTypeValue ?? ""))
   );
-  const id = Number(matched?.id);
-  if (!Number.isFinite(id)) {
+}
+
+async function getCandidateDatasourceIds(page: Page): Promise<number[]> {
+  const datasource = getCurrentDatasource();
+  const candidateIds: number[] = [];
+
+  for (const endpoint of [
+    "/dmetadata/v1/dataSource/monitor/list",
+    "/dassets/v1/dataSource/monitor/list",
+  ]) {
+    const response = await postTaskApi<{
+      data?: ProjectDatasourceRow[];
+    }>(page, endpoint, {}).catch(() => null);
+    for (const item of response?.data ?? []) {
+      const id = Number(item.id);
+      if (
+        Number.isFinite(id) &&
+        matchesCurrentDatasource(item) &&
+        !candidateIds.includes(id)
+      ) {
+        candidateIds.push(id);
+      }
+    }
+  }
+
+  const pageQueryResponse = await postTaskApi<{
+    data?: {
+      contentList?: ProjectDatasourceRow[];
+    };
+  }>(page, "/dassets/v1/dataSource/pageQuery", {
+    current: 1,
+    size: 200,
+    search: "",
+  }).catch(() => null);
+
+  for (const item of pageQueryResponse?.data?.contentList ?? []) {
+    const id = Number(item.id);
+    if (
+      Number.isFinite(id) &&
+      matchesCurrentDatasource(item) &&
+      !candidateIds.includes(id)
+    ) {
+      candidateIds.push(id);
+    }
+  }
+
+  if (candidateIds.length === 0) {
     throw new Error(`未找到 ${datasource.reportName} 数据源`);
   }
-  return id;
+
+  return candidateIds;
 }
 
 async function importTaskRulesFromPackage(
@@ -238,27 +304,37 @@ async function importTaskRulesFromPackage(
   const schemaCandidates = [datasource.database, strippedDatabase].filter(
     (value, index, array) => value && array.indexOf(value) === index,
   );
-  const dataSourceId = await getProjectDatasourceId(page);
+  const candidateDataSourceIds = await getCandidateDatasourceIds(page);
 
   let packageRow: RulePackageRow | undefined;
-  for (const schemaName of schemaCandidates) {
-    const packageResponse = await postTaskApi<{
-      success?: boolean;
-      data?: RulePackageRow[];
-    }>(page, "/dassets/v1/valid/monitorRulePackage/ruleSetList", {
-      dataSourceId,
-      tableName: scenario.tableName,
-      schemaName,
-    });
-    packageRow = (packageResponse.data ?? []).find((item) => item.packageName === scenario.packageName);
-    if (packageRow) {
-      break;
+  let dataSourceId: number | null = null;
+  outer: for (const candidateDataSourceId of candidateDataSourceIds) {
+    for (const schemaName of schemaCandidates) {
+      const packageResponse = await postTaskApi<{
+        success?: boolean;
+        data?: RulePackageRow[];
+      }>(page, "/dassets/v1/valid/monitorRulePackage/ruleSetList", {
+        dataSourceId: candidateDataSourceId,
+        tableName: scenario.tableName,
+        schemaName,
+      });
+      packageRow = (packageResponse.data ?? []).find(
+        (item) => item.packageName === scenario.packageName,
+      );
+      if (packageRow) {
+        dataSourceId = candidateDataSourceId;
+        break outer;
+      }
     }
   }
 
   const packageId = Number(packageRow?.packageId ?? packageRow?.id);
   const tableId = Number(packageRow?.tableId);
-  if (!Number.isFinite(packageId) || !Number.isFinite(tableId)) {
+  if (
+    !Number.isFinite(packageId) ||
+    !Number.isFinite(tableId) ||
+    !Number.isFinite(dataSourceId)
+  ) {
     throw new Error(`规则包 ${scenario.packageName} 未索引完成`);
   }
 
@@ -279,8 +355,14 @@ async function importTaskRulesFromPackage(
     packageIdList: [packageId],
     ruleTypeList: ruleTypes,
   });
-  if (!rulesResponse.success || !Array.isArray(rulesResponse.data) || rulesResponse.data.length === 0) {
-    throw new Error(`导入规则包失败: ${rulesResponse.message ?? scenario.packageName}`);
+  if (
+    !rulesResponse.success ||
+    !Array.isArray(rulesResponse.data) ||
+    rulesResponse.data.length === 0
+  ) {
+    throw new Error(
+      `导入规则包失败: ${rulesResponse.message ?? scenario.packageName}`,
+    );
   }
 
   return {
@@ -295,12 +377,18 @@ async function importTaskRulesFromPackage(
 async function deleteTaskIfExists(page: Page, taskName: string): Promise<void> {
   const actualTaskName = resolveTaskName(taskName);
   const response = await postTaskApi<{
-    data?: { data?: MonitorListRow[]; contentList?: MonitorListRow[]; list?: MonitorListRow[] };
+    data?: {
+      data?: MonitorListRow[];
+      contentList?: MonitorListRow[];
+      list?: MonitorListRow[];
+    };
   }>(page, "/dassets/v1/valid/monitor/pageQuery", {
     pageIndex: 1,
     pageSize: 200,
   });
-  const row = extractMonitorRows(response).find((item) => getMonitorName(item) === actualTaskName);
+  const row = extractMonitorRows(response).find(
+    (item) => getMonitorName(item) === actualTaskName,
+  );
   const monitorId = row ? getMonitorId(row) : null;
   if (monitorId === null) {
     return;
@@ -333,7 +421,10 @@ function buildMonitorReportParam(taskName: string) {
   };
 }
 
-async function createTaskViaApi(page: Page, scenario: JsonRuleScenario): Promise<void> {
+async function createTaskViaApi(
+  page: Page,
+  scenario: JsonRuleScenario,
+): Promise<void> {
   const imported = await importTaskRulesFromPackage(page, scenario);
   const datasource = getCurrentDatasource();
   const payload = {
@@ -376,9 +467,24 @@ async function createTaskViaApi(page: Page, scenario: JsonRuleScenario): Promise
   }
 }
 
+async function hasTaskMonitorRow(
+  page: Page,
+  taskName: string,
+): Promise<boolean> {
+  try {
+    await getTaskMonitorRow(page, taskName);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function waitForTaskReady(page: Page, taskName: string): Promise<void> {
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
+    if (await hasTaskMonitorRow(page, taskName)) {
+      return;
+    }
     await gotoRuleTaskList(page);
     const row = getTableRowByTaskName(page, taskName);
     if (await row.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -389,7 +495,10 @@ async function waitForTaskReady(page: Page, taskName: string): Promise<void> {
   throw new Error(`任务 ${resolveTaskName(taskName)} 未出现在列表中`);
 }
 
-export async function ensureJsonFormatTask(page: Page, scenario: JsonRuleScenario): Promise<void> {
+export async function ensureJsonFormatTask(
+  page: Page,
+  scenario: JsonRuleScenario,
+): Promise<void> {
   const cacheKey = resolveTaskName(scenario.taskName);
   if (preparedTasks.has(cacheKey)) {
     return;
@@ -401,22 +510,34 @@ export async function ensureJsonFormatTask(page: Page, scenario: JsonRuleScenari
   preparedTasks.add(cacheKey);
 }
 
-async function getTaskMonitorRow(page: Page, taskName: string): Promise<MonitorListRow> {
+async function getTaskMonitorRow(
+  page: Page,
+  taskName: string,
+): Promise<MonitorListRow> {
   const actualTaskName = resolveTaskName(taskName);
   const response = await postTaskApi<{
-    data?: { data?: MonitorListRow[]; contentList?: MonitorListRow[]; list?: MonitorListRow[] };
+    data?: {
+      data?: MonitorListRow[];
+      contentList?: MonitorListRow[];
+      list?: MonitorListRow[];
+    };
   }>(page, "/dassets/v1/valid/monitor/pageQuery", {
     pageIndex: 1,
     pageSize: 200,
   });
-  const row = extractMonitorRows(response).find((item) => getMonitorName(item) === actualTaskName);
+  const row = extractMonitorRows(response).find(
+    (item) => getMonitorName(item) === actualTaskName,
+  );
   if (!row) {
     throw new Error(`未找到任务 ${actualTaskName}`);
   }
   return row;
 }
 
-async function getTaskDetail(page: Page, taskName: string): Promise<TaskDetailPayload> {
+async function getTaskDetail(
+  page: Page,
+  taskName: string,
+): Promise<TaskDetailPayload> {
   const row = await getTaskMonitorRow(page, taskName);
   const monitorId = getMonitorId(row);
   if (monitorId === null) {
@@ -435,18 +556,23 @@ async function getTaskDetail(page: Page, taskName: string): Promise<TaskDetailPa
   return response.data;
 }
 
-function hasCompleteReportSchedule(payload: TaskDetailPayload["monitorReportDetailDTO"] | undefined): boolean {
+function hasCompleteReportSchedule(
+  payload: TaskDetailPayload["monitorReportDetailDTO"] | undefined,
+): boolean {
   const monitor = payload?.monitorReport;
   return Boolean(
     monitor?.dispatchConfigDTO &&
-      monitor?.dataContextStart !== null &&
-      monitor?.dataContextStart !== undefined &&
-      monitor?.dataContextEnd !== null &&
-      monitor?.dataContextEnd !== undefined,
+    monitor?.dataContextStart !== null &&
+    monitor?.dataContextStart !== undefined &&
+    monitor?.dataContextEnd !== null &&
+    monitor?.dataContextEnd !== undefined,
   );
 }
 
-async function getGeneratedReports(page: Page, taskName: string): Promise<GeneratedReportRow[]> {
+async function getGeneratedReports(
+  page: Page,
+  taskName: string,
+): Promise<GeneratedReportRow[]> {
   const response = await postTaskApi<{
     data?: { contentList?: GeneratedReportRow[] };
   }>(page, "/dassets/v1/valid/monitorReportRecord/pageList", {
@@ -454,10 +580,15 @@ async function getGeneratedReports(page: Page, taskName: string): Promise<Genera
     size: 50,
     search: resolveTaskName(taskName),
   });
-  return (response.data?.contentList ?? []).filter((item) => item.reportName === getReportName(taskName));
+  return (response.data?.contentList ?? []).filter(
+    (item) => item.reportName === getReportName(taskName),
+  );
 }
 
-async function getGeneratedReportConfig(page: Page, taskName: string): Promise<number> {
+async function getGeneratedReportConfig(
+  page: Page,
+  taskName: string,
+): Promise<number> {
   const response = await postTaskApi<{
     data?: {
       contentList?: Array<{
@@ -479,7 +610,10 @@ async function getGeneratedReportConfig(page: Page, taskName: string): Promise<n
   return reportId;
 }
 
-async function repairQualityReportConfig(page: Page, taskName: string): Promise<void> {
+async function repairQualityReportConfig(
+  page: Page,
+  taskName: string,
+): Promise<void> {
   const taskDetail = await getTaskDetail(page, taskName);
   if (hasCompleteReportSchedule(taskDetail.monitorReportDetailDTO)) {
     return;
@@ -487,7 +621,8 @@ async function repairQualityReportConfig(page: Page, taskName: string): Promise<
   const reportId = await getGeneratedReportConfig(page, taskName);
   const report = taskDetail.monitorReportDetailDTO?.monitorReport;
   const tableId = String(
-    taskDetail.monitorReportDetailDTO?.reportRelationTables?.[0]?.dqTables?.[0]?.monitorTableId ?? "",
+    taskDetail.monitorReportDetailDTO?.reportRelationTables?.[0]?.dqTables?.[0]
+      ?.monitorTableId ?? "",
   );
   const monitorId = getMonitorId(await getTaskMonitorRow(page, taskName));
   if (!tableId || monitorId === null) {
@@ -532,7 +667,9 @@ async function createTodayReport(page: Page, taskName: string): Promise<void> {
     .map((item) => Number(item.id))
     .filter((item) => Number.isFinite(item));
   if (existingIds.length > 0) {
-    await postTaskApi(page, "/dassets/v1/valid/monitorReportRecord/delete", { ids: existingIds });
+    await postTaskApi(page, "/dassets/v1/valid/monitorReportRecord/delete", {
+      ids: existingIds,
+    });
   }
   const tenantId = await page.evaluate(() => {
     const match = document.cookie.match(/(?:^|;\s*)dt_tenant_id=([^;]+)/);
@@ -551,7 +688,10 @@ async function createTodayReport(page: Page, taskName: string): Promise<void> {
   }
 }
 
-async function waitForGeneratedReport(page: Page, taskName: string): Promise<void> {
+async function waitForGeneratedReport(
+  page: Page,
+  taskName: string,
+): Promise<void> {
   const deadline = Date.now() + 600_000;
   while (Date.now() < deadline) {
     const row = (await getGeneratedReports(page, taskName)).find(
@@ -573,7 +713,10 @@ async function waitForGeneratedReport(page: Page, taskName: string): Promise<voi
   throw new Error(`质量报告未在限定时间内生成: ${taskName}`);
 }
 
-export async function ensureExecutedJsonTask(page: Page, scenario: JsonRuleScenario): Promise<void> {
+export async function ensureExecutedJsonTask(
+  page: Page,
+  scenario: JsonRuleScenario,
+): Promise<void> {
   await ensureJsonFormatTask(page, scenario);
   const cacheKey = resolveTaskName(scenario.taskName);
   if (!executedTasks.has(cacheKey)) {
@@ -583,7 +726,10 @@ export async function ensureExecutedJsonTask(page: Page, scenario: JsonRuleScena
   }
 }
 
-export async function ensureJsonQualityReportReady(page: Page, scenario: JsonRuleScenario): Promise<void> {
+export async function ensureJsonQualityReportReady(
+  page: Page,
+  scenario: JsonRuleScenario,
+): Promise<void> {
   await ensureExecutedJsonTask(page, scenario);
   const cacheKey = resolveTaskName(scenario.taskName);
   if (readyReports.has(cacheKey)) {
@@ -596,11 +742,15 @@ export async function ensureJsonQualityReportReady(page: Page, scenario: JsonRul
   readyReports.add(cacheKey);
 }
 
-export async function openTaskInstanceDetail(page: Page, instanceRow: Locator): Promise<Locator> {
+export async function openTaskInstanceDetail(
+  page: Page,
+  instanceRow: Locator,
+): Promise<Locator> {
   const detailResponsePromise = page
     .waitForResponse(
       (response) =>
-        response.url().includes("/monitorRecord/detailReport") && response.request().method() === "POST",
+        response.url().includes("/monitorRecord/detailReport") &&
+        response.request().method() === "POST",
     )
     .catch(() => null);
   await instanceRow.getByRole("button").first().click();
@@ -614,7 +764,9 @@ export async function openTaskRuleDetailDataDrawer(
   page: Page,
   detailDrawer: Locator,
 ): Promise<Locator> {
-  const detailButton = detailDrawer.getByRole("button", { name: "查看明细" }).first();
+  const detailButton = detailDrawer
+    .getByRole("button", { name: "查看明细" })
+    .first();
   await expect(detailButton).toBeVisible({ timeout: 10000 });
   await detailButton.click();
   const drawer = page.locator(".ant-drawer:visible").last();
@@ -622,7 +774,10 @@ export async function openTaskRuleDetailDataDrawer(
   return drawer;
 }
 
-export async function waitForVisibleTaskRow(page: Page, taskName: string): Promise<Locator> {
+export async function waitForVisibleTaskRow(
+  page: Page,
+  taskName: string,
+): Promise<Locator> {
   await gotoValidationResults(page);
   const row = getTableRowByTaskName(page, taskName);
   await expect(row).toBeVisible({ timeout: 10000 });
