@@ -25,6 +25,14 @@
  *   - SKIP_ALLURE_GEN=1       跳过 HTML 报告生成
  *   - ALLURE_REPORT_BASE_URL  若配置，将生成在线链接 `${base}/YYYYMM/{suite}/{env}/`
  *   - ALLURE_BIN              allure 可执行路径，默认 `allure`
+ *
+ * 两阶段执行（并发 + 串行回退）：
+ *   - PW_TWO_PHASE=1          启用两阶段：
+ *       阶段 1：`--grep-invert=@serial`（默认 PW_FULLY_PARALLEL=1，并发跑通用用例）
+ *       阶段 2：`--grep=@serial`（强制 PW_WORKERS=1，串行跑并发不安全用例）
+ *     两阶段共享同一 allure-results 目录，最终只生成一次报告 + 发一次通知。
+ *     用户自定义 --grep / --grep-invert 与 PW_TWO_PHASE 冲突，会报错退出。
+ *     推荐搭配：PW_TWO_PHASE=1 PW_WORKERS=4（阶段 1 并发度，阶段 2 自动降 1）。
  */
 
 import { spawn } from "node:child_process";
@@ -88,13 +96,13 @@ function resolvePaths(): Paths {
 function runCommand(
   cmd: string,
   args: string[],
-  opts: { cwd?: string } = {},
+  opts: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
 ): Promise<number> {
   return new Promise((resolvePromise) => {
     const child = spawn(cmd, args, {
       stdio: "inherit",
       cwd: opts.cwd ?? repoRoot(),
-      env: process.env,
+      env: opts.env ?? process.env,
     });
     child.on("close", (code) => resolvePromise(code ?? 1));
     child.on("error", (err) => {
@@ -102,6 +110,56 @@ function runCommand(
       resolvePromise(1);
     });
   });
+}
+
+export type PhaseName = "single" | "parallel" | "serial";
+
+export interface PhasePlan {
+  name: PhaseName;
+  args: string[];
+  envOverrides: Record<string, string>;
+}
+
+/**
+ * 将用户透传的 Playwright 参数转为执行计划。
+ *
+ * - 未启用 two-phase：返回单个 `single` 计划，原样透传 args。
+ * - 启用 two-phase：返回 `parallel` + `serial` 两阶段，分别注入 grep 过滤和并发 env。
+ *   若用户已自带 `--grep` / `--grep-invert`，抛错以避免静默覆盖用户意图。
+ */
+export function buildPhasePlans(
+  userArgs: readonly string[],
+  twoPhase: boolean,
+): PhasePlan[] {
+  if (!twoPhase) {
+    return [{ name: "single", args: [...userArgs], envOverrides: {} }];
+  }
+
+  const hasUserGrep = userArgs.some(
+    (a) =>
+      a === "--grep" ||
+      a === "--grep-invert" ||
+      a.startsWith("--grep=") ||
+      a.startsWith("--grep-invert="),
+  );
+  if (hasUserGrep) {
+    throw new Error(
+      "PW_TWO_PHASE=1 与用户自带的 --grep / --grep-invert 冲突；请二选一",
+    );
+  }
+
+  return [
+    {
+      name: "parallel",
+      args: [...userArgs, "--grep-invert=@serial", "--pass-with-no-tests"],
+      envOverrides: { PW_FULLY_PARALLEL: "1" },
+    },
+    {
+      name: "serial",
+      args: [...userArgs, "--grep=@serial", "--pass-with-no-tests"],
+      envOverrides: { PW_FULLY_PARALLEL: "", PW_WORKERS: "1" },
+    },
+  ];
 }
 
 function buildReportUrl(paths: Paths): string | undefined {
@@ -138,11 +196,45 @@ async function main(): Promise<void> {
     `[run-tests-notify] env=${paths.env} project=${paths.project} suite=${paths.suiteName}\n`,
   );
 
-  // 1. Run Playwright
+  // 1. Run Playwright（支持两阶段）
+  const twoPhase = process.env.PW_TWO_PHASE === "1";
+  let plans: PhasePlan[];
+  try {
+    plans = buildPhasePlans(pwArgs, twoPhase);
+  } catch (err) {
+    process.stderr.write(`[run-tests-notify] ${(err as Error).message}\n`);
+    process.exit(2);
+  }
+  if (twoPhase) {
+    process.stderr.write(
+      `[run-tests-notify] PW_TWO_PHASE=1：先跑 --grep-invert=@serial 并发，再跑 --grep=@serial workers=1\n`,
+    );
+  }
+
   const runStart = Date.now();
-  const pwExitCode = await runCommand("bunx", ["playwright", "test", ...pwArgs]);
+  let pwExitCode = 0;
+  for (const plan of plans) {
+    process.stderr.write(
+      `[run-tests-notify] phase=${plan.name} args=${plan.args.join(" ")}\n`,
+    );
+    const phaseEnv: NodeJS.ProcessEnv = {
+      ...process.env,
+      ...plan.envOverrides,
+    };
+    const code = await runCommand(
+      "bunx",
+      ["playwright", "test", ...plan.args],
+      { env: phaseEnv },
+    );
+    process.stderr.write(
+      `[run-tests-notify] phase=${plan.name} exit code: ${code}\n`,
+    );
+    if (code !== 0) pwExitCode = code;
+  }
   const runEnd = Date.now();
-  process.stderr.write(`[run-tests-notify] playwright exit code: ${pwExitCode}\n`);
+  process.stderr.write(
+    `[run-tests-notify] playwright overall exit code: ${pwExitCode}\n`,
+  );
 
   // 2. Collect stats
   const stats = collectAllureStats(paths.allureResultsDir, {

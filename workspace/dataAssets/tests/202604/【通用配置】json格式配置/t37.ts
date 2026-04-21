@@ -65,7 +65,7 @@ async function readWorksheet(filePath: string) {
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证筛选后导出仅包含筛选结果数据", async ({ page, step }) => {
+  test("【P1】验证筛选后导出仅包含筛选结果数据", { tag: "@serial" }, async ({ page, step }) => {
     test.setTimeout(240000);
     const sparkKey = uniqueName("sparkExportKey");
     const hiveKey = uniqueName("hiveExportKey");

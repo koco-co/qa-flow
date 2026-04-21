@@ -62,8 +62,4 @@ test.describe(SUITE_NAME + " - " + PAGE_NAME, () => {
   test(CASE_TITLE + "（SparkThrift2.x）", async ({ page, step }) => {
     await runKeyRangeCaseByDatasource(page, step, "SparkThrift2.x", SPARKTHRIFT_MONITOR_DATASOURCE);
   });
-
-  test(CASE_TITLE + "（Doris3.x复验）", async ({ page, step }) => {
-    await runKeyRangeCaseByDatasource(page, step, "Doris3.x", DORIS_MONITOR_DATASOURCE);
-  });
 });

@@ -26,7 +26,7 @@ async function searchKeyStrict(page: import("@playwright/test").Page, keyword: s
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证编辑弹窗与新增弹窗保持一致（value格式有值时展示正则测试控件）", async ({ page, step }) => {
+  test("【P1】验证编辑弹窗与新增弹窗保持一致（value格式有值时展示正则测试控件）", { tag: "@serial" }, async ({ page, step }) => {
     test.setTimeout(180000);
     const editRegexKey = uniqueName("editRegexKey");
 

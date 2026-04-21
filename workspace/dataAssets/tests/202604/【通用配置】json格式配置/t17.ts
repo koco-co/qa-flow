@@ -11,7 +11,7 @@ import {
 
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证导入模板下载功能", async ({ page, step }) => {
+  test("【P1】验证导入模板下载功能", { tag: "@serial" }, async ({ page, step }) => {
     const savePath = path.join("/tmp", `json_format_template_${Date.now()}.xlsx`);
 
     try {

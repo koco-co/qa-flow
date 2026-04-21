@@ -11,7 +11,7 @@ import {
 
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证value格式有内容时正则测试控件显示及匹配通过失败场景", async ({ page, step }) => {
+  test("【P1】验证value格式有内容时正则测试控件显示及匹配通过失败场景", { tag: "@serial" }, async ({ page, step }) => {
     const keyName = uniqueName("regexTestKey");
 
     // 步骤1：进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成

@@ -8,8 +8,15 @@
  *     --output tests/e2e/202604/xxx/
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { Command } from "commander";
@@ -102,7 +109,9 @@ export function readCodeBlocks(inputDir: string): CodeBlock[] {
     const meta = parseBlockMeta(content);
 
     if (!meta) {
-      process.stderr.write(`[merge-specs] 跳过无效代码块（缺少 META）：${file}\n`);
+      process.stderr.write(
+        `[merge-specs] 跳过无效代码块（缺少 META）：${file}\n`,
+      );
       continue;
     }
 
@@ -137,11 +146,17 @@ export function buildSpecContent(blocks: CodeBlock[], label: string): string {
  * 主合并函数：从 inputDir 读取代码块，生成 smoke.spec.ts 和 full.spec.ts。
  * opts.compileCheck — 若为 true，在生成前对代码块文件运行 tsc --noEmit 类型检查。
  */
-export function mergeSpecs(inputDir: string, outputDir: string, opts: MergeOptions = {}): MergeResult {
+export function mergeSpecs(
+  inputDir: string,
+  outputDir: string,
+  opts: MergeOptions = {},
+): MergeResult {
   const blocks = readCodeBlocks(inputDir);
 
   if (opts.compileCheck && blocks.length > 0) {
-    const blockFiles = blocks.map((b) => join(inputDir, `${b.fileName}.ts`));
+    const blockFiles = blocks.map((b) =>
+      resolve(process.cwd(), inputDir, `${b.fileName}.ts`),
+    );
 
     // 使用临时 tsconfig 以便 tsc 能解析 @playwright/test 等外部模块。
     // git worktree 下 node_modules 可能在主仓库目录，通过向上查找定位。
@@ -167,7 +182,9 @@ export function mergeSpecs(inputDir: string, outputDir: string, opts: MergeOptio
     writeFileSync(tmpTsconfig, tsconfigContent, "utf-8");
 
     try {
-      const result = spawnSync("bunx", ["tsc", "--project", tmpTsconfig], { encoding: "utf8" });
+      const result = spawnSync("bunx", ["tsc", "--project", tmpTsconfig], {
+        encoding: "utf8",
+      });
       if (result.status !== 0) {
         throw new Error(
           `[merge-specs] tsc gate failed:\n${result.stdout ?? ""}\n${result.stderr ?? ""}`,
@@ -216,10 +233,16 @@ function runCli(): void {
     .option("--no-compile-check", "跳过 tsc 类型检查门控（默认开启）")
     .parse(process.argv);
 
-  const opts = program.opts<{ input: string; output: string; compileCheck: boolean }>();
+  const opts = program.opts<{
+    input: string;
+    output: string;
+    compileCheck: boolean;
+  }>();
 
   try {
-    const result = mergeSpecs(opts.input, opts.output, { compileCheck: opts.compileCheck });
+    const result = mergeSpecs(opts.input, opts.output, {
+      compileCheck: opts.compileCheck,
+    });
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   } catch (err) {
     process.stderr.write(

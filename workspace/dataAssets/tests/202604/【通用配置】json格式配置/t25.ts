@@ -67,7 +67,7 @@ async function importXlsx(
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证导入功能正常(重复则覆盖更新, 1层key已存在 -> 更新1层key)", async ({ page, step }) => {
+  test("【P1】验证导入功能正常(重复则覆盖更新, 1层key已存在 -> 更新1层key)", { tag: "@serial" }, async ({ page, step }) => {
     // Track elapsed time so the finally cleanup can calculate a safe budget and
     // never spill past the wall-clock limit.
     // Use 240 s (4 min): the single gotoJsonConfigPage() in step 1 can take up to

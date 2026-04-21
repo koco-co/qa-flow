@@ -61,7 +61,7 @@ async function importXlsx(
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证重复处理规则「重复则覆盖更新」生效", async ({ page, step }) => {
+  test("【P1】验证重复处理规则「重复则覆盖更新」生效", { tag: "@serial" }, async ({ page, step }) => {
     test.setTimeout(180000);
     const existKey = uniqueName("existKey");
     const xlsxPath = path.join("/tmp", `t18_${Date.now()}.xlsx`);

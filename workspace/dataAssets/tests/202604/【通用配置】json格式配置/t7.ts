@@ -40,7 +40,7 @@ function rowByKey(page: import("@playwright/test").Page, key: string) {
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证编辑key名称、value格式、数据源类型并保存生效", async ({ page, step }) => {
+  test("【P1】验证编辑key名称、value格式、数据源类型并保存生效", { tag: "@serial" }, async ({ page, step }) => {
     test.setTimeout(240000);
     const editTarget = uniqueName("editTarget");
     const editTargetV2 = uniqueName("editTargetV2");

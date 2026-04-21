@@ -10,7 +10,7 @@ import { gotoJsonConfigPage } from "./json-config-helpers";
 // 只验证当前列表加载和搜索响应时间。
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P2】验证key数量达1000条以上时列表加载和搜索性能正常", async ({ page, step }) => {
+  test("【P2】验证key数量达1000条以上时列表加载和搜索性能正常", { tag: "@serial" }, async ({ page, step }) => {
     let pageLoadDuration = 0;
 
     await step(

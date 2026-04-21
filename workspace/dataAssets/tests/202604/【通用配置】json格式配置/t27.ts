@@ -64,7 +64,7 @@ async function importXlsx(
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证导入功能正常(重复则覆盖更新, 2~5层上一层key存在+key存在+value不存在 -> 更新N层value)", async ({ page, step }) => {
+  test("【P1】验证导入功能正常(重复则覆盖更新, 2~5层上一层key存在+key存在+value不存在 -> 更新N层value)", { tag: "@serial" }, async ({ page, step }) => {
     const parentA = uniqueName("parentA");
     const childA = uniqueName("childA");
     const xlsxPath = path.join("/tmp", `t27_${Date.now()}.xlsx`);

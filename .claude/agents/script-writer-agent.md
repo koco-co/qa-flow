@@ -242,6 +242,36 @@ await step(
 - 使用 `test.use({ storageState: '{{session_path}}' })` 复用登录态
 - step 函数使用规范参见上一章节
 
+### 并发安全：`@serial` 标签判定（CRITICAL）
+
+全量回归支持两阶段执行（`PW_TWO_PHASE=1`）：阶段 1 并发跑通用用例，阶段 2 串行跑标记 `@serial` 的用例。**写脚本时主动判定**并发安全性，对"并发不安全"用例必须加 `@serial` tag。
+
+**必须加 `@serial` 的场景**：
+
+| 场景                           | 触发断言/操作示例                              |
+| ------------------------------ | ---------------------------------------------- |
+| 全局通知/Toast 计数断言        | `.ant-notification-notice` / `.ant-message` 的 `toHaveCount`   |
+| 共享列表导入/导出              | 文件上传后依赖后端去重/覆盖逻辑                |
+| 列表定位用 `filter.first`      | 并发数据污染同前缀行时易命中错误行             |
+| 下载/上传大文件、性能类测试    | 资源抢占导致超时                               |
+| 依赖全局状态/数据库快照的用例  | 例如"校验总条数=N"类断言                       |
+
+**写法**（Playwright tag 原生语法）：
+
+```typescript
+// 无其他选项
+test("验证导入失败时仅出现单个错误通知", { tag: "@serial" }, async ({ page, step }) => {
+  // ...
+});
+
+// 已有 timeout 等选项，合并进同一对象
+test("验证大文件导入全流程", { timeout: 180000, tag: "@serial" }, async ({ page, step }) => {
+  // ...
+});
+```
+
+**不要滥用**：仅当存在上表列出的并发风险时才加。常规 CRUD 用 `uniqueName()` 做隔离即可并发，不需要 `@serial`。
+
 ### 定位器规则与 UI 模式
 
 定位器优先级及常见 UI 模式参见 `.claude/references/playwright-patterns.md`，包含：

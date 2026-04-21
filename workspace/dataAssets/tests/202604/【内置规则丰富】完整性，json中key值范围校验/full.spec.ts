@@ -1,4 +1,4 @@
-// 全量测试（P0+P1+P2）
+// 全量测试（Spark-only 收敛版）
 import "./t1";
 import "./t2";
 import "./t3";
@@ -13,3 +13,11 @@ import "./t11";
 import "./t12";
 import "./t13";
 import "./t14";
+import "./t23";
+import "./t24";
+import "./t25";
+import "./t26";
+import "./t27";
+import "./t28";
+import "./t30";
+import "./t31";

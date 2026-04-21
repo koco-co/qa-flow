@@ -60,7 +60,7 @@ async function importXlsx(
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P0】验证导入正确文件全流程（重复则跳过）", { timeout: 180000 }, async ({ page, step }) => {
+  test("【P0】验证导入正确文件全流程（重复则跳过）", { timeout: 180000, tag: "@serial" }, async ({ page, step }) => {
     const importKey1 = uniqueName("importKey1");
     const importKey2 = uniqueName("importKey2");
     const subImport1 = uniqueName("subImport1");

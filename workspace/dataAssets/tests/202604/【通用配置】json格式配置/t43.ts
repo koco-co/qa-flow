@@ -18,7 +18,7 @@ async function createInvalidImportXlsx(filePath: string) {
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证导入失败时仅出现单个错误通知", async ({ page, step }) => {
+  test("【P1】验证导入失败时仅出现单个错误通知", { tag: "@serial" }, async ({ page, step }) => {
     const filePath = path.join("/tmp", `t43_${Date.now()}.xlsx`);
 
     try {

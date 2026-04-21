@@ -38,7 +38,7 @@ async function readWorksheet(filePath: string) {
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P0】验证导出列表数据完整流程及文件命名", async ({ page, step }) => {
+  test("【P0】验证导出列表数据完整流程及文件命名", { tag: "@serial" }, async ({ page, step }) => {
     const savePath = path.join("/tmp", `t36_${Date.now()}.xlsx`);
     const expectedFilename = `json_format_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.xlsx`;
     let sampleRow: {

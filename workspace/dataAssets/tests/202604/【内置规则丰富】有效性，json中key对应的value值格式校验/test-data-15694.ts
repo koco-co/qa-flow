@@ -24,7 +24,7 @@ export {
 // ── 质量项目配置 ──────────────────────────────────────────────────────────────
 
 /** 环境中已配置 Doris 数据源的质量项目 ID */
-export const QUALITY_PROJECT_ID = 87;
+export const QUALITY_PROJECT_ID = 90;
 
 /** 所有数据源统一使用的测试数据库名 */
 export const SHARED_DATABASE = "pw_test";

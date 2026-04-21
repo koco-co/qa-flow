@@ -10,7 +10,7 @@ import {
 
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证导入非xlsx格式文件时报错", async ({ page, step }) => {
+  test("【P1】验证导入非xlsx格式文件时报错", { tag: "@serial" }, async ({ page, step }) => {
     const timestamp = Date.now();
     const csvPath = `/tmp/t23_${timestamp}.csv`;
     const csvContent = "key,name,value\ntestKey,测试,^\\d+$";

@@ -37,7 +37,7 @@ async function clearSearch(page: import("@playwright/test").Page) {
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证key名模糊搜索功能（含子层级key命中）", async ({ page, step }) => {
+  test("【P1】验证key名模糊搜索功能（含子层级key命中）", { tag: "@serial" }, async ({ page, step }) => {
     const orderInfo = uniqueName("orderInfo");
     const orderStatus = uniqueName("orderStatus");
 

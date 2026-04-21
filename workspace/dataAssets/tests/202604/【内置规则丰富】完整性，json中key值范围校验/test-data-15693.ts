@@ -6,7 +6,7 @@
  *   - 此 suite 依赖已配置的 JSON key 数据（key1 姓名、key2 年龄、key3 性别、key11 省份、key22、key33 等）
  *   - 这些 key 通过 /通用配置/json格式校验管理 页面或 API 维护
  *   - 脚本不负责创建 key，假设环境中已存在
- *   - QUALITY_PROJECT_ID=87 对应 ltqcdev 环境中的 pw_test 质量项目
+ *   - QUALITY_PROJECT_ID=90 对应当前 dataAssets 套件使用的 pw_test 质量项目
  */
 import type { Page } from "@playwright/test";
 import {
@@ -15,7 +15,7 @@ import {
 } from "../../helpers/test-setup";
 
 // ── 质量项目常量 ─────────────────────────────────────────────
-export const QUALITY_PROJECT_ID = 87;
+export const QUALITY_PROJECT_ID = 90;
 export const QUALITY_PROJECT_NAME = "pw_test";
 
 // ── 数据源 & 数据库 ──────────────────────────────────────────

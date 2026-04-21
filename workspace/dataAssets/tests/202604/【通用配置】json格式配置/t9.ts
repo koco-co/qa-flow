@@ -12,7 +12,7 @@ import {
 
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证第5层级不显示新增子层级按钮", async ({ page, step }) => {
+  test("【P1】验证第5层级不显示新增子层级按钮", { tag: "@serial" }, async ({ page, step }) => {
     const level1Root = uniqueName("l1root");
     const level2Node = uniqueName("l2node");
     const level3Node = uniqueName("l3node");

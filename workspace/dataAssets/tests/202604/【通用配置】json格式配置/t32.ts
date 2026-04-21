@@ -57,7 +57,7 @@ async function dismissWelcomeDialog(page: import("@playwright/test").Page) {
 }
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证导入功能正常(重复则跳过, 1层key不存在 -> 新增1层key)", async ({ page, step }) => {
+  test("【P1】验证导入功能正常(重复则跳过, 1层key不存在 -> 新增1层key)", { tag: "@serial" }, async ({ page, step }) => {
     const skipNewKey1 = uniqueName("skipNewKey1");
     const xlsxPath = path.join("/tmp", `t32_${Date.now()}.xlsx`);
 

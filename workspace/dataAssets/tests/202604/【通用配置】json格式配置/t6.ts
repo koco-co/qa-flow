@@ -13,7 +13,7 @@ import {
 
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证新增key表单中切换数据源类型后清空表单内容", async ({ page, step }) => {
+  test("【P1】验证新增key表单中切换数据源类型后清空表单内容", { tag: "@serial" }, async ({ page, step }) => {
     test.setTimeout(90000);
     const switchTestKey = uniqueName("switchTest");
 
