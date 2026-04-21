@@ -9,10 +9,10 @@
 
 ## Modules
 
-_（暂无）_
+- [data-quality.md](modules/data-quality.md) — 数据质量模块业务规则 [tags: 数据质量, 规则库, 规则集, 规则任务, 校验结果, 质量报告] (updated: 2026-04-21, confidence: high)
 
 ## Pitfalls
 
 _（暂无）_
 
-<!-- last-indexed: 2026-04-18T10:01:11.458Z -->
+<!-- last-indexed: 2026-04-21T02:53:39.095Z -->
