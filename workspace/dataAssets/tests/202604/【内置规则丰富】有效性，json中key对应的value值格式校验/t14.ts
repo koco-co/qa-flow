@@ -8,6 +8,7 @@ import {
 } from "./json-format-task-helpers";
 import { describeByDatasource } from "./suite-case-helpers";
 import { P0_PASS_SCENARIO } from "./test-data";
+import { buildValidationKeyLabelPattern } from "./validation-key-label";
 
 test.use({
   storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json",
@@ -31,8 +32,8 @@ describeByDatasource("校验结果查询", () => {
     await expect(ruleCard).toBeVisible({ timeout: 10000 });
     await expect(ruleCard).toContainText("有效性校验");
     await expect(ruleCard).toContainText("格式-json格式校验");
-    await expect(ruleCard).toContainText("person-name");
-    await expect(ruleCard).toContainText("person-age");
+    await expect(ruleCard).toContainText(buildValidationKeyLabelPattern("person-name"));
+    await expect(ruleCard).toContainText(buildValidationKeyLabelPattern("person-age"));
     await expect(detailDrawer).toContainText(/校验通过/);
     await expect(
       detailDrawer.getByRole("button", { name: "查看明细" }),

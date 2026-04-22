@@ -23,21 +23,18 @@ import {
   saveRuleSet,
   selectRuleFieldAndFunction,
 } from "./rule-editor-base";
+import {
+  buildFallbackResolvedPath,
+  buildFullPath,
+  buildKeyPath,
+  resolveJsonTreePathByKeyPath,
+  type JsonTreeNode,
+  type ResolvedJsonTreePath,
+} from "./json-tree-path-resolver";
 import { resolveEffectiveQualityProjectId } from "./test-data";
 
 const preparedPresets = new Set<string>();
 const preparedRuleSets = new Set<string>();
-
-export type JsonTreeNode = {
-  id: number | string;
-  jsonKey: string;
-  fullPath?: string;
-  level?: number;
-  name?: string;
-  value?: string;
-  dataSourceType?: number;
-  children?: JsonTreeNode[];
-};
 
 type JsonConfigPayload = {
   id?: number | string;
@@ -56,14 +53,6 @@ function buildApiUrl(path: string): string {
     normalizedPath,
     new URL(normalizeDataAssetsBaseUrl()).origin,
   ).toString();
-}
-
-function buildFullPath(pathSegments: readonly string[]): string {
-  return pathSegments.map((segment) => `['${segment}']`).join("");
-}
-
-export function buildKeyPath(pathSegments: readonly string[]): string {
-  return pathSegments.join("-");
 }
 
 async function requestValidJson<T>(
@@ -142,57 +131,12 @@ function findJsonNodeByPath(
   return matched;
 }
 
-type ResolvedJsonTreePath = {
-  pathSegments: string[];
-  pathNodes: JsonTreeNode[];
-};
-
-function findJsonTreePathByKeyPath(
-  tree: readonly JsonTreeNode[],
-  keyPath: string,
-): ResolvedJsonTreePath | null {
-  const search = (
-    nodes: readonly JsonTreeNode[],
-    currentSegments: readonly string[],
-    currentNodes: readonly JsonTreeNode[],
-  ): ResolvedJsonTreePath | null => {
-    for (const node of nodes) {
-      const nextSegments = [...currentSegments, node.jsonKey];
-      const nextNodes = [...currentNodes, node];
-      if (buildKeyPath(nextSegments) === keyPath) {
-        return {
-          pathSegments: nextSegments,
-          pathNodes: nextNodes,
-        };
-      }
-      const child = search(node.children ?? [], nextSegments, nextNodes);
-      if (child) {
-        return child;
-      }
-    }
-    return null;
-  };
-
-  return search(tree, [], []);
-}
-
 function uniqueNonEmptyStrings(
   values: readonly (string | undefined)[],
 ): string[] {
   return [
     ...new Set(values.map((value) => value?.trim()).filter(Boolean)),
   ] as string[];
-}
-
-function buildFallbackResolvedPath(keyPath: string): ResolvedJsonTreePath {
-  const pathSegments = keyPath.split("-");
-  return {
-    pathSegments,
-    pathNodes: pathSegments.map((segment) => ({
-      id: segment,
-      jsonKey: segment,
-    })),
-  };
 }
 
 function buildNodeTitleCandidates(
@@ -207,6 +151,14 @@ function buildNodeTitleCandidates(
     currentNode.jsonKey,
   ]);
 }
+
+type VisibleTreeNodeSnapshot = {
+  domIndex: number;
+  visibleIndex: number;
+  text: string;
+  indentCount: number;
+  switcherState: "closed" | "open" | "leaf";
+};
 
 async function addOrUpdateJsonNode(
   page: Page,
@@ -372,6 +324,155 @@ async function collectVisibleTreeTitles(dropdown: Locator): Promise<string[]> {
     ]);
 }
 
+async function collectVisibleTreeNodes(
+  dropdown: Locator,
+): Promise<VisibleTreeNodeSnapshot[]> {
+  const nodes = await dropdown
+    .locator(".ant-select-tree-treenode")
+    .evaluateAll((elements) => {
+      const snapshots: Array<{
+        domIndex: number;
+        text: string;
+        indentCount: number;
+        switcherState: "closed" | "open" | "leaf";
+      }> = [];
+
+      for (const [domIndex, element] of elements.entries()) {
+        const text =
+          element
+            .querySelector(
+              ".ant-select-tree-title, .ant-select-tree-node-content-wrapper",
+            )
+            ?.textContent?.trim() ?? "";
+        if (!text) {
+          continue;
+        }
+
+        const style = window.getComputedStyle(element);
+        if (style.display === "none" || style.visibility === "hidden") {
+          continue;
+        }
+
+        const switcher = element.querySelector(".ant-select-tree-switcher");
+        const switcherState = switcher?.classList.contains(
+          "ant-select-tree-switcher_close",
+        )
+          ? "closed"
+          : switcher?.classList.contains("ant-select-tree-switcher_open")
+            ? "open"
+            : "leaf";
+
+        snapshots.push({
+          domIndex,
+          text,
+          indentCount: element.querySelectorAll(".ant-select-tree-indent-unit")
+            .length,
+          switcherState,
+        });
+      }
+
+      return snapshots;
+    });
+
+  return nodes.map((node, visibleIndex) => ({
+    ...node,
+    visibleIndex,
+  }));
+}
+
+function matchesTreeNodeTitle(
+  node: VisibleTreeNodeSnapshot,
+  titles: readonly string[],
+): boolean {
+  return titles.some((title) => title === node.text);
+}
+
+function getBaseTreeIndent(nodes: readonly VisibleTreeNodeSnapshot[]): number {
+  const positiveIndents = nodes
+    .map((node) => node.indentCount)
+    .filter((indent) => indent > 0);
+  return positiveIndents.length ? Math.min(...positiveIndents) : 0;
+}
+
+function findVisibleTreeSubtreeEnd(
+  nodes: readonly VisibleTreeNodeSnapshot[],
+  startIndex: number,
+): number {
+  const parentNode = nodes[startIndex];
+  if (!parentNode) {
+    return nodes.length;
+  }
+
+  for (let index = startIndex + 1; index < nodes.length; index += 1) {
+    if (nodes[index]?.indentCount <= parentNode.indentCount) {
+      return index;
+    }
+  }
+
+  return nodes.length;
+}
+
+function findVisibleTreePath(
+  nodes: readonly VisibleTreeNodeSnapshot[],
+  titlesByDepth: readonly string[][],
+  depth = 0,
+  startIndex = 0,
+  endIndex = nodes.length,
+  parentIndent: number | null = null,
+  baseIndent = getBaseTreeIndent(nodes),
+): VisibleTreeNodeSnapshot[] | null {
+  const expectedIndent = parentIndent === null ? baseIndent : parentIndent + 1;
+
+  for (let index = startIndex; index < endIndex; index += 1) {
+    const node = nodes[index];
+    if (!node || node.indentCount !== expectedIndent) {
+      continue;
+    }
+    if (!matchesTreeNodeTitle(node, titlesByDepth[depth] ?? [])) {
+      continue;
+    }
+
+    if (depth === titlesByDepth.length - 1) {
+      return [node];
+    }
+
+    const childPath = findVisibleTreePath(
+      nodes,
+      titlesByDepth,
+      depth + 1,
+      index + 1,
+      findVisibleTreeSubtreeEnd(nodes, index),
+      node.indentCount,
+      baseIndent,
+    );
+    if (childPath) {
+      return [node, ...childPath];
+    }
+  }
+
+  return null;
+}
+
+async function expandTreeNodeIfCollapsed(
+  page: Page,
+  dropdown: Locator,
+  node: VisibleTreeNodeSnapshot,
+): Promise<void> {
+  if (node.switcherState !== "closed") {
+    return;
+  }
+
+  const switcher = dropdown
+    .locator(".ant-select-tree-treenode")
+    .nth(node.domIndex)
+    .locator(".ant-select-tree-switcher_close")
+    .first();
+  if (await switcher.isVisible().catch(() => false)) {
+    await switcher.click();
+    await page.waitForTimeout(200);
+  }
+}
+
 function getTreeSearchInput(dropdown: Locator): Locator {
   return dropdown.locator("input").last();
 }
@@ -447,69 +548,80 @@ async function getTreeNodeByKeyPath(
 ): Promise<Locator> {
   const tree = await getJsonTree(page);
   const resolvedPath =
-    findJsonTreePathByKeyPath(tree, keyPath) ??
+    resolveJsonTreePathByKeyPath(tree, keyPath) ??
     buildFallbackResolvedPath(keyPath);
-  const leafTitleCandidates = uniqueNonEmptyStrings([
-    keyPath,
-    resolvedPath.pathNodes.at(-1)?.name,
-    resolvedPath.pathNodes.at(-1)?.jsonKey,
-  ]);
-
-  const fullPathNode = await findTreeNodeByTitles(
-    dropdown,
-    leafTitleCandidates,
-  );
-  if (fullPathNode) {
-    return fullPathNode;
-  }
-
-  const searchedNode = await searchTreeNodeByTitles(
-    page,
-    dropdown,
-    leafTitleCandidates,
-  );
-  if (searchedNode) {
-    return searchedNode;
-  }
 
   await clearTreeSearchInput(page, dropdown);
-  await expandVisibleTreeNodes(page, dropdown);
+  if (resolvedPath.pathNodes.length === 1) {
+    const leafTitleCandidates = uniqueNonEmptyStrings([
+      keyPath,
+      resolvedPath.pathNodes.at(-1)?.name,
+      resolvedPath.pathNodes.at(-1)?.jsonKey,
+    ]);
+    const directNode = await findTreeNodeByTitles(
+      dropdown,
+      leafTitleCandidates,
+    );
+    if (directNode) {
+      return directNode;
+    }
 
-  const expandedNode = await findTreeNodeByTitles(
-    dropdown,
-    leafTitleCandidates,
+    const searchedNode = await searchTreeNodeByTitles(
+      page,
+      dropdown,
+      leafTitleCandidates,
+    );
+    if (searchedNode) {
+      return searchedNode;
+    }
+  }
+
+  const titlesByDepth = resolvedPath.pathNodes.map((_, index) =>
+    buildNodeTitleCandidates(resolvedPath, index),
   );
-  if (expandedNode) {
-    return expandedNode;
+
+  let snapshots = await collectVisibleTreeNodes(dropdown);
+  let matchedPath = findVisibleTreePath(snapshots, titlesByDepth);
+
+  for (let depth = 0; depth < resolvedPath.pathNodes.length - 1; depth += 1) {
+    if (matchedPath) {
+      await expandTreeNodeIfCollapsed(page, dropdown, matchedPath[depth]!);
+      snapshots = await collectVisibleTreeNodes(dropdown);
+      matchedPath = findVisibleTreePath(snapshots, titlesByDepth);
+      continue;
+    }
+
+    await expandVisibleTreeNodes(page, dropdown, 40);
+    snapshots = await collectVisibleTreeNodes(dropdown);
+    matchedPath = findVisibleTreePath(snapshots, titlesByDepth);
+    if (matchedPath) {
+      continue;
+    }
+
+    if (depth === 0) {
+      await searchTreeNodeByTitles(page, dropdown, titlesByDepth[0] ?? []);
+      await clearTreeSearchInput(page, dropdown);
+      snapshots = await collectVisibleTreeNodes(dropdown);
+      matchedPath = findVisibleTreePath(snapshots, titlesByDepth);
+    }
   }
 
-  let scope = dropdown;
-  let node = dropdown.locator(".ant-select-tree-treenode").first();
-  for (let index = 0; index < resolvedPath.pathNodes.length; index += 1) {
-    const titleCandidates = buildNodeTitleCandidates(resolvedPath, index);
-    let matchedNode = await findTreeNodeByTitles(scope, titleCandidates);
-    if (!matchedNode) {
-      await expandVisibleTreeNodes(page, scope, 4);
-      matchedNode = await findTreeNodeByTitles(scope, titleCandidates);
-    }
-    if (!matchedNode) {
-      const visibleTitles = await collectVisibleTreeTitles(dropdown);
-      throw new Error(
-        `未找到校验key节点: ${keyPath}; 尝试标题: ${titleCandidates.join(" / ")}; 当前可见节点: ${visibleTitles.slice(0, 20).join(", ")}`,
-      );
-    }
-    node = matchedNode;
-    await expect(node).toBeVisible({ timeout: 10000 });
-    if (index < resolvedPath.pathNodes.length - 1) {
-      const switcher = node.locator(".ant-select-tree-switcher_close").first();
-      if (await switcher.isVisible().catch(() => false)) {
-        await switcher.click();
-        await page.waitForTimeout(200);
-      }
-      scope = node;
-    }
+  if (!matchedPath) {
+    const visibleTitles = await collectVisibleTreeTitles(dropdown);
+    const attemptedTitles = titlesByDepth
+      .map((titles) => titles.join(" / "))
+      .filter(Boolean)
+      .join(" -> ");
+    throw new Error(
+      `未找到校验key节点: ${keyPath}; 尝试标题: ${attemptedTitles}; 当前可见节点: ${visibleTitles.slice(0, 20).join(", ")}`,
+    );
   }
-  return node;
+
+  const targetNode = dropdown
+    .locator(".ant-select-tree-treenode")
+    .nth(matchedPath.at(-1)?.domIndex ?? 0);
+  await expect(targetNode).toBeVisible({ timeout: 10000 });
+  return targetNode;
 }
 
 export async function openValidationKeyDropdown(

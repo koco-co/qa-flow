@@ -19,7 +19,7 @@ const SUITE_NAME = "【内置规则丰富】有效性，json中key对应的value
 const PAGE_NAME = "规则集管理";
 
 /** 已配置 value格式 的 key（来自 test-data-15694 注释说明） */
-const VERIFIED_KEY = "key1";
+const VERIFIED_KEY = "person-name";
 
 test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
   test(
@@ -28,20 +28,17 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
       const packageName = uniqueName("t13_pkg");
 
       await step(
-        "步骤1: 导航到新建规则集页面，选择 Doris 数据源、pw 数据库、数据表，配置规则包，进入监控规则步骤 → 页面正常加载",
+        "步骤1: 导航到新建规则集页面，创建规则集草稿并进入监控规则步骤 → 页面正常加载",
         async () => {
           await createRuleSetDraft(page, VALUE_FORMAT_TABLE, [packageName]);
         },
       );
 
-      const ruleForm = await step(
-        "步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染可见",
-        async () => {
-          const form = await addRuleToPackage(page, packageName, "有效性校验");
-          await expect(form).toBeVisible();
-          return form;
-        },
-      );
+      let ruleForm: Awaited<ReturnType<typeof addRuleToPackage>>;
+      await step("步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染可见", async () => {
+        ruleForm = await addRuleToPackage(page, packageName, "有效性校验");
+        await expect(ruleForm).toBeVisible();
+      });
 
       await step(
         `步骤3: 完整配置规则：字段=info，统计函数=格式-json格式校验，校验key=[${VERIFIED_KEY}]，强规则 → 配置成功`,
@@ -119,7 +116,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
       );
 
       await step(
-        "步骤6: 在监控规则步骤中找到规则包，验证规则配置参数展示区域包含：字段名 info、统计函数「格式-json格式校验」、校验key key1、强规则 → 各字段内容正确",
+        "步骤6: 在监控规则步骤中找到规则包，验证规则配置参数展示区域包含：字段名 info、统计函数「格式-json格式校验」、校验key person-name、强规则 → 各字段内容正确",
         async () => {
           // 确保进入监控规则步骤
           const nextBtn = page.getByRole("button", { name: "下一步" }).first();
@@ -145,7 +142,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
           // 验证统计函数「格式-json格式校验」
           await expect(ruleSummary).toContainText(FORMAT_JSON_VERIFICATION_FUNC, { timeout: 5000 });
 
-          // 验证校验key "key1"
+          // 验证校验key "person-name"
           await expect(ruleSummary).toContainText(VERIFIED_KEY, { timeout: 5000 });
 
           // 验证强规则

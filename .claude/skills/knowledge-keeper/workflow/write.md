@@ -25,7 +25,18 @@
    // type=module/pitfall: { "name": "kebab-case", "title": "...", "tags": ["..."], "body": "...", "source": "" }
    ```
 
-4. **dry-run 预览**：
+4. **冲突检测（强制）**：
+
+   ```bash
+   bun run .claude/scripts/knowledge-keeper.ts verify \
+     --project {{project}} --type {{type}} --content '{{json}}'
+   ```
+
+   - 退出码 0：无冲突，继续 step 5
+   - 退出码 2：**block 级冲突** → 转 B5 冲突仲裁流程
+   - warn 级：在 dry-run 输出中提示，用户确认后可继续
+
+5. **dry-run 预览**：
 
    ```bash
    bun run .claude/scripts/knowledge-keeper.ts write \
@@ -33,11 +44,11 @@
      --content '{{json}}' --confidence {{conf}} --dry-run
    ```
 
-5. **展示 before/after + 置信度分流**：
+6. **展示 before/after + 置信度分流**：
    - `confidence=high`：跳过 AskUser，直接真实写入
    - `confidence=medium`：AskUserQuestion 确认后带 `--confirmed` 真写
 
-6. **真实写入**：去掉 `--dry-run` 加 `--confirmed`（如为 medium）：
+7. **真实写入**（自动生成快照 + 审计条目）：
 
    ```bash
    bun run .claude/scripts/knowledge-keeper.ts write \
@@ -45,9 +56,10 @@
      --content '{{json}}' --confidence {{conf}} --confirmed
    ```
 
-7. **展示结果摘要**：
+8. **展示结果摘要**：
    ```
    已写入 knowledge/{{path}}
+   快照: .history/{{snapshot}}（可用 rollback 回滚）
    _index.md 已自动刷新
    ```
 
@@ -98,6 +110,32 @@ CLI 默认拒绝覆盖。选择：
 
 ---
 
+## B5. 冲突仲裁流程（verify 返回 block）
+
+当 step 4 `verify` 检测到 block 级冲突时，**禁止**直接 `--force` 写入。走以下流程：
+
+1. **展示冲突摘要** — 直接把 CLI 返回的 `conflict` 块给用户看：
+
+   ```
+   检测到知识冲突（severity=block, type={{type}}）
+   原因：{{reason}}
+   已有：{{existing}}
+   新增：{{incoming}}
+   ```
+
+2. **AskUserQuestion 仲裁**（四选一）：
+
+   | 选项 | 动作 |
+   | --- | --- |
+   | 保留旧版 | 跳过本次写入 |
+   | 用新版覆盖 | 加 `--force` 重新 write |
+   | 合并 | 走 update 精细改（patch 模式） |
+   | 先回滚上一个版本 | 调 rollback，再决定 |
+
+3. **写入前强制记录证据**：若用户选"用新版覆盖"，在 audit 条目中 `forced=true` 会自动记录，便于事后追溯。
+
+---
+
 ## C1. 刷新 \_index.md
 
 ```bash
@@ -117,6 +155,30 @@ bun run .claude/scripts/knowledge-keeper.ts lint --project {{project}}
 返回 `errors` + `warnings`。exit 0 = 健康 / exit 1 = 有 error / exit 2 = 仅 warning。
 
 `--strict` 将 warning 升级为 error。
+
+---
+
+## C3. 历史查询 + 回滚
+
+```bash
+# 查看最近 N 条写入/更新/回滚记录
+bun run .claude/scripts/knowledge-keeper.ts history --project {{project}} --limit 20
+
+# 回滚到指定 index（省略 --index 即回滚最近一条）
+bun run .claude/scripts/knowledge-keeper.ts rollback --project {{project}} \
+  --index {{N}} --dry-run
+bun run .claude/scripts/knowledge-keeper.ts rollback --project {{project}} \
+  --index {{N}} --confirmed
+```
+
+**何时使用：**
+- 发现最近沉淀的知识是错的（事后察觉、同事反馈、业务变更）
+- 冲突仲裁时用户选"先回滚上一个版本"
+- rollback 本身也会生成新的快照（当前版本自动存档），可再次回滚
+
+**审计字段解读：**
+- `forced: true` — 曾用 `--force` 绕过冲突，重点核查对象
+- `confidence: low/medium` — 置信度低的条目，更可能需要回滚
 
 ---
 

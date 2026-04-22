@@ -2,7 +2,7 @@
 import { expect, test } from "../../fixtures/step-screenshot";
 import { addRuleToPackage } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
-import { SCENARIOS, collectFieldOptions, configureKeyRangeRule, startRuleSetDraft } from "./suite-helpers";
+import { SCENARIOS, collectFieldOptions, configureKeyRangeRule, selectRuleFunction, startRuleSetDraft } from "./suite-helpers";
 import { selectAntOption } from "../../helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
@@ -33,7 +33,7 @@ for (const datasource of ACTIVE_DATASOURCES) {
       const ruleForm = await addRuleToPackage(page, SCENARIOS.fieldType.packageName, "完整性校验");
       const levelSelect = ruleForm.locator(".ant-form-item").filter({ hasText: /规则类型/ }).locator(".ant-select").first();
       await selectAntOption(page, levelSelect, /字段级|字段/);
-      await selectAntOption(page, ruleForm.locator(".rule__function-list__item .ant-select").first(), "key范围校验");
+      await selectRuleFunction(ruleForm, "key范围校验");
       const options = await collectFieldOptions(page, ruleForm);
       expect(options).not.toEqual(expect.arrayContaining(["age", "create_date", "user_id"]));
     });

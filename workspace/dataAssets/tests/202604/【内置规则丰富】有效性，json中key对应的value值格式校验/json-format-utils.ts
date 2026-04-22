@@ -16,7 +16,6 @@ import { confirmAntModal, selectAntOption } from "../../helpers/test-setup";
 import {
   DORIS_DATABASE,
   DORIS_DATASOURCE_KEYWORD,
-  QUALITY_PROJECT_ID,
   SPARKTHRIFT_DATABASE,
   SPARKTHRIFT_DATASOURCE_KEYWORD,
   VALUE_FORMAT_TABLE,
@@ -24,6 +23,7 @@ import {
   buildDataAssetsUrl,
   injectProjectContext,
 } from "./data-15694";
+import { resolveEffectiveQualityProjectId } from "./test-data";
 
 // ── 接口定义 ──────────────────────────────────────────────────────────────────
 
@@ -71,6 +71,7 @@ async function postProjectApi<T>(
   path: string,
   body: unknown,
 ): Promise<T> {
+  const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
   return page.evaluate(
     async ({ requestPath, requestBody, projectId }) => {
       const response = await fetch(requestPath, {
@@ -88,7 +89,7 @@ async function postProjectApi<T>(
     {
       requestPath: path,
       requestBody: body,
-      projectId: QUALITY_PROJECT_ID,
+      projectId: effectiveProjectId,
     },
   ) as Promise<T>;
 }
@@ -97,6 +98,7 @@ async function ensureMonitorDatasource(
   page: Page,
   datasource: MonitorDatasourceConfig,
 ): Promise<boolean> {
+  const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
   const listMonitorDatasources = () =>
     postProjectApi<{
       success?: boolean;
@@ -140,7 +142,7 @@ async function ensureMonitorDatasource(
     message?: string;
   }>(page, "/dmetadata/v1/dataSource/authDataSourceToProject", {
     dataSourceId: Number(matchedDatasource.dataSourceId),
-    projectList: [QUALITY_PROJECT_ID],
+    projectList: [effectiveProjectId],
   });
 
   if (!authResponse.success) {
@@ -373,10 +375,11 @@ async function ensureRuleSetPackagesVisible(
  */
 export async function gotoRuleSetList(page: Page): Promise<void> {
   await applyRuntimeCookies(page);
-  await page.goto(buildDataAssetsUrl("/dq/ruleSet", QUALITY_PROJECT_ID));
+  const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
+  await page.goto(buildDataAssetsUrl("/dq/ruleSet", effectiveProjectId));
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(500);
-  await injectProjectContext(page, QUALITY_PROJECT_ID);
+  await injectProjectContext(page, effectiveProjectId);
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1000);
@@ -388,10 +391,11 @@ export async function gotoRuleSetList(page: Page): Promise<void> {
  */
 export async function gotoRuleSetCreate(page: Page): Promise<void> {
   await applyRuntimeCookies(page);
-  await page.goto(buildDataAssetsUrl("/dq/ruleSet/add", QUALITY_PROJECT_ID));
+  const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
+  await page.goto(buildDataAssetsUrl("/dq/ruleSet/add", effectiveProjectId));
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(500);
-  await injectProjectContext(page, QUALITY_PROJECT_ID);
+  await injectProjectContext(page, effectiveProjectId);
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1000);
@@ -410,7 +414,7 @@ export async function createRuleSetDraft(
   page: Page,
   tableName: string = VALUE_FORMAT_TABLE,
   packageNames: string[],
-  datasource: MonitorDatasourceConfig = DORIS_MONITOR_DATASOURCE,
+  datasource: MonitorDatasourceConfig = SPARKTHRIFT_MONITOR_DATASOURCE,
 ): Promise<void> {
   await gotoRuleSetCreate(page);
 
@@ -493,7 +497,7 @@ export async function ensureRuleSetExists(
   page: Page,
   tableName: string,
   packageName: string,
-  datasource: MonitorDatasourceConfig = DORIS_MONITOR_DATASOURCE,
+  datasource: MonitorDatasourceConfig = SPARKTHRIFT_MONITOR_DATASOURCE,
 ): Promise<void> {
   await gotoRuleSetList(page);
 
@@ -637,9 +641,36 @@ export async function selectJsonFormatKeys(
     .last();
   await treeDropdown.waitFor({ state: "visible", timeout: 10000 });
 
+  const expandTreeNodes = async (): Promise<void> => {
+    for (let round = 0; round < 5; round += 1) {
+      const switchers = treeDropdown.locator(
+        ".ant-select-tree-switcher, .ant-tree-switcher",
+      );
+      const count = await switchers.count().catch(() => 0);
+      let expanded = false;
+
+      for (let index = 0; index < count; index += 1) {
+        const switcher = switchers.nth(index);
+        const className = (await switcher.getAttribute("class")) ?? "";
+        if (/open|noop/.test(className)) {
+          continue;
+        }
+        await switcher.click({ force: true }).catch(() => undefined);
+        await page.waitForTimeout(150);
+        expanded = true;
+      }
+
+      if (!expanded) {
+        break;
+      }
+    }
+  };
+
+  await expandTreeNodes();
+
   for (const keyName of keyNames) {
     const keyNode = treeDropdown
-      .locator(".ant-select-tree-node-content-wrapper, .ant-tree-treenode span")
+      .locator(".ant-select-tree-treenode, .ant-tree-treenode")
       .filter({ hasText: keyName })
       .first();
 
@@ -647,12 +678,9 @@ export async function selectJsonFormatKeys(
 
     // 检查是否为 disabled 状态
     const isDisabled = await keyNode
-      .locator(
-        "xpath=ancestor::li[contains(@class,'ant-select-tree-treenode')]",
-      )
-      .first()
       .evaluate((el) =>
-        el.classList.contains("ant-select-tree-treenode-disabled"),
+        el.classList.contains("ant-select-tree-treenode-disabled") ||
+        el.classList.contains("ant-tree-treenode-disabled"),
       )
       .catch(() => false);
 
@@ -662,7 +690,10 @@ export async function selectJsonFormatKeys(
       );
     }
 
-    await keyNode.click();
+    await keyNode
+      .locator(".ant-select-tree-node-content-wrapper, .ant-tree-node-content-wrapper")
+      .first()
+      .click();
     await page.waitForTimeout(200);
   }
 

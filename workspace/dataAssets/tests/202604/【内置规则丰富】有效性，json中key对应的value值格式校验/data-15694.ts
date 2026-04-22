@@ -5,15 +5,16 @@
  * 注意：此 suite 依赖已配置了 value格式 的 JSON key 数据。
  * 这些 key 需通过「通用配置 → json格式校验管理」页面手动维护或通过 API 创建。
  * 脚本不负责创建 key，假设环境中已存在：
- *   - key1：已配置 value格式
- *   - key2：已配置 value格式
- *   - key3：未配置 value格式（在 TreeSelect 中显示为 disabled）
+ *   - person-name：已配置 value格式
+ *   - person-age：已配置 value格式
+ *   - person-email：未配置 value格式（在 TreeSelect 中显示为 disabled）
  */
 import type { Page } from "@playwright/test";
 import {
   applyRuntimeCookies,
   buildDataAssetsUrl,
 } from "../../helpers/test-setup";
+import { versionJsonFixtureName } from "./json-fixture-sql";
 
 // ── Re-export 公共工具（方便 helpers 文件直接从此处 import）──────────────────
 export {
@@ -37,7 +38,7 @@ export const SPARKTHRIFT_DATABASE = SHARED_DATABASE;
 
 /** 数据源匹配关键字 */
 export const DORIS_DATASOURCE_KEYWORD = "doris";
-export const SPARKTHRIFT_DATASOURCE_KEYWORD = "spark|thrift";
+export const SPARKTHRIFT_DATASOURCE_KEYWORD = "spark|thrift|hadoop";
 
 /**
  * 用于 json格式校验规则的测试表名。
@@ -46,7 +47,7 @@ export const SPARKTHRIFT_DATASOURCE_KEYWORD = "spark|thrift";
  *   id INT, payload JSON, raw_str VARCHAR(1000)
  * 该表需提前建立并已在数据资产中完成元数据同步。
  */
-export const VALUE_FORMAT_TABLE = "test_json_value_format";
+export const VALUE_FORMAT_TABLE = versionJsonFixtureName("quality_test_json_rule_config");
 
 // ── 统计函数常量 ──────────────────────────────────────────────────────────────
 

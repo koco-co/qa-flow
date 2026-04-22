@@ -48,15 +48,20 @@ bun run .claude/scripts/rule-loader.ts load --project {{project}}
 | `read-pitfall` | 检索 pitfall（按关键词）          | 否    |
 | `write`        | 新增 term/overview/module/pitfall | 是    |
 | `update`       | 精细更新 frontmatter / body       | 是    |
+| `verify`       | 冲突检测（写入前必调）            | 否    |
+| `history`      | 查看 `.audit.jsonl` 写入/回滚记录 | 否    |
+| `rollback`     | 按 audit index 回滚到快照         | 是    |
 | `index`        | 刷新 `_index.md`                  | 是    |
 | `lint`         | 健康检查                          | 否    |
+
+**防污染三件套：** `verify`（写前检测）+ `.history/` 快照 + `.audit.jsonl` 审计。详见 `workflow/write.md` 的 B5 仲裁流程与 C3 回滚流程。
 
 ---
 
 ## 工作流分支
 
 - 查询场景（A1 查术语 / A2 查模块知识 / A3 查踩坑）：详见 [`workflow/read.md`](workflow/read.md)
-- 写入场景（B1-B4 写入流程、覆盖策略、置信度分流）与维护场景（C1 索引刷新 / C2 健康检查）：详见 [`workflow/write.md`](workflow/write.md)
+- 写入场景（B1-B5 写入流程、覆盖策略、置信度分流、冲突仲裁）与维护场景（C1 索引刷新 / C2 健康检查 / C3 历史查询 + 回滚）：详见 [`workflow/write.md`](workflow/write.md)
 
 ---
 

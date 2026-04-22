@@ -21,7 +21,6 @@ import {
   keepOnlyRulePackages,
   openRuleSetEditor,
   saveRuleSet,
-  selectRuleFieldAndFunction,
 } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import {
   getCurrentDatasource,
@@ -127,6 +126,10 @@ function getDatasourceTypeName(): string {
     : "SparkThrift2.x";
 }
 
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function getExpectedFieldType(): string {
   return getCurrentDatasource().primaryFieldType;
 }
@@ -213,6 +216,42 @@ function getMethodSelect(ruleForm: Locator): Locator {
     .first();
 }
 
+function getFunctionFormItem(ruleForm: Locator): Locator {
+  return ruleForm
+    .locator(".ant-form-item")
+    .filter({ hasText: /统计函数/ })
+    .first();
+}
+
+async function getFunctionSelect(ruleForm: Locator): Promise<Locator> {
+  const legacyFunctionSelect = ruleForm
+    .locator(".rule__function-list__item .ant-select")
+    .first();
+  const inlineFunctionSelect = getFunctionFormItem(ruleForm)
+    .locator(".ant-select")
+    .first();
+
+  await expect
+    .poll(
+      async () =>
+        (await legacyFunctionSelect.isVisible().catch(() => false)) ||
+        (await inlineFunctionSelect.isVisible().catch(() => false)),
+      { timeout: 10000, message: "waiting for function select to render" },
+    )
+    .toBe(true);
+
+  return (await legacyFunctionSelect.isVisible().catch(() => false))
+    ? legacyFunctionSelect
+    : inlineFunctionSelect;
+}
+
+async function ensureFieldLevelControlsReady(ruleForm: Locator): Promise<void> {
+  await expect(getFieldSelect(ruleForm)).toBeVisible({ timeout: 10000 });
+  await expect(await getFunctionSelect(ruleForm)).toBeVisible({
+    timeout: 10000,
+  });
+}
+
 function getContentSelect(ruleForm: Locator): Locator {
   return ruleForm
     .locator(".ant-form-item")
@@ -242,6 +281,68 @@ async function openDropdown(selectLocator: Locator): Promise<Locator> {
   return dropdown;
 }
 
+async function expandVerificationTree(
+  page: Page,
+  dropdown: Locator,
+): Promise<void> {
+  for (let pass = 0; pass < 3; pass += 1) {
+    const switchers = dropdown.locator(
+      ".ant-select-tree-switcher, .ant-tree-switcher",
+    );
+    const count = await switchers.count().catch(() => 0);
+    let expandedAny = false;
+
+    for (let index = 0; index < count; index += 1) {
+      const switcher = switchers.nth(index);
+      if (!(await switcher.isVisible({ timeout: 500 }).catch(() => false))) {
+        continue;
+      }
+
+      const className = (await switcher.getAttribute("class")) ?? "";
+      if (/open|noop/.test(className)) {
+        continue;
+      }
+
+      await switcher.scrollIntoViewIfNeeded().catch(() => undefined);
+      await switcher
+        .click({ force: true })
+        .catch(async () => {
+          await switcher.evaluate((node) => {
+            (node as HTMLElement).click();
+          });
+        });
+      await page.waitForTimeout(200);
+      expandedAny = true;
+    }
+
+    if (!expandedAny) {
+      break;
+    }
+  }
+}
+
+async function findVerificationOption(
+  dropdown: Locator,
+  keyName: string,
+): Promise<Locator> {
+  const exactPattern = new RegExp(`^${escapeRegExp(keyName)}$`);
+  const labels = dropdown.locator(
+    ".ant-select-tree-title, .ant-select-tree-node-content-wrapper, .ant-select-item-option-content",
+  );
+
+  const exactLabel = labels.filter({ hasText: exactPattern }).first();
+  if (await exactLabel.isVisible({ timeout: 1000 }).catch(() => false)) {
+    return exactLabel.locator(
+      "xpath=ancestor::*[contains(@class,'ant-select-tree-treenode') or @role='treeitem' or contains(@class,'ant-select-item-option')][1]",
+    );
+  }
+
+  const fuzzyLabel = labels.filter({ hasText: new RegExp(keyName) }).first();
+  return fuzzyLabel.locator(
+    "xpath=ancestor::*[contains(@class,'ant-select-tree-treenode') or @role='treeitem' or contains(@class,'ant-select-item-option')][1]",
+  );
+}
+
 export async function selectFieldValues(
   page: Page,
   ruleForm: Locator,
@@ -255,6 +356,7 @@ export async function selectFieldValues(
       .filter({ hasText: new RegExp(`^${field}$`) })
       .first();
     await option.click();
+    await page.waitForTimeout(200);
   }
   await page.keyboard.press("Escape").catch(() => undefined);
 }
@@ -263,9 +365,7 @@ export async function selectRuleFunction(
   ruleForm: Locator,
   functionName: string,
 ): Promise<void> {
-  const functionSelect = ruleForm
-    .locator(".rule__function-list__item .ant-select")
-    .first();
+  const functionSelect = await getFunctionSelect(ruleForm);
   await selectAntOption(ruleForm.page(), functionSelect, functionName);
   await ruleForm.page().waitForTimeout(500);
 }
@@ -279,13 +379,10 @@ export async function configureKeyRangeRule(
   if (await levelSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
     await selectAntOption(page, levelSelect, /字段级|字段/);
   }
+  await ensureFieldLevelControlsReady(ruleForm);
 
-  await selectRuleFieldAndFunction(
-    page,
-    ruleForm,
-    config.field,
-    KEY_RANGE_RULE_NAME,
-  );
+  await selectAntOption(page, getFieldSelect(ruleForm), config.field);
+  await selectRuleFunction(ruleForm, KEY_RANGE_RULE_NAME);
   await page.waitForTimeout(500);
   await selectAntOption(page, getMethodSelect(ruleForm), config.method);
   await setVerificationContent(page, ruleForm, config.keyNames);
@@ -324,13 +421,29 @@ export async function setVerificationContent(
 ): Promise<void> {
   const contentSelect = getContentSelect(ruleForm);
   const dropdown = await openDropdown(contentSelect);
+  await expandVerificationTree(page, dropdown);
+  const searchInput = dropdown.locator("input").first();
+  const hasSearchInput = await searchInput
+    .isVisible({ timeout: 1000 })
+    .catch(() => false);
+
   for (const keyName of keyNames) {
-    const option = dropdown
-      .locator(
-        ".ant-select-tree-treenode, .ant-select-tree-list-holder-inner [role='treeitem'], .ant-select-item-option",
-      )
-      .filter({ hasText: new RegExp(`${keyName}`) })
-      .first();
+    if (hasSearchInput) {
+      await searchInput.fill(keyName);
+      await page.waitForTimeout(400);
+    }
+
+    let option = await findVerificationOption(dropdown, keyName);
+
+    if (!(await option.isVisible({ timeout: 2000 }).catch(() => false))) {
+      if (hasSearchInput) {
+        await searchInput.fill("");
+        await page.waitForTimeout(300);
+      }
+      await expandVerificationTree(page, dropdown);
+      option = await findVerificationOption(dropdown, keyName);
+    }
+
     const checkbox = option
       .locator(".ant-select-tree-checkbox, .ant-checkbox-input")
       .first();
@@ -341,6 +454,9 @@ export async function setVerificationContent(
     }
   }
 
+  if (hasSearchInput) {
+    await searchInput.fill("");
+  }
   const confirmButton = page.getByRole("button", { name: /确认|确 定/ }).last();
   if (await confirmButton.isVisible({ timeout: 1000 }).catch(() => false)) {
     await confirmButton.click();
@@ -357,6 +473,7 @@ export async function searchVerificationContent(
 ): Promise<Locator> {
   const contentSelect = getContentSelect(ruleForm);
   const dropdown = await openDropdown(contentSelect);
+  await expandVerificationTree(page, dropdown);
   const searchInput = dropdown.locator("input").first();
   if (await searchInput.isVisible({ timeout: 1000 }).catch(() => false)) {
     await searchInput.fill(keyword);
@@ -371,6 +488,7 @@ export async function collectVerificationOptions(
 ): Promise<string[]> {
   const contentSelect = getContentSelect(ruleForm);
   const dropdown = await openDropdown(contentSelect);
+  await expandVerificationTree(page, dropdown);
   const items = await dropdown
     .locator(".ant-select-tree-title, .ant-select-item-option-content")
     .evaluateAll((nodes) =>

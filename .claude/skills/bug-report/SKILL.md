@@ -59,14 +59,14 @@ argument-hint: "[报错日志 / 堆栈文本 / 前端 Console 错误 | --templat
 
 ## 工作流总览
 
-| 步骤 | 名称       | 职责                                                       |
-| ---- | ---------- | ---------------------------------------------------------- |
-| 1    | 路由识别   | 按 `<routing>` 信号判定后端/前端，歧义时 AskUser           |
-| 2    | 源码引用   | 双门策略：sync 与 writeback 独立确认                       |
-| 3    | 派发 Agent | 后端 → `backend-bug-agent` / 前端 → `frontend-bug-agent`   |
+| 步骤 | 名称       | 职责                                                     |
+| ---- | ---------- | -------------------------------------------------------- |
+| 1    | 路由识别   | 按 `<routing>` 信号判定后端/前端，歧义时 AskUser         |
+| 2    | 源码引用   | 双门策略：sync 与 writeback 独立确认                     |
+| 3    | 派发 Agent | 后端 → `backend-bug-agent` / 前端 → `frontend-bug-agent` |
 | 4    | 渲染报告   | 选模板（zentao 默认 / `--template full`），写入 reports/ |
-| 5    | 发送通知   | 触发 plugin-loader notify 事件                             |
-| 6    | 完成摘要   | 状态展示，无需确认                                         |
+| 5    | 发送通知   | 触发 plugin-loader notify 事件                           |
+| 6    | 完成摘要   | 状态展示，无需确认                                       |
 
 ## 路由分支
 

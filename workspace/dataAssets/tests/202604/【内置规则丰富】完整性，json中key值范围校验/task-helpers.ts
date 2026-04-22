@@ -8,9 +8,8 @@ import {
 } from "../../helpers";
 import { enableCompatibleMonitorDatasourceRouting } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import {
-  executeTaskFromList,
+  executeTaskFromList as executeSharedTaskFromList,
   getQualityReportRuleRow,
-  getTableRowByTaskName,
   getTaskDetailRuleCard,
   gotoQualityReport,
   gotoRuleTaskList,
@@ -18,8 +17,8 @@ import {
   openQualityReportDetail,
   openQualityReportRuleDetail,
   openTaskRuleDetailDataDrawer,
-  waitForQualityReportRow,
-  waitForTaskInstanceFinished,
+  waitForQualityReportRow as waitForSharedQualityReportRow,
+  waitForTaskInstanceFinished as waitForSharedTaskInstanceFinished,
 } from "../有效性-取值范围枚举范围规则/rule-task-helpers";
 import {
   injectProjectContext,
@@ -47,6 +46,7 @@ export {
 };
 
 export const SPARK_COMPAT_TASK_NAME = "task_spark_test";
+const TABLE_ROWS = ".ant-table-tbody tr:not(.ant-table-measure-row)";
 
 type TaskScenario = {
   readonly taskName: string;
@@ -112,12 +112,47 @@ const preparedTasks = new Set<string>();
 const executedTasks = new Set<string>();
 const readyReports = new Set<string>();
 
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function resolveTaskName(taskName: string): string {
   return resolveVariantName(taskName);
 }
 
 function getReportName(taskName: string): string {
   return `${resolveTaskName(taskName)}_report`;
+}
+
+function resolveNameCandidates(name: string): string[] {
+  const datasource = getCurrentDatasource();
+  const cacheSuffix = `_${datasource.cacheKey}`;
+  const reportSuffix = "_report";
+
+  if (name.endsWith(reportSuffix)) {
+    const baseName = name.slice(0, -reportSuffix.length);
+    return [
+      ...new Set(
+        resolveNameCandidates(baseName).map(
+          (candidate) => `${candidate}${reportSuffix}`,
+        ),
+      ),
+    ];
+  }
+
+  if (name.includes(cacheSuffix)) {
+    return [...new Set([name, name.replace(cacheSuffix, "")])];
+  }
+
+  return [...new Set([`${name}${cacheSuffix}`, name])];
+}
+
+function resolveTaskNameCandidates(taskName: string): string[] {
+  return resolveNameCandidates(taskName);
+}
+
+function rowNameMatches(rowName: string, nameCandidates: readonly string[]): boolean {
+  return nameCandidates.includes(rowName);
 }
 
 async function postTaskApi<T>(
@@ -210,7 +245,7 @@ async function deleteTasksByNames(
   page: Page,
   taskNames: readonly string[],
 ): Promise<void> {
-  const actualNames = taskNames.map(resolveTaskName);
+  const actualNames = taskNames.flatMap(resolveTaskNameCandidates);
   const rows = await listTaskRows(page);
   for (const row of rows) {
     const rowName = String(row.ruleName ?? row.monitorName ?? row.name ?? "");
@@ -332,6 +367,7 @@ async function completeTaskScheduleAndSave(
     .first();
   if (await immediateRadio.isVisible({ timeout: 2000 }).catch(() => false)) {
     await immediateRadio.click();
+    await page.waitForTimeout(300);
   }
 
   const reportNameInput = page
@@ -367,12 +403,21 @@ async function completeTaskScheduleAndSave(
     .first();
   if (await needCarNoRadio.isVisible({ timeout: 2000 }).catch(() => false)) {
     await needCarNoRadio.click();
+    await page.waitForTimeout(300);
   }
 
+  const saveResponsePromise = page
+    .waitForResponse(
+      (response) =>
+        response.url().includes("/dassets/v1/valid/monitor/add") ||
+        response.url().includes("/dassets/v1/valid/monitor/edit"),
+    )
+    .catch(() => null);
   const createButton = page
     .getByRole("button", { name: /新\s*建|保\s*存/ })
     .last();
   await createButton.click();
+  await page.waitForTimeout(1000);
   const confirmModal = page
     .locator(".ant-modal:visible, .ant-modal-confirm:visible")
     .last();
@@ -384,9 +429,30 @@ async function completeTaskScheduleAndSave(
       await confirmButton.click();
     }
   }
-  await page
-    .waitForURL(/#\/dq\/rule(?:\?|$)/, { timeout: 15000 })
-    .catch(() => undefined);
+
+  const saveResponse = await saveResponsePromise;
+  if (!saveResponse) {
+    const visibleErrors = await page
+      .locator(".ant-form-item-explain-error:visible")
+      .allTextContents()
+      .catch(() => [] as string[]);
+    throw new Error(
+      `Task save request was not triggered. Visible errors: ${
+        visibleErrors.join(" | ") || "none"
+      }`,
+    );
+  }
+
+  const saveResult = (await saveResponse.json().catch(() => null)) as
+    | { success?: boolean; message?: string }
+    | null;
+  if (!saveResult?.success) {
+    throw new Error(
+      `Task save failed via ${saveResponse.url()}: ${saveResult?.message ?? "unknown error"}`,
+    );
+  }
+
+  await page.waitForURL(/#\/dq\/rule(?:\?|$)/, { timeout: 15000 });
   await page.waitForTimeout(1000);
 }
 
@@ -405,6 +471,25 @@ async function createTask(page: Page, taskName: string): Promise<void> {
   if (scenario.afterCreate) {
     await scenario.afterCreate(page);
   }
+}
+
+async function getTaskMonitorRowByCandidates(
+  page: Page,
+  taskName: string,
+): Promise<MonitorListRow> {
+  const nameCandidates = resolveTaskNameCandidates(taskName);
+  const rows = await listTaskRows(page);
+  const taskRow = rows.find((row) =>
+    rowNameMatches(
+      String(row.ruleName ?? row.monitorName ?? row.name ?? ""),
+      nameCandidates,
+    ),
+  );
+  if (taskRow) {
+    return taskRow;
+  }
+
+  throw new Error(`Task "${nameCandidates[0]}" not found in monitor list`);
 }
 
 export async function ensureRuleTasks(
@@ -522,11 +607,131 @@ export async function gotoQualityAndLocate(
   return row;
 }
 
+export function getTableRowByTaskName(page: Page, taskName: string): Locator {
+  const namePattern = new RegExp(
+    resolveNameCandidates(taskName).map(escapeRegExp).join("|"),
+  );
+  return page.locator(TABLE_ROWS).filter({ hasText: namePattern }).first();
+}
+
+export async function executeTaskFromList(
+  page: Page,
+  taskName: string,
+): Promise<void> {
+  try {
+    await executeSharedTaskFromList(page, taskName);
+    return;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes("not found in monitor list")) {
+      throw error;
+    }
+  }
+
+  const taskMonitorRow = await getTaskMonitorRowByCandidates(page, taskName);
+  const monitorId =
+    taskMonitorRow.id === undefined || taskMonitorRow.id === null
+      ? null
+      : Number(taskMonitorRow.id);
+  if (monitorId !== null) {
+    const executeResponse =
+      (await postTaskApi<{
+        success?: boolean;
+        message?: string;
+      }>(page, "/dassets/v1/valid/monitor/immediatelyExecuted", {
+        monitorId,
+      })) ?? {};
+
+    if (executeResponse.success) {
+      await page.waitForTimeout(1000);
+      return;
+    }
+  }
+
+  await gotoRuleTaskList(page);
+  const targetRow = getTableRowByTaskName(page, taskName);
+  await expect(targetRow).toBeVisible({ timeout: 15000 });
+  await targetRow.locator("td").nth(1).locator("a").first().click();
+  const detailDrawer = page.locator(".dtc-drawer:visible").last();
+  await expect(detailDrawer).toBeVisible({ timeout: 10000 });
+  await detailDrawer.getByRole("button", { name: "立即执行" }).first().click();
+  await page.waitForTimeout(1000);
+}
+
+export async function waitForTaskInstanceFinished(
+  page: Page,
+  taskName: string,
+  timeout = 180000,
+): Promise<Locator> {
+  try {
+    return await waitForSharedTaskInstanceFinished(page, taskName, timeout);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (
+      !message.includes("did not finish within") &&
+      !message.includes("not found in monitor list")
+    ) {
+      throw error;
+    }
+  }
+
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    await gotoValidationResults(page);
+    const row = getTableRowByTaskName(page, taskName);
+    const visible = await row.isVisible({ timeout: 2000 }).catch(() => false);
+    const rowText = visible ? await row.innerText().catch(() => "") : "";
+    if (
+      visible &&
+      /校验通过|校验未通过|校验不通过|校验异常|执行失败|失败/.test(rowText) &&
+      !/运行中|执行中|排队|等待/.test(rowText)
+    ) {
+      return row;
+    }
+
+    await page.waitForTimeout(5000);
+    await page.reload({ waitUntil: "networkidle" }).catch(() => undefined);
+    await page.waitForTimeout(1000);
+  }
+
+  throw new Error(
+    `Task instance "${resolveTaskNameCandidates(taskName)[0]}" did not finish within ${timeout}ms`,
+  );
+}
+
+export async function waitForQualityReportRow(
+  page: Page,
+  taskName: string,
+  timeout = 180000,
+): Promise<Locator> {
+  try {
+    return await waitForSharedQualityReportRow(page, taskName, timeout);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes("did not appear within")) {
+      throw error;
+    }
+  }
+
+  const deadline = Date.now() + timeout;
+  const reportName = getReportName(taskName);
+  while (Date.now() < deadline) {
+    await gotoQualityReport(page);
+    const row = getTableRowByTaskName(page, reportName);
+    if (await row.isVisible({ timeout: 2000 }).catch(() => false)) {
+      return row;
+    }
+    await page.waitForTimeout(5000);
+  }
+
+  throw new Error(
+    `Quality report row "${resolveNameCandidates(reportName)[0]}" did not appear within ${timeout}ms`,
+  );
+}
+
 export {
-  executeTaskFromList,
   getQualityReportRuleRow,
   getReportName,
-  getTableRowByTaskName,
   getTaskDetailRuleCard,
   gotoQualityReport,
   gotoRuleTaskList,
@@ -534,6 +739,4 @@ export {
   openQualityReportDetail,
   openQualityReportRuleDetail,
   openTaskRuleDetailDataDrawer,
-  waitForQualityReportRow,
-  waitForTaskInstanceFinished,
 };

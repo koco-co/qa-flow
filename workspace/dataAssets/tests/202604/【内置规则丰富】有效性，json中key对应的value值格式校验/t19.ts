@@ -35,16 +35,16 @@ async function runJsonFormatCaseByDatasource(
     await expect(page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first()).toBeVisible({ timeout: 15000 });
   });
 
-  const ruleForm = await step('步骤3: 新增有效性校验规则（' + datasourceLabel + '）', async () => {
-    const form = await addRuleToPackage(page, packageName, "有效性校验");
-    await expect(form).toBeVisible({ timeout: 10000 });
-    return form;
+  let ruleForm: Awaited<ReturnType<typeof addRuleToPackage>>;
+  await step('步骤3: 新增有效性校验规则（' + datasourceLabel + '）', async () => {
+    ruleForm = await addRuleToPackage(page, packageName, "有效性校验");
+    await expect(ruleForm).toBeVisible({ timeout: 10000 });
   });
 
   await step('步骤4: 配置格式-json格式校验规则（' + datasourceLabel + '）', async () => {
     await configureJsonFormatRule(page, ruleForm, {
       field: "info",
-      keyNames: ["key1"],
+      keyNames: ["person-name"],
       ruleStrength: "强规则",
       description: '【P1】验证json格式配置中维护上千个key时执行校验与结果展示正常-' + datasourceLabel,
     });

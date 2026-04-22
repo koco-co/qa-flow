@@ -264,7 +264,11 @@ function loadActiveDatasources(): readonly DatasourceConfig[] {
 export const ACTIVE_DATASOURCES = loadActiveDatasources();
 export const ALL_TABLES = TABLE_DEFINITIONS.map((table) => table.name) as readonly string[];
 
-export const QUALITY_PROJECT_ID = 90;
+const envQualityProjectId = Number(process.env.QA_VALID_PROJECT_ID ?? "NaN");
+export const QUALITY_PROJECT_ID =
+  Number.isFinite(envQualityProjectId) && envQualityProjectId > 0
+    ? envQualityProjectId
+    : 90;
 export const QUALITY_PROJECT_NAME = "pw_test";
 
 if (process.env.QA_OFFLINE_MODE === "1") {
@@ -387,47 +391,73 @@ export async function resolveEffectiveQualityProjectId(page: Page): Promise<numb
     return _cachedEffectiveQualityProjectId;
   }
 
-  try {
-    const baseUrl = normalizeDataAssetsBaseUrl();
-    const requestUrl = new URL("/dassets/v1/valid/project/getProjects", baseUrl).toString();
+  const baseUrl = normalizeDataAssetsBaseUrl();
+  const requestUrl = new URL("/dassets/v1/valid/project/getProjects", baseUrl).toString();
 
-    const response = await page.context().request.post(requestUrl, {
-      data: {},
-      headers: {
-        "content-type": "application/json;charset=UTF-8",
-        "Accept-Language": "zh-CN",
-      },
-      timeout: 15_000,
-    });
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await page.context().request.post(requestUrl, {
+        data: {},
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+          "Accept-Language": "zh-CN",
+        },
+        timeout: 15_000,
+      });
 
-    if (response.ok()) {
-      const text = await response.text();
-      if (text.trim()) {
-        const json = JSON.parse(text) as {
-          data?: Array<{ id?: number | string; name?: string; projectName?: string }>;
-        };
-        const projects = json.data ?? [];
-        // Try to find by name first
-        const namedProject = projects.find((p) =>
-          (p.name ?? p.projectName ?? "").toLowerCase().includes(QUALITY_PROJECT_NAME.toLowerCase()),
-        );
-        const resolvedId = namedProject?.id
-          ? Number(namedProject.id)
-          : projects[0]?.id
-            ? Number(projects[0].id)
-            : null;
-
-        if (resolvedId !== null && Number.isFinite(resolvedId)) {
-          _cachedEffectiveQualityProjectId = resolvedId;
-          process.stderr.write(
-            `[quality-project] resolved effective project ID: ${_cachedEffectiveQualityProjectId} (hardcoded default: ${QUALITY_PROJECT_ID}).\n`,
+      if (response.ok()) {
+        const text = await response.text();
+        if (text.trim()) {
+          const json = JSON.parse(text) as {
+            data?: Array<{ id?: number | string; name?: string; projectName?: string }>;
+          };
+          const projects = json.data ?? [];
+          // Try to find by name first
+          const namedProject = projects.find((p) =>
+            (p.name ?? p.projectName ?? "").toLowerCase().includes(QUALITY_PROJECT_NAME.toLowerCase()),
           );
-          return _cachedEffectiveQualityProjectId;
+          const resolvedId = namedProject?.id
+            ? Number(namedProject.id)
+            : projects[0]?.id
+              ? Number(projects[0].id)
+              : null;
+
+          if (resolvedId !== null && Number.isFinite(resolvedId)) {
+            _cachedEffectiveQualityProjectId = resolvedId;
+            process.stderr.write(
+              `[quality-project] resolved effective project ID: ${_cachedEffectiveQualityProjectId} (hardcoded default: ${QUALITY_PROJECT_ID}).\n`,
+            );
+            return _cachedEffectiveQualityProjectId;
+          }
         }
       }
+    } catch {
+      // retry
     }
-  } catch {
-    // ignore errors, fall through to hardcoded default
+
+    if (attempt < 3) {
+      await page.waitForTimeout(1000 * attempt).catch(() => undefined);
+    }
+  }
+
+  const sessionProjectId = await page
+    .evaluate(() => Number(sessionStorage.getItem("X-Valid-Project-ID") ?? "NaN"))
+    .catch(() => Number.NaN);
+  if (Number.isFinite(sessionProjectId) && sessionProjectId > 0) {
+    _cachedEffectiveQualityProjectId = sessionProjectId;
+    process.stderr.write(
+      `[quality-project] project API fallback to sessionStorage project ID: ${_cachedEffectiveQualityProjectId}.\n`,
+    );
+    return _cachedEffectiveQualityProjectId;
+  }
+
+  const pidFromUrl = Number(new URL(page.url()).searchParams.get("pid") ?? "NaN");
+  if (Number.isFinite(pidFromUrl) && pidFromUrl > 0) {
+    _cachedEffectiveQualityProjectId = pidFromUrl;
+    process.stderr.write(
+      `[quality-project] project API fallback to URL pid: ${_cachedEffectiveQualityProjectId}.\n`,
+    );
+    return _cachedEffectiveQualityProjectId;
   }
 
   _cachedEffectiveQualityProjectId = QUALITY_PROJECT_ID;

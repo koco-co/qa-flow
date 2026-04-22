@@ -20,31 +20,31 @@ for (const datasource of ACTIVE_DATASOURCES) {
         const ruleForm = await addRuleToPackage(page, SCENARIOS.main.packageName, "完整性校验");
         const levelSelect = ruleForm.locator(".ant-form-item").filter({ hasText: /规则类型/ }).locator(".ant-select").first();
         await selectAntOption(page, levelSelect, /字段级|字段/);
-        const functionSelect = ruleForm.locator(".rule__function-list__item .ant-select").first();
-        await selectAntOption(page, functionSelect, /非空值数/);
-        await selectFieldValues(page, ruleForm, ["info", "extra_info"]);
+        await selectRuleFunction(ruleForm, "空值数");
+        await selectFieldValues(page, ruleForm, ["id", "info"]);
         const selectedField = ruleForm.locator(".ant-form-item").filter({ hasText: /^字段/ }).locator(".ant-select-selection-overflow");
+        await expect(selectedField).toContainText("id");
         await expect(selectedField).toContainText("info");
-        await expect(selectedField).toContainText("extra_info");
       });
 
-      await step("步骤2: 切换统计函数为key范围校验 → 字段切换为单选且提示文案正确", async () => {
+      await step("步骤2: 切换统计函数为key范围校验 → 字段切换为单选并保留首个已选字段，提示文案正确", async () => {
         const ruleForm = page.locator(".ruleForm").first();
         await selectRuleFunction(ruleForm, KEY_RANGE_RULE_NAME);
         const fieldSelect = ruleForm.locator(".ant-form-item").filter({ hasText: /^字段/ }).locator(".ant-select").first();
         await expect(fieldSelect).not.toHaveClass(/ant-select-multiple/);
-        await expect(fieldSelect.locator(".ant-select-selection-item")).toHaveCount(0);
+        await expect(fieldSelect.locator(".ant-select-selection-item")).toHaveCount(1);
+        await expect(fieldSelect.locator(".ant-select-selection-item").first()).toHaveText("id");
 
         const tooltip = await openFunctionTooltip(page, ruleForm);
         await expect(tooltip).toContainText("字段仅支持单选", { timeout: 5000 });
       });
 
-      await step("步骤3: 先选info再选extra_info → 最终仅保留extra_info", async () => {
+      await step("步骤3: 先选info再选id → 最终仅保留id", async () => {
         const ruleForm = page.locator(".ruleForm").first();
         const fieldSelect = ruleForm.locator(".ant-form-item").filter({ hasText: /^字段/ }).locator(".ant-select").first();
         await selectAntOption(page, fieldSelect, "info");
-        await selectAntOption(page, fieldSelect, "extra_info");
-        await expect(fieldSelect.locator(".ant-select-selection-item").first()).toHaveText("extra_info");
+        await selectAntOption(page, fieldSelect, "id");
+        await expect(fieldSelect.locator(".ant-select-selection-item").first()).toHaveText("id");
       });
     });
   });

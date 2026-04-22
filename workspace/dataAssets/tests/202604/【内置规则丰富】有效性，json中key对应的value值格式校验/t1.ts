@@ -22,14 +22,11 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await createRuleSetDraft(page, VALUE_FORMAT_TABLE, [packageName]);
       });
 
-      const ruleForm = await step(
-        "步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染",
-        async () => {
-          const form = await addRuleToPackage(page, packageName, "有效性校验");
-          await expect(form).toBeVisible();
-          return form;
-        },
-      );
+      let ruleForm: Awaited<ReturnType<typeof addRuleToPackage>>;
+      await step("步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染", async () => {
+        ruleForm = await addRuleToPackage(page, packageName, "有效性校验");
+        await expect(ruleForm).toBeVisible();
+      });
 
       await step(
         "步骤3: 选择 json/string 类型字段（info）→ 字段选择成功",
@@ -76,27 +73,56 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
       await step(
         "步骤5: 验证「格式-json格式校验」的 index 在「自定义正则」之前 → 位置正确",
         async () => {
-          const optionTexts: string[] = await dropdown
-            .locator(".ant-select-item-option")
-            .evaluateAll((items) =>
-              items.map((el) => el.textContent?.trim() ?? ""),
-            );
+          const optionTexts = new Set<string>();
+          const holder = dropdown.locator(".rc-virtual-list-holder").first();
 
-          const jsonFormatIndex = optionTexts.findIndex((text) =>
+          for (let pass = 0; pass < 25; pass += 1) {
+            const visibleTexts = await dropdown
+              .locator(".ant-select-item-option")
+              .evaluateAll((items) =>
+                items
+                  .map((el) => el.textContent?.trim() ?? "")
+                  .filter(Boolean),
+              );
+            visibleTexts.forEach((text) => optionTexts.add(text));
+
+            const sizeBeforeScroll = optionTexts.size;
+            await holder.evaluate((el) => {
+              el.scrollTop += 240;
+            });
+            await page.waitForTimeout(300);
+
+            const scrolledTexts = await dropdown
+              .locator(".ant-select-item-option")
+              .evaluateAll((items) =>
+                items
+                  .map((el) => el.textContent?.trim() ?? "")
+                  .filter(Boolean),
+              );
+            scrolledTexts.forEach((text) => optionTexts.add(text));
+
+            if (optionTexts.size === sizeBeforeScroll) {
+              break;
+            }
+          }
+
+          const allOptionTexts = [...optionTexts];
+
+          const jsonFormatIndex = allOptionTexts.findIndex((text) =>
             text.includes(FORMAT_JSON_VERIFICATION_FUNC),
           );
-          const customRegexIndex = optionTexts.findIndex((text) =>
+          const customRegexIndex = allOptionTexts.findIndex((text) =>
             text.includes("自定义正则"),
           );
 
           expect(
             jsonFormatIndex,
-            `「格式-json格式校验」未找到，当前选项：${optionTexts.join(", ")}`,
+            `「格式-json格式校验」未找到，当前选项：${allOptionTexts.join(", ")}`,
           ).toBeGreaterThanOrEqual(0);
 
           expect(
             customRegexIndex,
-            `「自定义正则」未找到，当前选项：${optionTexts.join(", ")}`,
+            `「自定义正则」未找到，当前选项：${allOptionTexts.join(", ")}`,
           ).toBeGreaterThanOrEqual(0);
 
           expect(

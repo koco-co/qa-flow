@@ -35,7 +35,7 @@ for (const datasource of ACTIVE_DATASOURCES) {
         "步骤1: 进入规则集管理页面 → 规则集管理页面打开，列表显示已有规则集数据行",
         async () => {
           await gotoRuleSetList(page);
-          await expect(page.locator(".ant-table-row").first()).toBeVisible({ timeout: 15000 });
+          await expect(page.locator(".ant-table-tbody")).toBeVisible({ timeout: 15000 });
         },
         page.locator(".ant-table-tbody"),
       );

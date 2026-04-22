@@ -34,6 +34,7 @@ import {
   openOfflineTaskInstanceDetail,
   openOfflineTaskRuleDetailDataDrawer,
 } from "./offline-suite-helper";
+import { canUseFinishedTaskRow } from "./task-instance-state";
 
 const TABLE_ROWS = ".ant-table-tbody tr:not(.ant-table-measure-row)";
 const TASK_API_PAGE_SIZE = 200;
@@ -1953,17 +1954,24 @@ export async function waitForTaskInstanceFinished(
   await gotoValidationResults(page);
   const actualTaskName = resolveTaskName(taskName);
   const deadline = Date.now() + timeout;
+  const batchStableThresholdMs = 15_000;
   let finishedBatchRun: BatchRunRecord | null = null;
   let finishedBatchDetectedAt = 0;
 
   while (Date.now() < deadline) {
     const instanceRow = getTableRowByTaskName(page, taskName);
     const visible = await instanceRow.isVisible({ timeout: 2000 }).catch(() => false);
-    if (visible) {
-      const rowText = (await instanceRow.innerText()).replace(/\s+/g, "");
-      if (!rowText.includes("执行中") && !rowText.includes("运行中")) {
-        return instanceRow;
-      }
+    const rowText = visible ? await instanceRow.innerText().catch(() => "") : "";
+    if (
+      canUseFinishedTaskRow({
+        rowVisible: visible,
+        rowText,
+        batchFinished: false,
+        batchFinishedStableMs: 0,
+        stableThresholdMs: batchStableThresholdMs,
+      })
+    ) {
+      return instanceRow;
     }
 
     const taskRecord = await getTaskInstanceRecord(page, taskName);
@@ -1979,7 +1987,15 @@ export async function waitForTaskInstanceFinished(
           finishedBatchDetectedAt = Date.now();
         }
 
-        if (Date.now() - finishedBatchDetectedAt >= 15_000 && visible) {
+        if (
+          canUseFinishedTaskRow({
+            rowVisible: visible,
+            rowText,
+            batchFinished: true,
+            batchFinishedStableMs: Date.now() - finishedBatchDetectedAt,
+            stableThresholdMs: batchStableThresholdMs,
+          })
+        ) {
           return instanceRow;
         }
       }

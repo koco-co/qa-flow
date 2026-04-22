@@ -4,6 +4,8 @@ import type { Page } from "@playwright/test";
 import { setupPreconditions } from "../../helpers/preconditions";
 import { applyRuntimeCookies } from "../../helpers/test-setup";
 import type { DatasourceConfig as BaseDatasourceConfig } from "../有效性-取值范围枚举范围规则/test-data";
+import { buildSparkFixtureSql, versionJsonFixtureName } from "./json-fixture-sql";
+import { runRetriablePreconditions } from "./json-suite-preconditions";
 
 const base = await import("../有效性-取值范围枚举范围规则/test-data");
 
@@ -12,13 +14,11 @@ export const ACTIVE_DATASOURCES = base.ACTIVE_DATASOURCES;
 export const clearCurrentDatasource = base.clearCurrentDatasource;
 export const getCurrentDatasource = base.getCurrentDatasource;
 export const injectProjectContext = base.injectProjectContext;
-export const resolveEffectiveQualityProjectId =
-  base.resolveEffectiveQualityProjectId;
+export const resolveEffectiveQualityProjectId = base.resolveEffectiveQualityProjectId;
 export const resolveVariantName = base.resolveVariantName;
 export const setCurrentDatasource = base.setCurrentDatasource;
 
-export const SUITE_NAME =
-  "【内置规则丰富】有效性，json中key对应的value值格式校验";
+export const SUITE_NAME = "【内置规则丰富】有效性，json中key对应的value值格式校验";
 export const SPARKTHRIFT2X_SOURCE_TYPE = 45;
 export const HIVE2X_SOURCE_TYPE = 7;
 export const DORIS3X_SOURCE_TYPE = 129;
@@ -45,222 +45,227 @@ type TableDefinition = {
   readonly sqlByDatasource: DatasourceSqlMap;
 };
 
+const RULE_CONFIG_TABLE = versionJsonFixtureName("quality_test_json_rule_config");
+const MULTI_TYPE_TABLE = versionJsonFixtureName("quality_test_json_multi_type");
+const MAIN_PASS_TABLE = versionJsonFixtureName("quality_test_json_main_pass");
+const MAIN_FAIL_TABLE = versionJsonFixtureName("quality_test_json_main_fail");
+const REPORT_PASS_TABLE = versionJsonFixtureName("quality_test_json_report_pass");
+const REPORT_FAIL_TABLE = versionJsonFixtureName("quality_test_json_report_fail");
+const DELETE_REFERENCE_TABLE = versionJsonFixtureName("quality_test_json_delete_ref");
+const PREVIEW_DELETE_TABLE = versionJsonFixtureName("quality_test_json_preview_del");
+
 const RULE_CONFIG_SQL: DatasourceSqlMap = {
-  "sparkthrift2.x": `
-DROP TABLE IF EXISTS pw_test.quality_test_json_rule_config;
-CREATE TABLE pw_test.quality_test_json_rule_config (
-  id INT,
-  info STRING,
-  name VARCHAR(255)
-) STORED AS PARQUET;
-INSERT INTO TABLE pw_test.quality_test_json_rule_config
-SELECT 1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row1'
+  "sparkthrift2.x": buildSparkFixtureSql(
+    RULE_CONFIG_TABLE,
+    `
+SELECT
+  1 AS id,
+  CAST('{"person":{"name":"张三","age":"25","email":"test@example.com"}}' AS STRING) AS info,
+  CAST('row1' AS VARCHAR(255)) AS name
 UNION ALL
-SELECT 2, '{"person":{"name":"李四","age":"30","email":"admin@test.com"}}', 'row2';
-`.trim(),
+SELECT
+  2 AS id,
+  CAST('{"person":{"name":"李四","age":"30","email":"admin@test.com"}}' AS STRING) AS info,
+  CAST('row2' AS VARCHAR(255)) AS name
+    `,
+  ),
   "doris3.x": `
-DROP TABLE IF EXISTS quality_test_json_rule_config;
-CREATE TABLE quality_test_json_rule_config (
-  id INT NOT NULL,
-  info JSON,
-  name VARCHAR(255)
-) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO quality_test_json_rule_config VALUES
-  (1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row1'),
-  (2, '{"person":{"name":"李四","age":"30","email":"admin@test.com"}}', 'row2');
-`.trim(),
+ DROP TABLE IF EXISTS ${RULE_CONFIG_TABLE};
+ CREATE TABLE ${RULE_CONFIG_TABLE} (
+   id INT NOT NULL,
+   info JSON,
+   name VARCHAR(255)
+ ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
+ INSERT INTO ${RULE_CONFIG_TABLE} VALUES
+   (1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row1'),
+   (2, '{"person":{"name":"李四","age":"30","email":"admin@test.com"}}', 'row2');
+ `.trim(),
 };
 
 const MULTI_TYPE_SQL: DatasourceSqlMap = {
-  "sparkthrift2.x": `
-DROP TABLE IF EXISTS pw_test.quality_test_json_multi_type;
-CREATE TABLE pw_test.quality_test_json_multi_type (
-  id INT,
-  name VARCHAR(255),
-  age INT,
-  salary DECIMAL(10,2),
-  info STRING,
-  created_at TIMESTAMP
-) STORED AS PARQUET;
-INSERT INTO TABLE pw_test.quality_test_json_multi_type
-SELECT 1, '张三', 25, 88.80, '{"person":{"name":"张三"}}', TIMESTAMP '2026-04-21 10:00:00';
-`.trim(),
+  "sparkthrift2.x": buildSparkFixtureSql(
+    MULTI_TYPE_TABLE,
+    `
+SELECT
+  1 AS id,
+  CAST('张三' AS VARCHAR(255)) AS name,
+  CAST(25 AS INT) AS age,
+  CAST(88.80 AS DECIMAL(10,2)) AS salary,
+  CAST('{"person":{"name":"张三"}}' AS STRING) AS info,
+  CAST('2026-04-21 10:00:00' AS TIMESTAMP) AS created_at
+    `,
+  ),
   "doris3.x": `
-DROP TABLE IF EXISTS quality_test_json_multi_type;
-CREATE TABLE quality_test_json_multi_type (
-  id INT NOT NULL,
-  name VARCHAR(255),
-  age INT,
+ DROP TABLE IF EXISTS ${MULTI_TYPE_TABLE};
+ CREATE TABLE ${MULTI_TYPE_TABLE} (
+   id INT NOT NULL,
+   name VARCHAR(255),
+   age INT,
   salary DECIMAL(10,2),
-  info JSON,
-  created_at DATETIME
-) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO quality_test_json_multi_type VALUES
-  (1, '张三', 25, 88.80, '{"person":{"name":"张三"}}', '2026-04-21 10:00:00');
-`.trim(),
+   info JSON,
+   created_at DATETIME
+ ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
+ INSERT INTO ${MULTI_TYPE_TABLE} VALUES
+   (1, '张三', 25, 88.80, '{"person":{"name":"张三"}}', '2026-04-21 10:00:00');
+ `.trim(),
 };
 
 const MAIN_PASS_SQL: DatasourceSqlMap = {
-  "sparkthrift2.x": `
-DROP TABLE IF EXISTS pw_test.quality_test_json_main_pass;
-CREATE TABLE pw_test.quality_test_json_main_pass (
-  id INT,
-  info STRING,
-  name VARCHAR(255)
-) STORED AS PARQUET;
-INSERT INTO TABLE pw_test.quality_test_json_main_pass
-SELECT 1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row1'
+  "sparkthrift2.x": buildSparkFixtureSql(
+    MAIN_PASS_TABLE,
+    `
+SELECT
+  1 AS id,
+  CAST('{"person":{"name":"张三","age":"25","email":"test@example.com"}}' AS STRING) AS info,
+  CAST('row1' AS VARCHAR(255)) AS name
 UNION ALL
-SELECT 2, '{"person":{"name":"李四","age":"30","email":"admin@test.com"}}', 'row2';
-`.trim(),
+SELECT
+  2 AS id,
+  CAST('{"person":{"name":"李四","age":"30","email":"admin@test.com"}}' AS STRING) AS info,
+  CAST('row2' AS VARCHAR(255)) AS name
+    `,
+  ),
   "doris3.x": `
-DROP TABLE IF EXISTS quality_test_json_main_pass;
-CREATE TABLE quality_test_json_main_pass (
-  id INT NOT NULL,
-  info JSON,
-  name VARCHAR(255)
-) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO quality_test_json_main_pass VALUES
-  (1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row1'),
-  (2, '{"person":{"name":"李四","age":"30","email":"admin@test.com"}}', 'row2');
-`.trim(),
+ DROP TABLE IF EXISTS ${MAIN_PASS_TABLE};
+ CREATE TABLE ${MAIN_PASS_TABLE} (
+   id INT NOT NULL,
+   info JSON,
+   name VARCHAR(255)
+ ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
+ INSERT INTO ${MAIN_PASS_TABLE} VALUES
+   (1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row1'),
+   (2, '{"person":{"name":"李四","age":"30","email":"admin@test.com"}}', 'row2');
+ `.trim(),
 };
 
 const MAIN_FAIL_SQL: DatasourceSqlMap = {
-  "sparkthrift2.x": `
-DROP TABLE IF EXISTS pw_test.quality_test_json_main_fail;
-CREATE TABLE pw_test.quality_test_json_main_fail (
-  id INT,
-  info STRING,
-  remark VARCHAR(255)
-) STORED AS PARQUET;
-INSERT INTO TABLE pw_test.quality_test_json_main_fail
-SELECT 1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row_valid'
+  "sparkthrift2.x": buildSparkFixtureSql(
+    MAIN_FAIL_TABLE,
+    `
+SELECT
+  1 AS id,
+  CAST('{"person":{"name":"张三","age":"25","email":"test@example.com"}}' AS STRING) AS info,
+  CAST('row_valid' AS VARCHAR(255)) AS remark
 UNION ALL
-SELECT 2, '{"person":{"name":"Tom","age":"18","email":"test@example.com"}}', 'row_invalid_name'
+SELECT
+  2 AS id,
+  CAST('{"person":{"name":"Tom","age":"18","email":"test@example.com"}}' AS STRING) AS info,
+  CAST('row_invalid_name' AS VARCHAR(255)) AS remark
 UNION ALL
-SELECT 3, '{"person":{"name":"王五","age":"1000","email":"ops@test.com"}}', 'row_invalid_age';
-`.trim(),
+SELECT
+  3 AS id,
+  CAST('{"person":{"name":"王五","age":"1000","email":"ops@test.com"}}' AS STRING) AS info,
+  CAST('row_invalid_age' AS VARCHAR(255)) AS remark
+    `,
+  ),
   "doris3.x": `
-DROP TABLE IF EXISTS quality_test_json_main_fail;
-CREATE TABLE quality_test_json_main_fail (
-  id INT NOT NULL,
-  info JSON,
-  remark VARCHAR(255)
-) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO quality_test_json_main_fail VALUES
-  (1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row_valid'),
-  (2, '{"person":{"name":"Tom","age":"18","email":"test@example.com"}}', 'row_invalid_name'),
-  (3, '{"person":{"name":"王五","age":"1000","email":"ops@test.com"}}', 'row_invalid_age');
-`.trim(),
+ DROP TABLE IF EXISTS ${MAIN_FAIL_TABLE};
+ CREATE TABLE ${MAIN_FAIL_TABLE} (
+   id INT NOT NULL,
+   info JSON,
+   remark VARCHAR(255)
+ ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
+ INSERT INTO ${MAIN_FAIL_TABLE} VALUES
+   (1, '{"person":{"name":"张三","age":"25","email":"test@example.com"}}', 'row_valid'),
+   (2, '{"person":{"name":"Tom","age":"18","email":"test@example.com"}}', 'row_invalid_name'),
+   (3, '{"person":{"name":"王五","age":"1000","email":"ops@test.com"}}', 'row_invalid_age');
+ `.trim(),
 };
 
 const REPORT_PASS_SQL: DatasourceSqlMap = {
-  "sparkthrift2.x": `
-DROP TABLE IF EXISTS pw_test.quality_test_json_report_pass;
-CREATE TABLE pw_test.quality_test_json_report_pass (
-  id INT,
-  info STRING
-) STORED AS PARQUET;
-INSERT INTO TABLE pw_test.quality_test_json_report_pass
-SELECT 1, '{"meta":{"version":"v1.0"}}'
+  "sparkthrift2.x": buildSparkFixtureSql(
+    REPORT_PASS_TABLE,
+    `
+SELECT 1 AS id, CAST('{"meta":{"version":"v1.0"}}' AS STRING) AS info
 UNION ALL
-SELECT 2, '{"meta":{"version":"v2.3"}}';
-`.trim(),
+SELECT 2 AS id, CAST('{"meta":{"version":"v2.3"}}' AS STRING) AS info
+    `,
+  ),
   "doris3.x": `
-DROP TABLE IF EXISTS quality_test_json_report_pass;
-CREATE TABLE quality_test_json_report_pass (
-  id INT NOT NULL,
-  info JSON
-) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO quality_test_json_report_pass VALUES
-  (1, '{"meta":{"version":"v1.0"}}'),
-  (2, '{"meta":{"version":"v2.3"}}');
-`.trim(),
+ DROP TABLE IF EXISTS ${REPORT_PASS_TABLE};
+ CREATE TABLE ${REPORT_PASS_TABLE} (
+   id INT NOT NULL,
+   info JSON
+ ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
+ INSERT INTO ${REPORT_PASS_TABLE} VALUES
+   (1, '{"meta":{"version":"v1.0"}}'),
+   (2, '{"meta":{"version":"v2.3"}}');
+ `.trim(),
 };
 
 const REPORT_FAIL_SQL: DatasourceSqlMap = {
-  "sparkthrift2.x": `
-DROP TABLE IF EXISTS pw_test.quality_test_json_report_fail;
-CREATE TABLE pw_test.quality_test_json_report_fail (
-  id INT,
-  log_info STRING
-) STORED AS PARQUET;
-INSERT INTO TABLE pw_test.quality_test_json_report_fail
-SELECT 1, '{"log":{"level":"INFO","code":"ERR00001"}}'
+  "sparkthrift2.x": buildSparkFixtureSql(
+    REPORT_FAIL_TABLE,
+    `
+SELECT 1 AS id, CAST('{"log":{"level":"INFO","code":"ERR00001"}}' AS STRING) AS log_info
 UNION ALL
-SELECT 2, '{"log":{"level":"DEBUG","code":"invalid"}}';
-`.trim(),
+SELECT 2 AS id, CAST('{"log":{"level":"DEBUG","code":"invalid"}}' AS STRING) AS log_info
+    `,
+  ),
   "doris3.x": `
-DROP TABLE IF EXISTS quality_test_json_report_fail;
-CREATE TABLE quality_test_json_report_fail (
-  id INT NOT NULL,
-  log_info JSON
-) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO quality_test_json_report_fail VALUES
-  (1, '{"log":{"level":"INFO","code":"ERR00001"}}'),
-  (2, '{"log":{"level":"DEBUG","code":"invalid"}}');
-`.trim(),
+ DROP TABLE IF EXISTS ${REPORT_FAIL_TABLE};
+ CREATE TABLE ${REPORT_FAIL_TABLE} (
+   id INT NOT NULL,
+   log_info JSON
+ ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
+ INSERT INTO ${REPORT_FAIL_TABLE} VALUES
+   (1, '{"log":{"level":"INFO","code":"ERR00001"}}'),
+   (2, '{"log":{"level":"DEBUG","code":"invalid"}}');
+ `.trim(),
 };
 
 const DELETE_REFERENCE_SQL: DatasourceSqlMap = {
-  "sparkthrift2.x": `
-DROP TABLE IF EXISTS pw_test.quality_test_json_delete_ref;
-CREATE TABLE pw_test.quality_test_json_delete_ref (
-  id INT,
-  del_info STRING
-) STORED AS PARQUET;
-INSERT INTO TABLE pw_test.quality_test_json_delete_ref
-SELECT 1, '{"del":{"key":{"a":"ABC","b":"123"}}}';
-`.trim(),
+  "sparkthrift2.x": buildSparkFixtureSql(
+    DELETE_REFERENCE_TABLE,
+    `
+SELECT 1 AS id, CAST('{"del":{"key":{"a":"ABC","b":"123"}}}' AS STRING) AS del_info
+    `,
+  ),
   "doris3.x": `
-DROP TABLE IF EXISTS quality_test_json_delete_ref;
-CREATE TABLE quality_test_json_delete_ref (
-  id INT NOT NULL,
-  del_info JSON
-) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO quality_test_json_delete_ref VALUES
-  (1, '{"del":{"key":{"a":"ABC","b":"123"}}}');
-`.trim(),
+ DROP TABLE IF EXISTS ${DELETE_REFERENCE_TABLE};
+ CREATE TABLE ${DELETE_REFERENCE_TABLE} (
+   id INT NOT NULL,
+   del_info JSON
+ ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
+ INSERT INTO ${DELETE_REFERENCE_TABLE} VALUES
+   (1, '{"del":{"key":{"a":"ABC","b":"123"}}}');
+ `.trim(),
 };
 
 const PREVIEW_DELETE_SQL: DatasourceSqlMap = {
-  "sparkthrift2.x": `
-DROP TABLE IF EXISTS pw_test.quality_test_json_preview_del;
-CREATE TABLE pw_test.quality_test_json_preview_del (
-  id INT,
-  preview_info STRING
-) STORED AS PARQUET;
-INSERT INTO TABLE pw_test.quality_test_json_preview_del
-SELECT 1, '{"preview":{"key":{"x":"123","y":"abc"}}}'
+  "sparkthrift2.x": buildSparkFixtureSql(
+    PREVIEW_DELETE_TABLE,
+    `
+SELECT 1 AS id, CAST('{"preview":{"key":{"x":"123","y":"abc"}}}' AS STRING) AS preview_info
 UNION ALL
-SELECT 2, '{"preview":{"key":{"x":"456","y":"def"}}}';
-`.trim(),
+SELECT 2 AS id, CAST('{"preview":{"key":{"x":"456","y":"def"}}}' AS STRING) AS preview_info
+    `,
+  ),
   "doris3.x": `
-DROP TABLE IF EXISTS quality_test_json_preview_del;
-CREATE TABLE quality_test_json_preview_del (
-  id INT NOT NULL,
-  preview_info JSON
-) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
-INSERT INTO quality_test_json_preview_del VALUES
-  (1, '{"preview":{"key":{"x":"123","y":"abc"}}}'),
-  (2, '{"preview":{"key":{"x":"456","y":"def"}}}');
-`.trim(),
+ DROP TABLE IF EXISTS ${PREVIEW_DELETE_TABLE};
+ CREATE TABLE ${PREVIEW_DELETE_TABLE} (
+   id INT NOT NULL,
+   preview_info JSON
+ ) DISTRIBUTED BY HASH(id) BUCKETS 3 PROPERTIES("replication_num"="1");
+ INSERT INTO ${PREVIEW_DELETE_TABLE} VALUES
+   (1, '{"preview":{"key":{"x":"123","y":"abc"}}}'),
+   (2, '{"preview":{"key":{"x":"456","y":"def"}}}');
+ `.trim(),
 };
 
 const TABLE_DEFINITIONS: readonly TableDefinition[] = [
-  { name: "quality_test_json_rule_config", sqlByDatasource: RULE_CONFIG_SQL },
-  { name: "quality_test_json_multi_type", sqlByDatasource: MULTI_TYPE_SQL },
-  { name: "quality_test_json_main_pass", sqlByDatasource: MAIN_PASS_SQL },
-  { name: "quality_test_json_main_fail", sqlByDatasource: MAIN_FAIL_SQL },
-  { name: "quality_test_json_report_pass", sqlByDatasource: REPORT_PASS_SQL },
-  { name: "quality_test_json_report_fail", sqlByDatasource: REPORT_FAIL_SQL },
+  { name: RULE_CONFIG_TABLE, sqlByDatasource: RULE_CONFIG_SQL },
+  { name: MULTI_TYPE_TABLE, sqlByDatasource: MULTI_TYPE_SQL },
+  { name: MAIN_PASS_TABLE, sqlByDatasource: MAIN_PASS_SQL },
+  { name: MAIN_FAIL_TABLE, sqlByDatasource: MAIN_FAIL_SQL },
+  { name: REPORT_PASS_TABLE, sqlByDatasource: REPORT_PASS_SQL },
+  { name: REPORT_FAIL_TABLE, sqlByDatasource: REPORT_FAIL_SQL },
   {
-    name: "quality_test_json_delete_ref",
+    name: DELETE_REFERENCE_TABLE,
     sqlByDatasource: DELETE_REFERENCE_SQL,
   },
   {
-    name: "quality_test_json_preview_del",
+    name: PREVIEW_DELETE_TABLE,
     sqlByDatasource: PREVIEW_DELETE_SQL,
   },
 ] as const;
@@ -282,13 +287,8 @@ function getMetadataSyncTimeoutSeconds(): number {
   return DEFAULT_METADATA_SYNC_TIMEOUT_SECONDS;
 }
 
-function namedSeed(
-  path: readonly string[],
-  value?: string,
-): JsonValidationSeed {
-  return value
-    ? { path, name: path.join("-"), value }
-    : { path, name: path.join("-") };
+function namedSeed(path: readonly string[], value?: string): JsonValidationSeed {
+  return value ? { path, name: path.join("-"), value } : { path, name: path.join("-") };
 }
 
 function createSingleLevelSeeds(
@@ -311,10 +311,7 @@ export const JSON_KEY_PRESETS = {
     namedSeed(["person", "age"], "^\\d{1,3}$"),
     namedSeed(["person", "email"]),
   ],
-  addressHierarchy: [
-    namedSeed(["address"]),
-    namedSeed(["address", "city"], "^.{1,20}$"),
-  ],
+  addressHierarchy: [namedSeed(["address"]), namedSeed(["address", "city"], "^.{1,20}$")],
   productSelection: [
     namedSeed(["product", "name"], "^.{1,50}$"),
     namedSeed(["product", "code"], "^[A-Z]{2}\\d{6}$"),
@@ -357,7 +354,7 @@ export const JSON_KEY_PRESETS = {
 } as const satisfies Record<string, readonly JsonValidationSeed[]>;
 
 export const P0_PASS_SCENARIO: JsonRuleScenario = {
-  tableName: "quality_test_json_main_pass",
+  tableName: MAIN_PASS_TABLE,
   packageName: "P0主流程测试包",
   taskName: "json格式校验任务_P0通过",
   field: "info",
@@ -367,7 +364,7 @@ export const P0_PASS_SCENARIO: JsonRuleScenario = {
 };
 
 export const P0_FAIL_SCENARIO: JsonRuleScenario = {
-  tableName: "quality_test_json_main_fail",
+  tableName: MAIN_FAIL_TABLE,
   packageName: "校验不通过测试包",
   taskName: "json格式校验任务_P0不通过",
   field: "info",
@@ -377,7 +374,7 @@ export const P0_FAIL_SCENARIO: JsonRuleScenario = {
 };
 
 export const REPORT_PASS_SCENARIO: JsonRuleScenario = {
-  tableName: "quality_test_json_report_pass",
+  tableName: REPORT_PASS_TABLE,
   packageName: "报告通过测试包",
   taskName: "报告通过展示任务",
   field: "info",
@@ -387,7 +384,7 @@ export const REPORT_PASS_SCENARIO: JsonRuleScenario = {
 };
 
 export const REPORT_FAIL_SCENARIO: JsonRuleScenario = {
-  tableName: "quality_test_json_report_fail",
+  tableName: REPORT_FAIL_TABLE,
   packageName: "报告不通过测试包",
   taskName: "报告不通过展示任务",
   field: "log_info",
@@ -397,7 +394,7 @@ export const REPORT_FAIL_SCENARIO: JsonRuleScenario = {
 };
 
 export const DELETE_REFERENCE_SCENARIO: JsonRuleScenario = {
-  tableName: "quality_test_json_delete_ref",
+  tableName: DELETE_REFERENCE_TABLE,
   packageName: "key删除测试包",
   taskName: "key删除影响测试任务",
   field: "del_info",
@@ -407,7 +404,7 @@ export const DELETE_REFERENCE_SCENARIO: JsonRuleScenario = {
 };
 
 export const PREVIEW_DELETE_SCENARIO: JsonRuleScenario = {
-  tableName: "quality_test_json_preview_del",
+  tableName: PREVIEW_DELETE_TABLE,
   packageName: "key删除预览测试包",
   taskName: "key删除预览测试任务",
   field: "preview_info",
@@ -416,9 +413,7 @@ export const PREVIEW_DELETE_SCENARIO: JsonRuleScenario = {
   keyPresets: ["previewDelete"],
 };
 
-export function getJsonValidationDataSourceType(
-  datasource = getCurrentDatasource(),
-): number {
+export function getJsonValidationDataSourceType(datasource = getCurrentDatasource()): number {
   switch (datasource.id) {
     case "doris3.x":
       return DORIS3X_SOURCE_TYPE;
@@ -439,24 +434,23 @@ export async function runSuitePreconditions(
   }
 
   await applyRuntimeCookies(page);
-  try {
-    await setupPreconditions(page, {
-      datasourceType: datasource.preconditionType,
-      tables: TABLE_DEFINITIONS.map((table) => ({
-        name: table.name,
-        sql: table.sqlByDatasource[datasource.id],
-      })),
-      projectName: "pw_test",
-      syncTimeout: getMetadataSyncTimeoutSeconds(),
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (!message.includes("Metadata sync timed out")) {
-      throw error;
-    }
-    process.stderr.write(
-      `[preconditions] ${datasource.reportName} metadata sync timed out, continuing with existing synced metadata.\n`,
-    );
-  }
+  process.stderr.write(`[preconditions] Preparing ${datasource.reportName} tables...\n`);
+  await runRetriablePreconditions({
+    reportName: datasource.reportName,
+    projectNames: ["pw_test", "pw"],
+    wait: async (ms) => page.waitForTimeout(ms),
+    log: (message) => process.stderr.write(message),
+    runForProject: async (projectName) => {
+      await setupPreconditions(page, {
+        datasourceType: datasource.preconditionType,
+        tables: TABLE_DEFINITIONS.map((table) => ({
+          name: table.name,
+          sql: table.sqlByDatasource[datasource.id],
+        })),
+        projectName,
+        syncTimeout: getMetadataSyncTimeoutSeconds(),
+      });
+    },
+  });
   preconditionsReady.add(cacheKey);
 }

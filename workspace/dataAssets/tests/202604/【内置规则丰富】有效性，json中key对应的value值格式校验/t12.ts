@@ -1,4 +1,4 @@
-// META: {"id":"t12","priority":"P1","title":"【P1】验证未选择校验key时保存规则提示「请选择校验key」"}
+// META: {"id":"t12","priority":"P1","title":"【P1】验证未选择校验key时保存规则提示统计函数存在必填项未填写"}
 import { expect, test } from "../../fixtures/step-screenshot";
 import { selectAntOption, uniqueName } from "../../helpers/test-setup";
 import {
@@ -17,7 +17,7 @@ const PAGE_NAME = "规则集管理";
 
 test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
   test(
-    "【P1】验证未选择校验key时保存规则提示「请选择校验key」",
+    "【P1】验证未选择校验key时保存规则提示统计函数存在必填项未填写",
     async ({ page, step }) => {
       const packageName = uniqueName("t12_pkg");
 
@@ -25,14 +25,11 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await createRuleSetDraft(page, VALUE_FORMAT_TABLE, [packageName]);
       });
 
-      const ruleForm = await step(
-        "步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染可见",
-        async () => {
-          const form = await addRuleToPackage(page, packageName, "有效性校验");
-          await expect(form).toBeVisible();
-          return form;
-        },
-      );
+      let ruleForm: Awaited<ReturnType<typeof addRuleToPackage>>;
+      await step("步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染可见", async () => {
+        ruleForm = await addRuleToPackage(page, packageName, "有效性校验");
+        await expect(ruleForm).toBeVisible();
+      });
 
       await step(
         "步骤3: 选择 json/string 类型字段（info）→ 字段选择成功",
@@ -68,38 +65,24 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         .first();
 
       await step(
-        "步骤5: 不选择校验key，直接点击【保存】→ 出现「请选择校验key」错误提示",
+        "步骤5: 不选择校验key，直接点击【保存】→ 页面提示统计函数存在必填项未填写，且校验key仍保持占位文案",
         async () => {
           await saveBtn.click();
           await page.waitForTimeout(500);
 
-          // 「请选择校验key」错误提示可能出现在：
-          // 1. 表单校验错误文字（.ant-form-item-explain-error）
-          // 2. Message/Toast 提示（.ant-message-notice）
           const formError = ruleForm
             .locator(".ant-form-item-explain-error")
-            .filter({ hasText: "请选择校验key" })
+            .filter({ hasText: "存在必填项未填写" })
+            .first();
+          const keyPlaceholder = ruleForm
+            .locator(".rule__function-list__item")
+            .first()
+            .locator("text=请选择校验key")
             .first();
 
-          const messageToast = page
-            .locator(".ant-message-notice, .ant-notification-notice, .ant-message")
-            .filter({ hasText: "请选择校验key" })
-            .first();
-
-          // 等待任意一种提示出现
-          await Promise.any([
-            formError.waitFor({ state: "visible", timeout: 5000 }),
-            messageToast.waitFor({ state: "visible", timeout: 5000 }),
-          ]);
-
-          // 断言至少有一个提示可见
-          const formErrorVisible = await formError.isVisible().catch(() => false);
-          const messageToastVisible = await messageToast.isVisible().catch(() => false);
-
-          expect(
-            formErrorVisible || messageToastVisible,
-            "点击保存后，应出现「请选择校验key」错误提示",
-          ).toBe(true);
+          await expect(formError).toBeVisible({ timeout: 5000 });
+          await expect(formError).toContainText("“格式-json格式校验”统计函数存在必填项未填写");
+          await expect(keyPlaceholder).toBeVisible({ timeout: 5000 });
         },
         ruleForm.locator(".ant-form-item-explain-error").first(),
       );

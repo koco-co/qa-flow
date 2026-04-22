@@ -18,8 +18,8 @@ const PAGE_NAME = "规则集管理";
 /**
  * 已配置 value格式 的 key（来自 test-data-15694 注释说明）
  */
-const KEY1 = "key1";
-const KEY2 = "key2";
+const KEY1 = "person-name";
+const KEY2 = "person-age";
 
 /**
  * TreeSelect「全选」根节点文本（来自源码 JSON_TREE_ALL_KEY_TEXT）
@@ -37,14 +37,11 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await createRuleSetDraft(page, VALUE_FORMAT_TABLE, [packageName]);
       });
 
-      const ruleForm = await step(
-        "步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染",
-        async () => {
-          const form = await addRuleToPackage(page, packageName, "有效性校验");
-          await expect(form).toBeVisible();
-          return form;
-        },
-      );
+      let ruleForm: Awaited<ReturnType<typeof addRuleToPackage>>;
+      await step("步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染", async () => {
+        ruleForm = await addRuleToPackage(page, packageName, "有效性校验");
+        await expect(ruleForm).toBeVisible();
+      });
 
       await step(
         "步骤3: 选择 json/string 类型字段（info）→ 字段选择成功",
@@ -94,12 +91,37 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
           .locator(".ant-tree-select-dropdown:visible, .ant-select-dropdown:visible")
           .last();
 
+      const expandTreeNodes = async (): Promise<void> => {
+        const treeDropdown = getTreeDropdown();
+        for (let pass = 0; pass < 3; pass += 1) {
+          const switchers = treeDropdown.locator(
+            ".ant-select-tree-switcher, .ant-tree-switcher",
+          );
+          const count = await switchers.count().catch(() => 0);
+          let expanded = false;
+          for (let index = 0; index < count; index += 1) {
+            const switcher = switchers.nth(index);
+            const className = (await switcher.getAttribute("class")) ?? "";
+            if (/open|noop/.test(className)) {
+              continue;
+            }
+            await switcher.click({ force: true }).catch(() => undefined);
+            await page.waitForTimeout(200);
+            expanded = true;
+          }
+          if (!expanded) {
+            break;
+          }
+        }
+      };
+
       await step(
-        "步骤5: 打开校验key的 TreeSelect 下拉，勾选 key1 → key1 被选中",
+        "步骤5: 打开校验key的 TreeSelect 下拉，勾选 person-name → person-name 被选中",
         async () => {
           await openKeyTreeSelect();
           const treeDropdown = getTreeDropdown();
           await expect(treeDropdown).toBeVisible({ timeout: 10000 });
+          await expandTreeNodes();
 
           const key1Node = treeDropdown
             .locator(".ant-select-tree-treenode, .ant-tree-treenode")
@@ -133,7 +155,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
       );
 
       await step(
-        "步骤6: 勾选 key2 → 多选生效，key1 和 key2 同时被选中",
+        "步骤6: 勾选 person-age → 多选生效，person-name 和 person-age 同时被选中",
         async () => {
           const treeDropdown = getTreeDropdown();
           const dropdownVisible = await treeDropdown
@@ -141,6 +163,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
             .catch(() => false);
           if (!dropdownVisible) {
             await openKeyTreeSelect();
+            await expandTreeNodes();
           }
 
           const key2Node = treeDropdown
@@ -181,6 +204,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
             .catch(() => false);
           if (!dropdownVisible) {
             await openKeyTreeSelect();
+            await expandTreeNodes();
           }
 
           const allNode = treeDropdown
@@ -239,6 +263,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
             .catch(() => false);
           if (!dropdownVisible) {
             await openKeyTreeSelect();
+            await expandTreeNodes();
           }
 
           const allNode = treeDropdown

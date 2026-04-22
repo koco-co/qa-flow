@@ -18,12 +18,12 @@ const PAGE_NAME = "规则集管理";
 /**
  * 已配置 value格式 的 key 名（环境中需提前维护）
  */
-const ENABLED_KEY = "key1";
+const ENABLED_KEY = "person-name";
 
 /**
  * 未配置 value格式 的 key 名（如存在则应显示为 disabled）
  */
-const DISABLED_KEY = "key3";
+const DISABLED_KEY = "person-email";
 
 test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
   test(
@@ -35,14 +35,11 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         await createRuleSetDraft(page, VALUE_FORMAT_TABLE, [packageName]);
       });
 
-      const ruleForm = await step(
-        "步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染",
-        async () => {
-          const form = await addRuleToPackage(page, packageName, "有效性校验");
-          await expect(form).toBeVisible();
-          return form;
-        },
-      );
+      let ruleForm: Awaited<ReturnType<typeof addRuleToPackage>>;
+      await step("步骤2: 在规则包中添加有效性校验规则 → 规则表单渲染", async () => {
+        ruleForm = await addRuleToPackage(page, packageName, "有效性校验");
+        await expect(ruleForm).toBeVisible();
+      });
 
       await step(
         "步骤3: 选择 json/string 类型字段（info）→ 字段选择成功",
@@ -66,6 +63,32 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
           await page.waitForTimeout(500);
         },
       );
+
+      const expandTreeNodes = async (): Promise<void> => {
+        const treeDropdown = page
+          .locator(".ant-tree-select-dropdown:visible, .ant-select-dropdown:visible")
+          .last();
+        for (let pass = 0; pass < 3; pass += 1) {
+          const switchers = treeDropdown.locator(
+            ".ant-select-tree-switcher, .ant-tree-switcher",
+          );
+          const count = await switchers.count().catch(() => 0);
+          let expanded = false;
+          for (let index = 0; index < count; index += 1) {
+            const switcher = switchers.nth(index);
+            const className = (await switcher.getAttribute("class")) ?? "";
+            if (/open|noop/.test(className)) {
+              continue;
+            }
+            await switcher.click({ force: true }).catch(() => undefined);
+            await page.waitForTimeout(200);
+            expanded = true;
+          }
+          if (!expanded) {
+            break;
+          }
+        }
+      };
 
       await step(
         "步骤5: 打开校验key的 TreeSelect 下拉 → 下拉树可见",
@@ -93,6 +116,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
             .locator(".ant-tree-select-dropdown:visible, .ant-select-dropdown:visible")
             .last();
           await expect(treeDropdown).toBeVisible({ timeout: 10000 });
+          await expandTreeNodes();
         },
       );
 
@@ -101,7 +125,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
         .last();
 
       await step(
-        "步骤6: 验证已配置 value格式 的 key（key1）可被选中（不是 disabled）→ key1 节点不为 disabled",
+        "步骤6: 验证已配置 value格式 的 key（person-name）可被选中（不是 disabled）→ person-name 节点不为 disabled",
         async () => {
           const enabledKeyNode = treeDropdown
             .locator(
@@ -126,7 +150,7 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
       );
 
       await step(
-        "步骤7: 验证未配置 value格式 的 key（key3，若存在）显示为 disabled → key3 节点为 disabled 或不存在",
+        "步骤7: 验证未配置 value格式 的 key（person-email，若存在）显示为 disabled → person-email 节点为 disabled 或不存在",
         async () => {
           const disabledKeyNode = treeDropdown
             .locator(

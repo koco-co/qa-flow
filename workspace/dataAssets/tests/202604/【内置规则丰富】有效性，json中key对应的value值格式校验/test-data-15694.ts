@@ -5,9 +5,9 @@
  * 注意：此 suite 依赖已配置了 value格式 的 JSON key 数据。
  * 这些 key 需通过「通用配置 → json格式校验管理」页面手动维护或通过 API 创建。
  * 脚本不负责创建 key，假设环境中已存在：
- *   - key1：已配置 value格式
- *   - key2：已配置 value格式
- *   - key3：未配置 value格式（在 TreeSelect 中显示为 disabled）
+ *   - person-name：已配置 value格式
+ *   - person-age：已配置 value格式
+ *   - person-email：未配置 value格式（在 TreeSelect 中显示为 disabled）
  */
 import type { Page } from "@playwright/test";
 import {

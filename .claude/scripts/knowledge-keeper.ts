@@ -29,6 +29,17 @@ import {
   type TermRow,
 } from "./lib/knowledge.ts";
 import { knowledgeDir, knowledgePath } from "./lib/paths.ts";
+import {
+  appendAudit,
+  buildAuditRecord,
+  detectBodyRewrite,
+  detectOverviewConflict,
+  detectTermConflict,
+  readAuditLog,
+  readSnapshot,
+  saveSnapshot,
+  type Conflict,
+} from "./lib/knowledge-guard.ts";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -386,6 +397,7 @@ function runWrite(opts: {
   confirmed: boolean;
   dryRun: boolean;
   overwrite: boolean;
+  force: boolean;
 }): void {
   const gate = confidenceGate(opts.confidence, opts.confirmed);
   if (!gate.allowed) {
@@ -397,6 +409,7 @@ function runWrite(opts: {
   let targetPath = "";
   let beforeContent = "";
   let afterContent = "";
+  let conflict: Conflict | null = null;
 
   if (opts.type === "term") {
     const parsed = parseContentJson<ContentTerm>("term", opts.content);
@@ -417,6 +430,7 @@ function runWrite(opts: {
     const baseBody = existingFm
       ? file.body
       : `\n# ${newFm.title}\n\n| 术语 | 中文 | 解释 | 别名 |\n|---|---|---|---|\n`;
+    conflict = detectTermConflict(baseBody, parsed);
     const newBody = upsertTermRow(baseBody, renderTermRow(parsed), parsed.term);
     afterContent = serializeFrontmatter(newFm) + newBody;
   } else if (opts.type === "overview") {
@@ -436,6 +450,7 @@ function runWrite(opts: {
           updated: today,
         };
     const baseBody = existingFm ? file.body : `\n# ${newFm.title}\n`;
+    conflict = detectOverviewConflict(baseBody, parsed.section, parsed.body, parsed.mode);
     const newBody = upsertOverviewSection(baseBody, parsed.section, parsed.body, parsed.mode);
     afterContent = serializeFrontmatter(newFm) + newBody;
   } else if (opts.type === "module" || opts.type === "pitfall") {
@@ -457,9 +472,31 @@ function runWrite(opts: {
       updated: today,
     };
     afterContent = serializeFrontmatter(newFm) + "\n" + parsed.body + (parsed.body.endsWith("\n") ? "" : "\n");
+    if (exists) {
+      conflict = detectBodyRewrite(beforeContent, afterContent);
+    }
   } else {
     process.stderr.write(`[knowledge-keeper] Unknown type: ${opts.type}\n`);
     process.exit(1);
+  }
+
+  // ── 冲突守卫：block 级冲突必须 --force 才能越过 ──
+  if (conflict && conflict.severity === "block" && !opts.force) {
+    process.stdout.write(
+      JSON.stringify(
+        {
+          blocked: true,
+          action: "write",
+          type: opts.type,
+          file: targetPath,
+          conflict,
+          hint: "冲突阻断。核对后可加 --force 强制写入，或先调 rollback 回到上一个版本。",
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    process.exit(2);
   }
 
   if (opts.dryRun) {
@@ -472,6 +509,7 @@ function runWrite(opts: {
           file: targetPath,
           before: beforeContent,
           after: afterContent,
+          conflict,
         },
         null,
         2,
@@ -480,9 +518,24 @@ function runWrite(opts: {
     return;
   }
 
+  const snapshotName = saveSnapshot(opts.project, targetPath, beforeContent);
   mkdirSync(dirname(targetPath), { recursive: true });
   writeFileSync(targetPath, afterContent);
   writeIndexFile(opts.project);
+  appendAudit(
+    opts.project,
+    buildAuditRecord({
+      action: "write",
+      type: opts.type,
+      file: targetPath,
+      before: beforeContent,
+      after: afterContent,
+      snapshot: snapshotName,
+      confidence: opts.confidence,
+      confirmed: opts.confirmed,
+      forced: opts.force,
+    }),
+  );
   process.stdout.write(
     JSON.stringify(
       {
@@ -491,6 +544,8 @@ function runWrite(opts: {
         file: targetPath,
         before: beforeContent,
         after: afterContent,
+        snapshot: snapshotName,
+        conflict,
       },
       null,
       2,
@@ -510,6 +565,7 @@ function runUpdate(opts: {
   content: string;
   confirmed: boolean;
   dryRun: boolean;
+  force: boolean;
 }): void {
   // 1. 路径安全
   if (opts.path.startsWith("/") || opts.path.includes("..")) {
@@ -585,6 +641,25 @@ function runUpdate(opts: {
   const afterContent =
     serializeFrontmatter(newFm) + "\n" + newBody + (newBody.endsWith("\n") ? "" : "\n");
 
+  // 8. 冲突检测（update 主要看 body-rewrite）
+  const conflict: Conflict | null = detectBodyRewrite(beforeContent, afterContent);
+  if (conflict && conflict.severity === "block" && !opts.force) {
+    process.stdout.write(
+      JSON.stringify(
+        {
+          blocked: true,
+          action: "update",
+          file: full,
+          conflict,
+          hint: "冲突阻断。核对后可加 --force 强制更新。",
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    process.exit(2);
+  }
+
   // 9. dry-run
   if (opts.dryRun) {
     process.stdout.write(
@@ -595,6 +670,7 @@ function runUpdate(opts: {
           file: full,
           before: beforeContent,
           after: afterContent,
+          conflict,
         },
         null,
         2,
@@ -603,9 +679,23 @@ function runUpdate(opts: {
     return;
   }
 
-  // 10. 真实写
+  // 10. 快照 + 真实写 + 审计
+  const snapshotName = saveSnapshot(opts.project, full, beforeContent);
   writeFileSync(full, afterContent);
   writeIndexFile(opts.project);
+  appendAudit(
+    opts.project,
+    buildAuditRecord({
+      action: "update",
+      type: newFm.type,
+      file: full,
+      before: beforeContent,
+      after: afterContent,
+      snapshot: snapshotName,
+      confirmed: opts.confirmed,
+      forced: opts.force,
+    }),
+  );
   process.stdout.write(
     JSON.stringify(
       {
@@ -613,6 +703,165 @@ function runUpdate(opts: {
         file: full,
         before: beforeContent,
         after: afterContent,
+        snapshot: snapshotName,
+        conflict,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+}
+
+function runVerify(opts: {
+  project: string;
+  type: string;
+  content: string;
+}): void {
+  let conflict: Conflict | null = null;
+  let targetPath = "";
+
+  if (opts.type === "term") {
+    const parsed = parseContentJson<ContentTerm>("term", opts.content);
+    targetPath = knowledgePath(opts.project, "terms.md");
+    const existing = existsSync(targetPath) ? readFileSync(targetPath, "utf8") : "";
+    const file = parseFrontmatter(existing);
+    conflict = detectTermConflict(file.body, parsed);
+  } else if (opts.type === "overview") {
+    const parsed = parseContentJson<ContentOverview>("overview", opts.content);
+    targetPath = knowledgePath(opts.project, "overview.md");
+    const existing = existsSync(targetPath) ? readFileSync(targetPath, "utf8") : "";
+    const file = parseFrontmatter(existing);
+    conflict = detectOverviewConflict(file.body, parsed.section, parsed.body, parsed.mode);
+  } else if (opts.type === "module" || opts.type === "pitfall") {
+    const parsed = parseContentJson<ContentModule | ContentPitfall>(opts.type, opts.content);
+    const subdir = opts.type === "module" ? "modules" : "pitfalls";
+    targetPath = knowledgePath(opts.project, subdir, `${parsed.name}.md`);
+    if (existsSync(targetPath)) {
+      const existing = readFileSync(targetPath, "utf8");
+      conflict = detectBodyRewrite(existing, parsed.body);
+    }
+  } else {
+    process.stderr.write(`[knowledge-keeper] Unknown type: ${opts.type}\n`);
+    process.exit(1);
+  }
+
+  process.stdout.write(
+    JSON.stringify(
+      {
+        action: "verify",
+        type: opts.type,
+        file: targetPath,
+        conflict,
+        has_conflict: conflict !== null,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  process.exit(conflict && conflict.severity === "block" ? 2 : 0);
+}
+
+function runHistory(opts: { project: string; limit?: number }): void {
+  const records = readAuditLog(opts.project);
+  const limit = opts.limit && opts.limit > 0 ? opts.limit : 20;
+  const tail = records.slice(-limit).reverse();
+  process.stdout.write(
+    JSON.stringify(
+      {
+        project: opts.project,
+        total: records.length,
+        showing: tail.length,
+        entries: tail.map((rec, idx) => ({
+          index: records.length - 1 - idx,
+          ...rec,
+        })),
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+}
+
+function runRollback(opts: {
+  project: string;
+  index: number;
+  confirmed: boolean;
+  dryRun: boolean;
+}): void {
+  if (!opts.confirmed && !opts.dryRun) {
+    process.stderr.write(
+      `[knowledge-keeper] rollback requires --confirmed (or --dry-run)\n`,
+    );
+    process.exit(1);
+  }
+  const records = readAuditLog(opts.project);
+  if (records.length === 0) {
+    process.stderr.write(`[knowledge-keeper] No audit entries for rollback\n`);
+    process.exit(1);
+  }
+  const targetIdx = opts.index >= 0 ? opts.index : records.length - 1;
+  const record = records[targetIdx];
+  if (!record) {
+    process.stderr.write(`[knowledge-keeper] Index out of range: ${targetIdx}\n`);
+    process.exit(1);
+  }
+  if (!record.snapshot) {
+    process.stderr.write(
+      `[knowledge-keeper] Entry ${targetIdx} has no snapshot (file was newly created) — delete manually if needed\n`,
+    );
+    process.exit(1);
+  }
+
+  const snapshotContent = readSnapshot(opts.project, record.snapshot);
+  const currentContent = existsSync(record.file)
+    ? readFileSync(record.file, "utf8")
+    : "";
+
+  if (opts.dryRun) {
+    process.stdout.write(
+      JSON.stringify(
+        {
+          dry_run: true,
+          action: "rollback",
+          index: targetIdx,
+          file: record.file,
+          current_hash: currentContent ? currentContent.slice(0, 0) : "",
+          restore_from_snapshot: record.snapshot,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    return;
+  }
+
+  const preRollbackSnapshot = saveSnapshot(
+    opts.project,
+    record.file,
+    currentContent,
+  );
+  writeFileSync(record.file, snapshotContent);
+  writeIndexFile(opts.project);
+  appendAudit(
+    opts.project,
+    buildAuditRecord({
+      action: "rollback",
+      type: record.type,
+      file: record.file,
+      before: currentContent,
+      after: snapshotContent,
+      snapshot: preRollbackSnapshot,
+      confirmed: true,
+      forced: false,
+    }),
+  );
+  process.stdout.write(
+    JSON.stringify(
+      {
+        action: "rollback",
+        rolled_back_to: record.snapshot,
+        file: record.file,
+        current_content_saved_as: preRollbackSnapshot,
       },
       null,
       2,
@@ -685,6 +934,7 @@ createCli({
         { flag: "--confirmed", description: "Confirm medium-confidence write", defaultValue: false },
         { flag: "--dry-run", description: "Preview without writing", defaultValue: false },
         { flag: "--overwrite", description: "Allow overwriting existing module/pitfall file", defaultValue: false },
+        { flag: "--force", description: "Bypass conflict detection (term/overview/body-rewrite)", defaultValue: false },
       ],
       action: runWrite,
     },
@@ -697,8 +947,39 @@ createCli({
         { flag: "--content <json>", description: "JSON patch spec", required: true },
         { flag: "--confirmed", description: "Confirm update", defaultValue: false },
         { flag: "--dry-run", description: "Preview without persisting", defaultValue: false },
+        { flag: "--force", description: "Bypass body-rewrite conflict detection", defaultValue: false },
       ],
       action: runUpdate,
+    },
+    {
+      name: "verify",
+      description: "Dry-run conflict check against existing knowledge (no write, no side effect)",
+      options: [
+        { flag: "--project <name>", description: "Project name", required: true },
+        { flag: "--type <type>", description: "Entry type: term|overview|module|pitfall", required: true },
+        { flag: "--content <json>", description: "Content as JSON string", required: true },
+      ],
+      action: runVerify,
+    },
+    {
+      name: "history",
+      description: "List recent write/update/rollback audit entries",
+      options: [
+        { flag: "--project <name>", description: "Project name", required: true },
+        { flag: "--limit <n>", description: "How many recent entries to show (default 20)" },
+      ],
+      action: runHistory,
+    },
+    {
+      name: "rollback",
+      description: "Restore a file from the snapshot referenced by an audit entry",
+      options: [
+        { flag: "--project <name>", description: "Project name", required: true },
+        { flag: "--index <n>", description: "Audit entry index (default: latest)", defaultValue: -1 },
+        { flag: "--confirmed", description: "Confirm rollback (required for real run)", defaultValue: false },
+        { flag: "--dry-run", description: "Preview without restoring", defaultValue: false },
+      ],
+      action: runRollback,
     },
     {
       name: "lint",
