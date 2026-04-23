@@ -9,16 +9,16 @@ const scriptPath = resolve(
   ".claude/skills/setup/scripts/init-wizard.ts",
 );
 
-test("init-wizard source references /qa-flow init (not /using-qa-flow init)", () => {
+test("init-wizard source references /kata init (not /using-kata init)", () => {
   const src = readFileSync(scriptPath, "utf8");
   assert.doesNotMatch(
     src,
-    /\/using-qa-flow init/,
-    "init-wizard.ts must not contain stale /using-qa-flow init hint",
+    /\/using-kata init/,
+    "init-wizard.ts must not contain stale /using-kata init hint",
   );
   assert.match(
     src,
-    /\/qa-flow init/,
-    "init-wizard.ts should hint users to run /qa-flow init",
+    /\/kata init/,
+    "init-wizard.ts should hint users to run /kata init",
   );
 });

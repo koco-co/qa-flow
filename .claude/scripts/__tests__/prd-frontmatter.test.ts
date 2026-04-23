@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { after, before, describe, it } from "node:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
-const TMP_DIR = join(tmpdir(), `qa-flow-prd-frontmatter-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-prd-frontmatter-test-${process.pid}`);
 
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {

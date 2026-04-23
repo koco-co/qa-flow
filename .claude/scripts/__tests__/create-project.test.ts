@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, before, beforeEach, describe, it } from "node:test";
 
-const TMP = join(tmpdir(), `qa-flow-cp-int-${process.pid}`);
+const TMP = join(tmpdir(), `kata-cp-int-${process.pid}`);
 const WORKSPACE_DIR = join(TMP, "workspace");
 const CONFIG_PATH = join(TMP, "config.json");
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");

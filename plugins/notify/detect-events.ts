@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * qa-flow notify event detector — scans git diff for workspace artifacts
+ * kata notify event detector — scans git diff for workspace artifacts
  * and fires matching notification events.
  *
  * Designed to run as a Claude Code Stop hook (before auto-commit).

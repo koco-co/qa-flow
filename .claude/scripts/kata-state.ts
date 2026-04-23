@@ -326,7 +326,7 @@ function runClean(opts: { project: string; prdSlug: string }): void {
 export const program = createCli({
   name: "kata-state",
   description:
-    "Breakpoint resume state management for qa-flow test case generation",
+    "Breakpoint resume state management for kata test case generation",
   commands: [
     {
       name: "init",

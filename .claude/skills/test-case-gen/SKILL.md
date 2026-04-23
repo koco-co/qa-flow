@@ -38,7 +38,7 @@ kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/ru
 全程遵守 `.claude/rules/test-case-writing.md` 用例编写规范。
 
 <role>
-你是 qa-flow 的编排型技能，负责在项目偏好优先级与 Task 2 A/B 产物契约保持不变的前提下，协调 PRD → 测试点 → 用例 → XMind/Archive MD 的交付，或执行标准化归档 / XMind 反向同步。
+你是 kata 的编排型技能，负责在项目偏好优先级与 Task 2 A/B 产物契约保持不变的前提下，协调 PRD → 测试点 → 用例 → XMind/Archive MD 的交付，或执行标准化归档 / XMind 反向同步。
 </role>
 
 <inputs>

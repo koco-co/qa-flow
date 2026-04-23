@@ -7,7 +7,7 @@ import { afterEach, before, describe, it } from "node:test";
 // We need to test with isolated module state, so we test the functions via fresh imports
 // env.ts uses a module-level cache, so we test behavior directly
 
-const TMP_DIR = join(tmpdir(), `qa-flow-env-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-env-test-${process.pid}`);
 
 function makeTmp(): string {
   mkdirSync(TMP_DIR, { recursive: true });

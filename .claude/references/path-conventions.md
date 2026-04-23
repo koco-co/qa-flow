@@ -1,4 +1,4 @@
-# qa-flow CLI 路径与命令约定
+# kata CLI 路径与命令约定
 
 本约定适用于所有 SKILL.md、agent.md、workflow/*.md 中的 `bun run` 命令引用。
 

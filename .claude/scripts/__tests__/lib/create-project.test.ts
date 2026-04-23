@@ -178,7 +178,7 @@ describe("resolveSkeletonPaths", () => {
 });
 
 describe("diffProjectSkeleton", () => {
-  const TMP = join(tmpdir(), `qa-flow-cp-unit-${process.pid}`);
+  const TMP = join(tmpdir(), `kata-cp-unit-${process.pid}`);
   const TPL = join(TMP, "templates", "project-skeleton");
   const EMPTY_PROJ = join(TMP, "empty-proj");
   const FULL_PROJ = join(TMP, "full-proj");

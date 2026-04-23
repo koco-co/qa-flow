@@ -30,7 +30,7 @@ SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
 SMTP_USER="your-email@example.com"
 SMTP_PASS="app-password"
-SMTP_FROM="qa-flow@example.com"
+SMTP_FROM="kata@example.com"
 SMTP_TO="team@example.com"
 ```
 

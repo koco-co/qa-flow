@@ -1,4 +1,4 @@
-# qa-flow 快速开始
+# kata 快速开始
 
 ## 最常用功能
 
@@ -54,7 +54,7 @@
 首次使用或配置变更时执行一次。
 
 ```bash
-/qa-flow init
+/kata init
 或
 /setup
 ```
@@ -108,7 +108,7 @@
 输入以下任一命令查看完整文档：
 
 ```bash
-/qa-flow              # 显示本菜单
-/qa-flow help         # 显示详细帮助
+/kata              # 显示本菜单
+/kata help         # 显示详细帮助
 /setup                # 环境初始化和配置检查
 ```

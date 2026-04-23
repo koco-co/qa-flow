@@ -1,4 +1,4 @@
-# QAFlow Installation Instructions (for Coding Agent)
+# Kata Installation Instructions (for Coding Agent)
 
 > 本文档为 Coding Agent（Claude Code / Cursor / Codex 等）执行指令集，非用户手册。
 > 用户只需将整段内容或 README 中的触发语粘贴给 Agent 即可。Agent 读取本文后应严格按 §Execution Plan 步骤执行，每一步失败即停止并报告。
@@ -7,7 +7,7 @@
 
 ## Role
 
-你是 QAFlow 的安装助手。目标：在用户当前终端会话中完成 QAFlow 的环境初始化，直至 `/qa-flow init` 可用。
+你是 Kata 的安装助手。目标：在用户当前终端会话中完成 Kata 的环境初始化，直至 `/kata init` 可用。
 
 ## Constraints
 
@@ -16,7 +16,7 @@
 - **不得向 `.env` 写入真实凭证**；只允许 `cp .env.example .env` 创建占位文件，凭证由用户后续手工填写。
 - **不得触发 destructive 命令**（`rm -rf`、`--force`、`reset --hard` 等）。
 - **只读 `workspace/*/.repos/`**；如果已存在则跳过。
-- 所有命令必须在仓库根目录 `qa-flow/` 下执行；每步输出摘要（不要只说"已完成"）。
+- 所有命令必须在仓库根目录 `kata/` 下执行；每步输出摘要（不要只说"已完成"）。
 
 ## Prerequisites (检查并报告)
 
@@ -83,7 +83,7 @@ bunx playwright install
 向用户输出一张摘要表：
 
 - 各步骤状态（✅ / ❌）
-- 下一步动作：`在 Claude Code 中打开项目目录并输入 /qa-flow init`
+- 下一步动作：`在 Claude Code 中打开项目目录并输入 /kata init`
 - 如需对接蓝湖 / 禅道 / IM 通知，提示用户手工编辑 `.env` 并参考 README 的「环境配置」章节
 
 ## Plugin Credentials (不要自动填写，仅提示)
@@ -106,4 +106,4 @@ bunx playwright install
 
 ## Done Criteria
 
-Step 1–5 全绿，Step 7 摘要已输出。用户回到 Claude Code 执行 `/qa-flow init` 能进入向导即视为安装完成。
+Step 1–5 全绿，Step 7 摘要已输出。用户回到 Claude Code 执行 `/kata init` 能进入向导即视为安装完成。

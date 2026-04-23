@@ -8,7 +8,7 @@ import {
   snapshotResultFiles,
 } from "../lib/allure-stats.ts";
 
-const TMP = join(tmpdir(), `qa-flow-allure-stats-${process.pid}`);
+const TMP = join(tmpdir(), `kata-allure-stats-${process.pid}`);
 
 function writeResult(
   dir: string,

@@ -18,7 +18,7 @@ import {
 } from "../report-to-pdf.ts";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
-const TMP_DIR = join(tmpdir(), `qa-flow-report-to-pdf-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-report-to-pdf-test-${process.pid}`);
 
 function run(
   args: string[],

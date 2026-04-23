@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { after, before, describe, it } from "node:test";
 import { asciiSlugify, slugify, uiBlocksDir } from "../ui-autotest-progress.ts";
 
-const TMP_DIR = join(tmpdir(), `qa-flow-uap-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-uap-test-${process.pid}`);
 const CWD = resolve(import.meta.dirname, "../../..");
 
 function run(

@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "qa-flow 环境健康检查向导。4 步完成环境扫描、项目路由、插件配置和验证汇总。项目骨架与源码仓库由 create-project 接管。触发词：环境检查、健康检查、init、setup。"
+description: "kata 环境健康检查向导。4 步完成环境扫描、项目路由、插件配置和验证汇总。项目骨架与源码仓库由 create-project 接管。触发词：环境检查、健康检查、init、setup。"
 argument-hint: "[step-number]"
 ---
 
@@ -146,7 +146,7 @@ bun run .claude/skills/setup/scripts/init-wizard.ts verify
 ### 4.2 展示汇总表
 
 ```
-qa-flow v2.0 环境健康检查完成
+kata v2.0 环境健康检查完成
 
 ┌──────────────────┬──────────┬────────────────────────────┐
 │ 项目             │ 状态     │ 详情                       │
@@ -158,7 +158,7 @@ qa-flow v2.0 环境健康检查完成
 │ 蓝湖插件         │ {{status}}│ {{detail}}                 │
 └──────────────────┴──────────┴────────────────────────────┘
 
-所有必需项通过，qa-flow 环境已就绪。
+所有必需项通过，kata 环境已就绪。
 - 创建/补齐项目：`/create-project`
 - 生成测试用例：`/test-case-gen`
 ```

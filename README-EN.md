@@ -1,6 +1,6 @@
 <div align="center">
 
-# QAFlow - 2.0
+# Kata - 2.0
 
 ### AI-Powered QA Workflow Engine
 
@@ -61,7 +61,7 @@ Git conflict snippet ──────────── /conflict-report ─�
 
 | Feature                         | Description                                                                                                    |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **11 Skills / 6 Core Workflows** | `qa-flow` Router + `setup` + `create-project` + 6 primary execution workflows covering init, generation, analysis, editing, diagnostics, and regression |
+| **11 Skills / 6 Core Workflows** | `kata` Router + `setup` + `create-project` + 6 primary execution workflows covering init, generation, analysis, editing, diagnostics, and regression |
 | **15-Agent Architecture**        | Specialized agents declare model/tools in frontmatter and are dispatched by Skills based on task complexity; includes `pattern-analyzer-agent` / `script-fixer-agent` |
 | **Project-Scoped Workspace**    | All artifacts are written into `workspace/&lt;project&gt;/...`, keeping projects isolated                      |
 | **A/B Artifact Contract**       | XMind / intermediate artifacts use Contract A; Archive MD / display titles use Contract B                      |
@@ -79,10 +79,10 @@ Git conflict snippet ──────────── /conflict-report ─�
 <details>
 <summary><b>Architecture Description</b></summary>
 
-qa-flow uses a **Router + Skill + Agent + Plugin Hook** architecture:
+kata uses a **Router + Skill + Agent + Plugin Hook** architecture:
 
-- **qa-flow Router** — Entry routing layer; first-run, no-project, or `/qa-flow init` requests are routed to `setup`
-- **11 Skills** — `qa-flow` / `setup` / `create-project` / `test-case-gen` / `ui-autotest` / `xmind-editor` / `hotfix-case-gen` / `bug-report` / `conflict-report` / `knowledge-keeper` / `playwright-cli`
+- **kata Router** — Entry routing layer; first-run, no-project, or `/kata init` requests are routed to `setup`
+- **11 Skills** — `kata` / `setup` / `create-project` / `test-case-gen` / `ui-autotest` / `xmind-editor` / `hotfix-case-gen` / `bug-report` / `conflict-report` / `knowledge-keeper` / `playwright-cli`
 - **6 primary user workflows** — `test-case-gen`, `ui-autotest`, `xmind-editor`, `hotfix-case-gen`, `bug-report`, `conflict-report` (`setup` + `create-project` are bootstrap workflows)
 - **15 standalone agents** — Each agent declares its model/tools in frontmatter and is orchestrated by a Skill; includes Phase 3's `pattern-analyzer-agent`
 - **Cross-cutting capabilities** — CLI Runner factory, three-tier `.env`, multi-environment `kata-state` isolation, `plan.md` arbitration, `LOG_LEVEL` logging, project-level rules, read-only source repos, plugin hooks
@@ -105,15 +105,15 @@ Recommended: hand the installation off to a Coding Agent (Claude Code / Cursor /
 
 ```text
 Please read INSTALL.md in the repository root and follow its Execution Plan
-step by step to install and verify qa-flow. Stop immediately on any failure
+step by step to install and verify kata. Stop immediately on any failure
 and report the error to me — do not silently downgrade or skip steps.
 ```
 
 Manual install:
 
 ```bash
-git clone https://github.com/your-org/qa-flow.git
-cd qa-flow
+git clone https://github.com/your-org/kata.git
+cd kata
 bun install
 cp .env.example .env
 cp .env.envs.example .env.envs
@@ -127,10 +127,10 @@ bunx playwright install                       # only needed for UI automation
 In Claude Code, start with:
 
 ```
-/qa-flow init
+/kata init
 ```
 
-`/setup` still works as a direct alias, but `/qa-flow init` is the recommended unified entrypoint.
+`/setup` still works as a direct alias, but `/kata init` is the recommended unified entrypoint.
 
 A 6-step interactive wizard will guide you through:
 
@@ -149,10 +149,10 @@ The current user-facing trigger phrases are Chinese-first; the examples below ar
 
 ```bash
 # Show feature menu
-/qa-flow
+/kata
 
 # Initialize the workspace
-/qa-flow init
+/kata init
 
 # Generate test cases from PRD
 为 {{requirement_name}} 生成测试用例
@@ -439,7 +439,7 @@ Set `LOG_LEVEL=debug` / `info` / `warn` / `error` to control verbosity at runtim
 ## Project Structure
 
 ```text
-qa-flow/
+kata/
 ├── .claude/
 │   ├── agents/                   # 15 standalone agent definitions
 │   ├── scripts/                  # Core TypeScript CLI scripts
@@ -456,7 +456,7 @@ qa-flow/
 │   │   ├── lib/                  # Shared helpers and types
 │   │   └── __tests__/            # Unit tests
 │   └── skills/
-│       ├── qa-flow/              # Entry menu router
+│       ├── kata/              # Entry menu router
 │       ├── setup/                # 6-step initialization wizard
 │       ├── test-case-gen/        # Test case generation orchestrator
 │       │   └── references/       # Format specs & protocols
@@ -584,7 +584,7 @@ ACTIVE_ENV=ci63 kata-cli kata-state resume --project dataAssets --prd-slug myPrd
 | Variable               | Required | Description                                      |
 | ---------------------- | -------- | ------------------------------------------------ |
 | `DINGTALK_WEBHOOK_URL` | No       | DingTalk bot Webhook                             |
-| `DINGTALK_KEYWORD`     | No       | DingTalk security keyword, defaults to `qa-flow` |
+| `DINGTALK_KEYWORD`     | No       | DingTalk security keyword, defaults to `kata` |
 | `FEISHU_WEBHOOK_URL`   | No       | Feishu bot Webhook                               |
 | `WECOM_WEBHOOK_URL`    | No       | WeCom bot Webhook                                |
 | `SMTP_HOST`            | No       | Email server host                                |
@@ -647,4 +647,4 @@ Core script tests live in `.claude/scripts/__tests__/`; plugin tests live in `pl
 
 ## License
 
-[MIT](./LICENSE) &copy; 2026 qa-flow contributors
+[MIT](./LICENSE) &copy; 2026 kata contributors

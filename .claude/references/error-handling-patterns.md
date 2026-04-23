@@ -313,4 +313,4 @@
 
 **版本**：v1.0  
 **创建日期**：2026-04-15  
-**维护者**：qa-flow agent team
+**维护者**：kata agent team

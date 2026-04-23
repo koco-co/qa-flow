@@ -8,7 +8,7 @@ import { parseFrontMatter } from "../lib/frontmatter.js";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 const FIXTURE = join(import.meta.dirname, "fixtures/sample-cases.json");
-const TMP_DIR = join(tmpdir(), `qa-flow-archive-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-archive-test-${process.pid}`);
 
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {

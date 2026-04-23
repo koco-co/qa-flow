@@ -102,7 +102,7 @@ describe("repo-sync git operation failure", () => {
       "--project",
       "dataAssets",
       "--base-dir",
-      "/tmp/qa-flow-repo-sync-test-invalid",
+      "/tmp/kata-repo-sync-test-invalid",
     ]);
     // Git clone should fail → script should exit 1
     assert.equal(code, 1);

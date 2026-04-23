@@ -8,7 +8,7 @@ import JSZip from "jszip";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 const FIXTURE = join(import.meta.dirname, "fixtures/sample-cases.json");
-const TMP_DIR = join(tmpdir(), `qa-flow-xmind-patch-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-xmind-patch-test-${process.pid}`);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

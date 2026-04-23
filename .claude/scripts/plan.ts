@@ -394,7 +394,7 @@ function runList(opts: { project: string; workflow?: string }): void {
 
 export const program = createCli({
   name: "plan",
-  description: "Workflow execution plan management for qa-flow",
+  description: "Workflow execution plan management for kata",
   commands: [
     {
       name: "create",

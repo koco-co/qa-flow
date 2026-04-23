@@ -7,7 +7,7 @@ argument-hint: "[功能名或 MD 路径] [目标 URL]"
 # UI 自动化测试 Skill
 
 <role>
-你是 qa-flow 的 UI 自动化测试技能，负责把 Archive MD 用例转成 Playwright 脚本、逐条验证、再执行合并回归。
+你是 kata 的 UI 自动化测试技能，负责把 Archive MD 用例转成 Playwright 脚本、逐条验证、再执行合并回归。
 </role>
 
 <inputs>
@@ -153,7 +153,7 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
   2. project-b
   请输入编号（默认 1）：
   ```
-- 若 **无项目**，提示用户先执行 `/qa-flow init` 初始化
+- 若 **无项目**，提示用户先执行 `/kata init` 初始化
 
 选定的项目名称记为 `{{project}}`，后续所有路径均使用该变量。
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * qa-flow notify plugin — send IM/email notifications
+ * kata notify plugin — send IM/email notifications
  *
  * Usage:
  *   bun run plugins/notify/send.ts --event case-generated --data '{"count":42,"file":"test.xmind"}'
@@ -248,7 +248,7 @@ function formatByEvent(
         `| ⏱ 耗时 | ${data.duration ? `${data.duration}s` : "-"} |`,
         "",
         `---`,
-        `🕐 ${timestamp} · QAFlow`,
+        `🕐 ${timestamp} · Kata`,
       ].join("\n");
 
     case "bug-report":
@@ -267,7 +267,7 @@ function formatByEvent(
         data.fixSuggestion ? `**💡 修复建议：** ${data.fixSuggestion}` : "",
         "",
         `---`,
-        `🕐 ${timestamp} · QAFlow`,
+        `🕐 ${timestamp} · Kata`,
       ]
         .filter(Boolean)
         .join("\n");
@@ -293,7 +293,7 @@ function formatByEvent(
           : "",
         "",
         `---`,
-        `🕐 ${timestamp} · QAFlow`,
+        `🕐 ${timestamp} · Kata`,
       ]
         .filter(Boolean)
         .join("\n");
@@ -313,7 +313,7 @@ function formatByEvent(
         `| 📁 文件 | ${data.file ?? "-"} |`,
         "",
         `---`,
-        `🕐 ${timestamp} · QAFlow`,
+        `🕐 ${timestamp} · Kata`,
       ].join("\n");
 
     case "ui-test-completed":
@@ -342,7 +342,7 @@ function formatByEvent(
         ...rows,
         "",
         `---`,
-        `🕐 ${timestamp} · QAFlow`,
+        `🕐 ${timestamp} · Kata`,
       ].join("\n");
     }
 
@@ -391,7 +391,7 @@ function formatByEvent(
         "**⚡ 请回到 Claude Code 会话回答问题，工作流已暂停等待你的判断。**",
         "",
         "---",
-        `🕐 ${timestamp} · QAFlow`,
+        `🕐 ${timestamp} · Kata`,
       );
       return lines.join("\n");
     }
@@ -411,19 +411,19 @@ function formatByEvent(
         "**⚡ 建议：** 检查上述原因后重新执行该步骤",
         "",
         `---`,
-        `🕐 ${timestamp} · QAFlow`,
+        `🕐 ${timestamp} · Kata`,
       ].join("\n");
 
     default:
       return [
-        `## 📢 QAFlow 通知 | ${event}`,
+        `## 📢 Kata 通知 | ${event}`,
         "",
         "```json",
         JSON.stringify(data, null, 2),
         "```",
         "",
         `---`,
-        `🕐 ${timestamp} · QAFlow`,
+        `🕐 ${timestamp} · Kata`,
       ].join("\n");
   }
 }
@@ -520,7 +520,7 @@ function formatUiTestCompleted(data: NotifyData, timestamp: string): string {
   }
 
   lines.push("---");
-  lines.push(`🕐 ${timestamp} · QAFlow`);
+  lines.push(`🕐 ${timestamp} · Kata`);
 
   return lines.join("\n");
 }
@@ -725,7 +725,7 @@ async function sendEmail(
   await transporter.sendMail({
     from: email.from,
     to: email.to,
-    subject: `[qa-flow] ${msg.title}`,
+    subject: `[kata] ${msg.title}`,
     text: msg.text,
     html: `<div style="font-family: sans-serif;">${htmlBody}</div>`,
   });
@@ -802,7 +802,7 @@ async function main(): Promise<void> {
 
   program
     .name("notify")
-    .description("qa-flow IM 通知发送工具")
+    .description("kata IM 通知发送工具")
     .version("1.0.0")
     .option("-e, --event <type>", "事件类型 (使用 --list-events 查看所有)")
     .option("-d, --data <json>", "事件数据 (JSON 字符串，字段见 --describe <event>)", "{}")

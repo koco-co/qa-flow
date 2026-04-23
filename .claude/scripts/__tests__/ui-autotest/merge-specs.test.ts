@@ -16,7 +16,7 @@ const { buildSpecContent, mergeSpecs, parseBlockMeta, readCodeBlocks } = await i
   `file://${MERGE_SPECS_PATH}`
 );
 
-const TMP_DIR = join(tmpdir(), `qa-flow-merge-specs-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-merge-specs-test-${process.pid}`);
 
 // ────────────────────────────────────────────────────────────
 // 测试夹具

@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, before, describe, it } from "node:test";
 
-const TMP = join(tmpdir(), `qa-flow-kk-test-${process.pid}`);
+const TMP = join(tmpdir(), `kata-kk-test-${process.pid}`);
 const WORKSPACE_DIR = join(TMP, "workspace");
 const PROJECT = "kk-fixture";
 const PROJECT_KNOWLEDGE = join(WORKSPACE_DIR, PROJECT, "knowledge");

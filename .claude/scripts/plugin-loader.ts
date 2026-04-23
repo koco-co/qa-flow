@@ -134,7 +134,7 @@ function runNotify(opts: { event: string; data: string }): void {
 
 export const program = createCli({
   name: "plugin-loader",
-  description: "Plugin discovery and dispatch for qa-flow",
+  description: "Plugin discovery and dispatch for kata",
   commands: [
     {
       name: "list",

@@ -254,7 +254,7 @@ describe("formatMessage", () => {
 
   it("all events include timestamp footer", () => {
     const msg = formatMessage("case-generated", { count: 1 });
-    assert.ok(msg.text.includes("QAFlow"), "should have QAFlow footer");
+    assert.ok(msg.text.includes("Kata"), "should have Kata footer");
     assert.ok(msg.text.includes("🕐"), "should have timestamp icon");
   });
 });

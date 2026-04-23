@@ -9,7 +9,7 @@ import { after, before, describe, it } from "node:test";
 // For logic isolation tests we use a temp plugins dir via PLUGINS_DIR_OVERRIDE is NOT supported
 // natively — so we verify against the real plugins/ directory with controlled env.
 
-const TMP_DIR = join(tmpdir(), `qa-flow-plugin-loader-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-plugin-loader-test-${process.pid}`);
 
 const REPO_ROOT = join(import.meta.dirname, "../../..");
 

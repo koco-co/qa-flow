@@ -1,13 +1,13 @@
-# 项目重命名 `qa-flow` → `kata` + 统一 CLI `kata-cli` 实施计划
+# 项目重命名 `kata` → `kata` + 统一 CLI `kata-cli` 实施计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 把项目从 `qa-flow` 全量重命名为 `kata`，把 28 个 `.claude/scripts/*.ts` 聚合到单一根 CLI `kata-cli` 下，所有 skill / 测试 / 文档统一**直接**用 `kata-cli <module> <cmd>` 调用（不带 `bun run` 前缀）。脚本不再支持独立执行，只能经 `kata-cli` 调用。
+**Goal:** 把项目从 `kata` 全量重命名为 `kata`，把 28 个 `.claude/scripts/*.ts` 聚合到单一根 CLI `kata-cli` 下，所有 skill / 测试 / 文档统一**直接**用 `kata-cli <module> <cmd>` 调用（不带 `bun run` 前缀）。脚本不再支持独立执行，只能经 `kata-cli` 调用。
 
 **Architecture:**
 - **CLI 层：** 每个脚本仅 `export const program`，不再 parse 自身 argv、不再保留 `import.meta.main` gate。根入口 `kata-cli.ts` 用 commander `addCommand` 聚合 27 个 subprogram。
 - **可执行方式：** `kata-cli.ts` 带 shebang `#!/usr/bin/env bun` + `chmod +x`，`package.json` 的 `"bin"` 字段声明 `"kata-cli": ".claude/scripts/kata-cli.ts"`。用户在项目根目录执行一次 `bun link`，`kata-cli` 即注册到 `~/.bun/bin/`（已在 `$PATH`），此后任意目录可直接调用。
-- **命名迁移：** 项目名 `qa-flow` → `kata`；CLI 命令名 = `kata-cli`；文件名 `qa.ts` → `kata-cli.ts`、`kata-state.ts` → `kata-state.ts`（按用户要求统一，所有 16 处引用同步）；slash 菜单 `/qa-flow` → `/kata`；skill 目录 `.claude/skills/qa-flow/` → `.claude/skills/kata/`。
+- **命名迁移：** 项目名 `kata` → `kata`；CLI 命令名 = `kata-cli`；文件名 `qa.ts` → `kata-cli.ts`、`kata-state.ts` → `kata-state.ts`（按用户要求统一，所有 16 处引用同步）；slash 菜单 `/kata` → `/kata`；skill 目录 `.claude/skills/kata/` → `.claude/skills/kata/`。
 - **归档保留：** `docs/refactor/archive/**` 是历史时间点快照，原文保留。`workspace/**/.audit.jsonl` 运行时产物不改。
 - **硬编码检查：** 按 `CLAUDE.md` 的反硬编码规则，脚本源码不得出现绝对路径；已有脚本都用 `repoRoot()` 动态计算，无需改动。
 
@@ -24,8 +24,8 @@
 | `kata-state.ts` → `kata-state.ts` 改名 + 16 处引用更新  | 16 个文件          | Task 2.5                       |
 | 测试里调用从 `kata-cli xxx` → `kata-cli xxx` | 约 27 个   | Task 4                         |
 | skill/agent/ref 文档里 `kata-cli xxx` → `kata-cli xxx` | 87 个文件 | Task 5 |
-| `qa-flow` → `kata` 关键词（非归档）                   | 约 50 文件 / 435 处 | Task 6                         |
-| `.claude/skills/qa-flow/` 目录                        | 1 个               | Task 7                         |
+| `kata` → `kata` 关键词（非归档）                   | 约 50 文件 / 435 处 | Task 6                         |
+| `.claude/skills/kata/` 目录                        | 1 个               | Task 7                         |
 | `.claude/scripts/qa.ts` + 测试                        | 2 个               | Task 1                         |
 | `package.json` `name` / `scripts.qa` / `bin`          | 1 个               | Task 1                         |
 | git remote URL                                         | 1 条               | Task 8                         |
@@ -42,7 +42,7 @@
 | `.claude/scripts/__tests__/qa.test.ts`              | `.claude/scripts/__tests__/kata-cli.test.ts`       |
 | `.claude/scripts/kata-state.ts`                       | `.claude/scripts/kata-state.ts`                    |
 | `.claude/scripts/__tests__/kata-state.test.ts`        | `.claude/scripts/__tests__/kata-state.test.ts`     |
-| `.claude/skills/qa-flow/`                           | `.claude/skills/kata/`                             |
+| `.claude/skills/kata/`                           | `.claude/skills/kata/`                             |
 
 ### 修改（主要）
 
@@ -51,12 +51,12 @@
 | `.claude/scripts/*.ts` (28 个)              | `createCli(...).parse/parseAsync(...)` → `export const program = createCli(...);`（彻底移除 parse 和 gate） |
 | `.claude/scripts/kata-cli.ts`               | shebang + `Command.name("kata-cli")` + `addCommand(所有 27 个)` + 仍需 parseAsync（唯一入口）       |
 | `.claude/scripts/__tests__/*.test.ts`       | `["run", ".claude/scripts/xxx.ts", ...]` → `["kata-cli", "xxx", ...]`（改用 `execFileSync("kata-cli", ...)`）|
-| `.claude/skills/**/*.md`                    | `kata-cli xxx` → `kata-cli xxx`；`/qa-flow` → `/kata`                              |
-| `package.json`                              | `"name": "qa-flow"` → `"name": "kata"`；删除 `scripts.qa`；新增 `"bin": { "kata-cli": ".claude/scripts/kata-cli.ts" }` |
-| `README.md` / `README-EN.md`                | `QAFlow` → `Kata`；`qa-flow` → `kata`；新增 `bun link` 一次性 setup 说明                              |
-| `CLAUDE.md`                                 | 标题 + menu 表 `/qa-flow` → `/kata`；硬编码路径示例更新；首次 setup 说明加 `bun link`                |
+| `.claude/skills/**/*.md`                    | `kata-cli xxx` → `kata-cli xxx`；`/kata` → `/kata`                              |
+| `package.json`                              | `"name": "kata"` → `"name": "kata"`；删除 `scripts.qa`；新增 `"bin": { "kata-cli": ".claude/scripts/kata-cli.ts" }` |
+| `README.md` / `README-EN.md`                | `QAFlow` → `Kata`；`kata` → `kata`；新增 `bun link` 一次性 setup 说明                              |
+| `CLAUDE.md`                                 | 标题 + menu 表 `/kata` → `/kata`；硬编码路径示例更新；首次 setup 说明加 `bun link`                |
 | `INSTALL.md`                                | 安装流程加 `bun install && bun link` 一步                                                             |
-| `.env.example` / `.env.envs.example`        | 注释里 `qa-flow` → `kata`                                                                            |
+| `.env.example` / `.env.envs.example`        | 注释里 `kata` → `kata`                                                                            |
 | `docs/refactor-roadmap.md`                  | 首行标题 + 历史引用（如有活链接）                                                                     |
 
 ### 不改
@@ -142,7 +142,7 @@ git update-index --chmod=+x .claude/scripts/kata-cli.ts
 
 ```diff
  {
--  "name": "qa-flow",
+-  "name": "kata",
 +  "name": "kata",
    "version": "2.0.0",
    "type": "module",
@@ -171,7 +171,7 @@ git update-index --chmod=+x .claude/scripts/kata-cli.ts
 - [ ] **Step 1.5: 运行 `bun link` 注册全局命令**
 
 ```bash
-bun install  # 重新生成 lock（包名从 qa-flow 变 kata）
+bun install  # 重新生成 lock（包名从 kata 变 kata）
 bun link     # 把 bin/kata-cli 链接到 ~/.bun/bin/
 which kata-cli
 kata-cli --help
@@ -602,14 +602,14 @@ git commit -m "refactor: skills/agents/refs invoke scripts via kata-cli directly
 
 ---
 
-### Task 6: `qa-flow` → `kata` 全量关键词替换
+### Task 6: `kata` → `kata` 全量关键词替换
 
 **Files:** 约 50+ 活文件（排除 `docs/refactor/archive/**`、`bun.lock`、`workspace/**`）
 
 - [ ] **Step 6.1: 列出待替换**
 
 ```bash
-grep -rln "qa-flow" . \
+grep -rln "kata" . \
   --include="*.md" --include="*.ts" --include="*.json" \
   --include="*.hbs" --include="*.example" --include="*.svg" \
   --include="*.drawio" \
@@ -629,17 +629,17 @@ find . -type f \( -name "*.md" -o -name "*.ts" -o -name "*.json" -o -name "*.hbs
   -not -path "./workspace/*" \
   -not -path "./node_modules/*" \
   -not -name "bun.lock" \
-  -exec sed -i '' 's|github\.com/koco-co/qa-flow|github.com/koco-co/kata|g' {} \;
+  -exec sed -i '' 's|github\.com/koco-co/kata|github.com/koco-co/kata|g' {} \;
 
-# 2. Slash 命令 /qa-flow → /kata（先处理带空格/子命令变体）
+# 2. Slash 命令 /kata → /kata（先处理带空格/子命令变体）
 find .claude docs templates . -maxdepth 1 -type f \( -name "*.md" -o -name "*.hbs" \) \
   -not -path "*/archive/*" 2>/dev/null | while read f; do
   sed -i '' \
-    -e 's|/qa-flow init|/kata init|g' \
-    -e 's|/qa-flow help|/kata help|g' \
-    -e 's|/qa-flow \([0-9]\)|/kata \1|g' \
-    -e 's|/qa-flow$|/kata|g' \
-    -e 's|/qa-flow |/kata |g' \
+    -e 's|/kata init|/kata init|g' \
+    -e 's|/kata help|/kata help|g' \
+    -e 's|/kata \([0-9]\)|/kata \1|g' \
+    -e 's|/kata$|/kata|g' \
+    -e 's|/kata |/kata |g' \
     "$f"
 done
 
@@ -649,13 +649,13 @@ sed -i '' 's|QAFlow|Kata|g' README.md README-EN.md
 # 4. README 的 badge URL
 sed -i '' 's|QAFlow-2\.0|Kata-2.0|g' README.md README-EN.md
 
-# 5. 兜底替换剩余 qa-flow → kata
+# 5. 兜底替换剩余 kata → kata
 find . -type f \( -name "*.md" -o -name "*.ts" -o -name "*.json" -o -name "*.hbs" -o -name "*.example" -o -name "*.svg" -o -name "*.drawio" \) \
   -not -path "./docs/refactor/archive/*" \
   -not -path "./workspace/*" \
   -not -path "./node_modules/*" \
   -not -name "bun.lock" \
-  -exec sed -i '' 's|qa-flow|kata|g' {} \;
+  -exec sed -i '' 's|kata|kata|g' {} \;
 ```
 
 - [ ] **Step 6.3: 手工 review 高风险位置**
@@ -685,26 +685,26 @@ Expected: 持平基线。
 
 ```bash
 git add -A
-git commit -m "refactor: rename qa-flow to kata across all active files"
+git commit -m "refactor: rename kata to kata across all active files"
 ```
 
 ---
 
-### Task 7: 重命名 `.claude/skills/qa-flow/` 目录
+### Task 7: 重命名 `.claude/skills/kata/` 目录
 
 **Files:**
-- Rename: `.claude/skills/qa-flow/` → `.claude/skills/kata/`
+- Rename: `.claude/skills/kata/` → `.claude/skills/kata/`
 - Modify: `.claude/skills/kata/SKILL.md` frontmatter
 
 - [ ] **Step 7.1: 重命名**
 
 ```bash
-git mv .claude/skills/qa-flow .claude/skills/kata
+git mv .claude/skills/kata .claude/skills/kata
 ```
 
 - [ ] **Step 7.2: 确认 frontmatter 已改**
 
-Task 6 的批量替换应该已改到了 `.claude/skills/qa-flow/SKILL.md`（现路径 `.claude/skills/kata/SKILL.md`）。核查：
+Task 6 的批量替换应该已改到了 `.claude/skills/kata/SKILL.md`（现路径 `.claude/skills/kata/SKILL.md`）。核查：
 
 ```bash
 head -5 .claude/skills/kata/SKILL.md
@@ -718,16 +718,16 @@ description: "QA 测试工作流入口。展示功能菜单并路由到对应 sk
 ---
 ```
 
-如 `name:` 字段还是 `qa-flow`（没被替换或手工漏掉），手动修：
+如 `name:` 字段还是 `kata`（没被替换或手工漏掉），手动修：
 
 ```bash
-sed -i '' '1,10s|^name: qa-flow|name: kata|' .claude/skills/kata/SKILL.md
+sed -i '' '1,10s|^name: kata|name: kata|' .claude/skills/kata/SKILL.md
 ```
 
 - [ ] **Step 7.3: 全仓库扫残留**
 
 ```bash
-grep -rln "qa-flow" . \
+grep -rln "kata" . \
   --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive \
   --exclude=bun.lock | grep -v "workspace/.*/\.audit\.jsonl"
 ```
@@ -738,7 +738,7 @@ Expected: 0 行（或仅剩运行时产物）。
 
 ```bash
 git add .claude/skills/
-git commit -m "refactor: rename qa-flow skill directory to kata"
+git commit -m "refactor: rename kata skill directory to kata"
 ```
 
 ---
@@ -766,7 +766,7 @@ Expected: lint + type-check + test 三阶段全绿。
 
 ```bash
 # 无旧项目名
-grep -rln "qa-flow" . \
+grep -rln "kata" . \
   --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive \
   --exclude=bun.lock \
   | grep -v "workspace/.*/\.audit\.jsonl"
@@ -776,7 +776,7 @@ grep -rln "bun run \.claude/scripts/" . \
   --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive
 
 # 无旧 slash 命令
-grep -rln "/qa-flow" . \
+grep -rln "/kata" . \
   --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive
 ```
 
@@ -804,7 +804,7 @@ git push origin main
 - [ ] **Step 9.1: 关闭 Claude Code，终端执行**
 
 ```bash
-mv /Users/poco/Projects/qa-flow /Users/poco/Projects/kata
+mv /Users/poco/Projects/kata /Users/poco/Projects/kata
 cd /Users/poco/Projects/kata
 bun link  # 重建 bin symlink 指向新路径
 ```
@@ -812,7 +812,7 @@ bun link  # 重建 bin symlink 指向新路径
 - [ ] **Step 9.2: （可选）迁移 memory**
 
 ```bash
-mv ~/.claude/projects/-Users-poco-Projects-qa-flow ~/.claude/projects/-Users-poco-Projects-kata
+mv ~/.claude/projects/-Users-poco-Projects-kata ~/.claude/projects/-Users-poco-Projects-kata
 ```
 
 - [ ] **Step 9.3: 重启 Claude Code**
@@ -831,7 +831,7 @@ mv ~/.claude/projects/-Users-poco-Projects-qa-flow ~/.claude/projects/-Users-poc
 | 所有脚本统一走 `kata-cli` 调用         | Task 2 + Task 4 + Task 5 |
 | `kata-state` 随大流改名                  | Task 2.5               |
 | 移除 `import.meta.main` gate           | Task 2（彻底删）       |
-| 全量 `qa-flow` → `kata`                | Task 6 + Task 7        |
+| 全量 `kata` → `kata`                | Task 6 + Task 7        |
 | GitHub remote 切换                     | Task 8.4               |
 | 归档文件保留                           | 所有 find/grep 都排除 archive |
 | `package.json` name 字段 + bin 注册    | Task 1.4               |

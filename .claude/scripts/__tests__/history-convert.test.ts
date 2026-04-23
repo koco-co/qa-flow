@@ -14,7 +14,7 @@ import { after, before, describe, it } from "node:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 const FIXTURE_CSV = join(import.meta.dirname, "fixtures/sample-history.csv");
-const TMP_DIR = join(tmpdir(), `qa-flow-history-convert-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-history-convert-test-${process.pid}`);
 const TEST_PROJECT = "testProject";
 
 /** Compute the archive directory the script writes to (mirrors computeOutputDir in history-convert.ts) */

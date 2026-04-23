@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, before, beforeEach, describe, it } from "node:test";
 
-const TMP_DIR = join(tmpdir(), `qa-flow-state-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-state-test-${process.pid}`);
 
 function workspaceTempForProject(project: string): string {
   return join(TMP_DIR, "workspace", project, ".temp");

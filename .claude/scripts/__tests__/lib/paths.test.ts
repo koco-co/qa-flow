@@ -95,7 +95,7 @@ describe("repoRoot", () => {
     assert.ok(existsSync(root), `repoRoot ${root} does not exist`);
   });
 
-  it("resolves to the qa-flow project root (contains package.json)", () => {
+  it("resolves to the kata project root (contains package.json)", () => {
     const root = repoRoot();
     assert.ok(existsSync(`${root}/package.json`), `Expected package.json in repoRoot: ${root}`);
   });

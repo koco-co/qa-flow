@@ -1,10 +1,10 @@
 ---
-name: qa-flow
-description: "QA 测试工作流入口。展示功能菜单并路由到对应 skill。触发词：qa-flow、功能菜单、帮助。/qa-flow init 路由到 setup skill。"
+name: kata
+description: "QA 测试工作流入口。展示功能菜单并路由到对应 skill。触发词：kata、功能菜单、帮助。/kata init 路由到 setup skill。"
 argument-hint: "[init | 功能编号 | 关键词]"
 ---
 
-# qa-flow 入口菜单
+# kata 入口菜单
 
 ## 路由逻辑
 
@@ -47,15 +47,15 @@ argument-hint: "[init | 功能编号 | 关键词]"
 
 | 编号 | 功能             | 触发命令                                     | 状态    |
 | ---- | ---------------- | -------------------------------------------- | ------- |
-| 1    | 生成测试用例     | `/qa-flow 1` 或 `为 <需求名称> 生成测试用例` | ✅ 可用 |
-| 2    | UI 自动化测试    | `/qa-flow 2` 或 `UI自动化测试`               | ✅ 可用 |
-| 3    | 编辑 XMind 用例  | `/qa-flow 3` 或 `修改用例 "验证xxx"`         | ✅ 可用 |
-| 4    | 生成 Hotfix 用例 | `/qa-flow 4` 或 粘贴禅道 Bug 链接            | ✅ 可用 |
-| 5    | 分析 Bug 报告    | `/qa-flow 5` 或 `帮我分析这个报错`           | ✅ 可用 |
-| 6    | 分析合并冲突     | `/qa-flow 6` 或 `分析冲突`                   | ✅ 可用 |
-| 7    | 标准化归档       | `/qa-flow 7` 或 `标准化归档 xxx.xmind`       | ✅ 可用 |
-| 8    | 切换项目         | `/qa-flow 8` 或 `切换项目`                   | ✅ 可用 |
-| 0    | 环境初始化       | `/qa-flow init` 或 `/setup`                  | ✅ 可用 |
+| 1    | 生成测试用例     | `/kata 1` 或 `为 <需求名称> 生成测试用例` | ✅ 可用 |
+| 2    | UI 自动化测试    | `/kata 2` 或 `UI自动化测试`               | ✅ 可用 |
+| 3    | 编辑 XMind 用例  | `/kata 3` 或 `修改用例 "验证xxx"`         | ✅ 可用 |
+| 4    | 生成 Hotfix 用例 | `/kata 4` 或 粘贴禅道 Bug 链接            | ✅ 可用 |
+| 5    | 分析 Bug 报告    | `/kata 5` 或 `帮我分析这个报错`           | ✅ 可用 |
+| 6    | 分析合并冲突     | `/kata 6` 或 `分析冲突`                   | ✅ 可用 |
+| 7    | 标准化归档       | `/kata 7` 或 `标准化归档 xxx.xmind`       | ✅ 可用 |
+| 8    | 切换项目         | `/kata 8` 或 `切换项目`                   | ✅ 可用 |
+| 0    | 环境初始化       | `/kata init` 或 `/setup`                  | ✅ 可用 |
 
 ## 快速示例
 
@@ -70,4 +70,4 @@ argument-hint: "[init | 功能编号 | 关键词]"
 标准化归档 workspace/{{project}}/history/旧用例.xmind
 ```
 
-更多示例见 `.claude/skills/qa-flow/references/quickstart.md`
+更多示例见 `.claude/skills/kata/references/quickstart.md`

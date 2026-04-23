@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, describe, it } from "node:test";
 
-const TMP_DIR = join(tmpdir(), `qa-flow-config-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-config-test-${process.pid}`);
 const PLUGINS_DIR = join(TMP_DIR, "plugins");
 const _ENV_FILE = join(TMP_DIR, ".env");
 

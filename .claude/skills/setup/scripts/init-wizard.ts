@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * init-wizard.ts — qa-flow v2.0 setup skill
+ * init-wizard.ts — kata v2.0 setup skill
  *
  * Subcommands:
  *   scan    — check project environment, output JSON
@@ -236,7 +236,7 @@ function runScan(): ScanResult {
     issues.push("node_modules/ not found — run: bun install");
   }
   if (!workspaceExists) {
-    issues.push("workspace/ directory not found — run: /qa-flow init");
+    issues.push("workspace/ directory not found — run: /kata init");
   }
   if (!envConfigured) {
     issues.push(
@@ -284,7 +284,7 @@ function runVerify(): VerifyResult {
       status: scan.workspace_exists ? "pass" : "fail",
       detail: scan.workspace_exists
         ? "workspace/ 存在"
-        : "workspace/ 不存在，请运行 /qa-flow init",
+        : "workspace/ 不存在，请运行 /kata init",
     },
     {
       name: ".env 配置",
@@ -336,7 +336,7 @@ const program = new Command();
 
 program
   .name("init-wizard")
-  .description("qa-flow v2.0 环境检查工具")
+  .description("kata v2.0 环境检查工具")
   .version("2.0.0");
 
 program

@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, describe, it } from "node:test";
 
-const TMP_DIR = join(tmpdir(), `qa-flow-rule-loader-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-rule-loader-test-${process.pid}`);
 const GLOBAL_RULES_DIR = join(TMP_DIR, "global-rules");
 const WORKSPACE_DIR = join(TMP_DIR, "workspace");
 

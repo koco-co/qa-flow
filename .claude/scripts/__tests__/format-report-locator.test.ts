@@ -14,7 +14,7 @@ const FIXTURE_ARCHIVE = join(
   import.meta.dirname,
   "fixtures/sample-archive-with-issues.md",
 );
-const TMP_DIR = join(tmpdir(), `qa-flow-format-locator-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-format-locator-test-${process.pid}`);
 
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {

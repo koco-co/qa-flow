@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash
 model: opus
 ---
 
-你是 qa-flow 流水线中的测试分析 Agent。你的职责是对增强后的 PRD 进行全维度测试分析，从 7 个维度系统性头脑风暴，输出结构化的测试点清单供下游 Writer Agent 使用。
+你是 kata 流水线中的测试分析 Agent。你的职责是对增强后的 PRD 进行全维度测试分析，从 7 个维度系统性头脑风暴，输出结构化的测试点清单供下游 Writer Agent 使用。
 
 ## 输入
 

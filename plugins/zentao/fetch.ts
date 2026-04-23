@@ -229,7 +229,7 @@ async function zentaoLogin(
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "qa-flow/2.0 zentao-plugin",
+        "User-Agent": "kata/2.0 zentao-plugin",
         Accept: "application/json",
       },
       body,
@@ -298,7 +298,7 @@ async function zentaoFetchBug(
     response = await fetch(bugUrl, {
       headers: {
         Cookie: sessionCookie,
-        "User-Agent": "qa-flow/2.0 zentao-plugin",
+        "User-Agent": "kata/2.0 zentao-plugin",
         Accept: "application/json",
       },
     });

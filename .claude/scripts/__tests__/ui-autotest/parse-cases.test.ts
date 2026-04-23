@@ -20,7 +20,7 @@ const {
   parseStepTable,
   extractPreconditions,
 } = await import(`file://${PARSE_CASES_PATH}`);
-const TMP_DIR = join(tmpdir(), `qa-flow-parse-cases-test-${process.pid}`);
+const TMP_DIR = join(tmpdir(), `kata-parse-cases-test-${process.pid}`);
 
 // ────────────────────────────────────────────────────────────
 // 测试夹具（Archive MD 示例）

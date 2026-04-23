@@ -12,7 +12,7 @@
  *
  * 环境变量（与 playwright.config.ts 保持一致）：
  *   - ACTIVE_ENV / QA_ACTIVE_ENV  环境标识，默认 ltqc
- *   - QA_PROJECT                  qa-flow 内部项目名（workspace 目录），默认 dataAssets
+ *   - QA_PROJECT                  kata 内部项目名（workspace 目录），默认 dataAssets
  *   - QA_SUITE_NAME               套件名（需求名），默认 report
  *
  * 通知卡片展示（按优先级取值）：
