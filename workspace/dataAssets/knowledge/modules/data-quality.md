@@ -65,7 +65,7 @@ updated: 2026-04-21
 ## 8. 项目管理
 
 - 在数据质量中做任何配置前，必须**先新建一个项目**
-- qa-flow 自动化默认使用项目 **`pw_test`**（pw 代表 playwright）
+- kata 自动化默认使用项目 **`pw_test`**（pw 代表 playwright）
 - QUALITY_PROJECT_ID 会因环境重建而变化，脚本应动态查询而非硬编码
 
 ## 9. 适用范围与客户约定
