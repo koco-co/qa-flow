@@ -2,7 +2,7 @@
 /**
  * source-analyze.ts — 批量搜索源码仓库，返回结构化分析结果。
  * Usage:
- *   bun run .claude/scripts/source-analyze.ts analyze --repo <path> --keywords "kw1,kw2"
+ *   kata-cli source-analyze analyze --repo <path> --keywords "kw1,kw2"
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";

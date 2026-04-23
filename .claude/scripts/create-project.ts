@@ -2,7 +2,7 @@
 /**
  * create-project.ts — 项目创建 + 骨架补齐 + 源码仓库克隆。
  * Usage:
- *   bun run .claude/scripts/create-project.ts <action> --project <name> [...]
+ *   kata-cli create-project <action> --project <name> [...]
  * Actions: scan | create | clone-repo
  */
 

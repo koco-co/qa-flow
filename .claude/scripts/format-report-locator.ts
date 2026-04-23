@@ -3,9 +3,9 @@
  * format-report-locator.ts — Maps format-checker issues to Archive MD line numbers.
  *
  * Usage:
- *   bun run .claude/scripts/format-report-locator.ts locate --report <json> --archive <md> --output <json>
- *   bun run .claude/scripts/format-report-locator.ts print --report <json> --archive <md>
- *   bun run .claude/scripts/format-report-locator.ts --help
+ *   kata-cli format-report-locator locate --report <json> --archive <md> --output <json>
+ *   kata-cli format-report-locator print --report <json> --archive <md>
+ *   kata-cli format-report-locator --help
  */
 
 import {

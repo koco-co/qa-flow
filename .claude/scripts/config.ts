@@ -3,8 +3,8 @@
  * config.ts — Outputs merged workspace config JSON to stdout.
  *
  * Usage:
- *   bun run .claude/scripts/config.ts show
- *   bun run .claude/scripts/config.ts --help
+ *   kata-cli config show
+ *   kata-cli config --help
  */
 
 import { existsSync, readFileSync } from "node:fs";

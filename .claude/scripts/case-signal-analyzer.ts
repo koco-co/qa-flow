@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * case-signal-analyzer.ts — 4 维信号探针（源码 / PRD / 历史 / 知识库）
- * Usage: bun run .claude/scripts/case-signal-analyzer.ts probe \
+ * Usage: kata-cli case-signal-analyzer probe \
  *   --project <name> --prd <path> [--no-cache] [--output json|summary]
  */
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";

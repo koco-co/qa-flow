@@ -7,7 +7,7 @@
 1. 从仓库根目录 `rules/` 拷贝需要覆盖的 `.md` 文件到本目录
 2. 修改该文件即可（保留 frontmatter 若有）
 3. 规则加载由以下命令完成：
-   `bun run .claude/scripts/rule-loader.ts load --project dataAssets`
+   `kata-cli rule-loader load --project dataAssets`
 
 ## 常见场景
 

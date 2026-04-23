@@ -2,8 +2,8 @@
 /**
  * search-filter.ts — 对 archive 搜索结果去重、排序、截断。
  * Usage:
- *   cat results.json | bun run .claude/scripts/search-filter.ts filter --top 5
- *   bun run .claude/scripts/search-filter.ts filter --input <file.json> --top 5
+ *   cat results.json | kata-cli search-filter filter --top 5
+ *   kata-cli search-filter filter --input <file.json> --top 5
  */
 
 import { existsSync, readFileSync } from "node:fs";

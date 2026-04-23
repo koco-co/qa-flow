@@ -3,8 +3,8 @@
  * history-convert.ts — Convert historical CSV/XMind files to Archive Markdown.
  *
  * Usage:
- *   bun run .claude/scripts/history-convert.ts --path <file-or-dir> --project <name> [--module <key>] [--detect] [--force] [--no-split]
- *   bun run .claude/scripts/history-convert.ts --help
+ *   kata-cli history-convert --path <file-or-dir> --project <name> [--module <key>] [--detect] [--force] [--no-split]
+ *   kata-cli history-convert --help
  */
 
 import {

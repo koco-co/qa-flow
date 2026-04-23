@@ -6,12 +6,12 @@
  * Generates human-readable MD + machine-readable JSON for workflow tracking.
  *
  * Usage:
- *   bun run .claude/scripts/plan.ts create --project dataAssets --workflow test-case-gen --inputs '{"prd":"..."}'
- *   bun run .claude/scripts/plan.ts update --project dataAssets --plan-id "tcg-xxx" --step step-1 --status completed
- *   bun run .claude/scripts/plan.ts summary --project dataAssets --plan-id "tcg-xxx"
- *   bun run .claude/scripts/plan.ts render --project dataAssets --plan-id "tcg-xxx"
- *   bun run .claude/scripts/plan.ts list --project dataAssets
- *   bun run .claude/scripts/plan.ts --help
+ *   kata-cli plan create --project dataAssets --workflow test-case-gen --inputs '{"prd":"..."}'
+ *   kata-cli plan update --project dataAssets --plan-id "tcg-xxx" --step step-1 --status completed
+ *   kata-cli plan summary --project dataAssets --plan-id "tcg-xxx"
+ *   kata-cli plan render --project dataAssets --plan-id "tcg-xxx"
+ *   kata-cli plan list --project dataAssets
+ *   kata-cli plan --help
  */
 
 import {

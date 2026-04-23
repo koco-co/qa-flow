@@ -9,8 +9,8 @@
  * full-width screenshots.
  *
  * Usage:
- *   bun run .claude/scripts/report-to-pdf.ts <path-to-html-or-json>
- *   bun run .claude/scripts/report-to-pdf.ts workspace/reports/playwright/202604/xxx/xxx.html
+ *   kata-cli report-to-pdf <path-to-html-or-json>
+ *   kata-cli report-to-pdf workspace/reports/playwright/202604/xxx/xxx.html
  *
  * Output: PDF file alongside the source file (same name, .pdf extension).
  */

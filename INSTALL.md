@@ -55,7 +55,7 @@ bun install
 ### Step 4 — 配置校验
 
 ```bash
-bun run .claude/scripts/config.ts
+kata-cli config
 ```
 
 预期打印项目根、workspace 路径、已注册项目列表；任何堆栈报错即失败。

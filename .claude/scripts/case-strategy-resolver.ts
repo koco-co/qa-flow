@@ -2,7 +2,7 @@
 /**
  * case-strategy-resolver.ts — 策略路由：SignalProfile → StrategyResolution
  * Usage:
- *   bun run .claude/scripts/case-strategy-resolver.ts resolve \
+ *   kata-cli case-strategy-resolver resolve \
  *     --profile <json-string|@path> \
  *     [--force-strategy S1..S5] \
  *     [--output json|summary]

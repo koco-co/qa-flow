@@ -117,7 +117,7 @@ cd qa-flow
 bun install
 cp .env.example .env
 cp .env.envs.example .env.envs
-bun run .claude/scripts/config.ts            # config sanity check
+kata-cli config            # config sanity check
 bun test ./.claude/scripts/__tests__          # must be all green
 bunx playwright install                       # only needed for UI automation
 ```
@@ -560,7 +560,7 @@ Copy `.env.example` to `.env`; for multi-environment setups also copy `.env.envs
 Switch environments by editing `.env.envs` directly, or inject via shell:
 
 ```bash
-ACTIVE_ENV=ci63 bun run .claude/scripts/kata-state.ts resume --project dataAssets --prd-slug myPrd
+ACTIVE_ENV=ci63 kata-cli kata-state resume --project dataAssets --prd-slug myPrd
 ```
 
 `kata-state` filenames include the `-{env}` suffix so parallel instances never collide.

@@ -2,7 +2,7 @@
 /**
  * auto-fixer.ts — 对 reviewer 审查发现的规则性问题执行自动修正。
  * Usage:
- *   bun run .claude/scripts/auto-fixer.ts fix --input <writer-json> --issues <issues-json> --output <path>
+ *   kata-cli auto-fixer fix --input <writer-json> --issues <issues-json> --output <path>
  */
 
 import { readFileSync, writeFileSync } from "node:fs";

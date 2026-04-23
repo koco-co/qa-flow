@@ -68,7 +68,7 @@ qa-flow 的协作偏好、规则、业务知识分三层存放，职责互斥：
 
 **读写约束：**
 
-- `rules/` 通过 `bun run .claude/scripts/rule-loader.ts load --project {{project}}` 合并加载；主 agent 读、skill 读；AI 在 xmind-editor 等场景下可追加写入
+- `rules/` 通过 `kata-cli rule-loader load --project {{project}}` 合并加载；主 agent 读、skill 读；AI 在 xmind-editor 等场景下可追加写入
 - `knowledge/` 由 `knowledge-keeper` skill（阶段 1 实施）统一读写；subagent 不得直接改文件
 - `memory/` 由 Claude Code 自动持久化；AI 主动写入
 

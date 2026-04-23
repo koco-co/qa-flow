@@ -3,11 +3,11 @@
  * xmind-patch.ts — Search, view, patch, add, and delete test cases in existing .xmind files.
  *
  * Usage:
- *   bun run .claude/scripts/xmind-patch.ts search <query> [--project <name>] [--dir <dir>] [--limit 20]
- *   bun run .claude/scripts/xmind-patch.ts show --file <xmind> --title <query>
- *   bun run .claude/scripts/xmind-patch.ts patch --file <xmind> --title <query> --case-json '<json>' [--dry-run]
- *   bun run .claude/scripts/xmind-patch.ts add --file <xmind> --parent <query> --case-json '<json>' [--dry-run]
- *   bun run .claude/scripts/xmind-patch.ts delete --file <xmind> --title <query> [--dry-run]
+ *   kata-cli xmind-patch search <query> [--project <name>] [--dir <dir>] [--limit 20]
+ *   kata-cli xmind-patch show --file <xmind> --title <query>
+ *   kata-cli xmind-patch patch --file <xmind> --title <query> --case-json '<json>' [--dry-run]
+ *   kata-cli xmind-patch add --file <xmind> --parent <query> --case-json '<json>' [--dry-run]
+ *   kata-cli xmind-patch delete --file <xmind> --title <query> [--dry-run]
  */
 
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";

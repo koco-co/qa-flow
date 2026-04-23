@@ -3,8 +3,8 @@
  * image-compress.ts — Compress images larger than max size using macOS `sips`.
  *
  * Usage:
- *   bun run .claude/scripts/image-compress.ts compress --dir <path> [--max-size 2000] [--dry-run]
- *   bun run .claude/scripts/image-compress.ts --help
+ *   kata-cli image-compress compress --dir <path> [--max-size 2000] [--dry-run]
+ *   kata-cli image-compress --help
  */
 
 import { execSync } from "node:child_process";

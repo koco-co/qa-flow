@@ -126,7 +126,7 @@ cd qa-flow
 bun install
 cp .env.example .env
 cp .env.envs.example .env.envs
-bun run .claude/scripts/config.ts            # 配置校验
+kata-cli config            # 配置校验
 bun test ./.claude/scripts/__tests__          # 单元测试必须全绿
 bunx playwright install                       # 仅 UI 自动化场景需要
 ```
@@ -589,7 +589,7 @@ qa-flow/
 切换环境时直接改 `.env.envs` 中的 `ACTIVE_ENV`，或通过 shell 注入：
 
 ```bash
-ACTIVE_ENV=ci63 bun run .claude/scripts/kata-state.ts resume --project dataAssets --prd-slug myPrd
+ACTIVE_ENV=ci63 kata-cli kata-state resume --project dataAssets --prd-slug myPrd
 ```
 
 `kata-state` 文件名会附加 `-{env}` 后缀，多实例并行不互扰。

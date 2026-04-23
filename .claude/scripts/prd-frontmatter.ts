@@ -3,8 +3,8 @@
  * prd-frontmatter.ts — Normalize PRD front-matter fields.
  *
  * Usage:
- *   bun run .claude/scripts/prd-frontmatter.ts normalize --file <md-path> [--dry-run]
- *   bun run .claude/scripts/prd-frontmatter.ts --help
+ *   kata-cli prd-frontmatter normalize --file <md-path> [--dry-run]
+ *   kata-cli prd-frontmatter --help
  */
 
 import { readFileSync, writeFileSync } from "node:fs";

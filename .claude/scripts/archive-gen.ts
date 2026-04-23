@@ -4,9 +4,9 @@
  * and searches existing archives.
  *
  * Usage:
- *   bun run .claude/scripts/archive-gen.ts convert --input <json> --output <path> [--project <name>] [--template templates/archive.md.hbs]
- *   bun run .claude/scripts/archive-gen.ts search --query <keywords> [--project <name>] [--dir <path>] [--limit 20]
- *   bun run .claude/scripts/archive-gen.ts --help
+ *   kata-cli archive-gen convert --input <json> --output <path> [--project <name>] [--template templates/archive.md.hbs]
+ *   kata-cli archive-gen search --query <keywords> [--project <name>] [--dir <path>] [--limit 20]
+ *   kata-cli archive-gen --help
  */
 
 import {

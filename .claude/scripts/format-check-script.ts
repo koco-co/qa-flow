@@ -2,7 +2,7 @@
 /**
  * format-check-script.ts — Archive MD 格式规则确定性检查。
  * Usage:
- *   bun run .claude/scripts/format-check-script.ts check --input <archive-md-path>
+ *   kata-cli format-check-script check --input <archive-md-path>
  */
 
 import { existsSync, readFileSync } from "node:fs";

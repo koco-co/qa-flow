@@ -3,9 +3,9 @@
  * repo-sync.ts — Sync source code repositories.
  *
  * Usage:
- *   bun run .claude/scripts/repo-sync.ts sync --url <git-url> --branch <branch> [--base-dir workspace/.repos]
- *   bun run .claude/scripts/repo-sync.ts sync-profile --name <profile>
- *   bun run .claude/scripts/repo-sync.ts --help
+ *   kata-cli repo-sync sync --url <git-url> --branch <branch> [--base-dir workspace/.repos]
+ *   kata-cli repo-sync sync-profile --name <profile>
+ *   kata-cli repo-sync --help
  */
 
 import { execSync } from "node:child_process";

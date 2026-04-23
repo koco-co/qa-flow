@@ -2,7 +2,7 @@
 /**
  * writer-context-builder.ts — 按模块切分 PRD，为每个 writer 构建精简上下文。
  * Usage:
- *   bun run .claude/scripts/writer-context-builder.ts build \
+ *   kata-cli writer-context-builder build \
  *     --prd <path> --test-points <path> --writer-id <module> [--rules <path>]
  *     [--strategy-id <id>] [--knowledge-injection <mode>] [--project <name>]
  */

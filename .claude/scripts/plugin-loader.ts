@@ -3,12 +3,12 @@
  * plugin-loader.ts — Plugin discovery and dispatch CLI.
  *
  * Usage:
- *   bun run .claude/scripts/plugin-loader.ts list
- *   bun run .claude/scripts/plugin-loader.ts check --input "https://lanhuapp.com/..."
- *   bun run .claude/scripts/plugin-loader.ts resolve --url "https://lanhuapp.com/..."
- *   bun run .claude/scripts/plugin-loader.ts notify --event case-generated --data '{"count":42}'
- *   bun run .claude/scripts/plugin-loader.ts notify --event ui-test-completed --data '{"reportFile":"workspace/.../allure-report/index.html"}'
- *   bun run .claude/scripts/plugin-loader.ts --help
+ *   kata-cli plugin-loader list
+ *   kata-cli plugin-loader check --input "https://lanhuapp.com/..."
+ *   kata-cli plugin-loader resolve --url "https://lanhuapp.com/..."
+ *   kata-cli plugin-loader notify --event case-generated --data '{"count":42}'
+ *   kata-cli plugin-loader notify --event ui-test-completed --data '{"reportFile":"workspace/.../allure-report/index.html"}'
+ *   kata-cli plugin-loader --help
  */
 
 import { createCli } from "./lib/cli-runner.ts";

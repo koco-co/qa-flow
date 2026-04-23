@@ -2,7 +2,7 @@
 /**
  * knowledge-keeper.ts — 业务知识库 CRUD + lint/index。
  * Usage:
- *   bun run .claude/scripts/knowledge-keeper.ts <action> --project <name> [...]
+ *   kata-cli knowledge-keeper <action> --project <name> [...]
  * Actions: read-core | read-module | read-pitfall | write | update | index | lint
  */
 

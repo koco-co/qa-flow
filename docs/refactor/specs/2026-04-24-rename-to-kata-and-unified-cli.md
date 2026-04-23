@@ -22,8 +22,8 @@
 | 脚本移除 parse 调用，仅 `export program`              | 28 个              | Task 2                         |
 | `kata-cli.ts` 根入口 `addCommand` 注册                | 27 个              | Task 3                         |
 | `kata-state.ts` → `kata-state.ts` 改名 + 16 处引用更新  | 16 个文件          | Task 2.5                       |
-| 测试里调用从 `bun run .claude/scripts/xxx.ts` → `kata-cli xxx` | 约 27 个   | Task 4                         |
-| skill/agent/ref 文档里 `bun run .claude/scripts/xxx.ts` → `kata-cli xxx` | 87 个文件 | Task 5 |
+| 测试里调用从 `kata-cli xxx` → `kata-cli xxx` | 约 27 个   | Task 4                         |
+| skill/agent/ref 文档里 `kata-cli xxx` → `kata-cli xxx` | 87 个文件 | Task 5 |
 | `qa-flow` → `kata` 关键词（非归档）                   | 约 50 文件 / 435 处 | Task 6                         |
 | `.claude/skills/qa-flow/` 目录                        | 1 个               | Task 7                         |
 | `.claude/scripts/qa.ts` + 测试                        | 2 个               | Task 1                         |
@@ -51,7 +51,7 @@
 | `.claude/scripts/*.ts` (28 个)              | `createCli(...).parse/parseAsync(...)` → `export const program = createCli(...);`（彻底移除 parse 和 gate） |
 | `.claude/scripts/kata-cli.ts`               | shebang + `Command.name("kata-cli")` + `addCommand(所有 27 个)` + 仍需 parseAsync（唯一入口）       |
 | `.claude/scripts/__tests__/*.test.ts`       | `["run", ".claude/scripts/xxx.ts", ...]` → `["kata-cli", "xxx", ...]`（改用 `execFileSync("kata-cli", ...)`）|
-| `.claude/skills/**/*.md`                    | `bun run .claude/scripts/xxx.ts` → `kata-cli xxx`；`/qa-flow` → `/kata`                              |
+| `.claude/skills/**/*.md`                    | `kata-cli xxx` → `kata-cli xxx`；`/qa-flow` → `/kata`                              |
 | `package.json`                              | `"name": "qa-flow"` → `"name": "kata"`；删除 `scripts.qa`；新增 `"bin": { "kata-cli": ".claude/scripts/kata-cli.ts" }` |
 | `README.md` / `README-EN.md`                | `QAFlow` → `Kata`；`qa-flow` → `kata`；新增 `bun link` 一次性 setup 说明                              |
 | `CLAUDE.md`                                 | 标题 + menu 表 `/qa-flow` → `/kata`；硬编码路径示例更新；首次 setup 说明加 `bun link`                |
@@ -161,7 +161,7 @@ git update-index --chmod=+x .claude/scripts/kata-cli.ts
      "ci": "bun run lint && bun run type-check && bun run test",
      "test": "bun test ./.claude/scripts/__tests__",
 -    "test:watch": "bun test --watch ./.claude/scripts/__tests__",
--    "qa": "bun run .claude/scripts/qa.ts"
+-    "qa": "kata-cli qa"
 +    "test:watch": "bun test --watch ./.claude/scripts/__tests__"
    },
 ```
@@ -306,7 +306,7 @@ git add .claude/scripts/*.ts
 git commit -m "refactor: strip parse calls and main gate from all scripts"
 ```
 
-（此时测试还跑不过——测试仍以 `bun run .claude/scripts/xxx.ts` 直接调用脚本，但脚本已经不 parse 了。这是预期状态。Task 3 + Task 4 后才恢复绿色。）
+（此时测试还跑不过——测试仍以 `kata-cli xxx` 直接调用脚本，但脚本已经不 parse 了。这是预期状态。Task 3 + Task 4 后才恢复绿色。）
 
 ---
 
@@ -334,7 +334,7 @@ git mv .claude/scripts/__tests__/kata-state.test.ts .claude/scripts/__tests__/ka
 +/**
 + * kata-state.ts — Breakpoint resume state management CLI.
   * ...
-- *   bun run .claude/scripts/kata-state.ts init --project ...
+- *   kata-cli kata-state init --project ...
 + *   kata-cli kata-state init --project ...
   * ...
   */
@@ -854,7 +854,7 @@ mv ~/.claude/projects/-Users-poco-Projects-qa-flow ~/.claude/projects/-Users-poc
 
 1. **`bun link` 需要用户在本地执行一次**——CI/其他机器环境下，`bun install` 会自动走 bin 注册（大多数情况），但如有遗漏需补执行。README/INSTALL 要写清楚首次 setup 流程。
 2. **测试里 `execFileSync("kata-cli", ...)` 依赖 `$PATH` 里有 `kata-cli`**——Task 1.5 bun link 完成后才满足。Task 2 commit 后到 Task 3 commit 前测试会暂时 fail，属预期中间态。
-3. **脚本移除 parse 后直接 `bun run .claude/scripts/xxx.ts` 会没有任何输出**（commander program 导出但不被调用）。这是有意为之——强制所有调用走 `kata-cli`。开发者如需调试单文件，走 `kata-cli xxx --help` 也够用。
+3. **脚本移除 parse 后直接 `kata-cli xxx` 会没有任何输出**（commander program 导出但不被调用）。这是有意为之——强制所有调用走 `kata-cli`。开发者如需调试单文件，走 `kata-cli xxx --help` 也够用。
 4. **SVG / drawio 文字替换**——`architecture.svg` 里的文本节点可能影响视觉，Task 6.3 手工 review。
 5. **`kata-state` → `kata-state` 影响面**——16 个文件引用，Task 2.5 批量处理后 Task 8 终极扫描兜底。
 

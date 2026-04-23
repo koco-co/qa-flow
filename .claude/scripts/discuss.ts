@@ -2,7 +2,7 @@
 /**
  * discuss.ts — PRD 需求讨论 plan.md 管理。
  * Usage:
- *   bun run .claude/scripts/discuss.ts <action> --project <name> --prd <prd_path> [...]
+ *   kata-cli discuss <action> --project <name> --prd <prd_path> [...]
  * Actions: init | read | append-clarify | complete | reset
  */
 

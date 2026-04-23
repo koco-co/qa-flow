@@ -4,7 +4,7 @@
  *
  * 用法：
  *   ACTIVE_ENV=ltqc QA_SUITE_NAME="【通用配置】json格式配置-15696" \
- *     bun run .claude/scripts/run-tests-notify.ts \
+ *     kata-cli run-tests-notify \
  *     "workspace/dataAssets/tests/202604/【通用配置】json格式配置/full.spec.ts" \
  *     --project=chromium
  *
@@ -180,7 +180,7 @@ async function main(pwArgs: readonly string[]): Promise<void> {
   if (pwArgs.length === 0) {
     process.stderr.write(
       "[run-tests-notify] 缺少 Playwright 参数。示例：\n" +
-        '  bun run .claude/scripts/run-tests-notify.ts "workspace/.../full.spec.ts" --project=chromium\n',
+        '  kata-cli run-tests-notify "workspace/.../full.spec.ts" --project=chromium\n',
     );
     process.exit(2);
   }

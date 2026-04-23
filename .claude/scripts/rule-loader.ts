@@ -2,7 +2,7 @@
 /**
  * rule-loader.ts — 一次性加载并合并多级规则，输出 JSON。
  * Usage:
- *   bun run .claude/scripts/rule-loader.ts load --project <name>
+ *   kata-cli rule-loader load --project <name>
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";

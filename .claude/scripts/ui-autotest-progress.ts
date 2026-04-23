@@ -3,11 +3,11 @@
  * ui-autotest-progress.ts — UI 自动化测试断点续传状态管理 CLI
  *
  * Usage:
- *   bun run .claude/scripts/ui-autotest-progress.ts create --project dataAssets --suite "套件名" --archive "archive/path.md" --url "http://..."
- *   bun run .claude/scripts/ui-autotest-progress.ts update --project dataAssets --suite "套件名" --case t1 --field test_status --value passed
- *   bun run .claude/scripts/ui-autotest-progress.ts read --project dataAssets --suite "套件名"
- *   bun run .claude/scripts/ui-autotest-progress.ts summary --project dataAssets --suite "套件名"
- *   bun run .claude/scripts/ui-autotest-progress.ts reset --project dataAssets --suite "套件名"
+ *   kata-cli ui-autotest-progress create --project dataAssets --suite "套件名" --archive "archive/path.md" --url "http://..."
+ *   kata-cli ui-autotest-progress update --project dataAssets --suite "套件名" --case t1 --field test_status --value passed
+ *   kata-cli ui-autotest-progress read --project dataAssets --suite "套件名"
+ *   kata-cli ui-autotest-progress summary --project dataAssets --suite "套件名"
+ *   kata-cli ui-autotest-progress reset --project dataAssets --suite "套件名"
  */
 
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
