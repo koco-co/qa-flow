@@ -1,9 +1,12 @@
 {
-  "name": "qa-flow",
+  "name": "kata",
   "version": "2.0.0",
   "type": "module",
   "private": true,
-  "description": "AI-driven QA test case generation workflow built on Claude Code Skills",
+  "description": "AI-driven QA workflows codified as reusable kata, powered by Claude Code Skills.",
+  "bin": {
+    "kata-cli": ".claude/scripts/kata-cli.ts"
+  },
   "scripts": {
     "check": "biome check .",
     "check:fix": "biome check --fix .",
@@ -12,8 +15,7 @@
     "type-check": "tsc --noEmit",
     "ci": "bun run lint && bun run type-check && bun run test",
     "test": "bun test ./.claude/scripts/__tests__",
-    "test:watch": "bun test --watch ./.claude/scripts/__tests__",
-    "qa": "bun run .claude/scripts/qa.ts"
+    "test:watch": "bun test --watch ./.claude/scripts/__tests__"
   },
   "dependencies": {
     "@types/nodemailer": "^8.0.0",
