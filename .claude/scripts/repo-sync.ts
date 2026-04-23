@@ -232,7 +232,7 @@ function runSyncProfile(opts: { name: string }): void {
   }
 }
 
-createCli({
+export const program = createCli({
   name: "repo-sync",
   description: "Clone or update a source code repository to a local directory",
   rootAction: {
@@ -257,4 +257,8 @@ createCli({
       action: runSyncProfile,
     },
   ],
-}).parseAsync(process.argv);
+});
+
+if (import.meta.main) {
+  program.parseAsync(process.argv);
+}

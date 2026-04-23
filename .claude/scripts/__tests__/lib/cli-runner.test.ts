@@ -300,6 +300,72 @@ describe("createCli", () => {
     assert.deepEqual(log, ["root"]);
   });
 
+  it("accepts valid choice values and applies default", async () => {
+    // Runtime rejection of invalid values is covered end-to-end in
+    // __tests__/qa.test.ts (execFileSync subprocess, avoids commander's
+    // process.exit side-effects interfering with the bun test runner).
+    const { createCli } = await import("../../lib/cli-runner.ts");
+    const captured: Record<string, unknown>[] = [];
+
+    const program = createCli({
+      name: "choice-tool",
+      description: "choice",
+      initEnv: false,
+      commands: [
+        {
+          name: "go",
+          description: "go",
+          options: [
+            {
+              flag: "--level <lvl>",
+              description: "level",
+              choices: ["low", "medium", "high"],
+              defaultValue: "medium",
+            },
+          ],
+          action: (opts) => {
+            captured.push(opts);
+          },
+        },
+      ],
+    });
+
+    await program.parseAsync(["node", "choice-tool", "go", "--level", "high"]);
+    assert.equal((captured.at(-1) as { level: string }).level, "high");
+
+    captured.length = 0;
+    await program.parseAsync(["node", "choice-tool", "go"]);
+    assert.equal((captured[0] as { level: string }).level, "medium");
+  });
+
+  it("renders choices list in the generated help output", async () => {
+    const { createCli } = await import("../../lib/cli-runner.ts");
+
+    const program = createCli({
+      name: "help-tool",
+      description: "help",
+      initEnv: false,
+      commands: [
+        {
+          name: "run",
+          description: "run",
+          options: [
+            {
+              flag: "--type <t>",
+              description: "entry type",
+              required: true,
+              choices: ["a", "b", "c"],
+            },
+          ],
+          action: () => {},
+        },
+      ],
+    });
+
+    const helpText = program.commands[0].helpInformation();
+    assert.match(helpText, /choices:\s*"a",\s*"b",\s*"c"/);
+  });
+
   it("applies LOG_LEVEL env var to logger", async () => {
     process.env["LOG_LEVEL"] = "error";
     const { createCli } = await import("../../lib/cli-runner.ts");

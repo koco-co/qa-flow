@@ -12,7 +12,8 @@
     "type-check": "tsc --noEmit",
     "ci": "bun run lint && bun run type-check && bun run test",
     "test": "bun test ./.claude/scripts/__tests__",
-    "test:watch": "bun test --watch ./.claude/scripts/__tests__"
+    "test:watch": "bun test --watch ./.claude/scripts/__tests__",
+    "qa": "bun run .claude/scripts/qa.ts"
   },
   "dependencies": {
     "@types/nodemailer": "^8.0.0",

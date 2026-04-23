@@ -884,7 +884,10 @@ function runLint(opts: { project: string; strict?: boolean }): void {
   process.exit(0);
 }
 
-createCli({
+const ENTRY_TYPES = ["term", "overview", "module", "pitfall"] as const;
+const CONFIDENCE_LEVELS = ["high", "medium", "low"] as const;
+
+export const program = createCli({
   name: "knowledge-keeper",
   description:
     "Knowledge base CRUD + lint/index for workspace/{project}/knowledge/",
@@ -928,9 +931,9 @@ createCli({
       description: "Write knowledge entry (term/overview/module/pitfall)",
       options: [
         { flag: "--project <name>", description: "Project name", required: true },
-        { flag: "--type <type>", description: "Entry type: term|overview|module|pitfall", required: true },
+        { flag: "--type <type>", description: "Entry type", required: true, choices: ENTRY_TYPES },
         { flag: "--content <json>", description: "Content as JSON string", required: true },
-        { flag: "--confidence <level>", description: "Confidence: high|medium|low", defaultValue: "medium" },
+        { flag: "--confidence <level>", description: "Confidence level", defaultValue: "medium", choices: CONFIDENCE_LEVELS },
         { flag: "--confirmed", description: "Confirm medium-confidence write", defaultValue: false },
         { flag: "--dry-run", description: "Preview without writing", defaultValue: false },
         { flag: "--overwrite", description: "Allow overwriting existing module/pitfall file", defaultValue: false },
@@ -956,7 +959,7 @@ createCli({
       description: "Dry-run conflict check against existing knowledge (no write, no side effect)",
       options: [
         { flag: "--project <name>", description: "Project name", required: true },
-        { flag: "--type <type>", description: "Entry type: term|overview|module|pitfall", required: true },
+        { flag: "--type <type>", description: "Entry type", required: true, choices: ENTRY_TYPES },
         { flag: "--content <json>", description: "Content as JSON string", required: true },
       ],
       action: runVerify,
@@ -991,7 +994,11 @@ createCli({
       action: runLint,
     },
   ],
-}).parseAsync(process.argv).catch((err) => {
-  process.stderr.write(`[knowledge-keeper] Unexpected error: ${err}\n`);
-  process.exit(1);
 });
+
+if (import.meta.main) {
+  program.parseAsync(process.argv).catch((err) => {
+    process.stderr.write(`[knowledge-keeper] Unexpected error: ${err}\n`);
+    process.exit(1);
+  });
+}

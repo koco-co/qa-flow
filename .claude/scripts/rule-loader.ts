@@ -94,7 +94,7 @@ function runLoad(opts: { project: string }): void {
   process.stdout.write(JSON.stringify(merged, null, 2) + "\n");
 }
 
-createCli({
+export const program = createCli({
   name: "rule-loader",
   description: "Load and merge multi-level rules, output JSON",
   commands: [
@@ -107,4 +107,8 @@ createCli({
       action: runLoad,
     },
   ],
-}).parse(process.argv);
+});
+
+if (import.meta.main) {
+  program.parse(process.argv);
+}

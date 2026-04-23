@@ -1,4 +1,4 @@
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import { initEnv } from "./env.ts";
 import { createLogger, initLogLevel, type Logger } from "./logger.ts";
 
@@ -7,6 +7,12 @@ export interface CliOption {
   description: string;
   required?: boolean;
   defaultValue?: unknown;
+  /**
+   * When set, commander enforces this enum at parse time and the help output
+   * shows `(choices: "a", "b")` automatically. Use for fields like
+   * `--confidence high|medium|low` where the allowed set is a closed list.
+   */
+  choices?: readonly string[];
 }
 
 export interface CliArgument {
@@ -46,6 +52,17 @@ export interface CliConfig {
 }
 
 function attachOption(cmd: Command, opt: CliOption): void {
+  // choices requires commander's Option class to be used, so when choices are
+  // present we always go through addOption() instead of option()/requiredOption().
+  if (opt.choices && opt.choices.length > 0) {
+    const option = new Option(opt.flag, opt.description).choices([
+      ...opt.choices,
+    ]);
+    if (opt.required) option.makeOptionMandatory(true);
+    if (opt.defaultValue !== undefined) option.default(opt.defaultValue);
+    cmd.addOption(option);
+    return;
+  }
   if (opt.required) {
     if (opt.defaultValue !== undefined) {
       cmd.requiredOption(opt.flag, opt.description, opt.defaultValue as string);
