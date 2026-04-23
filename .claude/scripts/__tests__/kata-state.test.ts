@@ -31,8 +31,8 @@ function runState(
 ): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/kata-state.ts", ...args],
+      "kata-cli",
+      ["kata-state", ...args],
       {
         cwd: resolve(import.meta.dirname, "../../.."),
         encoding: "utf8",

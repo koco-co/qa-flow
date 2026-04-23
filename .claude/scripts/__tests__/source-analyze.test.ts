@@ -11,8 +11,8 @@ const TMP_DIR = join(tmpdir(), `qa-flow-source-analyze-test-${process.pid}`);
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/source-analyze.ts", ...args],
+      "kata-cli",
+      ["source-analyze", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

@@ -23,7 +23,7 @@ function runConfig(extraEnv: Record<string, string> = {}): {
   code: number;
 } {
   try {
-    const stdout = execFileSync("bun", ["run", ".claude/scripts/config.ts"], {
+    const stdout = execFileSync("kata-cli", ["config"], {
       cwd: REPO_ROOT,
       encoding: "utf8",
       env: {
@@ -83,7 +83,7 @@ describe("config.ts — output structure", () => {
       if (k !== "WORKSPACE_DIR" && v !== undefined) spawnEnv[k] = v;
     }
     try {
-      const stdout = execFileSync("bun", ["run", ".claude/scripts/config.ts"], {
+      const stdout = execFileSync("kata-cli", ["config"], {
         cwd: REPO_ROOT,
         encoding: "utf8",
         env: spawnEnv,
@@ -207,7 +207,7 @@ describe("config.ts — plugin active detection logic", () => {
 
   it("--help flag exits successfully", () => {
     try {
-      execFileSync("bun", ["run", ".claude/scripts/config.ts", "--help"], {
+      execFileSync("kata-cli", ["config", "--help"], {
         cwd: REPO_ROOT,
         encoding: "utf8",
       });

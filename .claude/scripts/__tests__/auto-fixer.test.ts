@@ -11,8 +11,8 @@ const TMP_DIR = join(tmpdir(), `qa-flow-auto-fixer-test-${process.pid}`);
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/auto-fixer.ts", ...args],
+      "kata-cli",
+      ["auto-fixer", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

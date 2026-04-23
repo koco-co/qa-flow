@@ -15,8 +15,8 @@ function runLoader(
 ): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/rule-loader.ts", ...args],
+      "kata-cli",
+      ["rule-loader", ...args],
       {
         cwd: resolve(import.meta.dirname, "../../.."),
         encoding: "utf8",

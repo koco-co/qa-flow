@@ -32,14 +32,17 @@ import { parseFrontMatter } from "./lib/frontmatter.ts";
 // ---------------------------------------------------------------------------
 
 function invokeJson(args: string[], stdin?: string): unknown | null {
-  const result = spawnSync("bun", ["run", ...args], {
+  // Convert ".claude/scripts/xxx.ts" first arg to kata-cli subcommand name
+  const [scriptPath, ...rest] = args;
+  const subcommand = scriptPath.replace(/^.*\/([^/]+)\.ts$/, "$1");
+  const result = spawnSync("kata-cli", [subcommand, ...rest], {
     encoding: "utf8",
     cwd: repoRoot(),
     input: stdin,
   });
   if (result.status !== 0) {
     process.stderr.write(
-      `[case-signal-analyzer] delegate exit ${result.status}: ${args.join(" ")}\n`,
+      `[case-signal-analyzer] delegate exit ${result.status}: ${[subcommand, ...rest].join(" ")}\n`,
     );
     return null;
   }

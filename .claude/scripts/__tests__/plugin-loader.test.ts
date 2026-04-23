@@ -19,8 +19,8 @@ function runPluginLoader(
 ): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/plugin-loader.ts", ...args],
+      "kata-cli",
+      ["plugin-loader", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",
@@ -361,8 +361,8 @@ describe("plugin-loader.ts --help", () => {
   it("exits successfully on --help", () => {
     try {
       execFileSync(
-        "bun",
-        ["run", ".claude/scripts/plugin-loader.ts", "--help"],
+        "kata-cli",
+        ["plugin-loader", "--help"],
         {
           cwd: REPO_ROOT,
           encoding: "utf8",

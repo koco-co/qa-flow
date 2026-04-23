@@ -211,10 +211,9 @@ function applyCreate(project: string): {
   // Invoke knowledge-keeper index
   const indexPath = join(knowledgeDir(project), "_index.md");
   const kk = spawnSync(
-    "bun",
+    "kata-cli",
     [
-      "run",
-      ".claude/scripts/knowledge-keeper.ts",
+      "knowledge-keeper",
       "index",
       "--project",
       project,

@@ -115,8 +115,8 @@ function truncateString(s: string, limit: number): string {
 
 function invokeKnowledgeKeeper(args: string[]): unknown | null {
   const result = spawnSync(
-    "bun",
-    ["run", ".claude/scripts/knowledge-keeper.ts", ...args],
+    "kata-cli",
+    ["knowledge-keeper", ...args],
     {
       encoding: "utf8",
       cwd: repoRoot(),

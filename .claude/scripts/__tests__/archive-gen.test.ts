@@ -13,8 +13,8 @@ const TMP_DIR = join(tmpdir(), `qa-flow-archive-test-${process.pid}`);
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/archive-gen.ts", ...args],
+      "kata-cli",
+      ["archive-gen", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

@@ -26,8 +26,8 @@ function getArchiveDir(): string {
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/history-convert.ts", ...args],
+      "kata-cli",
+      ["history-convert", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

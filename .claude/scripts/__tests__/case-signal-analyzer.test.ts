@@ -7,7 +7,6 @@ import { join, resolve } from "node:path";
 const repoRoot = resolve(import.meta.dirname, "../../..");
 
 const project = "probe-fixture";
-const scriptPath = join(repoRoot, ".claude/scripts/case-signal-analyzer.ts");
 
 // PRD content with no field-definition tables (fillRate=0), confidence=0.2
 const PRD_CONTENT = `---
@@ -39,7 +38,7 @@ function cachePath(): string {
 }
 
 function runCli(args: string[]): ReturnType<typeof spawnSync> {
-  return spawnSync("bun", ["run", scriptPath, ...args], {
+  return spawnSync("kata-cli", ["case-signal-analyzer", ...args], {
     encoding: "utf8",
     cwd: repoRoot,
   });

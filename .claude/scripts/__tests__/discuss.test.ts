@@ -20,8 +20,8 @@ const PLAN_ABS = join(PRD_DIR, `${SLUG}.plan.md`);
 function runCli(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/discuss.ts", ...args],
+      "kata-cli",
+      ["discuss", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

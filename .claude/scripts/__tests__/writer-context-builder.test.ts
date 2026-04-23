@@ -11,8 +11,8 @@ const TMP_DIR = join(tmpdir(), `qa-flow-writer-context-builder-test-${process.pi
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/writer-context-builder.ts", ...args],
+      "kata-cli",
+      ["writer-context-builder", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

@@ -15,8 +15,8 @@ function runKk(
 ): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/knowledge-keeper.ts", ...args],
+      "kata-cli",
+      ["knowledge-keeper", ...args],
       {
         cwd: resolve(import.meta.dirname, "../../.."),
         encoding: "utf8",

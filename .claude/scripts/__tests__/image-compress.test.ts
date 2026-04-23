@@ -20,8 +20,8 @@ function isSipsAvailable(): boolean {
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/image-compress.ts", ...args],
+      "kata-cli",
+      ["image-compress", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

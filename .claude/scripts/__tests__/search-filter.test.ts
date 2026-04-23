@@ -14,8 +14,8 @@ function run(
 ): { stdout: string; stderr: string; code: number } {
   if (stdinData !== undefined) {
     const result = spawnSync(
-      "bun",
-      ["run", ".claude/scripts/search-filter.ts", ...args],
+      "kata-cli",
+      ["search-filter", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",
@@ -31,8 +31,8 @@ function run(
 
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/search-filter.ts", ...args],
+      "kata-cli",
+      ["search-filter", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

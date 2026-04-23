@@ -25,8 +25,8 @@ function run(
 ): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/report-to-pdf.ts", ...args],
+      "kata-cli",
+      ["report-to-pdf", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",
@@ -249,7 +249,7 @@ describe("report-to-pdf --help", () => {
     const output = stdout + stderr;
     assert.equal(code, 0);
     assert.match(output, /report-to-pdf/i);
-    assert.match(output, /source-path/i);
+    assert.match(output, /source.?path/i);
   });
 });
 

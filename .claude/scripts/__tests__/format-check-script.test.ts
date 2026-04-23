@@ -11,8 +11,8 @@ const TMP_DIR = join(tmpdir(), `qa-flow-format-check-test-${process.pid}`);
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/format-check-script.ts", ...args],
+      "kata-cli",
+      ["format-check-script", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

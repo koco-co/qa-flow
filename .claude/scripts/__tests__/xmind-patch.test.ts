@@ -19,8 +19,8 @@ function runGen(args: string[]): {
 } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/xmind-gen.ts", ...args],
+      "kata-cli",
+      ["xmind-gen", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",
@@ -44,8 +44,8 @@ function runEdit(args: string[]): {
 } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/xmind-patch.ts", ...args],
+      "kata-cli",
+      ["xmind-patch", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

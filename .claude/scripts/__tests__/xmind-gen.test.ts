@@ -20,8 +20,8 @@ const TMP_DIR = join(tmpdir(), `qa-flow-xmind-test-${process.pid}`);
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/xmind-gen.ts", ...args],
+      "kata-cli",
+      ["xmind-gen", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

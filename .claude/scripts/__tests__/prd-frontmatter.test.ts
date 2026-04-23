@@ -11,8 +11,8 @@ const TMP_DIR = join(tmpdir(), `qa-flow-prd-frontmatter-test-${process.pid}`);
 function run(args: string[]): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/prd-frontmatter.ts", ...args],
+      "kata-cli",
+      ["prd-frontmatter", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",

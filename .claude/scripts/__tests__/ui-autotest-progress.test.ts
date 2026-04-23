@@ -7,7 +7,6 @@ import { after, before, describe, it } from "node:test";
 import { asciiSlugify, slugify, uiBlocksDir } from "../ui-autotest-progress.ts";
 
 const TMP_DIR = join(tmpdir(), `qa-flow-uap-test-${process.pid}`);
-const SCRIPT = ".claude/scripts/ui-autotest-progress.ts";
 const CWD = resolve(import.meta.dirname, "../../..");
 
 function run(
@@ -15,7 +14,7 @@ function run(
   extraEnv: Record<string, string> = {},
 ): { stdout: string; stderr: string; code: number } {
   try {
-    const stdout = execFileSync("bun", ["run", SCRIPT, ...args], {
+    const stdout = execFileSync("kata-cli", ["ui-autotest-progress", ...args], {
       cwd: CWD,
       encoding: "utf8",
       env: { ...process.env, WORKSPACE_DIR: join(TMP_DIR, "workspace"), ...extraEnv },

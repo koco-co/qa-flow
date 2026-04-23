@@ -14,8 +14,8 @@ function runPlan(
 ): { stdout: string; stderr: string; code: number } {
   try {
     const stdout = execFileSync(
-      "bun",
-      ["run", ".claude/scripts/plan.ts", ...args],
+      "kata-cli",
+      ["plan", ...args],
       {
         cwd: REPO_ROOT,
         encoding: "utf8",
