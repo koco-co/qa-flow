@@ -28,7 +28,7 @@
 ### RS2: 解析 XMind 文件
 
 ```bash
-bun run .claude/scripts/history-convert.ts --path {{xmind_file}} --project {{project}} --project {{project}} --detect
+kata-cli history-convert --path {{xmind_file}} --project {{project}} --project {{project}} --detect
 ```
 
 展示解析结果，并使用 AskUserQuestion 确认：
@@ -49,7 +49,7 @@ bun run .claude/scripts/history-convert.ts --path {{xmind_file}} --project {{pro
 ### RS4: 执行转换
 
 ```bash
-bun run .claude/scripts/history-convert.ts --path {{xmind_file}} --project {{project}}
+kata-cli history-convert --path {{xmind_file}} --project {{project}}
 ```
 
 转换完成后，将生成的 Archive MD 覆盖写入目标路径（或写入 tmp/ 供预览）。

@@ -44,7 +44,7 @@
 2. 调 knowledge-keeper write API：
 
 ```bash
-bun run .claude/scripts/knowledge-keeper.ts write \
+kata-cli knowledge-keeper write \
   --project {{project}} \
   --type term|module|pitfall \
   --content '{"term":"...","zh":"...","desc":"..."}' \

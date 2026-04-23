@@ -8,8 +8,8 @@ argument-hint: "[step-number]"
 
 执行前先加载全局规则并读取基础配置：
 
-1. 全局 `rules/` 目录下所有 `.md` 文件（`bun run .claude/scripts/rule-loader.ts load`）
-2. 执行 `bun run .claude/scripts/config.ts`（从 `config.json` 和 `.env` 读取模块、仓库、路径配置）
+1. 全局 `rules/` 目录下所有 `.md` 文件（`kata-cli rule-loader load`）
+2. 执行 `kata-cli config`（从 `config.json` 和 `.env` 读取模块、仓库、路径配置）
 
 偏好优先级：用户当前指令 > 全局偏好 > 本 skill 内置规则。
 
@@ -141,7 +141,7 @@ bun run .claude/skills/setup/scripts/init-wizard.ts verify
 | 插件凭证   | 已配置插件的环境变量非空                                               |
 | 硬编码检查 | 脚本和测试中无硬编码绝对路径或凭证（详见 CLAUDE.md「禁止硬编码规则」） |
 
-> 项目骨架完整性、`.repos/` 仓库可达性等项目级验证由 `bun run .claude/scripts/create-project.ts scan --project <name>` 提供，不在 setup 范围内。
+> 项目骨架完整性、`.repos/` 仓库可达性等项目级验证由 `kata-cli create-project scan --project <name>` 提供，不在 setup 范围内。
 
 ### 4.2 展示汇总表
 
@@ -176,7 +176,7 @@ qa-flow v2.0 环境健康检查完成
 3. 发送 `workflow-failed` 通知（若通知插件已配置）：
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts notify \
+kata-cli plugin-loader notify \
   --event workflow-failed \
   --data '{"step":"setup-{{step}}","reason":"{{error_msg}}"}'
 ```

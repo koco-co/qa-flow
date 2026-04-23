@@ -14,7 +14,7 @@
 ### 1.1 断点续传检测
 
 ```bash
-bun run .claude/scripts/kata-state.ts resume --prd-slug {{prd_slug}} --project {{project}}
+kata-cli kata-state resume --prd-slug {{prd_slug}} --project {{project}}
 ```
 
 若返回有效状态 → 跳转到断点所在节点继续执行。
@@ -22,7 +22,7 @@ bun run .claude/scripts/kata-state.ts resume --prd-slug {{prd_slug}} --project {
 ### 1.2 plan.md 状态检测（discuss 续跑路由）
 
 ```bash
-bun run .claude/scripts/discuss.ts read --project {{project}} --prd {{prd_path}} 2>/dev/null
+kata-cli discuss read --project {{project}} --prd {{prd_path}} 2>/dev/null
 ```
 
 按返回 `frontmatter.status` / `frontmatter.resume_anchor` 决定下游路由：
@@ -36,7 +36,7 @@ bun run .claude/scripts/discuss.ts read --project {{project}} --prd {{prd_path}}
 ### 1.4 插件检测（蓝湖 URL 等）
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts check --input "{{user_input}}"
+kata-cli plugin-loader check --input "{{user_input}}"
 ```
 
 若匹配插件（如蓝湖 URL）→ 执行插件 fetch 命令获取 PRD 内容。
@@ -44,7 +44,7 @@ bun run .claude/scripts/plugin-loader.ts check --input "{{user_input}}"
 ### 1.5 初始化状态
 
 ```bash
-bun run .claude/scripts/kata-state.ts init --prd {{prd_path}} --project {{project}} --mode {{mode}}
+kata-cli kata-state init --prd {{prd_path}} --project {{project}} --mode {{mode}}
 ```
 
 ### 交互点 A — 参数分歧处理（仅在输入存在歧义时使用 AskUserQuestion 工具）
@@ -74,7 +74,7 @@ bun run .claude/scripts/kata-state.ts init --prd {{prd_path}} --project {{projec
 ### 1.75.1 触发探针
 
 ```bash
-bun run .claude/scripts/case-signal-analyzer.ts probe \
+kata-cli case-signal-analyzer probe \
   --project {{project}} \
   --prd {{prd_path}} \
   --output json
@@ -85,7 +85,7 @@ stdout 输出完整 SignalProfile JSON。
 ### 1.75.2 策略路由
 
 ```bash
-bun run .claude/scripts/case-strategy-resolver.ts resolve \
+kata-cli case-strategy-resolver resolve \
   --profile '{{signal_profile_json}}' \
   --output json
 ```
@@ -93,7 +93,7 @@ bun run .claude/scripts/case-strategy-resolver.ts resolve \
 或用文件形式（profile 已缓存在 probe-cache）：
 
 ```bash
-bun run .claude/scripts/case-strategy-resolver.ts resolve \
+kata-cli case-strategy-resolver resolve \
   --profile @workspace/{{project}}/.temp/probe-cache/{{prd_slug}}.json \
   --output json
 ```
@@ -105,7 +105,7 @@ stdout 输出 StrategyResolution JSON。
 - **state.ts**：
 
   ```bash
-  bun run .claude/scripts/kata-state.ts update \
+  kata-cli kata-state update \
     --project {{project}} --prd-slug {{prd_slug}} \
     --node probe \
     --data '{"strategy_resolution": {{resolution_json}}}'
@@ -114,7 +114,7 @@ stdout 输出 StrategyResolution JSON。
 - **plan.md**（若已存在）：
 
   ```bash
-  bun run .claude/scripts/discuss.ts set-strategy \
+  kata-cli discuss set-strategy \
     --project {{project}} --prd {{prd_path}} \
     --strategy-resolution '{{resolution_json}}'
   ```
@@ -158,8 +158,8 @@ stdout 输出 StrategyResolution JSON。
 
 按节点 1.2 的检测结果：
 
-- 全新讨论 → `bun run .claude/scripts/discuss.ts init --project {{project}} --prd {{prd_path}}`
-- 恢复 → `bun run .claude/scripts/discuss.ts read --project {{project}} --prd {{prd_path}}` 拿到已答清单 + 未答 Q\*
+- 全新讨论 → `kata-cli discuss init --project {{project}} --prd {{prd_path}}`
+- 恢复 → `kata-cli discuss read --project {{project}} --prd {{prd_path}}` 拿到已答清单 + 未答 Q\*
 
 ### 1.5.2 需求摘要（plan §1）
 
@@ -171,8 +171,8 @@ stdout 输出 StrategyResolution JSON。
 主 agent 自己执行（不派 subagent 做最终判断），必要时调辅助工具：
 
 ```bash
-bun run .claude/scripts/source-analyze.ts analyze --repo {{repo}} --keywords "..." --output json
-bun run .claude/scripts/archive-gen.ts search --query "..." --project {{project}}
+kata-cli source-analyze analyze --repo {{repo}} --keywords "..." --output json
+kata-cli archive-gen search --query "..." --project {{project}}
 ```
 
 > 深度源码考古可派 Explore subagent，但 Explore 仅返回事实摘要，最终澄清问题由主 agent 整理后向用户提问。
@@ -193,7 +193,7 @@ AskUserQuestion(
 收到答案后立即调 `append-clarify` 落盘：
 
 ```bash
-bun run .claude/scripts/discuss.ts append-clarify \
+kata-cli discuss append-clarify \
   --project {{project}} --prd {{prd_path}} \
   --content '{{json}}'
 ```
@@ -205,7 +205,7 @@ bun run .claude/scripts/discuss.ts append-clarify \
 用户在讨论中提到的新术语 / 业务规则 / 踩坑 → 显式调：
 
 ```bash
-bun run .claude/scripts/knowledge-keeper.ts write \
+kata-cli knowledge-keeper write \
   --project {{project}} --type term|module|pitfall \
   --content '{...}' --confidence high --confirmed
 ```
@@ -215,7 +215,7 @@ bun run .claude/scripts/knowledge-keeper.ts write \
 ### 1.5.6 complete
 
 ```bash
-bun run .claude/scripts/discuss.ts complete \
+kata-cli discuss complete \
   --project {{project}} --prd {{prd_path}} \
   --knowledge-summary '[{"type":"term","name":"..."},...]'
 ```
@@ -248,7 +248,7 @@ subagent 按 `.claude/references/strategy-templates.md` 对应 section 调整行
 ### 2.1 源码配置匹配
 
 ```bash
-bun run .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
+kata-cli repo-profile match --text "{{prd_title_or_path}}"
 ```
 
 ### 2.2 源码引用许可（交互点）
@@ -296,7 +296,7 @@ bun run .claude/scripts/repo-profile.ts match --text "{{prd_title_or_path}}"
 只有在用户明确允许写回时，才执行：
 
 ```bash
-bun run .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_json}}'
+kata-cli repo-profile save --name "{{name}}" --repos '{{repos_json}}'
 ```
 
 ### 2.3 拉取源码
@@ -304,13 +304,13 @@ bun run .claude/scripts/repo-profile.ts save --name "{{name}}" --repos '{{repos_
 若用户选择"允许同步并引用以上仓库"，执行：
 
 ```bash
-bun run .claude/scripts/repo-sync.ts sync-profile --name "{{profile_name}}"
+kata-cli repo-sync sync-profile --name "{{profile_name}}"
 ```
 
 若用户自行输入了仓库（非 profile）且允许同步，则逐个调用：
 
 ```bash
-bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
+kata-cli repo-sync --url {{repo_url}} --branch {{branch}}
 ```
 
 将返回的 commit SHA 写入 PRD frontmatter。
@@ -335,7 +335,7 @@ transform-agent 执行：
 ### 2.5 更新状态
 
 ```bash
-bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{project}} --node transform --data '{{json}}'
+kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node transform --data '{{json}}'
 ```
 
 数据结构：参见 `.claude/references/output-schemas.json` 中的 `state_transform_data`。
@@ -356,7 +356,7 @@ bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{pro
 ### 3.1 Frontmatter 规范化
 
 ```bash
-bun run .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
+kata-cli prd-frontmatter normalize --file {{prd_path}}
 ```
 
 ### 3.2 PRD 增强（AI 任务）
@@ -371,7 +371,7 @@ bun run .claude/scripts/prd-frontmatter.ts normalize --file {{prd_path}}
 ### 3.3 更新状态
 
 ```bash
-bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{project}} --node enhance --data '{{json}}'
+kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node enhance --data '{{json}}'
 ```
 
 **✅ Task**：将 `enhance` 任务标记为 `completed`（subject 更新为 `enhance — {{n}} 张图片，{{m}} 个要点`）。
@@ -398,8 +398,8 @@ bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{pro
 ### 4.1 历史用例检索
 
 ```bash
-bun run .claude/scripts/archive-gen.ts search --query "{{keywords}}" --project {{project}} --limit 20 \
-  | bun run .claude/scripts/search-filter.ts filter --top 5
+kata-cli archive-gen search --query "{{keywords}}" --project {{project}} --limit 20 \
+  | kata-cli search-filter filter --top 5
 ```
 
 > 注：`workspace/{{project}}/archive` 中的 `workspace` 对应 `.env` 中 `WORKSPACE_DIR` 的值（默认 `workspace`），`{{project}}` 为当前选中的项目名称。`search-filter.ts` 对结果做相关性排序并截取 top-5，减少传入 analyze-agent 的上下文体积。
@@ -413,7 +413,7 @@ bun run .claude/scripts/archive-gen.ts search --query "{{keywords}}" --project {
 ### 4.3 更新状态
 
 ```bash
-bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{project}} --node analyze --data '{{json}}'
+kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node analyze --data '{{json}}'
 ```
 
 **✅ Task**：将 `analyze` 任务标记为 `completed`（subject 更新为 `analyze — {{n}} 个模块，{{m}} 条测试点`）。
@@ -453,7 +453,7 @@ bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{pro
 为每个模块派发独立 `writer-agent`（model: sonnet），派发前先构建 writer 上下文：
 
 ```bash
-bun run .claude/scripts/writer-context-builder.ts build \
+kata-cli writer-context-builder build \
   --prd {{enhanced_prd}} \
   --test-points {{test_points}} \
   --writer-id {{module}} \
@@ -487,7 +487,7 @@ bun run .claude/scripts/writer-context-builder.ts build \
 每个 Writer 完成后更新状态：
 
 ```bash
-bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{project}} --node write --data '{{json}}'
+kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node write --data '{{json}}'
 ```
 
 ---
@@ -521,7 +521,7 @@ bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{pro
 ### 6.3 更新状态
 
 ```bash
-bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{project}} --node review --data '{{json}}'
+kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node review --data '{{json}}'
 ```
 
 **✅ Task**：将 `review` 任务标记为 `completed`（subject 更新为 `review — {{n}} 条用例，问题率 {{rate}}%`）。
@@ -553,7 +553,7 @@ bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{pro
 ### 6.5.1 生成临时 Archive MD
 
 ```bash
-bun run .claude/scripts/archive-gen.ts convert \
+kata-cli archive-gen convert \
   --input {{review_json}} \
   --project {{project}} \
   --output workspace/{{project}}/archive/{{YYYYMM}}/tmp/{{name}}-format-check.md
@@ -564,7 +564,7 @@ bun run .claude/scripts/archive-gen.ts convert \
 **第一层：脚本确定性检查**
 
 ```bash
-bun run .claude/scripts/format-check-script.ts check --input workspace/{{project}}/.temp/{{prd_slug}}-format-check.md
+kata-cli format-check-script check --input workspace/{{project}}/.temp/{{prd_slug}}-format-check.md
 ```
 
 脚本输出 JSON：`definite_issues`（纯格式违规）+ `suspect_items`（FC04/FC06 疑似项）。
@@ -587,7 +587,7 @@ bun run .claude/scripts/format-check-script.ts check --input workspace/{{project
 ### 6.5.3 行号定位
 
 ```bash
-bun run .claude/scripts/format-report-locator.ts locate \
+kata-cli format-report-locator locate \
   --report {{format_checker_json}} \
   --archive workspace/{{project}}/archive/{{YYYYMM}}/tmp/{{name}}-format-check.md \
   --output workspace/{{project}}/archive/{{YYYYMM}}/tmp/{{name}}-format-enriched.json
@@ -596,7 +596,7 @@ bun run .claude/scripts/format-report-locator.ts locate \
 可选：终端可读报告
 
 ```bash
-bun run .claude/scripts/format-report-locator.ts print \
+kata-cli format-report-locator print \
   --report {{format_checker_json}} \
   --archive workspace/{{project}}/archive/{{YYYYMM}}/tmp/{{name}}-format-check.md
 ```
@@ -622,7 +622,7 @@ bun run .claude/scripts/format-report-locator.ts print \
 每轮循环后更新状态：
 
 ```bash
-bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{project}} --node format-check --data '{{json}}'
+kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node format-check --data '{{json}}'
 ```
 
 数据结构：参见 `.claude/references/output-schemas.json` 中的 `state_format_check_data`。
@@ -657,19 +657,19 @@ bun run .claude/scripts/kata-state.ts update --prd-slug {{slug}} --project {{pro
 ### 7.1 生成 XMind
 
 ```bash
-bun run .claude/scripts/xmind-gen.ts --input {{final_json}} --project {{project}} --output workspace/{{project}}/xmind/{{YYYYMM}}/{{需求名称}}.xmind --mode create
+kata-cli xmind-gen --input {{final_json}} --project {{project}} --output workspace/{{project}}/xmind/{{YYYYMM}}/{{需求名称}}.xmind --mode create
 ```
 
 ### 7.2 生成 Archive MD
 
 ```bash
-bun run .claude/scripts/archive-gen.ts convert --input {{final_json}} --project {{project}} --output workspace/{{project}}/archive/{{YYYYMM}}/{{需求名称}}.md
+kata-cli archive-gen convert --input {{final_json}} --project {{project}} --output workspace/{{project}}/archive/{{YYYYMM}}/{{需求名称}}.md
 ```
 
 ### 7.3 发送通知
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts notify --event case-generated --data '{{notify_data}}'
+kata-cli plugin-loader notify --event case-generated --data '{{notify_data}}'
 ```
 
 notify_data 必需字段：`count`、`file`、`duration`。
@@ -677,7 +677,7 @@ notify_data 必需字段：`count`、`file`、`duration`。
 ### 7.4 清理状态
 
 ```bash
-bun run .claude/scripts/kata-state.ts clean --prd-slug {{slug}} --project {{project}}
+kata-cli kata-state clean --prd-slug {{slug}} --project {{project}}
 ```
 
 **✅ Task**：将 `output` 任务标记为 `completed`（subject 更新为 `output — {{n}} 条用例，XMind + Archive MD 已生成`）。

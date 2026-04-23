@@ -18,7 +18,7 @@
 3. 仅当用户允许同步时，执行：
 
 ```bash
-bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{branch}}
+kata-cli repo-sync --url {{repo_url}} --branch {{branch}}
 ```
 
 4. 若用户提供了新的仓库 URL 或纠正了分支信息，先展示写回预览，再单独确认是否持久化：

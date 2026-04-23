@@ -95,7 +95,7 @@ note = "前置条件\n" + preconditions
 
 ### 4.2 配置了 trackerId 的模块路径
 
-参考 `bun run .claude/scripts/config.ts` 中 `modules[].xmind` 字段指定的输出目录：
+参考 `kata-cli config` 中 `modules[].xmind` 字段指定的输出目录：
 
 ```
  workspace/{{project}}/xmind/{{YYYYMM}}/<功能名>.xmind

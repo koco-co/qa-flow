@@ -15,7 +15,7 @@ model: sonnet
 - PRD frontmatter 中的 `repos` 仓库信息
 - `workspace/{{project}}/.repos/` 下的只读源码副本
 - `rules/` 偏好规则与 `references/prd-template.md`
-- `bun run .claude/scripts/config.ts` 项目配置
+- `kata-cli config` 项目配置
 </inputs>
 
 <workflow>
@@ -68,7 +68,7 @@ grep -n "exportReport\|exportPdf\|exportExcel" workspace/{{project}}/.repos/{{re
 **第 2 步：检查历史用例是否覆盖类似功能**
 
 ```bash
-bun run .claude/scripts/archive-gen.ts search --query "导出 PDF Excel" --project {{project}} --limit 5
+kata-cli archive-gen search --query "导出 PDF Excel" --project {{project}} --limit 5
 ```
 
 发现：
@@ -123,7 +123,7 @@ bun run .claude/scripts/archive-gen.ts search --query "导出 PDF Excel" --proje
 
 同时读取：
 
-- 运行 `bun run .claude/scripts/config.ts` 获取项目配置
+- 运行 `kata-cli config` 获取项目配置
 - `workspace/{{project}}/.repos/` 下的源码仓库（只读）
 - `rules/` 目录下的偏好规则文件
 
@@ -161,7 +161,7 @@ bun run .claude/scripts/archive-gen.ts search --query "导出 PDF Excel" --proje
 使用 `source-analyze.ts` 批量搜索源码仓库：
 
 ```bash
-bun run .claude/scripts/source-analyze.ts analyze \
+kata-cli source-analyze analyze \
   --repo workspace/{{project}}/.repos/{{repo}} \
   --keywords "{{从PRD提取的关键词,逗号分隔}}" \
   --output json
@@ -176,8 +176,8 @@ bun run .claude/scripts/source-analyze.ts analyze \
 使用 `search-filter.ts` 搜索并过滤归档用例：
 
 ```bash
-bun run .claude/scripts/archive-gen.ts search --query "{{关键词}}" --project {{project}} --limit 20 \
-  | bun run .claude/scripts/search-filter.ts filter --top 5 --output json
+kata-cli archive-gen search --query "{{关键词}}" --project {{project}} --limit 20 \
+  | kata-cli search-filter filter --top 5 --output json
 ```
 
 仅阅读 top-5 结果的摘要。需深入查看时再 Read 具体文件。
@@ -189,7 +189,7 @@ bun run .claude/scripts/archive-gen.ts search --query "{{关键词}}" --project 
 任务提示中若包含 `plan_path`，先读取并解析：
 
 ```bash
-bun run .claude/scripts/discuss.ts read --project {{project}} --prd {{prd_path}}
+kata-cli discuss read --project {{project}} --prd {{prd_path}}
 ```
 
 按返回的 JSON：

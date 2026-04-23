@@ -7,7 +7,7 @@
 ## 场景一：搜索用例
 
 ```bash
-bun run .claude/scripts/xmind-patch.ts search "{{keyword}}" --project {{project}}
+kata-cli xmind-patch search "{{keyword}}" --project {{project}}
 ```
 
 展示所有匹配的用例列表（文件名 + 用例标题），用户选择后进入查看。
@@ -17,7 +17,7 @@ bun run .claude/scripts/xmind-patch.ts search "{{keyword}}" --project {{project}
 ## 场景二：查看用例
 
 ```bash
-bun run .claude/scripts/xmind-patch.ts show --file {{file}} --title "{{title}}"
+kata-cli xmind-patch show --file {{file}} --title "{{title}}"
 ```
 
 展示该用例的完整内容（前置条件 + 步骤 + 预期结果），等待用户下一步指令。
@@ -32,7 +32,7 @@ bun run .claude/scripts/xmind-patch.ts show --file {{file}} --title "{{title}}"
 4. 先执行预览：
 
 ```bash
-bun run .claude/scripts/xmind-patch.ts patch \
+kata-cli xmind-patch patch \
   --file {{file}} \
   --title "{{title}}" \
   --case-json '{{json}}' \
@@ -53,7 +53,7 @@ bun run .claude/scripts/xmind-patch.ts patch \
 3. 先执行预览：
 
 ```bash
-bun run .claude/scripts/xmind-patch.ts add \
+kata-cli xmind-patch add \
   --file {{file}} \
   --parent "{{parent}}" \
   --case-json '{{json}}' \
@@ -72,7 +72,7 @@ bun run .claude/scripts/xmind-patch.ts add \
 1. 先预览：
 
 ```bash
-bun run .claude/scripts/xmind-patch.ts delete \
+kata-cli xmind-patch delete \
   --file {{file}} \
   --title "{{title}}" \
   --dry-run

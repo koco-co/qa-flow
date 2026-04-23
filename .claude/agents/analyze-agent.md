@@ -17,7 +17,7 @@ model: opus
 同时读取：
 
 - `rules/` 目录下的偏好规则文件
-- 使用 Bash 运行 `bun run .claude/scripts/archive-gen.ts search --query "<关键词>" --dir workspace/{{project}}/archive` 检索历史归档用例
+- 使用 Bash 运行 `kata-cli archive-gen search --query "<关键词>" --dir workspace/{{project}}/archive` 检索历史归档用例
 
 ## 策略模板（phase 4）
 
@@ -40,7 +40,7 @@ model: opus
 根据增强后 PRD 的模块名、功能关键词，使用 Bash 执行检索命令：
 
 ```bash
-bun run .claude/scripts/archive-gen.ts search --query "<keywords>" --dir workspace/{{project}}/archive
+kata-cli archive-gen search --query "<keywords>" --dir workspace/{{project}}/archive
 ```
 
 将 `<keywords>` 替换为从 PRD frontmatter 和正文中提取的模块名、功能名等关键词。

@@ -92,7 +92,7 @@ mkdir -p workspace/{{project}}/reports/conflicts/{{YYYYMMDD}}
 ### 4. 发送通知
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts notify --event conflict-analyzed --data '{"reportFile":"{{path}}","conflictCount":{{n}},"branches":["{{head}}","{{incoming}}"]}'
+kata-cli plugin-loader notify --event conflict-analyzed --data '{"reportFile":"{{path}}","conflictCount":{{n}},"branches":["{{head}}","{{incoming}}"]}'
 ```
 
 ### 5. 完成摘要（状态展示，无需确认）

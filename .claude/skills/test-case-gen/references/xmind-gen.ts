@@ -3,10 +3,10 @@
  * xmind-gen.ts — Converts intermediate JSON or Archive Markdown to .xmind files.
  *
  * Usage:
- *   bun run .claude/scripts/xmind-gen.ts --input <json|md|dir> --output <xmind> [--mode create|append|replace]
- *   bun run .claude/scripts/xmind-gen.ts --input <dir>           (batch convert all .md in dir)
- *   bun run .claude/scripts/xmind-gen.ts --input <md> --json-only (output intermediate JSON only)
- *   bun run .claude/scripts/xmind-gen.ts --help
+ *   kata-cli xmind-gen --input <json|md|dir> --output <xmind> [--mode create|append|replace]
+ *   kata-cli xmind-gen --input <dir>           (batch convert all .md in dir)
+ *   kata-cli xmind-gen --input <md> --json-only (output intermediate JSON only)
+ *   kata-cli xmind-gen --help
  */
 
 import {

@@ -23,7 +23,7 @@ argument-hint: "[操作] [关键词或内容]"
 按 rule-loader 合并加载：
 
 ```bash
-bun run .claude/scripts/rule-loader.ts load --project {{project}}
+kata-cli rule-loader load --project {{project}}
 ```
 
 ---

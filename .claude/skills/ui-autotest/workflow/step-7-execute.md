@@ -11,13 +11,13 @@
 ```bash
 # 冒烟测试
 ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" \
-  bun run .claude/scripts/run-tests-notify.ts \
+  kata-cli run-tests-notify \
   workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/smoke.spec.ts \
   --project=chromium
 
 # 完整测试
 ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" \
-  bun run .claude/scripts/run-tests-notify.ts \
+  kata-cli run-tests-notify \
   workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
   --project=chromium
 ```
@@ -35,7 +35,7 @@ ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" \
 ```bash
 PW_FULLY_PARALLEL=1 PW_WORKERS=4 \
   ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" \
-  bun run .claude/scripts/run-tests-notify.ts \
+  kata-cli run-tests-notify \
   workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
   --project=chromium
 ```
@@ -52,7 +52,7 @@ PW_FULLY_PARALLEL=1 PW_WORKERS=4 \
 ```bash
 PW_TWO_PHASE=1 PW_WORKERS=4 \
   ACTIVE_ENV={{env}} QA_PROJECT={{project}} QA_SUITE_NAME="{{suite_name}}" \
-  bun run .claude/scripts/run-tests-notify.ts \
+  kata-cli run-tests-notify \
   workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/full.spec.ts \
   --project=chromium
 ```

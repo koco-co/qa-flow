@@ -11,7 +11,7 @@ argument-hint: "[PRD 路径或蓝湖 URL 或 XMind/CSV 文件] [--quick]"
 工作流启动时一次性加载偏好：
 
 ```bash
-bun run .claude/scripts/rule-loader.ts load --project {{project}} > workspace/{{project}}/.temp/rules-merged.json
+kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/rules-merged.json
 ```
 
 后续节点通过此 JSON 传递规则给 sub-agent，不再各自读 `rules/` 目录。
@@ -34,7 +34,7 @@ bun run .claude/scripts/rule-loader.ts load --project {{project}} > workspace/{{
 > 本文件引用的 `references/` 属于本 skill 的内置规则，一并受上述 precedence 约束。
 > Contract A 适用于 Writer / Standardize / Reviewer 的中间 JSON 与 XMind 节点；Contract B 仅适用于 Archive MD 与其他展示面。
 
-读取项目配置：执行 `bun run .claude/scripts/config.ts`（从 `.env` 读取模块、仓库、路径配置）。
+读取项目配置：执行 `kata-cli config`（从 `.env` 读取模块、仓库、路径配置）。
 全程遵守 `.claude/rules/test-case-writing.md` 用例编写规范。
 
 <role>
@@ -220,7 +220,7 @@ Writer Sub-Agent 完成时更新：`[write] {{模块名}} — {{n}} 条用例`
 2. 发送 `workflow-failed` 通知：
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts notify --event workflow-failed --data '{"step":"{{node}}","reason":"{{error_msg}}"}'
+kata-cli plugin-loader notify --event workflow-failed --data '{"step":"{{node}}","reason":"{{error_msg}}"}'
 ```
 
 3. 向用户报告错误，提供重试选项

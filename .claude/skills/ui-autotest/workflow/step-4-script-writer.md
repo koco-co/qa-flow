@@ -13,7 +13,7 @@
 若不是从断点恢复（即步骤 1.5 未检测到进度文件），创建进度文件：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts create \
+kata-cli ui-autotest-progress create \
   --project {{project}} \
   --suite "{{suite_name}}" \
   --env "{{env}}" \
@@ -92,8 +92,8 @@ import { test, expect } from "../../fixtures/step-screenshot";
 每条用例的 sub-agent 完成后，更新进度：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field generated --value true
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field script_path --value "workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts"
+kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field generated --value true
+kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field script_path --value "workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts"
 ```
 
 断点恢复时，跳过 `generated === true` 的用例，只生成剩余的。
@@ -103,6 +103,6 @@ bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --s
 **💾 进度持久化 — 步骤 4 完成**：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field current_step --value 5
+kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field current_step --value 5
 ```
 

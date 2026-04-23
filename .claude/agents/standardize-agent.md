@@ -31,7 +31,7 @@ model: sonnet
 
 任务提示中会指定以下路径：
 
-- **原始用例数据路径**：从 `bun run .claude/scripts/history-convert.ts` 输出的解析数据文件路径。读取该文件获取从 XMind/CSV 解析出的原始用例结构化数据。
+- **原始用例数据路径**：从 `kata-cli history-convert` 输出的解析数据文件路径。读取该文件获取从 XMind/CSV 解析出的原始用例结构化数据。
 - **偏好规则**：读取 `rules/` 目录下的所有规则文件。
 
 同时读取：

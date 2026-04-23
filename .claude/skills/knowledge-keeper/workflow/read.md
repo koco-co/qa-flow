@@ -7,7 +7,7 @@
 ## A1. 查术语
 
 ```bash
-bun run .claude/scripts/knowledge-keeper.ts read-core --project {{project}}
+kata-cli knowledge-keeper read-core --project {{project}}
 ```
 
 从返回 JSON 的 `terms` 字段中过滤用户关键词并 Markdown 渲染。
@@ -17,7 +17,7 @@ bun run .claude/scripts/knowledge-keeper.ts read-core --project {{project}}
 ## A2. 查模块知识
 
 ```bash
-bun run .claude/scripts/knowledge-keeper.ts read-module --project {{project}} --module {{name}}
+kata-cli knowledge-keeper read-module --project {{project}} --module {{name}}
 ```
 
 渲染 `frontmatter` + `content`。文件不存在时给用户建议（列出已有 modules）。
@@ -27,7 +27,7 @@ bun run .claude/scripts/knowledge-keeper.ts read-module --project {{project}} --
 ## A3. 查踩坑
 
 ```bash
-bun run .claude/scripts/knowledge-keeper.ts read-pitfall --project {{project}} --query {{keyword}}
+kata-cli knowledge-keeper read-pitfall --project {{project}} --query {{keyword}}
 ```
 
 空结果时提示"未找到，建议：补充关键词 / 列出已有 pitfalls / 新增踩坑"。
@@ -39,7 +39,7 @@ bun run .claude/scripts/knowledge-keeper.ts read-pitfall --project {{project}} -
 其他 skill 如需业务背景，在 SKILL.md 顶部新增：
 
 ```bash
-bun run .claude/scripts/knowledge-keeper.ts read-core --project {{project}}
+kata-cli knowledge-keeper read-core --project {{project}}
 ```
 
 返回的 overview / terms / index 作为业务背景注入后续决策。

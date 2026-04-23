@@ -21,7 +21,7 @@
 ## 读取配置
 
 ```bash
-bun run .claude/scripts/config.ts
+kata-cli config
 ```
 
 （从 `.env` 读取模块、仓库、路径配置。）
@@ -38,7 +38,7 @@ bun run .claude/scripts/config.ts
 2. 发送 `workflow-failed` 通知：
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts notify --event workflow-failed --data '{"step":"{{step_name}}","reason":"{{error_msg}}"}'
+kata-cli plugin-loader notify --event workflow-failed --data '{"step":"{{step_name}}","reason":"{{error_msg}}"}'
 ```
 
 3. 提供重试选项，不强制退出

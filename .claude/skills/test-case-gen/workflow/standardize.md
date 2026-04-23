@@ -19,7 +19,7 @@
 ### 步骤 S1: 解析源文件
 
 ```bash
-bun run .claude/scripts/history-convert.ts --path {{input_file}} --project {{project}} --detect
+kata-cli history-convert --path {{input_file}} --project {{project}} --detect
 ```
 
 展示解析结果后，使用 AskUserQuestion 工具向用户确认：
@@ -74,13 +74,13 @@ bun run .claude/scripts/history-convert.ts --path {{input_file}} --project {{pro
 
 ```bash
 # 生成标准化 Archive MD（输出到 tmp/ 子目录）
-bun run .claude/scripts/archive-gen.ts convert --input {{final_json}} --project {{project}} --output {{archive_tmp_path}}
+kata-cli archive-gen convert --input {{final_json}} --project {{project}} --output {{archive_tmp_path}}
 
 # 从标准化 JSON 生成 XMind（输出到 tmp/ 子目录）
-bun run .claude/scripts/xmind-gen.ts --input {{final_json}} --project {{project}} --output {{xmind_tmp_path}} --mode create
+kata-cli xmind-gen --input {{final_json}} --project {{project}} --output {{xmind_tmp_path}} --mode create
 
 # 通知
-bun run .claude/scripts/plugin-loader.ts notify --event archive-converted --data '{"fileCount":1,"caseCount":{{count}}}'
+kata-cli plugin-loader notify --event archive-converted --data '{"fileCount":1,"caseCount":{{count}}}'
 ```
 
 **✅ Task**：将 `S4` 标记为 `completed`（subject: `S4 输出 — {{count}} 条用例已归档`）。

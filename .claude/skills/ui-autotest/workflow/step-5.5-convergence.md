@@ -16,7 +16,7 @@
 **5.5.1 标记进入收敛态**
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update \
+kata-cli ui-autotest-progress update \
   --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
   --field convergence_status --value active
 ```
@@ -87,7 +87,7 @@ bun run .claude/scripts/ui-autotest-progress.ts update \
 **5.5.7 重置探路 case 的 test_status**
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update \
+kata-cli ui-autotest-progress update \
   --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
   --case {{probe_id}} --field test_status --value pending
 ```
@@ -97,11 +97,11 @@ bun run .claude/scripts/ui-autotest-progress.ts update \
 **5.5.8 标记收敛完成**
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update \
+kata-cli ui-autotest-progress update \
   --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
   --field convergence_status --value completed
 
-bun run .claude/scripts/ui-autotest-progress.ts update \
+kata-cli ui-autotest-progress update \
   --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
   --field convergence \
   --value '{"triggered_at":"...","probe_attempts":[...],"common_patterns":[...],"completed_at":"..."}'

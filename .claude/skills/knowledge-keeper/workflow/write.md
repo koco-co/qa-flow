@@ -28,7 +28,7 @@
 4. **冲突检测（强制）**：
 
    ```bash
-   bun run .claude/scripts/knowledge-keeper.ts verify \
+   kata-cli knowledge-keeper verify \
      --project {{project}} --type {{type}} --content '{{json}}'
    ```
 
@@ -39,7 +39,7 @@
 5. **dry-run 预览**：
 
    ```bash
-   bun run .claude/scripts/knowledge-keeper.ts write \
+   kata-cli knowledge-keeper write \
      --project {{project}} --type {{type}} \
      --content '{{json}}' --confidence {{conf}} --dry-run
    ```
@@ -51,7 +51,7 @@
 7. **真实写入**（自动生成快照 + 审计条目）：
 
    ```bash
-   bun run .claude/scripts/knowledge-keeper.ts write \
+   kata-cli knowledge-keeper write \
      --project {{project}} --type {{type}} \
      --content '{{json}}' --confidence {{conf}} --confirmed
    ```
@@ -139,7 +139,7 @@ CLI 默认拒绝覆盖。选择：
 ## C1. 刷新 \_index.md
 
 ```bash
-bun run .claude/scripts/knowledge-keeper.ts index --project {{project}}
+kata-cli knowledge-keeper index --project {{project}}
 ```
 
 通常 write/update 会自动刷新；用户手改或导入后需显式触发。
@@ -149,7 +149,7 @@ bun run .claude/scripts/knowledge-keeper.ts index --project {{project}}
 ## C2. 健康检查
 
 ```bash
-bun run .claude/scripts/knowledge-keeper.ts lint --project {{project}}
+kata-cli knowledge-keeper lint --project {{project}}
 ```
 
 返回 `errors` + `warnings`。exit 0 = 健康 / exit 1 = 有 error / exit 2 = 仅 warning。
@@ -162,12 +162,12 @@ bun run .claude/scripts/knowledge-keeper.ts lint --project {{project}}
 
 ```bash
 # 查看最近 N 条写入/更新/回滚记录
-bun run .claude/scripts/knowledge-keeper.ts history --project {{project}} --limit 20
+kata-cli knowledge-keeper history --project {{project}} --limit 20
 
 # 回滚到指定 index（省略 --index 即回滚最近一条）
-bun run .claude/scripts/knowledge-keeper.ts rollback --project {{project}} \
+kata-cli knowledge-keeper rollback --project {{project}} \
   --index {{N}} --dry-run
-bun run .claude/scripts/knowledge-keeper.ts rollback --project {{project}} \
+kata-cli knowledge-keeper rollback --project {{project}} \
   --index {{N}} --confirmed
 ```
 

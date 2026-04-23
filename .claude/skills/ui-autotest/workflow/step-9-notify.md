@@ -28,7 +28,7 @@ npx allure open \
 ## 9.3 发送钉钉通知（带链接）
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts notify \
+kata-cli plugin-loader notify \
   --event ui-test-completed \
   --data '{
     "passed": {{passed}},

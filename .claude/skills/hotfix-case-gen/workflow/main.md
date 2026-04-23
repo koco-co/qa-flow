@@ -26,7 +26,7 @@ bun run plugins/zentao/fetch.ts --bug-id {{bug_id}} --project {{project}} --outp
 2. 直接执行同步，不询问用户：
 
 ```bash
-bun run .claude/scripts/repo-sync.ts --url {{repo_url}} --branch {{fix_branch}}
+kata-cli repo-sync --url {{repo_url}} --branch {{fix_branch}}
 ```
 
 3. 同步完成后输出一行状态信息即可：`源码已同步：{{repo_name}} @ {{fix_branch}}`
@@ -70,7 +70,7 @@ mkdir -p workspace/{{project}}/issues/{{YYYYMM}}
 ## E5. 发送通知
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts notify --event hotfix-case-generated --data '{"bugId":"{{bugId}}","branch":"{{fix_branch}}","file":"{{output_path}}","changedFiles":{{changed_files_json}}}'
+kata-cli plugin-loader notify --event hotfix-case-generated --data '{"bugId":"{{bugId}}","branch":"{{fix_branch}}","file":"{{output_path}}","changedFiles":{{changed_files_json}}}'
 ```
 
 ---

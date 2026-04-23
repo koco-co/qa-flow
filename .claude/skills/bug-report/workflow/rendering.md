@@ -27,7 +27,7 @@ mkdir -p workspace/{{project}}/reports/bugs/{{YYYYMMDD}}
 ## 2. 发送通知
 
 ```bash
-bun run .claude/scripts/plugin-loader.ts notify --event bug-report --data '{"reportFile":"{{path}}","summary":"{{one_line_summary}}"}'
+kata-cli plugin-loader notify --event bug-report --data '{"reportFile":"{{path}}","summary":"{{one_line_summary}}"}'
 ```
 
 ---

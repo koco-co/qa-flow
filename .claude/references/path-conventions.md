@@ -22,7 +22,7 @@
 
 ```bash
 # ✓ 正确
-bun run .claude/scripts/config.ts --project {{project}}
+kata-cli config --project {{project}}
 bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}
 
 # ✗ 错误：相对路径，跨目录调用易出错
@@ -36,10 +36,10 @@ bun run ../scripts/config.ts
 
 ```bash
 # ✓ 正确
-bun run .claude/scripts/kata-state.ts read --project {{project}}
+kata-cli kata-state read --project {{project}}
 
 # ✗ 错误：缺少 --project，会读到错误项目状态
-bun run .claude/scripts/kata-state.ts read
+kata-cli kata-state read
 ```
 
 ### 2.3 多环境场景追加 `--env {{env}}`
@@ -47,7 +47,7 @@ bun run .claude/scripts/kata-state.ts read
 涉及环境隔离的脚本（如 progress、session）必须传 `--env`：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts summary \
+kata-cli ui-autotest-progress summary \
   --project {{project}} --suite "{{suite_name}}" --env "{{env}}"
 ```
 

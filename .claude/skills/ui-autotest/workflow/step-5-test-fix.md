@@ -18,7 +18,7 @@
 前置条件（建表/引入/同步/质量项目授权）完成后：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field preconditions_ready --value true
+kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field preconditions_ready --value true
 ```
 
 断点恢复时，若 `preconditions_ready === true`，跳过前置条件准备。
@@ -34,19 +34,19 @@ ACTIVE_ENV={{env}} QA_PROJECT={{project}} bunx playwright test workspace/{{proje
 每条用例执行前：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field test_status --value running
+kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field test_status --value running
 ```
 
 执行结果（通过）：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field test_status --value passed
+kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field test_status --value passed
 ```
 
 执行结果（失败）：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update \
+kata-cli ui-autotest-progress update \
   --project {{project}} \
   --suite "{{suite_name}}" \
   --env "{{env}}" \
@@ -122,7 +122,7 @@ Sub-Agent 三态返回：
 1. **发送 IM 通知（如配置了 notify 插件）**
 
    ```bash
-   bun run .claude/scripts/plugin-loader.ts notify \
+   kata-cli plugin-loader notify \
      --event ui-test-needs-input \
      --data '{
        "project": "{{project}}",
@@ -209,6 +209,6 @@ Archive MD 不变，脚本断言保持原用例预期文本，该用例标记为
 **💾 进度持久化 — 步骤 5 完成**：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field current_step --value 6
+kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field current_step --value 6
 ```
 

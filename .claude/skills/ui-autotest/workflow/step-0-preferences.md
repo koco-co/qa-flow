@@ -5,7 +5,7 @@
 工作流启动时一次性加载偏好：
 
 ```bash
-bun run .claude/scripts/rule-loader.ts load --project {{project}} > workspace/{{project}}/.temp/rules-merged.json
+kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/rules-merged.json
 ```
 
 后续步骤通过此 JSON 传递规则给 sub-agent，不再各自读 `rules/` 目录。

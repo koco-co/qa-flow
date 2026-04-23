@@ -37,5 +37,5 @@ bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
 **💾 进度持久化 — 合并完成**：
 
 ```bash
-bun run .claude/scripts/ui-autotest-progress.ts update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field merge_status --value completed
+kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field merge_status --value completed
 ```

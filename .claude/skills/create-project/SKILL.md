@@ -11,7 +11,7 @@ argument-hint: "[项目名]"
 加载全局规则（project 未知，不加载项目级规则）：
 
 ```bash
-bun run .claude/scripts/rule-loader.ts load
+kata-cli rule-loader load
 ```
 
 ## 场景 A：新建项目（主流程）
@@ -25,7 +25,7 @@ bun run .claude/scripts/rule-loader.ts load
 ### A2. CLI scan 预校验
 
 ```bash
-bun run .claude/scripts/create-project.ts scan --project {{name}}
+kata-cli create-project scan --project {{name}}
 ```
 
 分支：
@@ -57,7 +57,7 @@ AskUserQuestion：[确认创建] [调整名称] [取消]
 ### A4. CLI create --confirmed
 
 ```bash
-bun run .claude/scripts/create-project.ts create --project {{name}} --confirmed
+kata-cli create-project create --project {{name}} --confirmed
 ```
 
 展示 JSON 的 markdown 摘要（`created_dirs`、`created_files`、`registered_config`、`index_path`）。
@@ -79,7 +79,7 @@ bun run .claude/scripts/create-project.ts create --project {{name}} --confirmed
 ```
 
 ```bash
-bun run .claude/scripts/create-project.ts clone-repo \
+kata-cli create-project clone-repo \
   --project {{name}} --url {{url}} [--branch {{branch}}]
 ```
 
@@ -121,7 +121,7 @@ AskUserQuestion：[继续添加] [完成]
 触发词："查看项目 xxx 状态"、"列出所有项目"
 
 ```bash
-bun run .claude/scripts/create-project.ts scan --project {{name}}
+kata-cli create-project scan --project {{name}}
 ```
 
 多项目列表：扫描 `workspace/` 所有非隐藏子目录，对每个跑 scan 汇总。
