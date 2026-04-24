@@ -137,6 +137,52 @@ export function parseGitUrl(url: string): { group: string; repo: string } {
   return { group, repo };
 }
 
+// ── kata 进度引擎路径 ───────────────────────────────────
+
+/**
+ * Resolve the `.kata/` root directory for the progress engine.
+ *
+ * KATA_ROOT_OVERRIDE (if set) must be a PARENT directory — the `.kata` segment
+ * is appended internally. Pass a temp root like `/tmp/kata-test-123`, not
+ * `/tmp/kata-test-123/.kata`. Used by tests to isolate progress state.
+ */
+function kataRoot(): string {
+  const override = getEnv("KATA_ROOT_OVERRIDE");
+  return override ? join(override, ".kata") : join(repoRoot(), ".kata");
+}
+
+export function kataDir(project: string): string {
+  return join(kataRoot(), project);
+}
+
+export function sessionsDir(project: string, workflow: string): string {
+  return join(kataDir(project), "sessions", workflow);
+}
+
+export function sessionFilePath(
+  project: string,
+  workflow: string,
+  sessionSlug: string,
+): string {
+  return join(sessionsDir(project, workflow), `${sessionSlug}.json`);
+}
+
+export function locksDir(project: string): string {
+  return join(kataDir(project), "locks");
+}
+
+export function blocksDir(
+  project: string,
+  workflow: string,
+  sessionSlug: string,
+): string {
+  return join(kataDir(project), "blocks", workflow, sessionSlug);
+}
+
+export function legacyBackupDir(project: string): string {
+  return join(kataDir(project), "legacy-backup");
+}
+
 export function listProjects(): string[] {
   const wsDir = workspaceDir();
   try {

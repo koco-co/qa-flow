@@ -17,6 +17,9 @@ plugins/assets-sql-sync/src/config/datasources.yaml
 # ── 工作区临时文件 ────────────────────────────────────────
 .temp/
 
+# ── kata 进度引擎运行时数据 ───────────────────────────
+.kata/
+
 # ── Playwright 自动生成产物 ─────────────────────────────
 test-results/
 playwright-report/
