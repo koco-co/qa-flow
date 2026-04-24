@@ -18,15 +18,26 @@
 | 15% - 40% | 自动修正 + 质量警告            |
 | > 40%     | 阻断，输出问题报告，等用户决策 |
 
-问题率 = 含问题用例数 / 总用例数。
+问题率 = 含问题用例数 / 总用例数（F07-F16 任一命中即计为一条问题用例；F16 只在 MANUAL 分支，不自动修正）。
 
 --quick 模式仅执行 1 轮审查。普通模式最多 2 轮（修正后复审）。
 
-### 8.2 合并产出
+### 8.2 source_ref 锚点校验（Phase C 新增）
+
+reviewer-agent 在第零轮审查中批量调：
+
+```bash
+kata-cli source-ref batch --refs-json /tmp/refs-*.json \
+  --plan {{plan_path}} --prd {{prd_path}} --project {{project}}
+```
+
+批量结果按 F16 规则计入 issues。主 agent 不必在 skill 层重复调用——审查输出 JSON 中的 `issues[].code="F16"` 已承担结果汇聚职责。
+
+### 8.3 合并产出
 
 将所有 Writer 输出合并为最终 JSON。
 
-### 8.3 更新状态
+### 8.4 更新状态
 
 ```bash
 kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task review --status done --payload '{{json}}'

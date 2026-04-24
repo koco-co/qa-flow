@@ -27,10 +27,10 @@ model: opus
 
 完整规则定义参见 `.claude/references/test-case-standards.md` 第五节「审查修正规则」和第六节「质量门禁」。
 
-规则索引：F07(正向合并), F08(逆向单一), F09(表单合并), F10(前置条件SQL), F11(表单换行), F12(多项编号), F13(预期模糊兜底 / 选言备选), F14(前置条件笼统), F15(多步闭合)
+规则索引：F07(正向合并), F08(逆向单一), F09(表单合并), F10(前置条件SQL), F11(表单换行), F12(多项编号), F13(预期模糊兜底 / 选言备选), F14(前置条件笼统), F15(多步闭合), F16(source_ref 可解析性)
 
 **可自动修正**：F07, F08, F09, F11, F12, F13（模糊兜底部分） → 调用 `auto-fixer.ts` 执行确定性修正
-**需人工标记**：F10(`[F10-MANUAL]`), F13(选言备选需拆分两条用例时标 `[F13-MANUAL]`), F14(`[F14-MANUAL]`), F15(`[F15-MANUAL]`)
+**需人工标记**：F10(`[F10-MANUAL]`), F13(选言备选需拆分两条用例时标 `[F13-MANUAL]`), F14(`[F14-MANUAL]`), F15(`[F15-MANUAL]`), F16(`[F16-MANUAL]`)
 
 Reviewer 职责：审查发现问题 → 分类 → 可自动修正的交给 auto-fixer.ts → 需语义判断的自行修正 → MANUAL 标记的保留不动。
 
@@ -39,7 +39,7 @@ Reviewer 职责：审查发现问题 → 分类 → 可自动修正的交给 aut
 ## 质量门禁
 
 ```
-问题率 = 含任意 F07-F15 问题的用例数 / 总用例数 × 100%
+问题率 = 含任意 F07-F16 问题的用例数 / 总用例数 × 100%
 ```
 
 一条用例若存在多个问题，仅计为 1 次。`[FXX-MANUAL]` 标记的问题计入 `issues_found`，不计入 `issues_fixed`。
@@ -55,6 +55,42 @@ Reviewer 职责：审查发现问题 → 分类 → 可自动修正的交给 aut
 ## 审查流程
 
 > **--quick 模式**：仅执行第一轮审查，跳过复审。默认为普通模式（执行复审）。
+
+### 第零轮：source_ref 批量解析（Phase C 新增）
+
+先把待审查的 writer_json 里所有 `test_case` 的 `source_ref` 聚合成一个数组，写到临时 JSON 文件，然后调 CLI 批量解析：
+
+```bash
+cat > /tmp/refs-$$.json <<EOF
+[
+  {"ref": "<test_case_1.source_ref>"},
+  {"ref": "<test_case_2.source_ref>"},
+  ...
+]
+EOF
+
+kata-cli source-ref batch \
+  --refs-json /tmp/refs-$$.json \
+  --plan {{plan_path}} --prd {{prd_path}} \
+  --project {{project}}
+```
+
+批量 CLI 的退出码：
+
+- `0` → 全部可解析，第一轮不产出 F16
+- `2` → 至少一条不可解析；读 stdout JSON 的 `fails[]` 数组，把每条 `{ref, reason}` 映射到对应 `test_case` 的 `issues[]`：
+  ```json
+  {
+    "code": "F16",
+    "description": "source_ref 不可解析: {{reason}}",
+    "severity": "manual",
+    "original": "{{source_ref}}",
+    "fixed": null
+  }
+  ```
+- `1` → CLI 本身异常（参数错误等），停止审查并返回 `invalid_input` verdict
+
+F16 计入问题率，但**不触发自动修正**；标记为 `[F16-MANUAL]` 在 manual_items 输出。
 
 ### 第一轮：逐条审查
 
