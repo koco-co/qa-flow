@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, writeFileSync, writeFileSync as fsWriteFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, beforeEach, describe, it } from "node:test";
@@ -16,6 +16,7 @@ import {
   rollupTask,
   setArtifact,
   getArtifact,
+  resumeSession,
 } from "../../lib/progress-store.ts";
 import type { Session } from "../../lib/progress-types.ts";
 
@@ -397,5 +398,89 @@ describe("artifacts inline + overflow", () => {
     assert.ok(ref.$ref, "inline value should be a $ref");
     const loaded = getArtifact(project, s.session_id, "blob");
     assert.deepEqual(loaded, big);
+  });
+});
+
+describe("resumeSession", () => {
+  const project = "dataAssets";
+
+  it("resets running → pending", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "res1", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [{ id: "t1", name: "n", kind: "node", order: 1 }]);
+    updateTask(project, s.session_id, "t1", { status: "running" });
+    resumeSession(project, s.session_id, {});
+    assert.equal(readSession(project, s.session_id)!.tasks[0].status, "pending");
+  });
+
+  it("--retry-failed clears errors and resets attempts", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "res2", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [{ id: "t1", name: "n", kind: "node", order: 1 }]);
+    updateTask(project, s.session_id, "t1", { status: "failed", error: "boom" });
+    resumeSession(project, s.session_id, { retryFailed: true });
+    const t = readSession(project, s.session_id)!.tasks[0];
+    assert.equal(t.status, "pending");
+    assert.equal(t.attempts, 0);
+    assert.deepEqual(t.errors, []);
+  });
+
+  it("--retry-blocked clears reason and resets to pending", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "res3", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [{ id: "t1", name: "n", kind: "node", order: 1 }]);
+    updateTask(project, s.session_id, "t1", { status: "blocked", reason: "r" });
+    resumeSession(project, s.session_id, { retryBlocked: true });
+    const t = readSession(project, s.session_id)!.tasks[0];
+    assert.equal(t.status, "pending");
+    assert.equal(t.reason, null);
+  });
+
+  it("clears artifacts.cached_parse_result when source.mtime changed", () => {
+    const prdPath = join(TMP, "fake.md");
+    fsWriteFileSync(prdPath, "content");
+    const originalMtime = new Date(Date.now() - 60_000);
+    utimesSync(prdPath, originalMtime, originalMtime);
+
+    const s = createSession({
+      project, workflow: "w", slug: "res4", env: "default",
+      source: { type: "prd", path: prdPath, mtime: originalMtime.toISOString() },
+      meta: {},
+    });
+    writeSession(project, s);
+    setArtifact(project, s.session_id, "cached_parse_result", { cached: true });
+
+    const nowMtime = new Date();
+    utimesSync(prdPath, nowMtime, nowMtime);
+    resumeSession(project, s.session_id, {});
+
+    const cur = readSession(project, s.session_id)!;
+    assert.equal(cur.artifacts.cached_parse_result, undefined);
+  });
+
+  it("--payload-path-check: missing file → reset task, set generated=false", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "res5", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [{ id: "t1", name: "n", kind: "case", order: 1 }]);
+    updateTask(project, s.session_id, "t1", {
+      status: "done",
+      payload: { script_path: "/nonexistent/path.spec.ts", generated: true },
+    });
+    resumeSession(project, s.session_id, { payloadPathCheck: "script_path" });
+    const t = readSession(project, s.session_id)!.tasks[0];
+    assert.equal(t.status, "pending");
+    assert.equal(t.payload.generated, false);
   });
 });

@@ -601,3 +601,74 @@ export function getArtifact(
   }
   return JSON.parse(readFileSync(value.$ref, "utf8"));
 }
+
+// ── Session Resume ────────────────────────────────────────────────────────────
+
+export interface ResumeOpts {
+  readonly retryFailed?: boolean;
+  readonly retryBlocked?: boolean;
+  readonly payloadPathCheck?: string;
+}
+
+/**
+ * Prepare a session for resumption by resetting transient task states and
+ * invalidating stale cached artifacts.
+ *
+ * Behaviors (applied in order per task):
+ *   1. `running` → `pending` (always — process is no longer alive)
+ *   2. `--retry-failed`: `failed` → `pending`, clears `errors` and `attempts`
+ *   3. `--retry-blocked`: `blocked` → `pending`, clears `reason`
+ *   4. `--payload-path-check <field>`: if payload[field] file is missing,
+ *      resets task to `pending` and sets `payload.generated = false`
+ *   5. Invalidates `artifacts.cached_parse_result` when `source.mtime` differs
+ *      from the actual mtime on disk.
+ */
+export function resumeSession(
+  project: string,
+  sessionId: string,
+  opts: ResumeOpts,
+): void {
+  const session = readSession(project, sessionId);
+  if (!session) throw new Error(`session not found: ${sessionId}`);
+
+  const tasks = session.tasks.map((t): Task => {
+    if (t.status === "running") {
+      return { ...t, status: "pending" };
+    }
+    if (opts.retryFailed && t.status === "failed") {
+      return { ...t, status: "pending", attempts: 0, errors: [] };
+    }
+    if (opts.retryBlocked && t.status === "blocked") {
+      return { ...t, status: "pending", reason: null };
+    }
+    if (opts.payloadPathCheck) {
+      const p = t.payload[opts.payloadPathCheck];
+      if (typeof p === "string" && !existsSync(p)) {
+        return {
+          ...t,
+          status: "pending",
+          payload: { ...t.payload, generated: false },
+        };
+      }
+    }
+    return t;
+  });
+
+  // Invalidate cached artifacts when source file mtime has changed.
+  let artifacts = session.artifacts;
+  if (session.source.mtime && session.source.path && existsSync(session.source.path)) {
+    const actual = statSync(session.source.path).mtime.toISOString();
+    if (actual !== session.source.mtime) {
+      artifacts = Object.fromEntries(
+        Object.entries(session.artifacts).filter(([k]) => k !== "cached_parse_result"),
+      );
+    }
+  }
+
+  writeSession(project, {
+    ...session,
+    tasks,
+    artifacts,
+    updated_at: nowIso(),
+  });
+}
