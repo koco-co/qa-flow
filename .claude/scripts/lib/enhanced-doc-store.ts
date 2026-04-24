@@ -451,6 +451,94 @@ export function listPending(
   return doc.pending.filter(p => p.status === "待确认");
 }
 
+// ---- validateDoc ----
+
+export interface ValidateOpts {
+  requireZeroPending?: boolean;
+  checkSourceRefs?: string[];
+}
+
+export interface ValidateResult {
+  ok: boolean;
+  issues: string[];
+}
+
+export function validateDoc(
+  project: string,
+  yyyymm: string,
+  slug: string,
+  opts: ValidateOpts = {},
+): ValidateResult {
+  const docPath = enhancedMd(project, yyyymm, slug);
+  const raw = readFileSync(docPath, "utf8");
+  const parsed = matter(raw);
+  const fm = parsed.data as EnhancedFrontmatter;
+  const body = parsed.content;
+  const issues: string[] = [];
+
+  // 1) schema_version
+  if (fm.schema_version !== 1) issues.push(`unknown schema_version: ${fm.schema_version}`);
+
+  // 2) anchor regex + duplicates
+  const anchorMatches = [...body.matchAll(/<a id="([^"]+)"><\/a>/g)].map(m => m[1]);
+  const seen = new Set<string>();
+  for (const a of anchorMatches) {
+    if (!isValidSectionAnchor(a) && !/^q\d+$/.test(a)) {
+      issues.push(`malformed anchor: ${a}`);
+    }
+    if (seen.has(a)) issues.push(`duplicate anchor: ${a}`);
+    seen.add(a);
+  }
+
+  // 3) footnotes have matching Q blocks
+  const footnotes = [...body.matchAll(/\[\^(q\d+)\]/g)].map(m => m[1]);
+  const qAnchors = anchorMatches.filter(a => /^q\d+$/.test(a));
+  for (const fn of new Set(footnotes)) {
+    if (!qAnchors.includes(fn)) issues.push(`orphan footnote: [^${fn}]`);
+  }
+
+  // 4) Q location anchors resolvable
+  const pending = parsePending(body);
+  for (const p of pending) {
+    if (!body.includes(`<a id="${p.location_anchor}"></a>`)) {
+      issues.push(`broken location anchor in ${p.id}: ${p.location_anchor}`);
+    }
+  }
+
+  // 5) count mismatch
+  const waitingCount = pending.filter(p => p.status === "待确认").length;
+  const resolvedCount = pending.filter(p => p.status === "已解决" || p.status === "默认采用").length;
+  if (fm.pending_count !== waitingCount) {
+    issues.push(`pending_count mismatch: frontmatter=${fm.pending_count}, §4=${waitingCount}`);
+  }
+  if (fm.resolved_count !== resolvedCount) {
+    issues.push(`resolved_count mismatch: frontmatter=${fm.resolved_count}, §4=${resolvedCount}`);
+  }
+
+  // 6) q_counter monotonic
+  const maxQ = Math.max(0, ...pending.map(p => Number(p.id.slice(1))));
+  if (fm.q_counter < maxQ) {
+    issues.push(`q_counter regression: counter=${fm.q_counter}, max_q=${maxQ}`);
+  }
+
+  // Optional gates
+  if (opts.requireZeroPending && fm.pending_count > 0) {
+    issues.push(`pending_count > 0 (requireZeroPending)`);
+  }
+  if (opts.checkSourceRefs) {
+    for (const ref of opts.checkSourceRefs) {
+      const parts = ref.split("#");
+      if (parts[0] !== "enhanced") continue;
+      const anchor = parts[1];
+      if (!body.includes(`<a id="${anchor}"></a>`)) {
+        issues.push(`source_ref unresolved: ${ref}`);
+      }
+    }
+  }
+
+  return { ok: issues.length === 0, issues };
+}
+
 // ---- compactDoc ----
 
 export interface CompactOpts {

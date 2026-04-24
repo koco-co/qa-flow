@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { mkdirSync, rmSync, existsSync, readFileSync } from "node:fs";
+import { mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   initDoc,
@@ -12,6 +12,7 @@ import {
   resolvePending,
   listPending,
   compactDoc,
+  validateDoc,
 } from "../lib/enhanced-doc-store.ts";
 import { repoRoot, enhancedMd } from "../lib/paths.ts";
 
@@ -272,5 +273,68 @@ describe("enhanced-doc-store: list-pending + compact", () => {
     resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, q, { answer: "a" });
     const moved = compactDoc(TEST_PROJECT, TEST_YM, TEST_SLUG, { threshold: 50 });
     expect(moved).toBe(0);
+  });
+});
+
+describe("enhanced-doc-store: validate", () => {
+  beforeEach(cleanup);
+  afterEach(cleanup);
+
+  test("validateDoc on fresh doc reports no issues", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const r = validateDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(r.ok).toBe(true);
+    expect(r.issues).toEqual([]);
+  });
+
+  test("validateDoc catches pending_count mismatch", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    writeFrontmatter(TEST_PROJECT, TEST_YM, TEST_SLUG, { pending_count: 99 });
+    const r = validateDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(r.ok).toBe(false);
+    expect(r.issues.some(i => i.includes("pending_count"))).toBe(true);
+  });
+
+  test("validateDoc catches q_counter regression", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    writeFrontmatter(TEST_PROJECT, TEST_YM, TEST_SLUG, { q_counter: 1 });
+    const r = validateDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(r.ok).toBe(false);
+    expect(r.issues.some(i => i.includes("q_counter"))).toBe(true);
+  });
+
+  test("validateDoc catches orphan q footnote", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const p = enhancedMd(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const raw = readFileSync(p, "utf8");
+    writeFileSync(p, raw.replace("## 2. 功能细节", "## 2. 功能细节\n\n[^q99]"), "utf8");
+    const r = validateDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(r.ok).toBe(false);
+    expect(r.issues.some(i => i.includes("orphan") && i.includes("q99"))).toBe(true);
+  });
+
+  test("validateDoc catches broken location anchor in Q", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, {
+      ...sampleQ(),
+      locationAnchor: "s-1",
+    });
+    const p = enhancedMd(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const raw = readFileSync(p, "utf8");
+    writeFileSync(p, raw.replace('<a id="s-1"></a>', ""), "utf8");
+    const r = validateDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(r.ok).toBe(false);
+    expect(r.issues.some(i => i.includes("broken location"))).toBe(true);
+  });
+
+  test("validateDoc with requireZeroPending flag", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    const r = validateDoc(TEST_PROJECT, TEST_YM, TEST_SLUG, { requireZeroPending: true });
+    expect(r.ok).toBe(false);
+    expect(r.issues.some(i => i.includes("pending_count > 0"))).toBe(true);
   });
 });
