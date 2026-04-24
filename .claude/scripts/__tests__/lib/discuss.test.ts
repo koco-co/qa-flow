@@ -8,6 +8,7 @@ import {
   KnowledgeDropped,
   parsePlan,
   PLAN_VERSION,
+  setRepoConsentInPlan,
   setStrategyInPlan,
   shouldObsolete,
   validatePlanSchema,
@@ -571,5 +572,63 @@ describe("completePlanText handoff mode guard", () => {
     const { plan: set } = completePlanText(plan, LATER_NOW, undefined, "current");
     const { plan: again } = completePlanText(set, LATER_NOW, undefined, undefined);
     assert.equal(parsePlan(again).frontmatter.handoff_mode, "current");
+  });
+});
+
+// ============================================================================
+// setRepoConsentInPlan lib-layer guard
+// ============================================================================
+
+describe("setRepoConsentInPlan lib-layer guard", () => {
+  it("accepts null (clears consent)", () => {
+    const plan = buildInitialPlan(baseInput);
+    const updated = setRepoConsentInPlan(plan, null, LATER_NOW);
+    const parsed = parsePlan(updated);
+    assert.equal(parsed.frontmatter.repo_consent, null);
+  });
+
+  it("accepts valid non-empty consent", () => {
+    const plan = buildInitialPlan(baseInput);
+    const consent = {
+      repos: [{ path: "workspace/p/.repos/studio", branch: "master", sha: "abc" }],
+      granted_at: "2026-04-24T10:00:00+08:00",
+    };
+    const updated = setRepoConsentInPlan(plan, consent, LATER_NOW);
+    const parsed = parsePlan(updated);
+    assert.deepEqual(parsed.frontmatter.repo_consent, consent);
+  });
+
+  it("throws when granted_at missing", () => {
+    const plan = buildInitialPlan(baseInput);
+    assert.throws(
+      () => setRepoConsentInPlan(plan, { repos: [], granted_at: "" }, LATER_NOW),
+      /granted_at must be a non-empty ISO string/,
+    );
+  });
+
+  it("throws when repos is not an array", () => {
+    const plan = buildInitialPlan(baseInput);
+    assert.throws(
+      () =>
+        setRepoConsentInPlan(
+          plan,
+          { repos: "not-array" as unknown as never, granted_at: "2026-04-24T10:00:00+08:00" },
+          LATER_NOW,
+        ),
+      /repos must be an array/,
+    );
+  });
+
+  it("throws when repo has empty path", () => {
+    const plan = buildInitialPlan(baseInput);
+    assert.throws(
+      () =>
+        setRepoConsentInPlan(
+          plan,
+          { repos: [{ path: "", branch: "main" }], granted_at: "2026-04-24T10:00:00+08:00" },
+          LATER_NOW,
+        ),
+      /path must be a non-empty string/,
+    );
   });
 });

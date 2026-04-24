@@ -848,11 +848,34 @@ export function setStrategyInPlan(
   return renderPlan(fm, parsed.clarifications, parsed.summary);
 }
 
+function validateRepoConsent(consent: RepoConsent): void {
+  if (!Array.isArray(consent.repos)) {
+    throw new Error("repo_consent.repos must be an array");
+  }
+  if (typeof consent.granted_at !== "string" || consent.granted_at.length === 0) {
+    throw new Error("repo_consent.granted_at must be a non-empty ISO string");
+  }
+  for (const r of consent.repos) {
+    if (typeof r.path !== "string" || r.path.length === 0) {
+      throw new Error("each repo_consent.repos[].path must be a non-empty string");
+    }
+    if (typeof r.branch !== "string" || r.branch.length === 0) {
+      throw new Error("each repo_consent.repos[].branch must be a non-empty string");
+    }
+    if (r.sha !== undefined && typeof r.sha !== "string") {
+      throw new Error("repo_consent.repos[].sha must be a string if provided");
+    }
+  }
+}
+
 export function setRepoConsentInPlan(
   raw: string,
   consent: RepoConsent | null,
   now: Date,
 ): string {
+  if (consent !== null) {
+    validateRepoConsent(consent);
+  }
   const parsed = parsePlan(raw);
   const fm = { ...parsed.frontmatter };
   fm.repo_consent = consent;

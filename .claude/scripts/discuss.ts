@@ -372,6 +372,9 @@ function runSetRepoConsent(opts: {
   if (!opts.content && !opts.clear) {
     fail("--content or --clear is required");
   }
+  if (opts.content && opts.clear) {
+    fail("--content and --clear are mutually exclusive");
+  }
   const { planAbs } = resolvePlanPath(opts.project, opts.prd);
   if (!existsSync(planAbs)) {
     fail(`Plan not found: ${planAbs}. Run 'init' first.`);

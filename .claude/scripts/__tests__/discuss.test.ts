@@ -727,4 +727,78 @@ describe("discuss set-repo-consent", () => {
     assert.equal(code, 1);
     assert.match(stderr, /--content or --clear/);
   });
+
+  it("rejects when both --content and --clear are provided", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const { code, stderr } = runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      JSON.stringify({
+        repos: [{ path: "a", branch: "b" }],
+        granted_at: "2026-04-24T10:00:00+08:00",
+      }),
+      "--clear",
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /mutually exclusive/);
+  });
+
+  it("second set-repo-consent replaces prior consent (no merge)", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      JSON.stringify({
+        repos: [{ path: "workspace/p/.repos/first", branch: "master" }],
+        granted_at: "2026-04-24T10:00:00+08:00",
+      }),
+    ]);
+    runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      JSON.stringify({
+        repos: [{ path: "workspace/p/.repos/second", branch: "dev", sha: "deadbeef" }],
+        granted_at: "2026-04-24T12:00:00+08:00",
+      }),
+    ]);
+    const { stdout } = runCli(["read", "--project", PROJECT, "--prd", PRD_ABS]);
+    const data = JSON.parse(stdout);
+    assert.equal(data.frontmatter.repo_consent.repos.length, 1);
+    assert.equal(data.frontmatter.repo_consent.repos[0].path, "workspace/p/.repos/second");
+    assert.equal(data.frontmatter.repo_consent.repos[0].sha, "deadbeef");
+    assert.equal(data.frontmatter.repo_consent.granted_at, "2026-04-24T12:00:00+08:00");
+  });
+
+  it("accepts valid consent with empty repos array", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const { code } = runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      JSON.stringify({
+        repos: [],
+        granted_at: "2026-04-24T10:00:00+08:00",
+      }),
+    ]);
+    assert.equal(code, 0);
+    const { stdout } = runCli(["read", "--project", PROJECT, "--prd", PRD_ABS]);
+    const data = JSON.parse(stdout);
+    assert.deepEqual(data.frontmatter.repo_consent.repos, []);
+    assert.equal(data.frontmatter.repo_consent.granted_at, "2026-04-24T10:00:00+08:00");
+  });
 });
