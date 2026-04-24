@@ -55,8 +55,7 @@
 
 ```bash
 /kata init
-或
-/setup
+或按仓库根目录 INSTALL.md 完成环境初始化
 ```
 
 ## 输入格式规范
@@ -88,7 +87,7 @@
 
 **Q: 怎样修改已生成的用例？**
 
-- 优先使用 `/xmind-editor`，无需读 PRD 即可修改
+- 优先使用 `/case-format`，无需读 PRD 即可修改
 - 或者直接编辑 `workspace/{{project}}/archive/YYYYMM/` 中的 Markdown 文件
 
 ## 文件位置速查
@@ -110,5 +109,4 @@
 ```bash
 /kata              # 显示本菜单
 /kata help         # 显示详细帮助
-/setup                # 环境初始化和配置检查
 ```
