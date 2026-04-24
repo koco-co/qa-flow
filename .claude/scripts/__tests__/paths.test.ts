@@ -48,3 +48,45 @@ describe("kata paths", () => {
     );
   });
 });
+
+import { describe, test, expect } from "bun:test";
+import {
+  prdDir,
+  enhancedMd,
+  sourceFactsJson,
+  resolvedMd,
+  prdImagesDir,
+  originalPrdMd,
+} from "../lib/paths.ts";
+
+describe("enhanced doc paths", () => {
+  test("prdDir returns {project}/prds/{yyyymm}/{slug}/", () => {
+    const p = prdDir("dataAssets", "202604", "my-prd");
+    expect(p).toMatch(/workspace\/dataAssets\/prds\/202604\/my-prd$/);
+  });
+
+  test("enhancedMd is {prdDir}/enhanced.md", () => {
+    const p = enhancedMd("dataAssets", "202604", "my-prd");
+    expect(p).toMatch(/my-prd\/enhanced\.md$/);
+  });
+
+  test("sourceFactsJson is {prdDir}/source-facts.json", () => {
+    expect(sourceFactsJson("dataAssets", "202604", "my-prd"))
+      .toMatch(/my-prd\/source-facts\.json$/);
+  });
+
+  test("resolvedMd is {prdDir}/resolved.md", () => {
+    expect(resolvedMd("dataAssets", "202604", "my-prd"))
+      .toMatch(/my-prd\/resolved\.md$/);
+  });
+
+  test("prdImagesDir is {prdDir}/images/", () => {
+    expect(prdImagesDir("dataAssets", "202604", "my-prd"))
+      .toMatch(/my-prd\/images$/);
+  });
+
+  test("originalPrdMd is {prdDir}/original.md", () => {
+    expect(originalPrdMd("dataAssets", "202604", "my-prd"))
+      .toMatch(/my-prd\/original\.md$/);
+  });
+});
