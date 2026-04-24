@@ -7,6 +7,7 @@
  * See spec: docs/refactor/specs/2026-04-24-unified-progress-engine-design.md
  */
 
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -18,14 +19,15 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import {
+  BLOB_OVERFLOW_THRESHOLD_BYTES,
   LOCK_RETRY_BASE_MS,
   LOCK_RETRY_JITTER_MS,
   LOCK_TIMEOUT_MS,
   SCHEMA_VERSION,
   STALE_LOCK_MAX_AGE_MS,
 } from "./progress-types.ts";
-import type { Session, Source } from "./progress-types.ts";
-import { kataDir, locksDir, sessionsDir } from "./paths.ts";
+import type { BlobRef, Session, Source } from "./progress-types.ts";
+import { blocksDir, kataDir, locksDir, sessionsDir } from "./paths.ts";
 
 // ── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -534,4 +536,68 @@ export function rollupTask(
   }
 
   updateTask(project, sessionId, parentId, { status: "done" });
+}
+
+// ── Artifacts ─────────────────────────────────────────────────────────────────
+
+function isBlobRef(v: unknown): v is BlobRef {
+  return !!v && typeof v === "object" && "$ref" in (v as Record<string, unknown>);
+}
+
+function sessionSlugFromId(sessionId: string): string {
+  return splitSessionId(sessionId)[1];
+}
+
+/**
+ * Store an artifact value for a session key. Values larger than
+ * `BLOB_OVERFLOW_THRESHOLD_BYTES` are spilled to a blob file under
+ * `.kata/{project}/blocks/{workflow}/{slug}/` and a `{ $ref: path }` pointer
+ * is stored inline instead.
+ */
+export function setArtifact(
+  project: string,
+  sessionId: string,
+  key: string,
+  value: unknown,
+): void {
+  const session = readSession(project, sessionId);
+  if (!session) throw new Error(`session not found: ${sessionId}`);
+  const serialized = JSON.stringify(value);
+
+  let stored: unknown;
+  if (Buffer.byteLength(serialized, "utf8") > BLOB_OVERFLOW_THRESHOLD_BYTES) {
+    const hash = createHash("sha256").update(serialized).digest("hex").slice(0, 16);
+    const slug = sessionSlugFromId(session.session_id);
+    const dir = blocksDir(project, session.workflow, slug);
+    mkdirSync(dir, { recursive: true });
+    const blobPath = join(dir, `${key}-${hash}.json`);
+    writeFileSync(blobPath, `${serialized}\n`, "utf8");
+    stored = { $ref: blobPath } satisfies BlobRef;
+  } else {
+    stored = value;
+  }
+
+  const artifacts = { ...session.artifacts, [key]: stored };
+  writeSession(project, { ...session, artifacts, updated_at: nowIso() });
+}
+
+/**
+ * Retrieve an artifact value for a session key. If the stored value is a
+ * `$ref` pointer, the referenced blob file is read and parsed.
+ *
+ * @throws {Error} if the session does not exist or a referenced blob file is missing.
+ */
+export function getArtifact(
+  project: string,
+  sessionId: string,
+  key: string,
+): unknown {
+  const session = readSession(project, sessionId);
+  if (!session) throw new Error(`session not found: ${sessionId}`);
+  const value = session.artifacts[key];
+  if (!isBlobRef(value)) return value;
+  if (!existsSync(value.$ref)) {
+    throw new Error(`blob not found: ${value.$ref}`);
+  }
+  return JSON.parse(readFileSync(value.$ref, "utf8"));
 }

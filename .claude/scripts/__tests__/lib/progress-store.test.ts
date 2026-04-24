@@ -14,6 +14,8 @@ import {
   removeTask,
   queryTasks,
   rollupTask,
+  setArtifact,
+  getArtifact,
 } from "../../lib/progress-store.ts";
 import type { Session } from "../../lib/progress-types.ts";
 
@@ -364,5 +366,36 @@ describe("rollupTask", () => {
     ]);
     updateTask(project, s.session_id, "p", { status: "running" });
     assert.throws(() => rollupTask(project, s.session_id, "p"), /unfinished/i);
+  });
+});
+
+describe("artifacts inline + overflow", () => {
+  const project = "dataAssets";
+
+  it("stores small artifact inline", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "a1", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    setArtifact(project, s.session_id, "k1", { a: 1 });
+    const cur = readSession(project, s.session_id)!;
+    assert.deepEqual(cur.artifacts.k1, { a: 1 });
+    assert.deepEqual(getArtifact(project, s.session_id, "k1"), { a: 1 });
+  });
+
+  it("spills large artifact to blocks/ and stores $ref inline", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "a2", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    const big = { data: "x".repeat(100_000) };
+    setArtifact(project, s.session_id, "blob", big);
+    const cur = readSession(project, s.session_id)!;
+    const ref = cur.artifacts.blob as { $ref?: string };
+    assert.ok(ref.$ref, "inline value should be a $ref");
+    const loaded = getArtifact(project, s.session_id, "blob");
+    assert.deepEqual(loaded, big);
   });
 });
