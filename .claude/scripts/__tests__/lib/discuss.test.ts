@@ -537,3 +537,39 @@ describe("dimension matching (longest-first)", () => {
     assert.match(plan, /- \[ \] \*\*\[PRD 合理性\]\*\* Q2:/);
   });
 });
+
+// ============================================================================
+// completePlanText handoff mode guard
+// ============================================================================
+
+describe("completePlanText handoff mode guard", () => {
+  it("accepts null to clear handoff_mode", () => {
+    const plan = buildInitialPlan(baseInput);
+    const { plan: next } = completePlanText(plan, LATER_NOW, undefined, null);
+    const parsed = parsePlan(next);
+    assert.equal(parsed.frontmatter.handoff_mode, null);
+  });
+
+  it("accepts 'current' and 'new' literals", () => {
+    const plan = buildInitialPlan(baseInput);
+    const { plan: after1 } = completePlanText(plan, LATER_NOW, undefined, "current");
+    assert.equal(parsePlan(after1).frontmatter.handoff_mode, "current");
+    const { plan: after2 } = completePlanText(plan, LATER_NOW, undefined, "new");
+    assert.equal(parsePlan(after2).frontmatter.handoff_mode, "new");
+  });
+
+  it("throws on invalid handoffMode string", () => {
+    const plan = buildInitialPlan(baseInput);
+    assert.throws(
+      () => completePlanText(plan, LATER_NOW, undefined, "bogus" as unknown as null),
+      /invalid handoffMode: bogus/,
+    );
+  });
+
+  it("undefined leaves existing handoff_mode unchanged", () => {
+    const plan = buildInitialPlan(baseInput);
+    const { plan: set } = completePlanText(plan, LATER_NOW, undefined, "current");
+    const { plan: again } = completePlanText(set, LATER_NOW, undefined, undefined);
+    assert.equal(parsePlan(again).frontmatter.handoff_mode, "current");
+  });
+});

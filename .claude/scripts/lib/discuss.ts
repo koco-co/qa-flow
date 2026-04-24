@@ -738,6 +738,17 @@ export function appendClarificationToPlan(
   return { plan: renderPlan(fm, nextList, parsed.summary), isNew };
 }
 
+/**
+ * Complete the discuss plan.
+ * - status → "ready" / resume_anchor → "discuss-completed" when no blocking_unknown without user_answer remains.
+ * - `handoffMode` is tri-state:
+ *   - `undefined` → leave `fm.handoff_mode` unchanged
+ *   - `null` → explicitly clear `fm.handoff_mode` to null
+ *   - `"current" | "new"` → overwrite `fm.handoff_mode` with the enum value
+ * - `knowledgeSummary` is bi-state:
+ *   - `undefined` → leave `fm.knowledge_dropped` unchanged
+ *   - `KnowledgeDropped[]` (even empty) → overwrite `fm.knowledge_dropped`
+ */
 export function completePlanText(
   raw: string,
   now: Date,
@@ -759,6 +770,11 @@ export function completePlanText(
     fm.knowledge_dropped = knowledgeSummary;
   }
   if (handoffMode !== undefined) {
+    if (handoffMode !== null && handoffMode !== "current" && handoffMode !== "new") {
+      throw new Error(
+        `invalid handoffMode: ${String(handoffMode)} (expected "current" | "new" | null)`,
+      );
+    }
     fm.handoff_mode = handoffMode;
   }
 

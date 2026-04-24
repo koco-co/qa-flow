@@ -456,6 +456,45 @@ describe("discuss set-strategy", () => {
   });
 });
 
+describe("discuss init — phase B template shape", () => {
+  before(() => resetFixture());
+  after(() => rmSync(TMP, { recursive: true, force: true }));
+  beforeEach(() => resetFixture());
+
+  it("renders §1 summary with 4 subsections", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const raw = readFileSync(PLAN_ABS, "utf8");
+    assert.match(raw, /### 背景/);
+    assert.match(raw, /### 痛点/);
+    assert.match(raw, /### 目标/);
+    assert.match(raw, /### 成功标准/);
+  });
+
+  it("renders §2 self-check table with global and functional layers", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const raw = readFileSync(PLAN_ABS, "utf8");
+    assert.match(raw, /### 全局层（4 维度）/);
+    assert.match(raw, /### 功能层（6 维度）/);
+    // 全局层维度
+    assert.match(raw, /\| 数据源 \|/);
+    assert.match(raw, /\| 历史数据 \|/);
+    assert.match(raw, /\| 测试范围 \|/);
+    assert.match(raw, /\| PRD 合理性 \|/);
+    // 功能层维度保留
+    assert.match(raw, /\| 字段定义 \|/);
+    assert.match(raw, /\| 异常处理 \|/);
+  });
+
+  it("renders §6 pending placeholder and §7 downstream hints", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const raw = readFileSync(PLAN_ABS, "utf8");
+    assert.match(raw, /## 6\. 待定清单（pending_for_pm）/);
+    assert.match(raw, /<!-- pending:begin -->/);
+    assert.match(raw, /<!-- pending:end -->/);
+    assert.match(raw, /## 7\. 下游节点 hint/);
+  });
+});
+
 describe("discuss complete — handoff mode", () => {
   before(() => resetFixture());
   after(() => rmSync(TMP, { recursive: true, force: true }));
@@ -549,43 +588,35 @@ describe("discuss complete — handoff mode", () => {
     assert.equal(data.status, "ready");
     assert.equal(data.blocking_remaining, 0);
   });
-});
 
-describe("discuss init — phase B template shape", () => {
-  before(() => resetFixture());
-  after(() => rmSync(TMP, { recursive: true, force: true }));
-  beforeEach(() => resetFixture());
-
-  it("renders §1 summary with 4 subsections", () => {
+  it("exits 1 when blocking unanswered remains, regardless of --handoff-mode", () => {
     runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
-    const raw = readFileSync(PLAN_ABS, "utf8");
-    assert.match(raw, /### 背景/);
-    assert.match(raw, /### 痛点/);
-    assert.match(raw, /### 目标/);
-    assert.match(raw, /### 成功标准/);
-  });
-
-  it("renders §2 self-check table with global and functional layers", () => {
-    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
-    const raw = readFileSync(PLAN_ABS, "utf8");
-    assert.match(raw, /### 全局层（4 维度）/);
-    assert.match(raw, /### 功能层（6 维度）/);
-    // 全局层维度
-    assert.match(raw, /\| 数据源 \|/);
-    assert.match(raw, /\| 历史数据 \|/);
-    assert.match(raw, /\| 测试范围 \|/);
-    assert.match(raw, /\| PRD 合理性 \|/);
-    // 功能层维度保留
-    assert.match(raw, /\| 字段定义 \|/);
-    assert.match(raw, /\| 异常处理 \|/);
-  });
-
-  it("renders §6 pending placeholder and §7 downstream hints", () => {
-    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
-    const raw = readFileSync(PLAN_ABS, "utf8");
-    assert.match(raw, /## 6\. 待定清单（pending_for_pm）/);
-    assert.match(raw, /<!-- pending:begin -->/);
-    assert.match(raw, /<!-- pending:end -->/);
-    assert.match(raw, /## 7\. 下游节点 hint/);
+    runCli([
+      "append-clarify",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      JSON.stringify({
+        id: "Q1",
+        severity: "blocking_unknown",
+        question: "?",
+        location: "功能层 → 字段定义",
+        recommended_option: "A",
+        options: [{ id: "A", description: "x" }],
+      }),
+    ]);
+    const { code, stderr } = runCli([
+      "complete",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--handoff-mode",
+      "current",
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /blocking_unknown/);
   });
 });
