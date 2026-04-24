@@ -18,7 +18,7 @@ model: opus
 任务提示中会指定文件路径，读取以下三个文件：
 
 1. **Writer 输出 JSON**（必需）：从任务提示指定路径读取，包含所有模块的用例数据和每个 Writer 的 metadata
-2. **增强后的 PRD**（可选）：从任务提示指定路径读取，用于业务逻辑交叉验证；缺失时跳过业务验证并记录 `defaultable_unknown`
+2. **enhanced.md**（可选）：通过 `kata-cli discuss read --project {{project}} --yyyymm {{yyyymm}} --prd-slug {{prd_slug}}` 读取，用于业务逻辑交叉验证；缺失时跳过业务验证并记录 `defaultable_unknown`
 3. **测试点清单**（可选）：从任务提示指定路径读取，用于覆盖率核查；缺失时跳过覆盖率验证
 
 ---
@@ -56,9 +56,9 @@ Reviewer 职责：审查发现问题 → 分类 → 可自动修正的交给 aut
 
 > **--quick 模式**：仅执行第一轮审查，跳过复审。默认为普通模式（执行复审）。
 
-### 第零轮：source_ref 批量解析（Phase C 新增）
+### 第零轮：source_ref 批量解析（Phase D2 起基于 enhanced.md）
 
-先把待审查的 writer_json 里所有 `test_case` 的 `source_ref` 聚合成一个数组，写到临时 JSON 文件，然后调 CLI 批量解析：
+先把待审查的 writer_json 里所有 `test_case` 的 `source_ref` 聚合成一个数组，调 CLI 批量解析：
 
 ```bash
 cat > /tmp/refs-$$.json <<EOF
@@ -69,16 +69,17 @@ cat > /tmp/refs-$$.json <<EOF
 ]
 EOF
 
+# Phase D2 过渡期：`source-ref batch` CLI 仍调用，内部会 dispatch 到
+# `discuss validate --check-source-refs`（主路径）或老 plan.md 解析（legacy）。
 kata-cli source-ref batch \
   --refs-json /tmp/refs-$$.json \
-  --plan {{plan_path}} --prd {{prd_path}} \
-  --project {{project}}
+  --project {{project}} --yyyymm {{yyyymm}} --prd-slug {{prd_slug}}
 ```
 
-批量 CLI 的退出码：
+批量 CLI 的退出码（保持与 Phase C 兼容）：
 
 - `0` → 全部可解析，第一轮不产出 F16
-- `2` → 至少一条不可解析；读 stdout JSON 的 `fails[]` 数组，把每条 `{ref, reason}` 映射到对应 `test_case` 的 `issues[]`：
+- `2` → 至少一条不可解析；stdout 的 `fails[]` 含 `{ref, reason, anchor_candidates?}`；把每条映射到对应 `test_case` 的 `issues[]`：
   ```json
   {
     "code": "F16",
@@ -88,7 +89,17 @@ kata-cli source-ref batch \
     "fixed": null
   }
   ```
-- `1` → CLI 本身异常（参数错误等），停止审查并返回 `invalid_input` verdict
+- `1` → CLI 参数错误或 enhanced.md schema 异常，停止审查并返回 `invalid_input` verdict
+
+**Phase D2 校验规则**：
+
+| 前缀 | 校验 | 放行策略 |
+|---|---|---|
+| `enhanced#<anchor>` | `discuss validate --check-source-refs` 精确匹配 | 严格 |
+| `prd#<slug>` | 读 `{prd_dir}/original.md` slug 匹配 | 仅 `source_reference=none` 允许；否则 F16 |
+| `knowledge#<type>.<name>` | knowledge-keeper read 条目存在 | 严格 |
+| `repo#<path>:L<n>` | 文件 + 行号存在 | 仅 source_consent 非空允许 |
+| `plan#...`（legacy） | 旧 plan.md 尝试解析 | **打 warning 但放行**；Phase D3 前保留 |
 
 F16 计入问题率，但**不触发自动修正**；标记为 `[F16-MANUAL]` 在 manual_items 输出。
 
