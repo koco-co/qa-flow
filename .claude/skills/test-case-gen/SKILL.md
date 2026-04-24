@@ -49,8 +49,6 @@ kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/ru
 
 <workflow>
   <primary>init → probe → discuss → transform → enhance → analyze → write → review → format-check → output</primary>
-  <standardize>parse → standardize → review → output</standardize>
-  <reverse_sync>confirm_xmind → parse → locate_archive → preview_or_write → report</reverse_sync>
 </workflow>
 
 ### 确认策略
@@ -135,29 +133,19 @@ Writer Sub-Agent 完成时更新：`[write] {{模块名}} — {{n}} 条用例`
 
 每轮完成时更新 subject 为 `[format-check] 第 {{n}} 轮 — {{偏差数}} 处偏差`，若需下一轮则创建新子任务。
 
-### 标准化归档流程子任务
-
-进入标准化归档流程时，创建 4 个任务（S1-S4），规则同上。
-
-### 反向同步流程子任务
-
-进入反向同步流程时，创建 5 个任务（RS1-RS5），规则同上。
-
 ---
 
 ## 流程路由（根据输入类型加载对应 workflow）
 
-本 skill 支持三个场景，init 节点根据输入识别后加载对应 workflow：
+本 skill 仅负责主生成场景（PRD → 测试用例）。标准化归档和反向同步已迁至 `case-format` skill。
 
-| 场景                        | 触发词                                                                                           | 输入                               | 流程结构                                                                                           | 读取文件                   |
-| --------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------- |
-| `primary`（主生成）         | 生成测试用例、生成用例、写用例、为 \<需求名称\> 生成用例、test case、重新生成 xxx 模块、追加用例 | PRD 路径 / 蓝湖 URL / 模块重跑指令 | 7 节点：init → transform → enhance → analyze → write → review → output（含 discuss、format-check） | `workflow/main.md`         |
-| `standardize`（标准化归档） | 标准化归档、归档用例、转化用例、标准化 xmind、标准化 csv                                         | `.xmind` 或 `.csv` 文件            | 4 节点：parse → standardize → review → output                                                      | `workflow/standardize.md`  |
-| `reverse_sync`（反向同步）  | 同步 xmind、同步 XMind 文件、反向同步                                                            | XMind 文件 + 已有 Archive MD       | 5 节点：confirm_xmind → parse → locate_archive → preview_or_write → report                         | `workflow/reverse-sync.md` |
+| 场景                | 触发词                                                                                           | 输入                               | 流程结构                                                       | 读取文件           |
+| ------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------- | -------------------------------------------------------------- | ------------------ |
+| `primary`（主生成） | 生成测试用例、生成用例、写用例、为 \<需求名称\> 生成用例、test case、重新生成 xxx 模块、追加用例 | PRD 路径 / 蓝湖 URL / 模块重跑指令 | 10 节点：init → probe → discuss → transform → enhance → analyze → write → review → format-check → output | `workflow/main.md` |
 
 `--quick` 参数对 `primary` 场景生效：跳过复审、format-check 仅 1 轮。
 
-**加载方式**：使用 `Read` 工具读取 `.claude/skills/test-case-gen/workflow/{{scenario}}.md` 全文，然后按文件指引继续执行。三个 workflow 共享本 SKILL.md 后半段定义的 **Writer 阻断中转协议**、**断点续传说明**、**异常处理**——遇到相关情形时回查本文件，不在 workflow 文件中重复。
+**加载方式**：使用 `Read` 工具读取 `.claude/skills/test-case-gen/workflow/main.md` 全文，然后按节点映射表动态 Read 各节点文件继续执行。Writer 阻断中转协议、断点续传说明、异常处理定义在 `workflow/main.md` 共享协议章节中。
 
 ---
 
