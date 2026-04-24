@@ -331,24 +331,21 @@
   },
 
   "qa_state_file": {
-    "_description": "断点续传状态文件（.kata-state-{prd-slug}.json）完整结构",
-    "prd_slug": "string",
+    "_description": "断点续传状态 — 统一进度引擎 session 文件（.kata/{project}/sessions/test-case-gen/{prd-slug}-{env}.json）",
+    "schema_version": "number — 当前 1",
+    "session_id": "string — test-case-gen/{slug}-{env}",
+    "workflow": "string — test-case-gen",
     "project": "string",
-    "mode": "string — normal|quick",
-    "current_node": "string — probe|discuss|transform|enhance|analyze|write|review|format-check|output",
-    "strategy_resolution": "object? — phase 4 probe 节点产出，见 signal_profile / strategy_resolution schema（strategy-schema.json）。旧 state 文件缺失字段时为 undefined，向后兼容",
-    "transform": { "confidence": "number", "clarify_count": "number" },
-    "enhance": { "health_warnings": "string[]", "image_count": "number" },
-    "analyze": { "checklist": "object" },
-    "write": { "modules": "object", "blocked": "string[]" },
-    "review": { "issue_rate": "number", "fixed_count": "number" },
-    "format_check": {
-      "current_round": "number",
-      "max_rounds": "number",
-      "issues_history": "number[]",
-      "verdict": "string"
+    "env": "string",
+    "source": { "type": "string — prd", "path": "string", "mtime": "string | null" },
+    "meta": { "mode": "string — normal|quick" },
+    "tasks": "Task[] — 7 pipeline nodes + 可选 format-check；每个 task 的 payload 承载原 node_outputs 字段（transform.confidence、enhance.health_warnings 等），完整类型见 .claude/scripts/lib/progress-types.ts",
+    "artifacts": {
+      "strategy_resolution": "object? — 见 signal_profile / strategy_resolution schema（strategy-schema.json）",
+      "writers": "object? — writer-context-builder 产物",
+      "cached_parse_result": "object? — PRD 解析缓存；source.mtime 变化时自动失效"
     },
-    "source_context": { "branch": "string", "commit": "string" }
+    "_note": "详细的任务字段（status/attempts/errors/depends_on 等）见 progress-types.ts 中的 Task 接口。查询可用 kata-cli progress session-read 或 task-query。"
   },
 
   "signal_profile": {

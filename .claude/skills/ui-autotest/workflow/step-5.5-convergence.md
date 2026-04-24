@@ -16,9 +16,9 @@
 **5.5.1 标记进入收敛态**
 
 ```bash
-kata-cli ui-autotest-progress update \
-  --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
-  --field convergence_status --value active
+EXISTING=$(kata-cli progress artifact-get --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow 2>/dev/null || echo "{}")
+UPDATED=$(echo "$EXISTING" | jq '. + {"convergence_status": "active"}')
+kata-cli progress artifact-set --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow --value "$UPDATED"
 ```
 
 **5.5.2 选择 1-2 个探路 case**
@@ -87,9 +87,7 @@ kata-cli ui-autotest-progress update \
 **5.5.7 重置探路 case 的 test_status**
 
 ```bash
-kata-cli ui-autotest-progress update \
-  --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
-  --case {{probe_id}} --field test_status --value pending
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{probe_id}} --status pending
 ```
 
 让主流重跑这些 case，检验 helpers 修复是否真的解决问题。
@@ -97,14 +95,9 @@ kata-cli ui-autotest-progress update \
 **5.5.8 标记收敛完成**
 
 ```bash
-kata-cli ui-autotest-progress update \
-  --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
-  --field convergence_status --value completed
-
-kata-cli ui-autotest-progress update \
-  --project {{project}} --suite "{{suite_name}}" --env "{{env}}" \
-  --field convergence \
-  --value '{"triggered_at":"...","probe_attempts":[...],"common_patterns":[...],"completed_at":"..."}'
+EXISTING=$(kata-cli progress artifact-get --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow 2>/dev/null || echo "{}")
+UPDATED=$(echo "$EXISTING" | jq '. + {"convergence_status": "completed", "convergence": {"triggered_at":"...","probe_attempts":[...],"common_patterns":[...],"completed_at":"..."}}')
+kata-cli progress artifact-set --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow --value "$UPDATED"
 ```
 
 按 Task Schema 更新：将 `步骤 5.5` 标记为 `completed`（subject `步骤 5.5 — 完成 ({{N}} 项 helpers)`）。

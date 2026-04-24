@@ -37,5 +37,7 @@ bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
 **💾 进度持久化 — 合并完成**：
 
 ```bash
-kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field merge_status --value completed
+EXISTING=$(kata-cli progress artifact-get --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow 2>/dev/null || echo "{}")
+UPDATED=$(echo "$EXISTING" | jq '. + {"merge_status": "completed"}')
+kata-cli progress artifact-set --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow --value "$UPDATED"
 ```

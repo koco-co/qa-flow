@@ -36,19 +36,19 @@ bun run ../scripts/config.ts
 
 ```bash
 # ✓ 正确
-kata-cli kata-state read --project {{project}}
+kata-cli progress session-read --project {{project}} --session "$SESSION_ID"
 
 # ✗ 错误：缺少 --project，会读到错误项目状态
-kata-cli kata-state read
+kata-cli progress session-read --session "$SESSION_ID"
 ```
 
-### 2.3 多环境场景追加 `--env {{env}}`
+### 2.3 多环境场景在 SESSION_ID 中嵌入 `{{env}}`
 
-涉及环境隔离的脚本（如 progress、session）必须传 `--env`：
+统一进度引擎通过 `session_id = {workflow}/{slug}-{env}` 实现环境隔离。skill 提示词应推导 SESSION_ID 后统一使用：
 
 ```bash
-kata-cli ui-autotest-progress summary \
-  --project {{project}} --suite "{{suite_name}}" --env "{{env}}"
+SESSION_ID="ui-autotest/${SUITE_SLUG}-${ACTIVE_ENV:-default}"
+kata-cli progress session-summary --project {{project}} --session "$SESSION_ID"
 ```
 
 ---

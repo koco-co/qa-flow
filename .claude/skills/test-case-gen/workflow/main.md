@@ -11,10 +11,24 @@
 
 **⏳ Task**：使用 `TaskCreate` 创建 10 个主流程任务（见「任务可视化」章节），然后将 `init` 任务标记为 `in_progress`。
 
+### 1.0 SESSION_ID 初始化
+
+```bash
+# Derive stable SESSION_ID from PRD filename + active env
+PRD_SLUG=$(basename "{{prd_path}}" .md)
+SESSION_ID="test-case-gen/${PRD_SLUG}-${ACTIVE_ENV:-default}"
+
+# Ensure session exists (create on first run, reuse on resume)
+kata-cli progress session-read --project {{project}} --session "$SESSION_ID" 2>/dev/null \
+  || kata-cli progress session-create --workflow test-case-gen --project {{project}} \
+       --source-type prd --source-path "{{prd_path}}" --meta '{"mode":"{{mode}}"}' > /dev/null
+```
+
 ### 1.1 断点续传检测
 
 ```bash
-kata-cli kata-state resume --prd-slug {{prd_slug}} --project {{project}}
+kata-cli progress session-resume --project {{project}} --session "$SESSION_ID" \
+  && kata-cli progress session-read --project {{project}} --session "$SESSION_ID"
 ```
 
 若返回有效状态 → 跳转到断点所在节点继续执行。
@@ -43,9 +57,7 @@ kata-cli plugin-loader check --input "{{user_input}}"
 
 ### 1.5 初始化状态
 
-```bash
-kata-cli kata-state init --prd {{prd_path}} --project {{project}} --mode {{mode}}
-```
+SESSION_ID 已在节点 1.0 完成初始化，此处无需额外操作。
 
 ### 交互点 A — 参数分歧处理（仅在输入存在歧义时使用 AskUserQuestion 工具）
 
@@ -102,13 +114,13 @@ stdout 输出 StrategyResolution JSON。
 
 ### 1.75.3 落盘
 
-- **state.ts**：
+- **progress**：
 
   ```bash
-  kata-cli kata-state update \
-    --project {{project}} --prd-slug {{prd_slug}} \
-    --node probe \
-    --data '{"strategy_resolution": {{resolution_json}}}'
+  kata-cli progress task-update \
+    --project {{project}} --session "$SESSION_ID" \
+    --task probe --status done \
+    --payload '{"strategy_resolution": {{resolution_json}}}'
   ```
 
 - **plan.md**（若已存在）：
@@ -335,7 +347,7 @@ transform-agent 执行：
 ### 2.5 更新状态
 
 ```bash
-kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node transform --data '{{json}}'
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task transform --status done --payload '{{json}}'
 ```
 
 数据结构：参见 `.claude/references/output-schemas.json` 中的 `state_transform_data`。
@@ -371,7 +383,7 @@ kata-cli prd-frontmatter normalize --file {{prd_path}}
 ### 3.3 更新状态
 
 ```bash
-kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node enhance --data '{{json}}'
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task enhance --status done --payload '{{json}}'
 ```
 
 **✅ Task**：将 `enhance` 任务标记为 `completed`（subject 更新为 `enhance — {{n}} 张图片，{{m}} 个要点`）。
@@ -413,7 +425,7 @@ kata-cli archive-gen search --query "{{keywords}}" --project {{project}} --limit
 ### 4.3 更新状态
 
 ```bash
-kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node analyze --data '{{json}}'
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task analyze --status done --payload '{{json}}'
 ```
 
 **✅ Task**：将 `analyze` 任务标记为 `completed`（subject 更新为 `analyze — {{n}} 个模块，{{m}} 条测试点`）。
@@ -487,7 +499,7 @@ kata-cli writer-context-builder build \
 每个 Writer 完成后更新状态：
 
 ```bash
-kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node write --data '{{json}}'
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task write --status done --payload '{{json}}'
 ```
 
 ---
@@ -521,7 +533,7 @@ kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node writ
 ### 6.3 更新状态
 
 ```bash
-kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node review --data '{{json}}'
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task review --status done --payload '{{json}}'
 ```
 
 **✅ Task**：将 `review` 任务标记为 `completed`（subject 更新为 `review — {{n}} 条用例，问题率 {{rate}}%`）。
@@ -622,7 +634,11 @@ kata-cli format-report-locator print \
 每轮循环后更新状态：
 
 ```bash
-kata-cli kata-state update --prd-slug {{slug}} --project {{project}} --node format-check --data '{{json}}'
+# format-check 是自定义节点，首次使用前需确保已注册
+kata-cli progress task-add --project {{project}} --session "$SESSION_ID" \
+  --tasks '[{"id":"format-check","name":"format-check","kind":"node","order":8,"depends_on":["review"]}]' \
+  2>/dev/null || true
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task format-check --status done --payload '{{json}}'
 ```
 
 数据结构：参见 `.claude/references/output-schemas.json` 中的 `state_format_check_data`。
@@ -677,7 +693,7 @@ notify_data 必需字段：`count`、`file`、`duration`。
 ### 7.4 清理状态
 
 ```bash
-kata-cli kata-state clean --prd-slug {{slug}} --project {{project}}
+kata-cli progress session-delete --project {{project}} --session "$SESSION_ID"
 ```
 
 **✅ Task**：将 `output` 任务标记为 `completed`（subject 更新为 `output — {{n}} 条用例，XMind + Archive MD 已生成`）。

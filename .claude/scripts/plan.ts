@@ -2,7 +2,7 @@
 /**
  * plan.ts — Workflow execution plan management CLI.
  *
- * Sits above state.ts and ui-autotest-progress.ts as a unified plan layer.
+ * Sits above `progress.ts` (the unified progress engine) as a higher-level plan layer.
  * Generates human-readable MD + machine-readable JSON for workflow tracking.
  *
  * Usage:

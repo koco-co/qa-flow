@@ -10,21 +10,29 @@
 
 **💾 进度持久化 — 初始化**：
 
-若不是从断点恢复（即步骤 1.5 未检测到进度文件），创建进度文件：
+若不是从断点恢复（即步骤 1.5 未检测到进度文件），创建进度 session 并初始化任务列表：
 
 ```bash
-kata-cli ui-autotest-progress create \
+# 1. 创建 session
+kata-cli progress session-create \
+  --workflow ui-autotest \
   --project {{project}} \
-  --suite "{{suite_name}}" \
+  --source-type archive \
+  --source-path "{{md_path}}" \
   --env "{{env}}" \
-  --archive "{{md_path}}" \
-  --url "{{url}}" \
-  --priorities "{{selected_priorities | join(',')}}" \
-  --output-dir "workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/" \
-  --cases '{{tasks_json}}'
+  --meta '{"suite_name":"{{suite_name}}","url":"{{url}}","selected_priorities":{{selected_priorities | json}},"output_dir":"workspace/{{project}}/tests/{{YYYYMM}}/{{suite_name}}/"}'
+
+# 2. 批量添加任务（suite 父节点 + 每条用例）
+kata-cli progress task-add \
+  --project {{project}} \
+  --session "$SESSION_ID" \
+  --tasks '[
+    {"id":"suite","name":"{{suite_name}}","kind":"phase","order":1},
+    {"id":"<caseId>","name":"<title>","kind":"case","order":<n>,"parent":"suite","payload":{"priority":"<p>","generated":false,"script_path":null}}
+  ]'
 ```
 
-其中 `tasks_json` 为 `{id: {title, priority}}` 格式的 JSON，从步骤 1 解析结果构造。
+其中任务列表从步骤 1 解析结果构造，每条用例对应一个 `kind=case` 任务，`order` 从 1 递增。
 
 **4.0 源码分析（每次生成脚本前必做）**
 
@@ -92,8 +100,8 @@ import { test, expect } from "../../fixtures/step-screenshot";
 每条用例的 sub-agent 完成后，更新进度：
 
 ```bash
-kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field generated --value true
-kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field script_path --value "workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts"
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{id}} --payload '{"generated":true}'
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{id}} --payload '{"script_path":"workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts"}'
 ```
 
 断点恢复时，跳过 `generated === true` 的用例，只生成剩余的。
@@ -103,6 +111,8 @@ kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name
 **💾 进度持久化 — 步骤 4 完成**：
 
 ```bash
-kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field current_step --value 5
+EXISTING=$(kata-cli progress artifact-get --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow 2>/dev/null || echo "{}")
+UPDATED=$(echo "$EXISTING" | jq '. + {"current_step": 5}')
+kata-cli progress artifact-set --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow --value "$UPDATED"
 ```
 
