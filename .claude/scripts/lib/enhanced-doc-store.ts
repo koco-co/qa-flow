@@ -302,6 +302,76 @@ export function addSection(
   return anchor;
 }
 
+export interface ResolveOpts {
+  answer: string;
+  asDefault?: boolean;
+}
+
+export function resolvePending(
+  project: string,
+  yyyymm: string,
+  slug: string,
+  qid: string,
+  opts: ResolveOpts,
+): void {
+  const docPath = enhancedMd(project, yyyymm, slug);
+  const raw = readFileSync(docPath, "utf8");
+  const parsed = matter(raw);
+  let body = parsed.content;
+  const fm = { ...(parsed.data as EnhancedFrontmatter) };
+
+  // Locate Q heading (handles both resolved and unresolved forms)
+  const headingRe = new RegExp(
+    `^### (Q\\d+|<del>Q\\d+<\\/del>) <a id="${qid}"><\\/a>\\s*$`,
+    "m",
+  );
+  const hm = headingRe.exec(body);
+  if (!hm) throw new Error(`${qid} not found`);
+  if (hm[1].startsWith("<del>")) throw new Error(`${qid} already resolved`);
+
+  // Wrap heading in <del>
+  const newHeading = `### <del>${qid.toUpperCase()}</del> <a id="${qid}"></a>`;
+  body = body.replace(hm[0].trimEnd(), newHeading);
+
+  // Find end of this Q block (next `### ` or <!-- pending-end -->)
+  const newHeadingIdx = body.indexOf(newHeading);
+  const rest = body.slice(newHeadingIdx + newHeading.length);
+  const nextHeadingOffset = rest.search(/\n### /);
+  const pendingEndOffset = rest.indexOf(PENDING_END);
+  let endOffset = rest.length;
+  for (const c of [nextHeadingOffset, pendingEndOffset]) {
+    if (c >= 0 && c < endOffset) endOffset = c;
+  }
+  const blockAbsEnd = newHeadingIdx + newHeading.length + endOffset;
+  const before = body.slice(0, blockAbsEnd);
+  const after = body.slice(blockAbsEnd);
+
+  const resolvedAt = new Date().toISOString();
+  const statusLabel = opts.asDefault ? "默认采用" : "已解决";
+
+  // Update status cell 待确认 → statusLabel (within this block only)
+  const beforeUpdated = before.replace(
+    /\*\*状态\*\*\s*\|\s*待确认\s*\|/,
+    `**状态** | ${statusLabel} |`,
+  );
+
+  // Append 回答 + 已解决 rows
+  const appended = `| **回答** | ${opts.answer} |\n| **已解决** | ${resolvedAt} |\n`;
+
+  body = `${beforeUpdated}\n${appended}${after}`;
+
+  // Replace inline [^qN] footnote with answer italicized
+  const fnRe = new RegExp(`\\[\\^${qid}\\]`, "g");
+  body = body.replace(fnRe, `*${opts.answer}*`);
+
+  // Counts
+  fm.pending_count = Math.max(0, fm.pending_count - 1);
+  fm.resolved_count += 1;
+  if (opts.asDefault) fm.defaulted_count += 1;
+  fm.updated_at = new Date().toISOString();
+  writeFileSync(docPath, matter.stringify(body, fm), "utf8");
+}
+
 export interface AddPendingOpts {
   locationAnchor: string;
   locationLabel: string;

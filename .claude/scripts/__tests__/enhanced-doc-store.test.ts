@@ -9,8 +9,9 @@ import {
   setSection,
   addSection,
   addPending,
+  resolvePending,
 } from "../lib/enhanced-doc-store.ts";
-import { repoRoot } from "../lib/paths.ts";
+import { repoRoot, enhancedMd } from "../lib/paths.ts";
 
 const TEST_PROJECT = "test-d1-project";
 const TEST_YM = "202604";
@@ -184,3 +185,44 @@ function sampleQ() {
     severity: "blocking_unknown" as const,
   };
 }
+
+describe("enhanced-doc-store: resolve", () => {
+  beforeEach(cleanup);
+  afterEach(cleanup);
+
+  test("resolvePending wraps Q block in <del>, updates counts", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const qid = addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, qid, { answer: "不支持 Kafka" });
+    const doc = readDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(doc.frontmatter.pending_count).toBe(0);
+    expect(doc.frontmatter.resolved_count).toBe(1);
+    const raw = readFileSync(enhancedMd(TEST_PROJECT, TEST_YM, TEST_SLUG), "utf8");
+    expect(raw).toContain(`<del>${qid.toUpperCase()}</del>`);
+    expect(raw).toContain("不支持 Kafka");
+  });
+
+  test("resolvePending with asDefault increments defaulted_count", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const qid = addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, qid, { answer: "采用推荐", asDefault: true });
+    const doc = readDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(doc.frontmatter.defaulted_count).toBe(1);
+    expect(doc.pending[0].status).toBe("默认采用");
+  });
+
+  test("resolvePending on unknown q id throws", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(() =>
+      resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, "q99", { answer: "x" }),
+    ).toThrow(/q99 not found/i);
+  });
+
+  test("resolvePending on already resolved throws", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const qid = addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, qid, { answer: "a" });
+    expect(() => resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, qid, { answer: "b" }))
+      .toThrow(/already resolved/i);
+  });
+});
