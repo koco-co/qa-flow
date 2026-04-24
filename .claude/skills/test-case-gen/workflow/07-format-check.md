@@ -1,6 +1,6 @@
-# 节点 9: format-check — 格式合规检查闭环
+# 节点 7: format-check — 格式合规检查闭环
 
-> 由 workflow/main.md 路由后加载。上游：节点 8 review；下游：节点 10 output。
+> 由 workflow/main.md 路由后加载。上游：节点 6 review；下游：节点 8 output。
 
 **目标**：确保 Writer 产出的用例在格式层面严格符合 R01-R11 编写规范，零偏差才放行。
 
@@ -82,7 +82,7 @@ kata-cli format-report-locator print \
 ```bash
 # format-check 是自定义节点，首次使用前需确保已注册
 kata-cli progress task-add --project {{project}} --session "$SESSION_ID" \
-  --tasks '[{"id":"format-check","name":"format-check","kind":"node","order":8,"depends_on":["review"]}]' \
+  --tasks '[{"id":"format-check","name":"format-check","kind":"node","order":7,"depends_on":["review"]}]' \
   2>/dev/null || true
 kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task format-check --status done --payload '{{json}}'
 ```
