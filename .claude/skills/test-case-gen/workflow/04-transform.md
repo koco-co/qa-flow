@@ -1,5 +1,9 @@
 # 节点 4: transform — 源码分析与 PRD 结构化
 
+> **⚠️ Phase B 临时横幅**：discuss 出口可能带 `pending_count > 0`。Phase C 启用下游门禁前，主 agent 应在启动 transform 前手动调
+> `kata-cli discuss validate --require-zero-blocking --require-zero-pending`
+> 校验；退出非 0 → 回 discuss 步骤 3.6 回填。本节点下的 4.x 步骤保持 Phase A 时行为。
+
 > 由 workflow/main.md 路由后加载。上游：节点 3 discuss；下游：节点 5 enhance。
 
 **目标**：交叉分析蓝湖素材 + 源码 + 归档用例，产出结构化测试增强 PRD。
