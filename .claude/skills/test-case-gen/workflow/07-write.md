@@ -6,6 +6,16 @@
 
 **⏳ Task**：将 `write` 任务标记为 `in_progress`。然后为每个模块创建子任务（subject: `[write] {{模块名}}`，activeForm: `生成「{{模块名}}」用例`）。
 
+### 7.0 下游入口门禁（Phase C 新增）
+
+```bash
+kata-cli discuss validate \
+  --project {{project}} --prd {{prd_path}} \
+  --require-zero-blocking --require-zero-pending
+```
+
+退出码处理同 4.0 / 6.0。这是第 3 道入口校验（冗余但必须）——若用户在 analyze 之后、write 之前手动打开了 plan.md 加了 pending，也会被拦住。
+
 ### 7.1 派发 Writer Sub-Agent
 
 为每个模块派发独立 `writer-agent`（model: sonnet），派发前先构建 writer 上下文：
@@ -24,11 +34,15 @@ kata-cli writer-context-builder build \
 输入包含：
 
 - 增强后 PRD 对应模块内容
-- 该模块已确认的测试点清单
+- 该模块已确认的测试点清单（**每条必含 `source_ref`**，由 analyze 步骤注入；writer 继承到生成的每条 test_case）
 - 合并后规则 JSON（来自 `workspace/{{project}}/.temp/rules-merged.json`）
-- 历史归档用例参考（来自 analyze 步骤）
 - 已确认上下文（来自 `<confirmed_context>`）
 - 源码上下文（来自 transform 步骤的源码分析结果，包括按钮名称、表单结构、字段定义、导航路径等 🔵 标注信息。若 transform 阶段完成了 B 级分析，须将关键 UI 结构摘要传给 Writer）
+
+> **Phase C 变化**：
+>
+> 1. 删除了"历史归档用例参考"作为 writer 直接输入——历史只在 analyze 做覆盖分析，不再污染 writer 的上下文
+> 2. 每条 test_case 必须继承 test_point.source_ref；reviewer F16 规则会校验锚点可解析
 
 ### 7.2 结构化阻断中转（强制检查）
 

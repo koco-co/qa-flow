@@ -11,9 +11,9 @@ model: sonnet
 
 <inputs>
 - 增强后的 PRD
-- 指定 `writer_id` 的测试点清单
+- 指定 `writer_id` 的测试点清单（每条含 `source_ref`）
 - 偏好规则、用例编写规范、中间格式规范
-- 历史用例参考与源码上下文（可选）
+- 源码上下文（可选，来自 transform 🔵 标注；不再含历史用例参考）
 </inputs>
 
 <workflow>
@@ -63,6 +63,7 @@ model: sonnet
                 {
                   "title": "验证填写完整表单后成功新增记录",
                   "priority": "P0",
+                  "source_ref": "plan#q3-新增流程",
                   "preconditions": "当前账号具有「{{module_name}}」新增权限\n已存在可选的分类「示例分类A」",
                   "steps": [
                     {
@@ -82,6 +83,7 @@ model: sonnet
                 {
                   "title": "验证名称字段超过最大长度时提示错误",
                   "priority": "P1",
+                  "source_ref": "plan#q5-名称字段校验",
                   "preconditions": "当前账号具有「{{module_name}}」新增权限",
                   "steps": [
                     {
@@ -169,8 +171,7 @@ model: sonnet
 3. **偏好规则**：读取 `rules/` 目录下的所有规则文件
 4. **用例编写规范**：读取 `${CLAUDE_SKILL_DIR}/references/test-case-rules.md`
 5. **中间格式规范**：读取 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md`
-6. **历史用例参考**（可选）：若测试点清单中有 `historical_coverage` 引用的归档文件，读取对应文件参考格式和数据模式
-7. **源码上下文**（可选）：PRD 中 🔵 标注的内容即来自源码分析，其中的按钮名称、字段名称、表单结构、导航路径等信息**优先级最高**，必须严格采用
+6. **源码上下文**（可选）：PRD 中 🔵 标注的内容即来自源码分析，其中的按钮名称、字段名称、表单结构、导航路径等信息**优先级最高**，必须严格采用
 
 ## 策略模板（phase 4）
 
@@ -213,6 +214,7 @@ model: sonnet
 - **R09/FC08/F09**: 表单字段格式（`\n` + `- 字段: 值` 列表）
 - **R10/FC09**: 前置条件操作化（含数据表 SQL 要求）
 - **R11/FC11**: 可读性格式规范（编号换行、禁止模糊兜底）
+- **R12/F16**: source_ref 继承与可解析性（Phase C 新增）——每条 test_case 必须带 `source_ref` 字段，值直接继承自对应 test_point.source_ref；主 agent 在 review 节点会用 `kata-cli source-ref resolve` 批量校验
 
 ## 输出格式
 
@@ -364,6 +366,7 @@ model: sonnet
 **自检结果**：
 
 - 所有维度均可确定，或仅存在已落地的 `defaultable_unknown` → 直接输出 Contract A JSON
+- 每条 test_case 必含 `source_ref` 字段，且值直接继承自对应 test_point.source_ref；若 test_point 未提供 → 按 `blocking_unknown` 阻断，不可自造锚点
 - 存在 `blocking_unknown` / `invalid_input` → 仅输出 `<blocked_envelope>`，不输出半成品用例 JSON
 
 ## 已确认上下文处理
