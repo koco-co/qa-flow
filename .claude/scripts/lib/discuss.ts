@@ -4,19 +4,33 @@
 
 import type { StrategyResolution } from "./strategy-router.ts";
 
-export const PLAN_VERSION = 1;
+export const PLAN_VERSION = 2;
 
 export type PlanStatus = "discussing" | "ready" | "obsolete";
 export type ResumeAnchor = "discuss-in-progress" | "discuss-completed";
 export type ClarifySeverity =
   | "blocking_unknown"
   | "defaultable_unknown"
+  | "pending_for_pm"
   | "invalid_input";
 
 export interface KnowledgeDropped {
   type: "term" | "module" | "pitfall" | "overview";
   name: string;
 }
+
+export interface RepoConsentRepo {
+  path: string;
+  branch: string;
+  sha?: string;
+}
+
+export interface RepoConsent {
+  repos: RepoConsentRepo[];
+  granted_at: string;
+}
+
+export type HandoffMode = "current" | "new";
 
 export interface PlanFrontmatter {
   plan_version: number;
@@ -31,8 +45,11 @@ export interface PlanFrontmatter {
   discussion_rounds: number;
   clarify_count: number;
   auto_defaulted_count: number;
+  pending_count: number;
   resume_anchor: ResumeAnchor;
   knowledge_dropped: KnowledgeDropped[];
+  handoff_mode: HandoffMode | null;
+  repo_consent: RepoConsent | null;
   strategy?: string;  // inline JSON string
 }
 
@@ -104,7 +121,13 @@ function renderFrontmatter(fm: PlanFrontmatter): string {
   lines.push(`discussion_rounds: ${fm.discussion_rounds}`);
   lines.push(`clarify_count: ${fm.clarify_count}`);
   lines.push(`auto_defaulted_count: ${fm.auto_defaulted_count}`);
+  lines.push(`pending_count: ${fm.pending_count}`);
   lines.push(`resume_anchor: ${fm.resume_anchor}`);
+  if (fm.handoff_mode === null || fm.handoff_mode === undefined) {
+    lines.push(`handoff_mode: null`);
+  } else {
+    lines.push(`handoff_mode: ${fm.handoff_mode}`);
+  }
   if (fm.knowledge_dropped.length === 0) {
     lines.push("knowledge_dropped: []");
   } else {
@@ -112,6 +135,24 @@ function renderFrontmatter(fm: PlanFrontmatter): string {
     for (const k of fm.knowledge_dropped) {
       lines.push(`  - type: ${k.type}`);
       lines.push(`    name: ${k.name}`);
+    }
+  }
+  if (fm.repo_consent === null || fm.repo_consent === undefined) {
+    lines.push("repo_consent: null");
+  } else {
+    lines.push("repo_consent:");
+    lines.push(`  granted_at: ${fm.repo_consent.granted_at}`);
+    if (fm.repo_consent.repos.length === 0) {
+      lines.push("  repos: []");
+    } else {
+      lines.push("  repos:");
+      for (const r of fm.repo_consent.repos) {
+        lines.push(`    - path: ${r.path}`);
+        lines.push(`      branch: ${r.branch}`);
+        if (r.sha !== undefined) {
+          lines.push(`      sha: ${r.sha}`);
+        }
+      }
     }
   }
   if (fm.strategy !== undefined) {
@@ -156,6 +197,64 @@ function parseFrontmatter(raw: string): {
     if (/^knowledge_dropped:\s*\[\s*\]\s*$/.test(trimmed)) {
       fm.knowledge_dropped = [];
       i++;
+      continue;
+    }
+
+    if (/^repo_consent:\s*null\s*$/.test(trimmed)) {
+      fm.repo_consent = null;
+      i++;
+      continue;
+    }
+    if (/^repo_consent:\s*$/.test(trimmed)) {
+      i++;
+      let grantedAt = "";
+      const repos: RepoConsentRepo[] = [];
+      while (i < fmLines.length) {
+        const sub = fmLines[i];
+        const subTrim = sub.trim();
+        if (!subTrim) {
+          i++;
+          continue;
+        }
+        const grantedMatch = sub.match(/^\s+granted_at:\s*(.+?)\s*$/);
+        if (grantedMatch) {
+          grantedAt = grantedMatch[1];
+          i++;
+          continue;
+        }
+        if (/^\s+repos:\s*\[\s*\]\s*$/.test(sub)) {
+          i++;
+          continue;
+        }
+        if (/^\s+repos:\s*$/.test(sub)) {
+          i++;
+          while (i < fmLines.length) {
+            const rSub = fmLines[i];
+            const pathMatch = rSub.match(/^\s+-\s+path:\s*(.+?)\s*$/);
+            if (!pathMatch) break;
+            const repo: RepoConsentRepo = { path: pathMatch[1], branch: "" };
+            i++;
+            while (i < fmLines.length) {
+              const field = fmLines[i];
+              const bm = field.match(/^\s+branch:\s*(.+?)\s*$/);
+              const sm = field.match(/^\s+sha:\s*(.+?)\s*$/);
+              if (bm) {
+                repo.branch = bm[1];
+                i++;
+              } else if (sm) {
+                repo.sha = sm[1];
+                i++;
+              } else {
+                break;
+              }
+            }
+            repos.push(repo);
+          }
+          continue;
+        }
+        break;
+      }
+      fm.repo_consent = { repos, granted_at: grantedAt };
       continue;
     }
 
@@ -211,6 +310,12 @@ function parseFrontmatter(raw: string): {
         break;
       case "auto_defaulted_count":
         fm.auto_defaulted_count = Number.parseInt(value, 10);
+        break;
+      case "pending_count":
+        fm.pending_count = Number.parseInt(value, 10);
+        break;
+      case "handoff_mode":
+        fm.handoff_mode = value === "null" ? null : (value as HandoffMode);
         break;
       case "prd_slug":
         fm.prd_slug = value;
@@ -464,8 +569,11 @@ export function buildInitialPlan(input: {
     discussion_rounds: 0,
     clarify_count: 0,
     auto_defaulted_count: 0,
+    pending_count: 0,
     resume_anchor: "discuss-in-progress",
     knowledge_dropped: [],
+    handoff_mode: null,
+    repo_consent: null,
   };
   return renderPlan(fm, [], "");
 }
@@ -474,6 +582,9 @@ export function parsePlan(raw: string): ParsedPlan {
   const { frontmatter, body } = parseFrontmatter(raw);
   const fm = frontmatter as PlanFrontmatter;
   if (!fm.knowledge_dropped) fm.knowledge_dropped = [];
+  if (fm.pending_count === undefined) fm.pending_count = 0;
+  if (fm.handoff_mode === undefined) fm.handoff_mode = null;
+  if (fm.repo_consent === undefined) fm.repo_consent = null;
   const clarifications = extractClarificationsJson(body);
   const summary = extractSummary(body);
   return { frontmatter: fm, clarifications, summary, raw };
@@ -553,6 +664,7 @@ export function validatePlanSchema(fm: Partial<PlanFrontmatter>): {
     "discussion_rounds",
     "clarify_count",
     "auto_defaulted_count",
+    "pending_count",
     "resume_anchor",
   ];
   for (const key of required) {
@@ -575,6 +687,13 @@ export function validatePlanSchema(fm: Partial<PlanFrontmatter>): {
     !["discuss-in-progress", "discuss-completed"].includes(fm.resume_anchor)
   ) {
     errors.push(`invalid resume_anchor: ${fm.resume_anchor}`);
+  }
+  if (
+    fm.handoff_mode !== undefined &&
+    fm.handoff_mode !== null &&
+    !["current", "new"].includes(fm.handoff_mode)
+  ) {
+    errors.push(`invalid handoff_mode: ${fm.handoff_mode}`);
   }
   return { valid: errors.length === 0, errors };
 }

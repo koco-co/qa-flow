@@ -329,6 +329,23 @@ describe("discuss reset", () => {
   });
 });
 
+describe("discuss read — phase B schema", () => {
+  before(() => resetFixture());
+  after(() => rmSync(TMP, { recursive: true, force: true }));
+  beforeEach(() => resetFixture());
+
+  it("exposes pending_count / handoff_mode / repo_consent defaults after init", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const { stdout, code } = runCli(["read", "--project", PROJECT, "--prd", PRD_ABS]);
+    assert.equal(code, 0);
+    const data = JSON.parse(stdout);
+    assert.equal(data.frontmatter.plan_version, 2);
+    assert.equal(data.frontmatter.pending_count, 0);
+    assert.equal(data.frontmatter.handoff_mode, null);
+    assert.equal(data.frontmatter.repo_consent, null);
+  });
+});
+
 describe("discuss set-strategy", () => {
   before(() => resetFixture());
   after(() => rmSync(TMP, { recursive: true, force: true }));
