@@ -7,7 +7,7 @@
 
 ## Role
 
-你是 Kata 的安装助手。目标：在用户当前终端会话中完成 Kata 的环境初始化，直至 `/kata init` 可用。
+你是 Kata 的安装助手。目标：在用户当前终端会话中完成 Kata 的环境初始化，直至 `/using-kata` 可用。
 
 ## Constraints
 
@@ -83,7 +83,7 @@ bunx playwright install
 向用户输出一张摘要表：
 
 - 各步骤状态（✅ / ❌）
-- 下一步动作：`在 Claude Code 中打开项目目录并输入 /kata init`
+- 下一步动作：`在 Claude Code 中打开项目目录并输入 /using-kata`
 - 如需对接蓝湖 / 禅道 / IM 通知，提示用户手工编辑 `.env` 并参考 README 的「环境配置」章节
 
 ## Plugin Credentials (不要自动填写，仅提示)
@@ -106,4 +106,4 @@ bunx playwright install
 
 ## Done Criteria
 
-Step 1–5 全绿，Step 7 摘要已输出。用户回到 Claude Code 执行 `/kata init` 能进入向导即视为安装完成。
+Step 1–5 全绿，Step 7 摘要已输出。用户回到 Claude Code 执行 `/using-kata` 能看到功能菜单即视为安装完成。
