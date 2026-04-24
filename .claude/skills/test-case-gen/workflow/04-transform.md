@@ -1,14 +1,31 @@
 # 节点 4: transform — 源码分析与 PRD 结构化
 
-> **⚠️ Phase B 临时横幅**：discuss 出口可能带 `pending_count > 0`。Phase C 启用下游门禁前，主 agent 应在启动 transform 前手动调
-> `kata-cli discuss validate --require-zero-blocking --require-zero-pending`
-> 校验；退出非 0 → 回 discuss 步骤 3.6 回填。本节点下的 4.x 步骤保持 Phase A 时行为。
-
 > 由 workflow/main.md 路由后加载。上游：节点 3 discuss；下游：节点 5 enhance。
 
 **目标**：交叉分析蓝湖素材 + 源码 + 归档用例，产出结构化测试增强 PRD。
 
 **⏳ Task**：将 `transform` 任务标记为 `in_progress`。
+
+### 4.0 下游入口门禁（Phase C 新增）
+
+进入本节点**前必须**执行 discuss 门禁：
+
+```bash
+kata-cli discuss validate \
+  --project {{project}} --prd {{prd_path}} \
+  --require-zero-blocking --require-zero-pending
+```
+
+退出码约定（由 `kata-cli discuss validate` Phase B 已实现）：
+
+| 退出码 | 情况 | 处理 |
+|---|---|---|
+| 0 | plan §3 blocking_unanswered = 0 且 pending_count = 0 | 继续 4.1 |
+| 1 | schema error | 检查 plan.md 是否被误改；回 discuss 节点 reset |
+| 2 | blocking_unanswered > 0 | 回 discuss 节点 3.6 续问 |
+| 3 | pending_count > 0 | 主 agent 在 AskUserQuestion 中引导产品在 plan.md §6 打勾回写，并调 `discuss append-clarify` 把 pending 转 blocking_unknown + user_answer；再跑 3.9 complete 后重入本节点 |
+
+**禁止绕过门禁**：主 agent 不得以"用户已口头回答"等理由跳过 CLI 校验；违反硬约束即阻断当前会话并报警。
 
 ### 4.1 源码配置匹配
 
@@ -16,37 +33,12 @@
 kata-cli repo-profile match --text "{{prd_title_or_path}}"
 ```
 
-### 4.2 源码引用许可（交互点）
+### 4.2 源码引用写回许可（交互点 — Phase C 降级）
 
-先向用户展示引用摘要（使用 AskUserQuestion）：
+> **⚠️ 同步许可已在节点 3.2 拿到**（写入 plan.md frontmatter.repo_consent）。本节点只负责"是否把这次的 profile 映射保存为新 profile"的二道确认。
+> 若 plan.md.repo_consent 为空或被 `set-repo-consent --clear` 清掉，**不要**在本节点补问——应回到 discuss 节点 3.2 重新发起。
 
-```
-📋 源码配置确认
-
-命中映射规则：{{profile_name}}（若未命中则显示"未匹配"）
-
-仓库 1：
-  ● {{path}} @ {{branch}}（映射表默认）
-  ○ 自行输入仓库路径和分支
-
-仓库 2：
-  ● {{path}} @ {{branch}}
-  ○ 自行输入
-
-  ○ 添加更多仓库
-  ○ 不使用源码参考
-
-引用许可选项：
-
-- 选项 1：允许同步并引用以上仓库（推荐）
-- 选项 2：仅引用当前已有的本地副本，不额外同步
-- 选项 3：调整仓库/分支
-- 选项 4：不使用源码参考
-
-> **注意**：这是"允许引用/同步"的确认，不等于允许写回配置。
-```
-
-若用户提供了新的映射关系，仅在需要持久化时再进行第二道写回确认。先展示写入摘要：
+仅当用户本轮讨论中提出了**新的 profile 映射**（新增仓库、调整分支），展示写入摘要：
 
 - profile 名称：`{{name}}`
 - repos 预览：`{{repos_json}}`
@@ -58,27 +50,28 @@ kata-cli repo-profile match --text "{{prd_title_or_path}}"
 - 选项 2：保存为新的 profile / 更新现有 profile
 - 选项 3：取消刚才的映射调整
 
-只有在用户明确允许写回时，才执行：
+只有选项 2 才执行：
 
 ```bash
 kata-cli repo-profile save --name "{{name}}" --repos '{{repos_json}}'
 ```
 
-### 4.3 拉取源码
+若本轮未改过 profile 映射，本步骤**完全跳过**，直接进 4.3。
 
-若用户选择"允许同步并引用以上仓库"，执行：
+### 4.3 源码同步状态校验（幂等）
 
-```bash
-kata-cli repo-sync sync-profile --name "{{profile_name}}"
-```
-
-若用户自行输入了仓库（非 profile）且允许同步，则逐个调用：
+Phase C 起，真正的 `repo-sync` 已在节点 3.2.3 完成。本节点只做一次幂等校验：
 
 ```bash
-kata-cli repo-sync --url {{repo_url}} --branch {{branch}}
+kata-cli discuss read --project {{project}} --prd {{prd_path}} \
+  | bun -e 'JSON.parse(require("fs").readFileSync(0,"utf8")).repo_consent?.repos?.forEach(r => console.log(r.path, r.sha ?? "(no-sync)"))'
 ```
 
-将返回的 commit SHA 写入 PRD frontmatter。
+若 `repo_consent` 为空（用户在 3.2 选了"不使用源码参考"）→ 跳过 4.4 的源码交叉分析分支。
+
+若 `repo_consent.repos[].sha` 全部非空且 `.repos/` 目录存在 → 继续 4.4。
+
+若 `sha` 存在但工作区已变更（`git rev-parse HEAD ≠ sha`）→ 提示用户但不阻断；让 transform-agent 在任务提示中记录"sha 漂移"标记。
 
 ### 4.4 PRD 结构化转换（AI 任务）
 
@@ -86,7 +79,16 @@ kata-cli repo-sync --url {{repo_url}} --branch {{branch}}
 
 ```
 plan_path: workspace/{{project}}/prds/{{YYYYMM}}/{{prd_slug}}.plan.md
+plan_summary_section: §1  # 4 子节：背景 / 痛点 / 目标 / 成功标准
+plan_pending_section: §6  # 产品待确认清单（此时应为空，作为健康标记）
+source_consent_repos: {{repo_consent.repos_as_json}}  # 来自 plan.md frontmatter，可为 []
 ```
+
+transform-agent 读取时：
+
+- §1 4 子节直接粘贴到增强 PRD 的 "概述" 章节
+- §6 若非空 → 打印警告（本不应发生，因 4.0 门禁已拦）
+- source_consent_repos 作为源码分析的入口列表
 
 transform-agent 执行：
 
