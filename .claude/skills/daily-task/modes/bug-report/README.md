@@ -51,9 +51,9 @@ argument-hint: "[报错日志 / 堆栈文本 / 前端 Console 错误 | --templat
 
 ## 执行前准备
 
-参见 [`.claude/references/skill-preamble.md`](../../references/skill-preamble.md)（项目选择、读取配置、符号规则、异常处理通用片段）。
+参见 [`.claude/references/skill-preamble.md`](../../../references/skill-preamble.md)（项目选择、读取配置、符号规则、异常处理通用片段）。
 
-环境 vs 代码根因判断辅助：[`.claude/references/env-vs-code.md`](../../references/env-vs-code.md)。
+环境 vs 代码根因判断辅助：[`.claude/references/env-vs-code.md`](../../../references/env-vs-code.md)。
 
 ---
 

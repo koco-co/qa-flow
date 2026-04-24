@@ -33,7 +33,7 @@ argument-hint: "[禅道 Bug URL | Bug ID]"
 
 ## 执行前准备
 
-参见 [`.claude/references/skill-preamble.md`](../../references/skill-preamble.md)（项目选择、读取配置、符号规则、异常处理通用片段）。
+参见 [`.claude/references/skill-preamble.md`](../../../references/skill-preamble.md)（项目选择、读取配置、符号规则、异常处理通用片段）。
 
 输入解析格式与输出目录约定详见 [`workflow/zentao-input.md`](workflow/zentao-input.md)。
 

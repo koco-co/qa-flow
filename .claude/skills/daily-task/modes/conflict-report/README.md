@@ -59,7 +59,7 @@ git diff --name-only --diff-filter=U | xargs grep -n -A 50 "<<<<<<< HEAD"
 
 ## 执行前准备
 
-参见 [`.claude/references/skill-preamble.md`](../../references/skill-preamble.md)（项目选择、读取配置、符号规则、异常处理通用片段）。
+参见 [`.claude/references/skill-preamble.md`](../../../references/skill-preamble.md)（项目选择、读取配置、符号规则、异常处理通用片段）。
 
 ---
 
