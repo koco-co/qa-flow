@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname } from "node:path";
 import matter from "gray-matter";
-import { prdDir, enhancedMd } from "./paths.ts";
+import { prdDir, enhancedMd, resolvedMd } from "./paths.ts";
 import { generateSectionAnchor, generateQAnchor, isValidSectionAnchor } from "./enhanced-doc-anchors.ts";
 import type {
   EnhancedDoc,
@@ -432,4 +432,69 @@ export function addPending(
   }
   writeFileSync(docPath, matter.stringify(newBody, fm), "utf8");
   return qid;
+}
+
+// ---- listPending ----
+
+export interface ListPendingOpts {
+  includeResolved?: boolean;
+}
+
+export function listPending(
+  project: string,
+  yyyymm: string,
+  slug: string,
+  opts: ListPendingOpts = {},
+): PendingItem[] {
+  const doc = readDoc(project, yyyymm, slug);
+  if (opts.includeResolved) return doc.pending;
+  return doc.pending.filter(p => p.status === "待确认");
+}
+
+// ---- compactDoc ----
+
+export interface CompactOpts {
+  threshold?: number;
+}
+
+export function compactDoc(
+  project: string,
+  yyyymm: string,
+  slug: string,
+  opts: CompactOpts = {},
+): number {
+  const threshold = opts.threshold ?? 50;
+  const docPath = enhancedMd(project, yyyymm, slug);
+  const raw = readFileSync(docPath, "utf8");
+  const parsed = matter(raw);
+  const body = parsed.content;
+
+  // Count <del>Qn</del> headings in the pending block
+  const pendingBlock = extractBlock(body, PENDING_BEGIN, PENDING_END);
+  const delHeadingRe = /^### <del>Q\d+<\/del> /gm;
+  const delCount = (pendingBlock.match(delHeadingRe) ?? []).length;
+  if (delCount < threshold) return 0;
+
+  // Extract entire <del> Q blocks: from heading to next ### or end of block content
+  // pendingBlock does not include the surrounding markers, so use \s*$ to match final block
+  const blockRe = /^### <del>Q\d+<\/del>[\s\S]*?(?=^### |\s*$)/gm;
+  const archived = pendingBlock.match(blockRe) ?? [];
+
+  if (archived.length === 0) return 0;
+
+  // Append to resolved.md
+  const resolvedPath = resolvedMd(project, yyyymm, slug);
+  const existing = existsSync(resolvedPath)
+    ? readFileSync(resolvedPath, "utf8")
+    : "# Resolved Q Archive\n\n";
+  writeFileSync(resolvedPath, existing + archived.join("\n") + "\n", "utf8");
+
+  // Remove archived blocks from body by rebuilding pending block content
+  const newPendingBlock = pendingBlock.replace(blockRe, "");
+  const newBody = body.replace(
+    PENDING_BEGIN + pendingBlock + PENDING_END,
+    PENDING_BEGIN + newPendingBlock + PENDING_END,
+  );
+  writeFileSync(docPath, matter.stringify(newBody, parsed.data), "utf8");
+  return archived.length;
 }

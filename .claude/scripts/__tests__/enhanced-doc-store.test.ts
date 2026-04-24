@@ -10,6 +10,8 @@ import {
   addSection,
   addPending,
   resolvePending,
+  listPending,
+  compactDoc,
 } from "../lib/enhanced-doc-store.ts";
 import { repoRoot, enhancedMd } from "../lib/paths.ts";
 
@@ -224,5 +226,51 @@ describe("enhanced-doc-store: resolve", () => {
     resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, qid, { answer: "a" });
     expect(() => resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, qid, { answer: "b" }))
       .toThrow(/already resolved/i);
+  });
+});
+
+describe("enhanced-doc-store: list-pending + compact", () => {
+  beforeEach(cleanup);
+  afterEach(cleanup);
+
+  test("listPending excludes resolved by default", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const q1 = addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, q1, { answer: "a" });
+    const list = listPending(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    expect(list.length).toBe(1);
+    expect(list[0].id).toBe("q2");
+  });
+
+  test("listPending with includeResolved returns all", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const q1 = addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, q1, { answer: "a" });
+    const all = listPending(TEST_PROJECT, TEST_YM, TEST_SLUG, { includeResolved: true });
+    expect(all.length).toBe(2);
+  });
+
+  test("compactDoc archives resolved items to resolved.md when threshold exceeded", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    for (let i = 0; i < 3; i++) {
+      const q = addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+      resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, q, { answer: "a" });
+    }
+    const moved = compactDoc(TEST_PROJECT, TEST_YM, TEST_SLUG, { threshold: 2 });
+    expect(moved).toBe(3);
+    const resolvedPath = join(repoRoot(), "workspace", TEST_PROJECT, "prds", TEST_YM, TEST_SLUG, "resolved.md");
+    expect(existsSync(resolvedPath)).toBe(true);
+    const enhanced = readFileSync(enhancedMd(TEST_PROJECT, TEST_YM, TEST_SLUG), "utf8");
+    expect(enhanced).not.toContain("<del>Q1</del>");
+  });
+
+  test("compactDoc skips when threshold not met", () => {
+    initDoc(TEST_PROJECT, TEST_YM, TEST_SLUG);
+    const q = addPending(TEST_PROJECT, TEST_YM, TEST_SLUG, sampleQ());
+    resolvePending(TEST_PROJECT, TEST_YM, TEST_SLUG, q, { answer: "a" });
+    const moved = compactDoc(TEST_PROJECT, TEST_YM, TEST_SLUG, { threshold: 50 });
+    expect(moved).toBe(0);
   });
 });
