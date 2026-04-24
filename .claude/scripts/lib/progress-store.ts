@@ -368,3 +368,102 @@ export function updateTask(
   const tasks = [...session.tasks.slice(0, idx), next, ...session.tasks.slice(idx + 1)];
   writeSession(project, { ...session, tasks, updated_at: nowIso() });
 }
+
+// ── Task Query ────────────────────────────────────────────────────────────────
+
+import {
+  DEPENDENCY_SATISFIED_STATUSES,
+  PARENT_VISIBLE_STATUSES,
+} from "./progress-types.ts";
+
+export interface QueryOpts {
+  readonly status?: readonly TaskStatus[];
+  readonly kind?: string;
+  readonly parent?: string | null;
+  readonly includeAll?: boolean;
+  readonly includeBlocked?: boolean;
+}
+
+export interface QueryResult {
+  readonly task: Task;
+  readonly blocked_by?: readonly string[];
+}
+
+function parentStatusOf(
+  tasks: readonly Task[],
+  parentId: string | null,
+): TaskStatus | null {
+  if (parentId === null) return null;
+  const p = tasks.find((t) => t.id === parentId);
+  return p ? p.status : null;
+}
+
+function computeBlockedBy(task: Task, tasks: readonly Task[]): string[] {
+  const reasons: string[] = [];
+
+  const unsatisfiedDeps = task.depends_on.filter((depId) => {
+    const dep = tasks.find((t) => t.id === depId);
+    if (!dep) return true;
+    return !DEPENDENCY_SATISFIED_STATUSES.includes(dep.status);
+  });
+  if (unsatisfiedDeps.length) {
+    reasons.push(...unsatisfiedDeps.map((id) => `dep:${id}`));
+  }
+
+  if (task.parent) {
+    const ps = parentStatusOf(tasks, task.parent);
+    if (ps && !PARENT_VISIBLE_STATUSES.includes(ps)) {
+      reasons.push(`parent:${task.parent}(${ps})`);
+    }
+  }
+
+  return reasons;
+}
+
+export function queryTasks(
+  project: string,
+  sessionId: string,
+  opts: QueryOpts,
+): readonly QueryResult[] {
+  const session = readSession(project, sessionId);
+  if (!session) throw new Error(`session not found: ${sessionId}`);
+
+  const filtered = session.tasks.filter((t) => {
+    if (opts.status && !opts.status.includes(t.status)) return false;
+    if (opts.kind !== undefined && t.kind !== opts.kind) return false;
+    if (opts.parent !== undefined && t.parent !== opts.parent) return false;
+    return true;
+  });
+
+  if (opts.includeAll) {
+    return filtered.map((task) => ({ task }));
+  }
+
+  if (opts.includeBlocked) {
+    return filtered
+      .map((task) => ({ task, blocked_by: computeBlockedBy(task, session.tasks) }))
+      .filter((r) => r.blocked_by!.length > 0);
+  }
+
+  // Default: only executable tasks (empty blocked_by).
+  return filtered
+    .filter((task) => computeBlockedBy(task, session.tasks).length === 0)
+    .map((task) => ({ task }));
+}
+
+/**
+ * Check whether a task's dependencies are satisfied. Used by CLI guard
+ * on `task-update --status running`.
+ */
+export function isExecutable(
+  project: string,
+  sessionId: string,
+  taskId: string,
+): { ok: boolean; blocked_by: readonly string[] } {
+  const session = readSession(project, sessionId);
+  if (!session) throw new Error(`session not found: ${sessionId}`);
+  const task = session.tasks.find((t) => t.id === taskId);
+  if (!task) throw new Error(`task not found: ${taskId}`);
+  const blocked_by = computeBlockedBy(task, session.tasks);
+  return { ok: blocked_by.length === 0, blocked_by };
+}

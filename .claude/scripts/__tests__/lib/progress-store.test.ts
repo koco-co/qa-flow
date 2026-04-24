@@ -12,6 +12,7 @@ import {
   addTasks,
   updateTask,
   removeTask,
+  queryTasks,
 } from "../../lib/progress-store.ts";
 import type { Session } from "../../lib/progress-types.ts";
 
@@ -221,5 +222,74 @@ describe("removeTask", () => {
     addTasks(project, s.session_id, [{ id: "t1", name: "n", kind: "node", order: 1 }]);
     removeTask(project, s.session_id, "t1");
     assert.equal(readSession(project, s.session_id)!.tasks.length, 0);
+  });
+});
+
+describe("queryTasks visibility rules", () => {
+  const project = "dataAssets";
+  function setup(): string {
+    const s = createSession({
+      project, workflow: "w", slug: "q", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    // Parent t0 pending, child t1 hidden
+    // Parent t2 running, child t3 visible (deps ok)
+    // Parent t4 running, child t5 hidden (t6 not done)
+    addTasks(project, s.session_id, [
+      { id: "t0", name: "phase0", kind: "phase", order: 1 },
+      { id: "t1", name: "c1", kind: "case", order: 1, parent: "t0" },
+      { id: "t2", name: "phase2", kind: "phase", order: 2 },
+      { id: "t3", name: "c3", kind: "case", order: 1, parent: "t2" },
+      { id: "t4", name: "phase4", kind: "phase", order: 3 },
+      { id: "t5", name: "c5", kind: "case", order: 1, parent: "t4", depends_on: ["t6"] },
+      { id: "t6", name: "c6", kind: "case", order: 2, parent: "t4" },
+    ]);
+    updateTask(project, s.session_id, "t2", { status: "running" });
+    updateTask(project, s.session_id, "t4", { status: "running" });
+    return s.session_id;
+  }
+
+  it("hides tasks whose parent is pending", () => {
+    const sid = setup();
+    const visible = queryTasks(project, sid, {});
+    const ids = visible.map((r) => r.task.id);
+    assert.ok(!ids.includes("t1"), "t1 should be hidden (parent pending)");
+  });
+
+  it("hides tasks with unsatisfied depends_on", () => {
+    const sid = setup();
+    const visible = queryTasks(project, sid, {});
+    const ids = visible.map((r) => r.task.id);
+    assert.ok(!ids.includes("t5"), "t5 should be hidden (t6 not done)");
+    assert.ok(ids.includes("t6"), "t6 visible (parent running, no deps)");
+  });
+
+  it("--include-all returns everything", () => {
+    const sid = setup();
+    const all = queryTasks(project, sid, { includeAll: true });
+    assert.equal(all.length, 7);
+  });
+
+  it("filters by status + kind + parent", () => {
+    const sid = setup();
+    const filtered = queryTasks(project, sid, {
+      includeAll: true,
+      status: ["pending"],
+      kind: "case",
+      parent: "t4",
+    });
+    const ids = filtered.map((r) => r.task.id).sort();
+    assert.deepEqual(ids, ["t5", "t6"]);
+  });
+
+  it("--include-blocked returns hidden tasks with blocked_by reasons", () => {
+    const sid = setup();
+    const blocked = queryTasks(project, sid, { includeBlocked: true });
+    const byId = Object.fromEntries(blocked.map((r) => [r.task.id, r]));
+    assert.ok(byId.t1);
+    assert.match(byId.t1.blocked_by!.join(","), /t0/);
+    assert.ok(byId.t5);
+    assert.match(byId.t5.blocked_by!.join(","), /t6/);
   });
 });
