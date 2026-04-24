@@ -12,6 +12,7 @@ import {
   addTasks, updateTask, removeTask,
   queryTasks, isExecutable, rollupTask,
   withSessionLock,
+  setArtifact, getArtifact,
 } from "./lib/progress-store.ts";
 import type { TaskInput, TaskUpdatePatch } from "./lib/progress-store.ts";
 import { ExitCode } from "./lib/progress-types.ts";
@@ -267,6 +268,24 @@ async function runTaskRollup(opts: {
   emit(readSession(opts.project, opts.session));
 }
 
+// ── artifact-set / artifact-get ─────────────────────────
+
+async function runArtifactSet(opts: {
+  project: string; session: string; key: string; value: string;
+}): Promise<void> {
+  let parsed: unknown;
+  try { parsed = JSON.parse(opts.value); }
+  catch { fail("artifact-set", `invalid --value JSON`, ExitCode.ARG_ERROR); }
+  await withSessionLock(opts.project, opts.session, () =>
+    setArtifact(opts.project, opts.session, opts.key, parsed));
+  emit(readSession(opts.project, opts.session));
+}
+
+function runArtifactGet(opts: { project: string; session: string; key: string }): void {
+  const v = getArtifact(opts.project, opts.session, opts.key);
+  emit(v);
+}
+
 // ── registration ────────────────────────────────────────
 
 export const program = createCli({
@@ -415,6 +434,27 @@ export const program = createCli({
         { flag: "--task <id>", description: "Parent task id", required: true },
       ],
       action: runTaskRollup,
+    },
+    {
+      name: "artifact-set",
+      description: "Set session-level artifact (auto-spill > 64KB)",
+      options: [
+        { flag: "--project <name>", description: "Project name", required: true },
+        { flag: "--session <id>", description: "Session id", required: true },
+        { flag: "--key <k>", description: "Artifact key", required: true },
+        { flag: "--value <json>", description: "Value JSON", required: true },
+      ],
+      action: runArtifactSet,
+    },
+    {
+      name: "artifact-get",
+      description: "Read artifact (dereferences blob $ref automatically)",
+      options: [
+        { flag: "--project <name>", description: "Project name", required: true },
+        { flag: "--session <id>", description: "Session id", required: true },
+        { flag: "--key <k>", description: "Artifact key", required: true },
+      ],
+      action: runArtifactGet,
     },
   ],
 });

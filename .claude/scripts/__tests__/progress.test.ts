@@ -222,3 +222,32 @@ describe("task-block / task-unblock / task-rollup", () => {
     assert.equal(s.tasks.find((t: { id: string }) => t.id === "p").status, "done");
   });
 });
+
+describe("artifact-set + artifact-get", () => {
+  it("round-trips small value", () => {
+    const sid = JSON.parse(run([
+      "session-create", "--workflow", "w", "--project", "dataAssets",
+      "--source-type", "prd", "--source-path", "a.md",
+    ]).stdout).session_id;
+    run(["artifact-set", "--project", "dataAssets", "--session", sid,
+      "--key", "k1", "--value", JSON.stringify({ x: 1 })]);
+    const got = JSON.parse(run([
+      "artifact-get", "--project", "dataAssets", "--session", sid, "--key", "k1",
+    ]).stdout);
+    assert.deepEqual(got, { x: 1 });
+  });
+
+  it("spills and reads back large value", () => {
+    const sid = JSON.parse(run([
+      "session-create", "--workflow", "w", "--project", "dataAssets",
+      "--source-type", "prd", "--source-path", "a2.md",
+    ]).stdout).session_id;
+    const big = { data: "y".repeat(100_000) };
+    run(["artifact-set", "--project", "dataAssets", "--session", sid,
+      "--key", "blob", "--value", JSON.stringify(big)]);
+    const got = JSON.parse(run([
+      "artifact-get", "--project", "dataAssets", "--session", sid, "--key", "blob",
+    ]).stdout);
+    assert.equal(got.data.length, 100_000);
+  });
+});
