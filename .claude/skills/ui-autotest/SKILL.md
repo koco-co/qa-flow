@@ -110,15 +110,19 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 | 别名                | 完整命令                                                                                               |
 | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `@progress:create`  | `kata-cli ui-autotest-progress create --project {{project}} --suite "{{suite}}" ...` |
-| `@progress:update`  | `kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite}}" ...` |
-| `@progress:summary` | `kata-cli ui-autotest-progress summary --project {{project}} --suite "{{suite}}"`    |
-| `@progress:reset`   | `kata-cli ui-autotest-progress reset --project {{project}} --suite "{{suite}}"`      |
-| `@progress:resume`  | `kata-cli ui-autotest-progress resume --project {{project}} --suite "{{suite}}"`     |
+| `@progress:create`  | `kata-cli progress session-create --workflow ui-autotest --project {{project}} ...` + `kata-cli progress task-add --project {{project}} --session "$SESSION_ID" --tasks '[...]'` |
+| `@progress:update`  | `kata-cli progress task-update --session "$SESSION_ID" --task {{id}} ...` |
+| `@progress:summary` | `kata-cli progress session-summary --project {{project}} --session "$SESSION_ID"` |
+| `@progress:reset`   | `kata-cli progress session-delete --project {{project}} --session "$SESSION_ID"` |
+| `@progress:resume`  | `kata-cli progress session-resume --project {{project}} --session "$SESSION_ID"` |
 | `@parse-cases`      | `bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file {{md_path}}`                         |
 | `@merge-specs`      | `bun run .claude/skills/ui-autotest/scripts/merge-specs.ts ...`                                        |
 
-> 当 `{{env}}` 已确定时，所有 `@progress:*` 命令均追加 `--env {{env}}` 参数。
+> `SESSION_ID` 在步骤 1 完成后通过以下 bash 推导并在全流程复用：
+> ```bash
+> SUITE_SLUG=$(echo "{{suite_name}}" | sed 's/[^A-Za-z0-9_-]/-/g' | sed 's/--*/-/g; s/^-//;s/-$//')
+> SESSION_ID="ui-autotest/${SUITE_SLUG}-${ACTIVE_ENV:-default}"
+> ```
 
 ### 脚本编码规范
 
@@ -161,7 +165,7 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 
 - `{{project}}`：项目名称（如 `dataAssets`）
 - `{{suite_name}}`：套件名称，来自 parse-cases.ts 输出的 `suite_name` 字段
-- `{{suite_slug}}`：suite 名称 slug 化结果。用法：`kata-cli ui-autotest-progress suite-slug --suite "xxx"` 生成。用于 `.temp/ui-blocks/{{suite_slug}}/` 子目录隔离，避免同项目多 suite 并发覆盖。
+- `{{suite_slug}}`：suite 名称 slug 化结果。通过以下 bash 生成：`echo "{{suite_name}}" | sed 's/[^A-Za-z0-9_-]/-/g' | sed 's/--*/-/g; s/^-//;s/-$//'`。用于 `.temp/ui-blocks/{{suite_slug}}/` 子目录隔离，避免同项目多 suite 并发覆盖。
 - `{{env}}`：环境标识（如 `ltqcdev`、`ci63`）
 - `{{id}}`：用例 ID（如 `t1`、`t2`）
 
@@ -205,7 +209,7 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
    - **HTML Bug 报告**：`workspace/{{project}}/reports/bugs/{{YYYYMM}}/ui-autotest-{{suite_name}}.html`
    - **失败用例脚本与日志**：`workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/` 下的 `.spec.ts` 与 stderr 文本
    - **Allure 报告（含截图、Console 日志、错误堆栈）**：`workspace/{{project}}/reports/allure/{{YYYYMM}}/{{suite_name}}/{{env}}/allure-report/index.html`
-   - **进度状态**：`kata-cli ui-autotest-progress summary --project {{project}} --suite "{{suite_name}}" --env "{{env}}"`
+   - **进度状态**：`kata-cli progress session-summary --project {{project}} --session "$SESSION_ID"`
 4. 用户根据 HTML 报告与 Allure 截图判断：测试环境问题（数据/权限/网络）→ 修复环境后 `--retry-failed`；应用端 Bug → 已生成的 Bug 报告可直接交研发
 
 ---

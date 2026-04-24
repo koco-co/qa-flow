@@ -18,7 +18,9 @@
 前置条件（建表/引入/同步/质量项目授权）完成后：
 
 ```bash
-kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field preconditions_ready --value true
+EXISTING=$(kata-cli progress artifact-get --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow 2>/dev/null || echo "{}")
+UPDATED=$(echo "$EXISTING" | jq '. + {"preconditions_ready": true}')
+kata-cli progress artifact-set --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow --value "$UPDATED"
 ```
 
 断点恢复时，若 `preconditions_ready === true`，跳过前置条件准备。
@@ -34,25 +36,19 @@ ACTIVE_ENV={{env}} QA_PROJECT={{project}} bunx playwright test workspace/{{proje
 每条用例执行前：
 
 ```bash
-kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field test_status --value running
+kata-cli progress task-update --session "$SESSION_ID" --task {{id}} --status running
 ```
 
 执行结果（通过）：
 
 ```bash
-kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --case {{id}} --field test_status --value passed
+kata-cli progress task-update --session "$SESSION_ID" --task {{id}} --status done
 ```
 
 执行结果（失败）：
 
 ```bash
-kata-cli ui-autotest-progress update \
-  --project {{project}} \
-  --suite "{{suite_name}}" \
-  --env "{{env}}" \
-  --case {{tN}} \
-  --field test_status --value failed \
-  --error "{{error_summary}}"
+kata-cli progress task-update --session "$SESSION_ID" --task {{tN}} --status failed --error "{{error_summary}}"
 ```
 
 断点恢复时，跳过 `test_status === "passed"` 的用例。对于 `test_status === "failed"` 且 `attempts >= 3` 的用例，也跳过（除非用户选择「重试失败项」）。
@@ -209,6 +205,8 @@ Archive MD 不变，脚本断言保持原用例预期文本，该用例标记为
 **💾 进度持久化 — 步骤 5 完成**：
 
 ```bash
-kata-cli ui-autotest-progress update --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --field current_step --value 6
+EXISTING=$(kata-cli progress artifact-get --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow 2>/dev/null || echo "{}")
+UPDATED=$(echo "$EXISTING" | jq '. + {"current_step": 6}')
+kata-cli progress artifact-set --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow --value "$UPDATED"
 ```
 

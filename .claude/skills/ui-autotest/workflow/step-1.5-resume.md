@@ -5,7 +5,7 @@
 **⏳ 自动检查**：检查是否存在未完成的进度：
 
 ```bash
-kata-cli ui-autotest-progress summary --project {{project}} --suite "{{suite_name}}" --env "{{env}}"
+kata-cli progress session-summary --project {{project}} --session "$SESSION_ID"
 ```
 
 **情况 A — 无进度文件**（命令 exit 1）：正常继续步骤 2。
@@ -18,14 +18,14 @@ kata-cli ui-autotest-progress summary --project {{project}} --suite "{{suite_nam
 2. 取消
 ```
 
-若选 1，执行 `kata-cli ui-autotest-progress reset --project {{project}} --suite "{{suite_name}}" --env "{{env}}"` 后继续步骤 2。
+若选 1，执行 `kata-cli progress session-delete --project {{project}} --session "$SESSION_ID"` 后继续步骤 2。
 
 **情况 C — 有进度文件且未完成**：
 
 先执行 resume 清理中断状态：
 
 ```bash
-kata-cli ui-autotest-progress resume --project {{project}} --suite "{{suite_name}}" --env "{{env}}"
+kata-cli progress session-resume --project {{project}} --session "$SESSION_ID" --payload-path-check script_path
 ```
 
 然后读取 summary，向用户展示（步骤进度条 + 用例统计）：
@@ -57,7 +57,7 @@ kata-cli ui-autotest-progress resume --project {{project}} --suite "{{suite_name
 > 步骤名称参照 SKILL.md 顶部「主流程任务列表」(步骤 1-8)。`completedSteps` 为 ID < `current_step` 的步骤，`pendingSteps` 为 ID > `current_step` 的步骤。
 
 - 选 1：直接跳到 `current_step` 对应的步骤（4/5/6），已 passed 的用例自动跳过
-- 选 2：执行 `kata-cli ui-autotest-progress resume --project {{project}} --suite "{{suite_name}}" --env "{{env}}" --retry-failed`，然后跳到 `current_step`
+- 选 2：执行 `kata-cli progress session-resume --project {{project}} --session "$SESSION_ID" --retry-failed --payload-path-check script_path`，然后跳到 `current_step`
 - 选 3：执行 `reset`，正常从步骤 2 继续
 
 > **恢复跳转规则**：恢复时直接跳到 `current_step` 对应的步骤。步骤 1~3（解析、范围、登录态）始终重新执行（它们很快且登录态需刷新），但从进度文件中恢复 `url`、`selected_priorities` 等参数，无需重新询问用户。
