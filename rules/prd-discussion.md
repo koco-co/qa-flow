@@ -61,17 +61,17 @@
 - init 节点必须先调 `discuss read` 检查 plan 状态：
   - `不存在` 或 `status=obsolete` → 进入 discuss 节点 init 模式
   - `status=discussing` → 进入 discuss 节点恢复模式（从未答 Q\* / 未回填 pending 续问）
-  - `status=ready` → 跳过 discuss 节点，直接进入 transform（Phase C 启用下游门禁后，再跑一次 `discuss validate --require-zero-blocking --require-zero-pending`）
+  - `status=ready` → 跳过 discuss 节点，直接进入 transform；transform / analyze / write 入口均已 enforce `discuss validate --require-zero-blocking --require-zero-pending`（见各节点 4.0 / 6.0 / 7.0）
 
 ## 交接模式
 
 - `discuss complete` 必须带 `--handoff-mode current|new`：
   - `current`：主 agent 在当前会话继续进入 transform
   - `new`：输出交接 prompt，结束当前会话，由用户新开会话接力
-- pending_count > 0 时，主 agent 在 AskUserQuestion 中应标红警告（Phase C 启用下游门禁会拦截）
+- pending_count > 0 时，主 agent 在 AskUserQuestion 中应标红警告：Phase C 下游门禁已 enforce，带 pending 的 plan 进入 transform 会被 4.0 直接拦截
 
 ## clarify_envelope 协议已弃用
 
 - transform-agent 不再产出 `<clarify_envelope>` XML 块
 - 旧 `references/clarify-protocol.md` 仅供历史 PRD 兼容回退使用
-- 所有澄清都通过 plan.md §3 持久化；Writer 阻断回射到 discuss append-clarify（Phase C 实施）
+- 所有澄清都通过 plan.md §3 持久化；Writer 阻断回射到 `discuss append-clarify`（见 `.claude/skills/test-case-gen/workflow/main.md` 共享协议段）
