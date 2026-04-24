@@ -254,7 +254,12 @@ function parseFrontmatter(raw: string): {
         }
         break;
       }
-      fm.repo_consent = { repos, granted_at: grantedAt };
+      if (grantedAt.length === 0) {
+        // Malformed block (no granted_at) — treat as null to be safe.
+        fm.repo_consent = null;
+      } else {
+        fm.repo_consent = { repos, granted_at: grantedAt };
+      }
       continue;
     }
 
