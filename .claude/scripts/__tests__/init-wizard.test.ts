@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 
 const ROOT = join(import.meta.dirname, "../../..");
-const SCRIPT = ".claude/skills/setup/scripts/init-wizard.ts";
+const SCRIPT = ".claude/scripts/init-wizard.ts";
 
 function run(
   args: string[],
