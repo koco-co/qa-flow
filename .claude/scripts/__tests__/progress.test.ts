@@ -281,4 +281,26 @@ describe("progress migrate --from legacy", () => {
       { WORKSPACE_DIR: join(TMP, "workspace") }).stdout);
     assert.equal(again.migrated, 0);
   });
+
+  it("distinguishes ui-autotest files by their legacy env", () => {
+    const wsTemp = join(TMP, "workspace", "dataAssets", ".temp");
+    mkdirSync(wsTemp, { recursive: true });
+    const base = {
+      version: 1, suite_name: "shared-suite",
+      archive_md: "x.md", url: "u", selected_priorities: ["P0"],
+      output_dir: "t/", started_at: "x", updated_at: "x",
+      current_step: 4, preconditions_ready: false, merge_status: "pending",
+      cases: {},
+    };
+    writeFileSync(join(wsTemp, "ui-autotest-progress-shared-suite-a.json"),
+      JSON.stringify({ ...base, env: "alpha" }));
+    writeFileSync(join(wsTemp, "ui-autotest-progress-shared-suite-b.json"),
+      JSON.stringify({ ...base, env: "beta" }));
+
+    const result = JSON.parse(run(["migrate", "--from", "legacy", "--project", "dataAssets"],
+      { WORKSPACE_DIR: join(TMP, "workspace") }).stdout);
+    assert.equal(result.migrated, 2);
+    const sessionIds = result.results.map((r: { sessionId: string }) => r.sessionId).sort();
+    assert.deepEqual(sessionIds, ["ui-autotest/shared-suite-alpha", "ui-autotest/shared-suite-beta"]);
+  });
 });

@@ -286,10 +286,16 @@ export function discoverLegacyFiles(project: string): LegacyEntry[] {
         env: m?.[2] ?? "default",
       });
     } else if (/^ui-autotest-progress-(?!alias-).+\.json$/.test(f)) {
+      const filePath = join(dir, f);
+      let env = "default";
+      try {
+        const raw = JSON.parse(readFileSync(filePath, "utf8")) as { env?: string };
+        if (raw.env) env = raw.env;
+      } catch { /* ignore malformed, leave default */ }
       out.push({
-        path: join(dir, f),
+        path: filePath,
         kind: "ui-autotest",
-        env: "default",
+        env,
       });
     }
   }
