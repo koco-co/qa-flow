@@ -87,7 +87,7 @@ kata-cli progress artifact-set --project {{project}} --session "$SESSION_ID" --k
 **5.5.7 重置探路 case 的 test_status**
 
 ```bash
-kata-cli progress task-update --session "$SESSION_ID" --task {{probe_id}} --status pending
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{probe_id}} --status pending
 ```
 
 让主流重跑这些 case，检验 helpers 修复是否真的解决问题。

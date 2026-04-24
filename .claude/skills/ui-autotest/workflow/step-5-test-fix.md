@@ -36,19 +36,19 @@ ACTIVE_ENV={{env}} QA_PROJECT={{project}} bunx playwright test workspace/{{proje
 每条用例执行前：
 
 ```bash
-kata-cli progress task-update --session "$SESSION_ID" --task {{id}} --status running
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{id}} --status running
 ```
 
 执行结果（通过）：
 
 ```bash
-kata-cli progress task-update --session "$SESSION_ID" --task {{id}} --status done
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{id}} --status done
 ```
 
 执行结果（失败）：
 
 ```bash
-kata-cli progress task-update --session "$SESSION_ID" --task {{tN}} --status failed --error "{{error_summary}}"
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{tN}} --status failed --error "{{error_summary}}"
 ```
 
 断点恢复时，跳过 `test_status === "passed"` 的用例。对于 `test_status === "failed"` 且 `attempts >= 3` 的用例，也跳过（除非用户选择「重试失败项」）。
@@ -57,14 +57,20 @@ kata-cli progress task-update --session "$SESSION_ID" --task {{tN}} --status fai
 
 每条用例自测完成后，主 agent 检查：
 
-```typescript
-const failedCount = Object.values(progress.cases)
-  .filter(c => c.test_status === "failed").length;
+```bash
+# 获取失败用例数
+FAILED_COUNT=$(kata-cli progress task-query --project {{project}} --session "$SESSION_ID" --status failed --kind case --format json | jq 'length')
 
-if (failedCount >= convergenceThreshold &&
-    progress.convergence_status !== "completed") {
-  // 跳出主流，进入步骤 5.5
-}
+# 获取当前收敛状态
+CONVERGENCE_STATUS=$(kata-cli progress artifact-get --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow 2>/dev/null | jq -r '.convergence_status // "skipped"')
+
+# 若失败数 >= 收敛阈值且收敛未完成，触发共性收敛
+if [ "$FAILED_COUNT" -ge "$CONVERGENCE_THRESHOLD" ] && [ "$CONVERGENCE_STATUS" != "completed" ]; then
+  # 将收敛状态置为 active，跳出主流，进入步骤 5.5
+  EXISTING=$(kata-cli progress artifact-get --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow 2>/dev/null || echo "{}")
+  UPDATED=$(echo "$EXISTING" | jq '. + {"convergence_status": "active"}')
+  kata-cli progress artifact-set --project {{project}} --session "$SESSION_ID" --key ui_autotest_flow --value "$UPDATED"
+fi
 ```
 
 如触发，按下文步骤 5.5 执行；不触发则继续走 5.2 单条修复。

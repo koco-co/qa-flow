@@ -111,7 +111,7 @@ workflow 启动时（步骤 1 开始前），使用 `TaskCreate` 一次性创建
 | 别名                | 完整命令                                                                                               |
 | ------------------- | ------------------------------------------------------------------------------------------------------ |
 | `@progress:create`  | `kata-cli progress session-create --workflow ui-autotest --project {{project}} ...` + `kata-cli progress task-add --project {{project}} --session "$SESSION_ID" --tasks '[...]'` |
-| `@progress:update`  | `kata-cli progress task-update --session "$SESSION_ID" --task {{id}} ...` |
+| `@progress:update`  | `kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{id}} ...` |
 | `@progress:summary` | `kata-cli progress session-summary --project {{project}} --session "$SESSION_ID"` |
 | `@progress:reset`   | `kata-cli progress session-delete --project {{project}} --session "$SESSION_ID"` |
 | `@progress:resume`  | `kata-cli progress session-resume --project {{project}} --session "$SESSION_ID"` |

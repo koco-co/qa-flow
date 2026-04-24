@@ -100,8 +100,8 @@ import { test, expect } from "../../fixtures/step-screenshot";
 每条用例的 sub-agent 完成后，更新进度：
 
 ```bash
-kata-cli progress task-update --session "$SESSION_ID" --task {{id}} --payload '{"generated":true}'
-kata-cli progress task-update --session "$SESSION_ID" --task {{id}} --payload '{"script_path":"workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts"}'
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{id}} --payload '{"generated":true}'
+kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task {{id}} --payload '{"script_path":"workspace/{{project}}/.temp/ui-blocks/{{suite_slug}}/{{id}}.ts"}'
 ```
 
 断点恢复时，跳过 `generated === true` 的用例，只生成剩余的。
