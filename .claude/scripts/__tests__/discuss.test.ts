@@ -620,3 +620,111 @@ describe("discuss complete — handoff mode", () => {
     assert.match(stderr, /blocking_unknown/);
   });
 });
+
+describe("discuss set-repo-consent", () => {
+  before(() => resetFixture());
+  after(() => rmSync(TMP, { recursive: true, force: true }));
+  beforeEach(() => resetFixture());
+
+  it("writes repo_consent into frontmatter with multiple repos", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const consent = {
+      repos: [
+        { path: "workspace/p/.repos/studio", branch: "master", sha: "abc123" },
+        { path: "workspace/p/.repos/backend", branch: "main" },
+      ],
+      granted_at: "2026-04-24T10:01:00+08:00",
+    };
+    const { stdout, code } = runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      JSON.stringify(consent),
+    ]);
+    assert.equal(code, 0);
+    const data = JSON.parse(stdout);
+    assert.equal(data.ok, true);
+    assert.equal(data.repos_count, 2);
+
+    const { stdout: read } = runCli(["read", "--project", PROJECT, "--prd", PRD_ABS]);
+    const parsed = JSON.parse(read);
+    assert.equal(parsed.frontmatter.repo_consent.repos.length, 2);
+    assert.equal(parsed.frontmatter.repo_consent.repos[0].path, "workspace/p/.repos/studio");
+    assert.equal(parsed.frontmatter.repo_consent.repos[0].sha, "abc123");
+    assert.equal(parsed.frontmatter.repo_consent.repos[1].branch, "main");
+    assert.equal(parsed.frontmatter.repo_consent.granted_at, "2026-04-24T10:01:00+08:00");
+  });
+
+  it("accepts --clear to reset repo_consent to null", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      JSON.stringify({
+        repos: [{ path: "a", branch: "b" }],
+        granted_at: "2026-04-24T10:01:00+08:00",
+      }),
+    ]);
+    const { stdout, code } = runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--clear",
+    ]);
+    assert.equal(code, 0);
+    const { stdout: read } = runCli(["read", "--project", PROJECT, "--prd", PRD_ABS]);
+    assert.equal(JSON.parse(read).frontmatter.repo_consent, null);
+  });
+
+  it("rejects malformed content JSON", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const { code, stderr } = runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      "{bad json",
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /not valid JSON/);
+  });
+
+  it("rejects content missing repos or granted_at", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const { code, stderr } = runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+      "--content",
+      JSON.stringify({ repos: [{ path: "x", branch: "y" }] }),
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /granted_at/);
+  });
+
+  it("fails when neither --content nor --clear provided", () => {
+    runCli(["init", "--project", PROJECT, "--prd", PRD_ABS]);
+    const { code, stderr } = runCli([
+      "set-repo-consent",
+      "--project",
+      PROJECT,
+      "--prd",
+      PRD_ABS,
+    ]);
+    assert.equal(code, 1);
+    assert.match(stderr, /--content or --clear/);
+  });
+});

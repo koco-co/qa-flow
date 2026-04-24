@@ -848,6 +848,18 @@ export function setStrategyInPlan(
   return renderPlan(fm, parsed.clarifications, parsed.summary);
 }
 
+export function setRepoConsentInPlan(
+  raw: string,
+  consent: RepoConsent | null,
+  now: Date,
+): string {
+  const parsed = parsePlan(raw);
+  const fm = { ...parsed.frontmatter };
+  fm.repo_consent = consent;
+  fm.updated_at = toIsoOffset(now);
+  return renderPlan(fm, parsed.clarifications, parsed.summary);
+}
+
 export function shouldObsolete(planMtime: Date, prdMtime: Date): boolean {
   // 5 minute tolerance: only flag when PRD has been edited meaningfully after the plan.
   const tolerance = 5 * 60 * 1000;

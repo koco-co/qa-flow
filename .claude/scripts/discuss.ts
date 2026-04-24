@@ -24,6 +24,8 @@ import {
   HandoffMode,
   KnowledgeDropped,
   parsePlan,
+  RepoConsent,
+  setRepoConsentInPlan,
   setStrategyInPlan,
   validatePlanSchema,
 } from "./lib/discuss.ts";
@@ -358,6 +360,65 @@ function runSetStrategy(opts: {
 }
 
 // ============================================================================
+// set-repo-consent
+// ============================================================================
+
+function runSetRepoConsent(opts: {
+  project: string;
+  prd: string;
+  content?: string;
+  clear: boolean;
+}): void {
+  if (!opts.content && !opts.clear) {
+    fail("--content or --clear is required");
+  }
+  const { planAbs } = resolvePlanPath(opts.project, opts.prd);
+  if (!existsSync(planAbs)) {
+    fail(`Plan not found: ${planAbs}. Run 'init' first.`);
+  }
+
+  let consent: RepoConsent | null = null;
+  if (!opts.clear) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(opts.content as string);
+    } catch (err) {
+      fail(`--content is not valid JSON: ${(err as Error).message}`);
+    }
+    const obj = parsed as Partial<RepoConsent>;
+    if (!Array.isArray(obj.repos)) {
+      fail("repo_consent.repos must be an array");
+    }
+    if (typeof obj.granted_at !== "string" || obj.granted_at.length === 0) {
+      fail("repo_consent.granted_at must be a non-empty ISO string");
+    }
+    for (const r of obj.repos) {
+      if (typeof r.path !== "string" || typeof r.branch !== "string") {
+        fail("each repo must include path and branch strings");
+      }
+    }
+    consent = { repos: obj.repos, granted_at: obj.granted_at };
+  }
+
+  const raw = readFileSync(planAbs, "utf8");
+  const next = setRepoConsentInPlan(raw, consent, new Date());
+  writeFileSync(planAbs, next);
+
+  process.stdout.write(
+    JSON.stringify(
+      {
+        ok: true,
+        plan_path: planAbs,
+        repos_count: consent ? consent.repos.length : 0,
+        cleared: opts.clear === true,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+}
+
+// ============================================================================
 // CLI wiring
 // ============================================================================
 
@@ -449,6 +510,29 @@ export const program = createCli({
         prd: string;
         strategyResolution: string;
       }) => runSetStrategy(opts),
+    },
+    {
+      name: "set-repo-consent",
+      description: "写入或清空源码引用许可（frontmatter.repo_consent）",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
+        {
+          flag: "--content <json>",
+          description: 'RepoConsent JSON，如 \'{"repos":[{"path":"...","branch":"..."}],"granted_at":"..."}\'',
+        },
+        {
+          flag: "--clear",
+          description: "清空 repo_consent（置为 null）",
+          defaultValue: false,
+        },
+      ],
+      action: (opts: {
+        project: string;
+        prd: string;
+        content?: string;
+        clear: boolean;
+      }) => runSetRepoConsent(opts),
     },
   ],
 });
