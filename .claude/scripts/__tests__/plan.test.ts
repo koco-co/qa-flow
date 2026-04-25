@@ -21,6 +21,7 @@ function runPlan(
         encoding: "utf8",
         env: {
           ...process.env,
+          KATA_ROOT_OVERRIDE: TMP_DIR,
           WORKSPACE_DIR: join(TMP_DIR, "workspace"),
           ...extraEnv,
         },
@@ -38,15 +39,15 @@ function runPlan(
 }
 
 function planJsonPath(project: string, planId: string): string {
-  return join(TMP_DIR, "workspace", project, ".temp", `plan-${planId}.json`);
+  return join(TMP_DIR, ".kata", project, `plan-${planId}.json`);
 }
 
 function planMdPath(project: string, planId: string): string {
-  return join(TMP_DIR, "workspace", project, ".temp", `plan-${planId}.md`);
+  return join(TMP_DIR, ".kata", project, `plan-${planId}.md`);
 }
 
 before(() => {
-  mkdirSync(join(TMP_DIR, "workspace", "dataAssets", ".temp"), { recursive: true });
+  mkdirSync(join(TMP_DIR, ".kata", "dataAssets"), { recursive: true });
 });
 
 after(() => {
@@ -95,7 +96,7 @@ describe("plan.ts create", () => {
     const result = JSON.parse(stdout);
     assert.equal(result.workflow, "ui-autotest");
     assert.equal(result.steps.length, 6);
-    assert.equal(result.steps[0].name, "解析用例");
+    assert.equal(result.steps[0].name, "解析输入与范围确认");
   });
 
   it("JSON and MD files exist on disk after create", () => {
@@ -401,7 +402,7 @@ describe("plan.ts summary", () => {
     assert.equal(summary.skipped, 0);
     assert.equal(summary.progress_pct, 25);
     assert.equal(summary.current_step.id, "step-3");
-    assert.equal(summary.current_step.name, "enhance");
+    assert.equal(summary.current_step.name, "discuss");
   });
 
   it("exits 1 for nonexistent plan", () => {

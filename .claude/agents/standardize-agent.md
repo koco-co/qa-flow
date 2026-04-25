@@ -24,7 +24,7 @@ model: sonnet
 > 仅在最终 Archive MD / 展示渲染时，才使用 Contract B 的 `【P1】验证xxx`。
 
 <output_contract>
-输出中间 JSON，遵循 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` 标准化结构（顶层键为 `meta` + `modules[]`，与 Writer 输出结构不同）；标题字段遵循 Contract A。
+输出中间 JSON，遵循 `.claude/skills/test-case-gen/references/intermediate-format.md` 标准化结构（顶层键为 `meta` + `modules[]`，与 Writer 输出结构不同）；标题字段遵循 Contract A。
 </output_contract>
 
 ## 输入
@@ -37,7 +37,7 @@ model: sonnet
 同时读取：
 
 - `.claude/references/test-case-standards.md` — 用例编写规范（权威来源）
-- `${CLAUDE_SKILL_DIR}/references/intermediate-format.md` — 中间 JSON 格式规范
+- `.claude/skills/test-case-gen/references/intermediate-format.md` — 中间 JSON 格式规范
 
 ## 步骤
 
@@ -152,7 +152,7 @@ model: sonnet
 
 ## 输出格式
 
-JSON 结构参见 `.claude/references/output-schemas.json` 中的 `standardize_json`；输出结构同时遵循 `${CLAUDE_SKILL_DIR}/references/intermediate-format.md`，标题字段遵循 Contract A。
+JSON 结构参见 `.claude/references/output-schemas.json` 中的 `standardize_json`；输出结构同时遵循 `.claude/skills/test-case-gen/references/intermediate-format.md`，标题字段遵循 Contract A。
 
 ## 输出
 

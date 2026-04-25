@@ -8,7 +8,7 @@
 kata-cli progress session-summary --project {{project}} --session "$SESSION_ID"
 ```
 
-**情况 A — 无进度文件**（命令 exit 1）：正常继续步骤 2。
+**情况 A — 无进度文件**（命令 exit 1）：正常继续步骤 1.5 → 步骤 2（登录态准备）。
 
 **情况 B — 有进度文件且 `merge_status === "completed"`**：
 
@@ -18,7 +18,7 @@ kata-cli progress session-summary --project {{project}} --session "$SESSION_ID"
 2. 取消
 ```
 
-若选 1，执行 `kata-cli progress session-delete --project {{project}} --session "$SESSION_ID"` 后继续步骤 2。
+若选 1，执行 `kata-cli progress session-delete --project {{project}} --session "$SESSION_ID"` 后继续步骤 1.5 → 步骤 2。
 
 **情况 C — 有进度文件且未完成**：
 
@@ -36,9 +36,8 @@ kata-cli progress session-resume --project {{project}} --session "$SESSION_ID" -
 套件：{{suite_name}}
 
 步骤进度：
-  ✓ 步骤 1   解析输入
-  ✓ 步骤 2   范围确认
-  ✓ 步骤 3   登录态准备
+  ✓ 步骤 1   解析输入与确认范围
+  ✓ 步骤 2   登录态准备
   {{#each completedSteps as step}}✓ 步骤 {{step.id}}   {{step.name}}
   {{/each}}➜ 步骤 {{current_step}}   {{current_step_name}}（中断于此）
   {{#each pendingSteps as step}}░ 步骤 {{step.id}}   {{step.name}}
@@ -54,10 +53,10 @@ kata-cli progress session-resume --project {{project}} --session "$SESSION_ID" -
 3. 全部重新开始（清空进度，从头来）
 ```
 
-> 步骤名称参照 SKILL.md 顶部「主流程任务列表」(步骤 1-8)。`completedSteps` 为 ID < `current_step` 的步骤，`pendingSteps` 为 ID > `current_step` 的步骤。
+> 步骤名称参照 protocols.md §4 Task Schema（步骤 1-6）。`completedSteps` 为 ID < `current_step` 的步骤，`pendingSteps` 为 ID > `current_step` 的步骤。
 
-- 选 1：直接跳到 `current_step` 对应的步骤（4/5/6），已 passed 的用例自动跳过
+- 选 1：直接跳到 `current_step` 对应的步骤（3/4/5），已 passed 的用例自动跳过
 - 选 2：执行 `kata-cli progress session-resume --project {{project}} --session "$SESSION_ID" --retry-failed --payload-path-check script_path`，然后跳到 `current_step`
-- 选 3：执行 `reset`，正常从步骤 2 继续
+- 选 3：执行 `reset`，正常继续后续步骤
 
-> **恢复跳转规则**：恢复时直接跳到 `current_step` 对应的步骤。步骤 1~3（解析、范围、登录态）始终重新执行（它们很快且登录态需刷新），但从进度文件中恢复 `url`、`selected_priorities` 等参数，无需重新询问用户。
+> **恢复跳转规则**：恢复时直接跳到 `current_step` 对应的步骤。步骤 1~2（解析与范围、登录态）始终重新执行（它们很快且登录态需刷新），但从进度文件中恢复 `url`、`selected_priorities` 等参数，无需重新询问用户。

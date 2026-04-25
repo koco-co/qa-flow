@@ -1,7 +1,8 @@
-# 节点 3: discuss — 主 agent 主持需求讨论（吸收 transform / enhance）
+# 节点 3: discuss — 需求讨论与确认
 
 > 由 workflow/main.md 路由后加载。上游：节点 2 probe；下游：节点 4 analyze（非 Legacy，原 6）。
 > 硬约束：`rules/prd-discussion.md`。引用资源：`references/10-dimensions-checklist.md` / `references/ambiguity-patterns.md` / `references/source-refs-schema.md` / `references/enhanced-doc-template.md` / `references/pending-item-schema.md` / `references/anchor-id-spec.md` / `references/discuss-protocol.md`。
+> 另有 `intermediate-format.md` / `test-case-rules.md` / `xmind-structure.md` 由下游 agent 按需读取，非本步骤直接引用。
 
 **目标**：在 analyze 之前由主 agent 亲自主持需求讨论与素材扫描，产出完整 enhanced.md（含 §1 概述、§2 功能细节、§3 图像与页面要点、§4 已 resolve 待确认项、Appendix A 源码事实表）。
 
@@ -195,11 +196,11 @@ AskUserQuestion(
 
 用户答案 → 立刻调 CLI：
 
-| 用户选择 | 调用 | 效果 |
-|---|---|---|
-| 推荐 | `discuss resolve --id q{n} --answer "{{Q.recommended}}"` | Q 区块套删除线，脚注替换为答案 |
-| 暂不回答 | 不调 resolve | Q 保持"待确认"状态 |
-| Other（自由文本） | `discuss resolve --id q{n} --answer "{{user_text}}"` | 同推荐，但 answer 为用户文本 |
+| 用户选择          | 调用                                                     | 效果                           |
+| ----------------- | -------------------------------------------------------- | ------------------------------ |
+| 推荐              | `discuss resolve --id q{n} --answer "{{Q.recommended}}"` | Q 区块套删除线，脚注替换为答案 |
+| 暂不回答          | 不调 resolve                                             | Q 保持"待确认"状态             |
+| Other（自由文本） | `discuss resolve --id q{n} --answer "{{user_text}}"`     | 同推荐，但 answer 为用户文本   |
 
 `defaultable_unknown` 直接 `discuss resolve --id q{n} --as-default`，不向用户发问（Q 状态 → "默认采用"，仍套删除线）。
 
@@ -219,7 +220,7 @@ kata-cli knowledge-keeper write \
 
 主 agent 在 complete 之前，按 `rules/prd-discussion.md` 6 项自审清单逐条自查：
 
-1. 摘要四子节完整（无 _TODO 占位）
+1. 摘要四子节完整（无 \_TODO 占位）
 2. 10 维度都过一遍（quick 模式仅功能层 6 维度）
 3. 模糊语 10 模式全扫
 4. 锚点完整性（validate 6 项）
@@ -330,12 +331,12 @@ analyze / write 节点发现新疑问 / Writer `<blocked_envelope>` → 主 agen
 
 ## 异常分支
 
-| 情况 | 处理 |
-|---|---|
-| `discuss read` 返回 schema 错误 | 检查 enhanced.md 是否被手改；手动删 enhanced.md → 重新 init |
-| 写 source-facts / set-section 失败（enhanced.md 不存在） | 回 probe 2.5 重新 init |
-| 源码同步失败 | 提示用户；降级为"仅引用本地副本"走 3.2.3 分支 2 |
-| validate 退出 2（pending > 0） | 回 3.7 |
-| validate 退出 1（锚点/schema 异常） | 检查手改痕迹；必要时手动删 enhanced.md 重新 init |
-| 用户中途切换 PRD | 禁止当前 enhanced.md 复用；手动删 enhanced.md + 节点 1/2 重跑 |
-| source-facts-agent 超时 | warning 继续；必要时重跑 3.2.5 |
+| 情况                                                     | 处理                                                          |
+| -------------------------------------------------------- | ------------------------------------------------------------- |
+| `discuss read` 返回 schema 错误                          | 检查 enhanced.md 是否被手改；手动删 enhanced.md → 重新 init   |
+| 写 source-facts / set-section 失败（enhanced.md 不存在） | 回 probe 2.5 重新 init                                        |
+| 源码同步失败                                             | 提示用户；降级为"仅引用本地副本"走 3.2.3 分支 2               |
+| validate 退出 2（pending > 0）                           | 回 3.7                                                        |
+| validate 退出 1（锚点/schema 异常）                      | 检查手改痕迹；必要时手动删 enhanced.md 重新 init              |
+| 用户中途切换 PRD                                         | 禁止当前 enhanced.md 复用；手动删 enhanced.md + 节点 1/2 重跑 |
+| source-facts-agent 超时                                  | warning 继续；必要时重跑 3.2.5                                |

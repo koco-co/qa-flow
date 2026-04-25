@@ -19,9 +19,9 @@
 | 场景四 | 新增用例 | 写入     |
 | 场景五 | 删除用例 | 写入     |
 
-五大场景的命令与执行细节详见 [`workflow/scenarios.md`](workflow/scenarios.md)。
+五大场景的命令与执行细节详见 [`workflow/edit/scenarios.md`](edit/scenarios.md)。
 
-修改/新增完成后的偏好规则写入流程（含归属判断、差异预览、AskUser 模板）详见 [`workflow/preference-writing.md`](workflow/preference-writing.md)。
+修改/新增完成后的偏好规则写入流程（含归属判断、差异预览、AskUser 模板）详见 [`workflow/edit/preference-writing.md`](edit/preference-writing.md)。
 
 ---
 

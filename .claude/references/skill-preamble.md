@@ -26,6 +26,10 @@ kata-cli config
 
 （从 `.env` 读取模块、仓库、路径配置。）
 
+## 路径与命令约定
+
+参见 `.claude/references/path-conventions.md`。所有 `bun run` / `kata-cli` 命令的路径书写、占位符使用、多项目环境隔离规则均遵守该约定。
+
 ## 符号使用规则（强制）
 
 参见 `.claude/references/unicode-symbols.md`。所有报告输出必须遵守该规范。

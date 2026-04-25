@@ -17,11 +17,11 @@ kata-cli discuss validate \
 
 退出码约定：
 
-| 退出码 | 情况 | 处理 |
-|---|---|---|
-| 0 | §4 pending=0，锚点完整 | 继续 4.1 |
-| 1 | schema / 锚点异常 | 回 discuss 节点；手动删 enhanced.md 重新 init |
-| 2 | pending > 0 | 回 discuss 节点 3.7 续 resolve |
+| 退出码 | 情况                   | 处理                                          |
+| ------ | ---------------------- | --------------------------------------------- |
+| 0      | §4 pending=0，锚点完整 | 继续 4.1                                      |
+| 1      | schema / 锚点异常      | 回 discuss 节点；手动删 enhanced.md 重新 init |
+| 2      | pending > 0            | 回 discuss 节点 3.7 续 resolve                |
 
 通过后把 status 切到 `analyzing`：
 

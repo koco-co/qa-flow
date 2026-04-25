@@ -4,7 +4,7 @@
  *
  * 用法：
  *   bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
- *     --input workspace/.temp/ui-blocks/ \
+ *     --input .kata/{{project}}/ui-blocks/ \
  *     --output tests/e2e/202604/xxx/
  */
 

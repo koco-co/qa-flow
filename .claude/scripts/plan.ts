@@ -61,8 +61,8 @@ type WorkflowType = "test-case-gen" | "ui-autotest";
 const STEP_TEMPLATES: Record<WorkflowType, ReadonlyArray<Omit<PlanStep, "status" | "id">>> = {
   "test-case-gen": [
     { name: "init", description: "识别 PRD，确定运行模式", depends_on: [] },
-    { name: "transform", description: "PRD 结构化转换", depends_on: ["step-1"] },
-    { name: "enhance", description: "PRD 增强（图片识别、要点补充）", depends_on: ["step-2"] },
+    { name: "probe", description: "源码分析探测", depends_on: ["step-1"] },
+    { name: "discuss", description: "讨论澄清（消除歧义、决策记录）", depends_on: ["step-2"] },
     { name: "analyze", description: "测试点提取", depends_on: ["step-3"] },
     { name: "write", description: "用例编写（按模块并行）", depends_on: ["step-4"] },
     { name: "review", description: "质量审查", depends_on: ["step-5"] },
@@ -70,12 +70,12 @@ const STEP_TEMPLATES: Record<WorkflowType, ReadonlyArray<Omit<PlanStep, "status"
     { name: "output", description: "输出归档（XMind + Archive MD）", depends_on: ["step-7"] },
   ],
   "ui-autotest": [
-    { name: "解析用例", description: "解析 Archive MD，提取用例列表", depends_on: [] },
-    { name: "筛选范围", description: "按优先级筛选待执行用例", depends_on: ["step-1"] },
-    { name: "登录态准备", description: "准备登录 session", depends_on: ["step-2"] },
-    { name: "脚本生成", description: "为每条用例生成 Playwright 脚本", depends_on: ["step-3"] },
-    { name: "自测验证", description: "执行脚本并修复失败用例", depends_on: ["step-4"] },
-    { name: "合并输出", description: "合并脚本为最终 spec 文件", depends_on: ["step-5"] },
+    { name: "解析输入与范围确认", description: "解析 Archive MD，确认优先级范围", depends_on: [] },
+    { name: "登录态准备", description: "准备登录 session", depends_on: ["step-1"] },
+    { name: "Subagent A（生成+修复+收敛）", description: "逐条生成脚本并自测修复", depends_on: ["step-2"] },
+    { name: "合并脚本", description: "合并验证通过的脚本为 spec 文件", depends_on: ["step-3"] },
+    { name: "Subagent B（执行测试）", description: "全量回归执行", depends_on: ["step-4"] },
+    { name: "处理结果与通知", description: "生成报告、启动 Allure、发送通知", depends_on: ["step-5"] },
   ],
 };
 

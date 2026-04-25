@@ -8,7 +8,7 @@
 
 **⏳ Task**：将 `format-check` 任务标记为 `in_progress`。创建第 1 轮子任务（subject: `[format-check] 第 1 轮`，activeForm: `执行第 1 轮格式检查`）。
 
-### 9.1 生成临时 Archive MD
+### 7.1 生成临时 Archive MD
 
 ```bash
 kata-cli archive-gen convert \
@@ -17,7 +17,7 @@ kata-cli archive-gen convert \
   --output workspace/{{project}}/archive/{{YYYYMM}}/tmp/{{name}}-format-check.md
 ```
 
-### 9.2 格式检查（分层流水线）
+### 7.2 格式检查（分层流水线）
 
 **第一层：脚本确定性检查**
 
@@ -42,7 +42,7 @@ kata-cli format-check-script check --input workspace/{{project}}/.temp/{{prd_slu
 
 **循环**：违规项修正后重新执行第一层（最多 5 轮）。
 
-### 9.3 行号定位
+### 7.3 行号定位
 
 ```bash
 kata-cli format-report-locator locate \
@@ -59,15 +59,15 @@ kata-cli format-report-locator print \
   --archive workspace/{{project}}/archive/{{YYYYMM}}/tmp/{{name}}-format-check.md
 ```
 
-### 9.4 Verdict 判定
+### 7.4 Verdict 判定
 
 **✅ Task**：将当前轮子任务标记为 `completed`（subject 更新为 `[format-check] 第 {{n}} 轮 — {{偏差数}} 处偏差`）。
 
-- `verdict === "pass"` → 将 `format-check` 主任务标记为 `completed`（subject: `format-check — 通过（第 {{n}} 轮）`），进入节点 10（output）
+- `verdict === "pass"` → 将 `format-check` 主任务标记为 `completed`（subject: `format-check — 通过（第 {{n}} 轮）`），进入节点 8（output）
 - `verdict === "fail"` 且 `round < max_rounds` → 创建下一轮子任务（subject: `[format-check] 第 {{n+1}} 轮`），进入修正循环（9.5）
 - `verdict === "fail"` 且 `round >= max_rounds` → 交互点 D2（超限决策）
 
-### 9.5 修正循环
+### 7.5 修正循环
 
 1. 将偏差报告转为 `<format_issues>` 载荷
 2. 派发 Writer Sub-Agent 修正报告中列出的用例（仅修正偏差用例，其余原样保留）
@@ -75,7 +75,7 @@ kata-cli format-report-locator print \
 4. 派发 `reviewer-agent`（model: opus）对修正后的 JSON 执行 F07-F15 设计逻辑复审
 5. 回到 9.1 重新生成临时 Archive MD → 9.2 再检
 
-### 9.6 更新状态
+### 7.6 更新状态
 
 每轮循环后更新状态：
 

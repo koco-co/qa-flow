@@ -1,7 +1,7 @@
 # case-format / other2md — XMind/CSV → 标准化 Archive MD
 
 > 由 SKILL.md 路由后加载。触发：输入文件扩展名为 `.xmind` 或 `.csv`，或含「标准化归档 / 归档用例 / 转化用例」触发词。
-> 此流程不走 10 节点主流程，独立 4 步完成。
+> 此流程不走 7 节点工作流，独立 4 步完成。
 
 ---
 
@@ -29,7 +29,7 @@ kata-cli history-convert --path {{input_file}} --project {{project}} --detect
 - 选项 2：仅格式转换 — 保留原始内容，直接转为 Archive MD
 - 选项 3：查看原始用例内容
 
-> **选项 1（标准化归档）**：AI 读取原始用例内容，按 `test-case-rules.md` 全部规则重写步骤、预期、前置条件，确保达到自动化可执行精度。原始 XMind/CSV 内容**不直接放入**产物中。
+> **选项 1（标准化归档）**：AI 读取原始用例内容，按 `rules/case-writing.md` 全部规则重写步骤、预期、前置条件，确保达到自动化可执行精度。原始 XMind/CSV 内容**不直接放入**产物中。
 > **选项 2（仅格式转换）**：调用 `history-convert.ts` 直接转换，不经过 AI 重写。
 
 **✅ Task**：将 `S1` 标记为 `completed`（subject: `S1 解析源文件 — {{count}} 条用例`）。

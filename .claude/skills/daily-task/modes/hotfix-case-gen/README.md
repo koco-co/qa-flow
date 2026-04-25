@@ -42,8 +42,8 @@ argument-hint: "[禅道 Bug URL | Bug ID]"
 派发 `hotfix-case-agent` 前，必须合并加载全局 + 项目级规则：
 
 ```bash
-bun run qa rule-loader load --project {{project}} > workspace/{{project}}/.temp/rules-merged.json
-# 查看参数：bun run qa rule-loader load --help
+kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/rules-merged.json
+# 查看参数：kata-cli rule-loader load --help
 ```
 
 在传入 agent 的提示中明确引用以下规则文件（存在即加载，优先级：项目级 > 全局）：

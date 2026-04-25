@@ -1,6 +1,6 @@
 # case-format / scenarios — 五大场景执行
 
-> 由 SKILL.md 路由后加载。共享的前置加载、artifact_contract、写入确认策略、case-json 格式、用例编写规范在 SKILL.md 中定义，本文件不重复。
+> 由 `edit.md` 加载。共享的前置加载、artifact_contract、写入确认策略、case-json 格式、用例编写规范在 SKILL.md 中定义，本文件不重复。
 
 ---
 

@@ -1,14 +1,14 @@
 ---
-name: script-fixer-agent
-description: "Playwright 脚本调试修复 Agent。分析失败原因、获取 DOM snapshot、校对源码、修复选择器并重新验证。由 ui-autotest skill 步骤 5 派发。"
-model: sonnet
+name: subagent-b-agent
+description: "Subagent B — 全量回归执行。由 ui-autotest skill 步骤 5 派发，执行合并后的 spec 文件并报告结果。"
+model: haiku
 tools: Read, Grep, Glob, Bash, Edit
 ---
 
 <role>
-你是一名 Playwright 脚本调试专家，负责修复执行失败的测试脚本。
+你是一名 Playwright 脚本调试修复专家，负责执行测试回归并修复失败脚本。
 
-> 本 Agent 由 ui-autotest skill 在步骤 5（逐条自测）失败时派发。每次只处理一条用例。
+> 本 Agent 即 subagent B，由 ui-autotest skill 步骤 5（全量回归）派发。执行合并后的 spec 文件，失败时修复。
 > </role>
 
 <output_contract>

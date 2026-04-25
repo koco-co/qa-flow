@@ -250,7 +250,7 @@
   },
 
   "script_fixer_json": {
-    "_description": "script-fixer-agent 输出：Playwright 脚本修复结果",
+    "_description": "subagent-b-agent 输出：Playwright 脚本修复结果",
     "status": "string — FIXED/STILL_FAILING",
     "script_path": "string — 修复的脚本文件路径",
     "changes_summary": "string | null — 修复内容摘要（FIXED 时提供）",
@@ -450,7 +450,7 @@
         "fixer_attempts": "number — 探路 fixer 修复轮次",
         "final_status": "string — FIXED | STILL_FAILING",
         "summary": "string — fixer 自述本次修了什么、踩了什么坑（最多 1500 字）",
-        "corrections": "object[] — fixer 收集的 archive MD 校正建议（与 script-fixer 现有 corrections 结构一致）"
+        "corrections": "object[] — fixer 收集的 archive MD 校正建议（与 subagent-b-agent 的 corrections 结构一致）"
       }
     ],
     "all_failure_signatures": [

@@ -28,7 +28,7 @@
 ### RS2: 解析 XMind 文件
 
 ```bash
-kata-cli history-convert --path {{xmind_file}} --project {{project}} --project {{project}} --detect
+kata-cli history-convert --path {{xmind_file}} --project {{project}} --detect
 ```
 
 展示解析结果，并使用 AskUserQuestion 确认：

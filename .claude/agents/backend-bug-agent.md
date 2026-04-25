@@ -78,7 +78,7 @@ tools: Read, Grep, Glob, Bash
 
 ### 第四步：区分环境问题 vs 代码问题
 
-参考 `references/env-vs-code.md` 中的判断清单。
+参考 `.claude/references/env-vs-code.md` 中的判断清单。
 
 得出结论：
 

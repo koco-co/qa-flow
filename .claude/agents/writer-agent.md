@@ -21,7 +21,7 @@ model: sonnet
   <step index="2">确定导航路径与 UI 结构</step>
   <step index="3">设计用例并填充真实业务数据</step>
   <step index="4">执行阻断自检</step>
-  <step index="5">输出 Task 2 Contract A JSON，或输出 `<blocked_envelope>`</step>
+  <step index="5">输出 Contract A JSON，或输出 `<blocked_envelope>`</step>
 </workflow>
 
 <confirmation_policy>
