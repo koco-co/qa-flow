@@ -10,6 +10,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { isValidSectionAnchor, isValidQAnchor } from "./enhanced-doc-anchors.ts";
 
 export type SourceRefScheme = "plan" | "prd" | "knowledge" | "repo" | "enhanced";
 
@@ -34,6 +35,7 @@ export function parseSourceRef(raw: string): ParsedSourceRef | null {
 export interface ResolveContext {
   planPath?: string;
   prdPath?: string;
+  enhancedDocPath?: string;
   workspaceDir?: string;
   projectName?: string;
   /** Mapping of repo-short-name → absolute path. If repo scheme anchor's
@@ -61,8 +63,25 @@ export function resolveSourceRef(raw: string, ctx: ResolveContext): ResolveResul
     case "repo":
       return resolveRepo(parsed.anchor, ctx);
     case "enhanced":
-      return { ok: false, reason: "enhanced scheme resolver 尚未实装（Task A2）" };
+      return resolveEnhanced(parsed.anchor, ctx);
   }
+}
+
+function resolveEnhanced(anchor: string, ctx: ResolveContext): ResolveResult {
+  if (ctx.enhancedDocPath === undefined) {
+    return { ok: false, reason: "enhanced scheme 需要 ctx.enhancedDocPath" };
+  }
+  if (!existsSync(ctx.enhancedDocPath)) {
+    return { ok: false, reason: `enhanced.md 不存在: ${ctx.enhancedDocPath}` };
+  }
+  if (!isValidSectionAnchor(anchor) && !isValidQAnchor(anchor)) {
+    return { ok: false, reason: `enhanced 锚点格式非法: ${anchor}` };
+  }
+  const text = readFileSync(ctx.enhancedDocPath, "utf8");
+  if (text.includes(`<a id="${anchor}"></a>`)) {
+    return { ok: true };
+  }
+  return { ok: false, reason: `enhanced.md 未找到锚点: ${anchor}` };
 }
 
 function resolvePlan(anchor: string, ctx: ResolveContext): ResolveResult {

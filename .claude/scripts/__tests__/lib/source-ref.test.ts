@@ -161,3 +161,79 @@ describe("resolveSourceRef — prd / knowledge / repo schemes", () => {
 
   after(() => rmSync(tmp, { recursive: true, force: true }));
 });
+
+describe("resolveSourceRef — enhanced scheme", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "kata-sr-enh-"));
+  const docPath = join(tmp, "enhanced.md");
+  writeFileSync(
+    docPath,
+    [
+      "---",
+      "version: 2",
+      "---",
+      "",
+      '## 1. 概述 <a id="s-1"></a>',
+      "",
+      '### 1.1 背景 <a id="s-1-1-abc1"></a>',
+      "",
+      '## 2. 功能细节 <a id="s-2"></a>',
+      "",
+      '### 2.1 模块 A <a id="s-2-1-a1b2"></a>',
+      "",
+      '## 4. 待确认项 <a id="s-4"></a>',
+      "",
+      '### Q7 <a id="q7"></a>',
+      "",
+      '## Appendix A: 源码事实表 <a id="source-facts"></a>',
+      "",
+    ].join("\n"),
+  );
+
+  it("resolves enhanced#s-1 (top-level)", () => {
+    const r = resolveSourceRef("enhanced#s-1", { enhancedDocPath: docPath });
+    assert.equal(r.ok, true);
+  });
+
+  it("resolves enhanced#s-2-1-a1b2 (sub-section)", () => {
+    const r = resolveSourceRef("enhanced#s-2-1-a1b2", { enhancedDocPath: docPath });
+    assert.equal(r.ok, true);
+  });
+
+  it("resolves enhanced#q7 (pending question)", () => {
+    const r = resolveSourceRef("enhanced#q7", { enhancedDocPath: docPath });
+    assert.equal(r.ok, true);
+  });
+
+  it("resolves enhanced#source-facts (appendix)", () => {
+    const r = resolveSourceRef("enhanced#source-facts", { enhancedDocPath: docPath });
+    assert.equal(r.ok, true);
+  });
+
+  it("fails when anchor missing in enhanced.md", () => {
+    const r = resolveSourceRef("enhanced#s-9", { enhancedDocPath: docPath });
+    assert.equal(r.ok, false);
+    assert.match(r.reason ?? "", /未找到锚点/);
+  });
+
+  it("fails when anchor format invalid", () => {
+    const r = resolveSourceRef("enhanced#bad-anchor!", { enhancedDocPath: docPath });
+    assert.equal(r.ok, false);
+    assert.match(r.reason ?? "", /锚点格式非法/);
+  });
+
+  it("fails when ctx.enhancedDocPath missing", () => {
+    const r = resolveSourceRef("enhanced#s-1", {});
+    assert.equal(r.ok, false);
+    assert.match(r.reason ?? "", /enhancedDocPath/);
+  });
+
+  it("fails when enhanced.md file not exist", () => {
+    const r = resolveSourceRef("enhanced#s-1", {
+      enhancedDocPath: join(tmp, "no-such.md"),
+    });
+    assert.equal(r.ok, false);
+    assert.match(r.reason ?? "", /不存在/);
+  });
+
+  after(() => rmSync(tmp, { recursive: true, force: true }));
+});
