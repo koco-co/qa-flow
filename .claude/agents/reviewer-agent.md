@@ -56,40 +56,36 @@ Reviewer 职责：审查发现问题 → 分类 → 可自动修正的交给 aut
 
 > **--quick 模式**：仅执行第一轮审查，跳过复审。默认为普通模式（执行复审）。
 
-### 第零轮：source_ref 批量解析（Phase D2 起基于 enhanced.md）
+### 第零轮：source_ref 批量解析（基于 enhanced.md）
 
-先把待审查的 writer_json 里所有 `test_case` 的 `source_ref` 聚合成一个数组，调 CLI 批量解析：
+先把待审查的 writer_json 里所有 `test_case` 的 `source_ref` 拼成 csv，调 `discuss validate` 一次校验：
 
 ```bash
-cat > /tmp/refs-$$.json <<EOF
-[
-  {"ref": "<test_case_1.source_ref>"},
-  {"ref": "<test_case_2.source_ref>"},
-  ...
-]
-EOF
+# 主路径：把所有 test_case 的 source_ref 拼成 CSV
+refs_csv=$(jq -r '[.test_cases[].source_ref] | join(",")' writer_json.json)
 
-# Phase D2 过渡期：`source-ref batch` CLI 仍调用，内部会 dispatch 到
-# `discuss validate --check-source-refs`（主路径）或老 plan.md 解析（legacy）。
-kata-cli source-ref batch \
-  --refs-json /tmp/refs-$$.json \
-  --project {{project}} --yyyymm {{yyyymm}} --prd-slug {{prd_slug}}
+kata-cli discuss validate \
+  --project {{project}} --yyyymm {{yyyymm}} --prd-slug {{prd_slug}} \
+  --check-source-refs "$refs_csv"
 ```
 
-批量 CLI 的退出码（保持与 Phase C 兼容）：
+`discuss validate` 的退出码：
 
-- `0` → 全部可解析，第一轮不产出 F16
-- `2` → 至少一条不可解析；stdout 的 `fails[]` 含 `{ref, reason, anchor_candidates?}`；把每条映射到对应 `test_case` 的 `issues[]`：
+- `0` → enhanced.md 6 项校验全过且所有 source_ref 可解析，第一轮不产出 F16
+- `1` → stdout 的 `issues[]` 含一条或多条 `source_ref unresolved: <ref>` 行；按 ref 反查 writer_json 中对应的 `test_case`，把每条映射为 `issues[]`：
   ```json
   {
     "code": "F16",
-    "description": "source_ref 不可解析: {{reason}}",
+    "description": "source_ref 不可解析: {{ref}}",
     "severity": "manual",
     "original": "{{source_ref}}",
     "fixed": null
   }
   ```
-- `1` → CLI 参数错误或 enhanced.md schema 异常，停止审查并返回 `invalid_input` verdict
+  非 `source_ref unresolved:` 行（如 `pending_count mismatch`、`malformed anchor`、`broken location anchor`）属于 enhanced.md schema 异常，**停止审查**并返回 `invalid_input` verdict（向上反馈给主流程）
+- `3` → 仅当传 `--require-zero-pending` 时出现的 pending>0 退出码；本第零轮**不**传该 flag，理论上不会遇到
+
+注意：`discuss validate --check-source-refs` 当前仅严格校验 `enhanced#<anchor>` scheme；非 enhanced 前缀（`prd#` / `knowledge#` / `repo#`）自动跳过 unresolved 检测，由用例其他规则（F08/F14 等）兜底。
 
 **Phase D2 校验规则**：
 
