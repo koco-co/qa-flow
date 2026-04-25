@@ -5,6 +5,9 @@
  *   - `.kata-state-*.json`          → progress sessions (workflow: test-case-gen)
  *   - `ui-autotest-progress-*.json` → progress sessions (workflow: ui-autotest)
  *
+ * Also exposes `migrateSession` for in-flight Phase D3 sessions: rewrites
+ * legacy `transform`/`enhance` task nodes when unified-discuss subsumes them.
+ *
  * See spec: docs/refactor/specs/2026-04-24-unified-progress-engine-design.md
  */
 import {
@@ -21,10 +24,11 @@ import {
   readSession,
   addTasks,
   updateTask,
+  removeTask,
   setArtifact,
 } from "./progress-store.ts";
 import type { TaskInput } from "./progress-store.ts";
-import { legacyBackupDir, tempDir } from "./paths.ts";
+import { enhancedMd, legacyBackupDir, tempDir } from "./paths.ts";
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -300,4 +304,113 @@ export function discoverLegacyFiles(project: string): LegacyEntry[] {
     }
   }
   return out;
+}
+
+// ── In-flight session migrator (Phase D3: unified-discuss) ────────────────────
+
+export type MigrateSessionAction =
+  | "auto-done"
+  | "revert-to-discuss"
+  | "noop";
+
+export interface MigrateSessionReport {
+  readonly sessionId: string;
+  readonly action: MigrateSessionAction;
+  readonly details: readonly string[];
+}
+
+export interface MigrateSessionOpts {
+  readonly dryRun?: boolean;
+}
+
+/**
+ * Extract `{yyyymm, slug}` from a PRD source path of the form
+ * `.../prds/{yyyymm}/{slug}.md` (or a directory layout `.../prds/{yyyymm}/{slug}/...`).
+ * Returns `null` if the path does not match.
+ */
+function parsePrdLocator(
+  sourcePath: string,
+): { yyyymm: string; slug: string } | null {
+  // Match `.../prds/<6 digits>/<rest>` and take first path segment of <rest>.
+  const m = sourcePath.match(/\/prds\/(\d{6})\/([^/]+?)(?:\.md)?(?:\/|$)/);
+  if (!m) return null;
+  return { yyyymm: m[1], slug: m[2] };
+}
+
+/**
+ * Migrate an in-flight progress session whose pipeline still references the
+ * legacy `transform` / `enhance` task nodes. Behaviour depends on whether the
+ * final artifact (`enhanced.md`) already exists for the session's PRD:
+ *
+ *   - artifact present  → mark `transform`/`enhance` as `done` (preserve work)
+ *   - artifact missing  → drop those tasks and reset `discuss` to `pending`
+ *                         (user must redo the clarification flow)
+ *   - neither present   → no-op
+ *
+ * The action is reported regardless of `dryRun`; mutations are skipped only
+ * when `dryRun` is true.
+ */
+export function migrateSession(
+  project: string,
+  sessionId: string,
+  opts: MigrateSessionOpts = {},
+): MigrateSessionReport {
+  const session = readSession(project, sessionId);
+  if (!session) {
+    throw new Error(`session not found: ${sessionId}`);
+  }
+
+  const hasTransform = session.tasks.some((t) => t.id === "transform");
+  const hasEnhance = session.tasks.some((t) => t.id === "enhance");
+  const hasDiscuss = session.tasks.some((t) => t.id === "discuss");
+
+  if (!hasTransform && !hasEnhance) {
+    return {
+      sessionId,
+      action: "noop",
+      details: ["session has no transform/enhance task"],
+    };
+  }
+
+  const locator = parsePrdLocator(session.source.path ?? "");
+  if (!locator) {
+    return {
+      sessionId,
+      action: "noop",
+      details: [
+        `cannot derive yyyymm/slug from source.path "${session.source.path}"`,
+      ],
+    };
+  }
+
+  const enhancedPath = enhancedMd(project, locator.yyyymm, locator.slug);
+  const details: string[] = [];
+
+  if (existsSync(enhancedPath)) {
+    if (!opts.dryRun) {
+      if (hasTransform) {
+        updateTask(project, sessionId, "transform", { status: "done" });
+      }
+      if (hasEnhance) {
+        updateTask(project, sessionId, "enhance", { status: "done" });
+      }
+    }
+    details.push(`enhanced.md present: ${enhancedPath}`);
+    if (hasTransform) details.push("transform → done");
+    if (hasEnhance) details.push("enhance → done");
+    return { sessionId, action: "auto-done", details };
+  }
+
+  if (!opts.dryRun) {
+    if (hasTransform) removeTask(project, sessionId, "transform");
+    if (hasEnhance) removeTask(project, sessionId, "enhance");
+    if (hasDiscuss) {
+      updateTask(project, sessionId, "discuss", { status: "pending" });
+    }
+  }
+  details.push(`enhanced.md missing: ${enhancedPath}`);
+  if (hasTransform) details.push("transform removed");
+  if (hasEnhance) details.push("enhance removed");
+  if (hasDiscuss) details.push("discuss → pending");
+  return { sessionId, action: "revert-to-discuss", details };
 }

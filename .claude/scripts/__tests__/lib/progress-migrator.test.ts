@@ -3,21 +3,34 @@ import { mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, beforeEach, describe, it } from "node:test";
-import { migrateKataState, migrateUiAutotest } from "../../lib/progress-migrator.ts";
-import { readSession } from "../../lib/progress-store.ts";
+import {
+  migrateKataState,
+  migrateSession,
+  migrateUiAutotest,
+} from "../../lib/progress-migrator.ts";
+import {
+  addTasks,
+  createSession,
+  readSession,
+  writeSession,
+} from "../../lib/progress-store.ts";
 
 const TMP = join(tmpdir(), `migrator-test-${process.pid}`);
+const WS = join(TMP, "workspace");
 
 before(() => {
   process.env.KATA_ROOT_OVERRIDE = TMP;
+  process.env.WORKSPACE_DIR = WS;
   mkdirSync(TMP, { recursive: true });
 });
 after(() => {
   delete process.env.KATA_ROOT_OVERRIDE;
+  delete process.env.WORKSPACE_DIR;
   try { rmSync(TMP, { recursive: true, force: true }); } catch {}
 });
 beforeEach(() => {
   process.env.KATA_ROOT_OVERRIDE = TMP;
+  process.env.WORKSPACE_DIR = WS;
   try { rmSync(join(TMP, ".kata"), { recursive: true, force: true }); } catch {}
   try { rmSync(join(TMP, "workspace"), { recursive: true, force: true }); } catch {}
 });
@@ -164,5 +177,124 @@ describe("migrateUiAutotest", () => {
     assert.equal(t2.errors[0].message, "timeout");
     assert.equal(s.meta.url, "http://localhost");
     assert.equal(s.meta.suite_name, "my-suite");
+  });
+});
+
+// ── migrateSession (Phase D3) ────────────────────────────────────────────────
+
+function seedSession(opts: {
+  project: string;
+  slug: string;
+  yyyymm: string;
+  taskIds: readonly string[];
+}): string {
+  const session = createSession({
+    project: opts.project,
+    workflow: "test-case-gen",
+    slug: opts.slug,
+    env: "default",
+    source: {
+      type: "prd",
+      path: `workspace/${opts.project}/prds/${opts.yyyymm}/${opts.slug}.md`,
+      mtime: null,
+    },
+    meta: {},
+  });
+  writeSession(opts.project, session);
+  addTasks(
+    opts.project,
+    session.session_id,
+    opts.taskIds.map((id, i) => ({
+      id,
+      name: id,
+      kind: "node",
+      order: i + 1,
+    })),
+  );
+  return session.session_id;
+}
+
+function writeEnhancedMd(project: string, yyyymm: string, slug: string): void {
+  const dir = join(WS, project, "prds", yyyymm, slug);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "enhanced.md"), "---\nschema_version: 1\n---\n");
+}
+
+describe("migrateSession", () => {
+  it("auto-done when enhanced.md exists", () => {
+    const sessionId = seedSession({
+      project: "dataAssets",
+      slug: "demo-feature",
+      yyyymm: "202604",
+      taskIds: ["transform", "enhance", "discuss", "analyze"],
+    });
+    writeEnhancedMd("dataAssets", "202604", "demo-feature");
+
+    const report = migrateSession("dataAssets", sessionId);
+    assert.equal(report.action, "auto-done");
+
+    const s = readSession("dataAssets", sessionId)!;
+    const transform = s.tasks.find((t) => t.id === "transform")!;
+    const enhance = s.tasks.find((t) => t.id === "enhance")!;
+    const analyze = s.tasks.find((t) => t.id === "analyze")!;
+    assert.equal(transform.status, "done");
+    assert.equal(enhance.status, "done");
+    // unrelated tasks stay untouched
+    assert.equal(analyze.status, "pending");
+  });
+
+  it("revert-to-discuss when enhanced.md missing", () => {
+    const sessionId = seedSession({
+      project: "dataAssets",
+      slug: "missing-feature",
+      yyyymm: "202604",
+      taskIds: ["transform", "enhance", "discuss", "analyze"],
+    });
+
+    const report = migrateSession("dataAssets", sessionId);
+    assert.equal(report.action, "revert-to-discuss");
+
+    const s = readSession("dataAssets", sessionId)!;
+    assert.equal(s.tasks.find((t) => t.id === "transform"), undefined);
+    assert.equal(s.tasks.find((t) => t.id === "enhance"), undefined);
+    const discuss = s.tasks.find((t) => t.id === "discuss")!;
+    assert.equal(discuss.status, "pending");
+    // unrelated tasks remain
+    const analyze = s.tasks.find((t) => t.id === "analyze")!;
+    assert.equal(analyze.status, "pending");
+  });
+
+  it("noop when session has no transform/enhance task", () => {
+    const sessionId = seedSession({
+      project: "dataAssets",
+      slug: "fresh-feature",
+      yyyymm: "202604",
+      taskIds: ["discuss", "analyze", "write"],
+    });
+
+    const report = migrateSession("dataAssets", sessionId);
+    assert.equal(report.action, "noop");
+
+    const s = readSession("dataAssets", sessionId)!;
+    // session shape is unchanged
+    assert.equal(s.tasks.length, 3);
+  });
+
+  it("dryRun reports the action without mutating the session", () => {
+    const sessionId = seedSession({
+      project: "dataAssets",
+      slug: "dryrun-feature",
+      yyyymm: "202604",
+      taskIds: ["transform", "enhance", "discuss"],
+    });
+
+    const report = migrateSession("dataAssets", sessionId, { dryRun: true });
+    assert.equal(report.action, "revert-to-discuss");
+
+    const s = readSession("dataAssets", sessionId)!;
+    // tasks unchanged because dryRun
+    assert.equal(s.tasks.find((t) => t.id === "transform")?.status, "pending");
+    assert.equal(s.tasks.find((t) => t.id === "enhance")?.status, "pending");
+    assert.equal(s.tasks.find((t) => t.id === "discuss")?.status, "pending");
   });
 });
