@@ -45,6 +45,20 @@ describe("parseSourceRef", () => {
   it("returns null for empty anchor", () => {
     assert.equal(parseSourceRef("plan#"), null);
   });
+
+  it("parses enhanced scheme with section anchor", () => {
+    assert.deepEqual(parseSourceRef("enhanced#s-2-1-a1b2"), {
+      scheme: "enhanced",
+      anchor: "s-2-1-a1b2",
+    });
+  });
+
+  it("parses enhanced scheme with q-anchor", () => {
+    assert.deepEqual(parseSourceRef("enhanced#q7"), {
+      scheme: "enhanced",
+      anchor: "q7",
+    });
+  });
 });
 
 describe("resolveSourceRef — plan scheme", () => {

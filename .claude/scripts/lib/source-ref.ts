@@ -5,20 +5,20 @@
  *
  * Syntax:
  *   source_ref ::= <scheme>#<anchor>
- *   scheme     ::= plan | prd | knowledge | repo
+ *   scheme     ::= plan | prd | knowledge | repo | enhanced
  */
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-export type SourceRefScheme = "plan" | "prd" | "knowledge" | "repo";
+export type SourceRefScheme = "plan" | "prd" | "knowledge" | "repo" | "enhanced";
 
 export interface ParsedSourceRef {
   scheme: SourceRefScheme;
   anchor: string;
 }
 
-const SCHEMES: readonly SourceRefScheme[] = ["plan", "prd", "knowledge", "repo"];
+const SCHEMES: readonly SourceRefScheme[] = ["plan", "prd", "knowledge", "repo", "enhanced"];
 
 export function parseSourceRef(raw: string): ParsedSourceRef | null {
   if (typeof raw !== "string") return null;
@@ -60,6 +60,8 @@ export function resolveSourceRef(raw: string, ctx: ResolveContext): ResolveResul
       return resolveKnowledge(parsed.anchor, ctx);
     case "repo":
       return resolveRepo(parsed.anchor, ctx);
+    case "enhanced":
+      return { ok: false, reason: "enhanced scheme resolver 尚未实装（Task A2）" };
   }
 }
 
