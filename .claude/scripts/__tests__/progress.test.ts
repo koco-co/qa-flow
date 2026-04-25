@@ -304,3 +304,90 @@ describe("progress migrate --from legacy", () => {
     assert.deepEqual(sessionIds, ["ui-autotest/shared-suite-alpha", "ui-autotest/shared-suite-beta"]);
   });
 });
+
+describe("migrate-session", () => {
+  function setupSession(opts: { slug: string; withEnhanced: boolean }) {
+    const sourcePath = `workspace/dataAssets/prds/202604/${opts.slug}.md`;
+    const sid = JSON.parse(run([
+      "session-create",
+      "--workflow", "test-case-gen", "--project", "dataAssets",
+      "--source-type", "prd", "--source-path", sourcePath,
+    ]).stdout).session_id;
+    run(["task-add", "--project", "dataAssets", "--session", sid,
+      "--tasks", JSON.stringify([
+        { id: "transform", name: "Transform", kind: "node", order: 1 },
+        { id: "enhance", name: "Enhance", kind: "node", order: 2 },
+        { id: "discuss", name: "Discuss", kind: "node", order: 3 },
+      ])]);
+    if (opts.withEnhanced) {
+      const dir = join(TMP, "workspace", "dataAssets", "prds", "202604", opts.slug);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "enhanced.md"), "---\nschema_version: 1\n---\n");
+    }
+    return sid;
+  }
+
+  it("auto-done when enhanced.md exists", () => {
+    const sid = setupSession({ slug: "demo-auto", withEnhanced: true });
+    const result = JSON.parse(
+      run(["migrate-session", "--project", "dataAssets", "--session-id", sid],
+        { WORKSPACE_DIR: join(TMP, "workspace") }).stdout,
+    );
+    assert.equal(result.migrated.length, 1);
+    assert.equal(result.migrated[0].action, "auto-done");
+    assert.equal(result.dry_run, false);
+
+    const session = JSON.parse(run([
+      "session-read", "--project", "dataAssets", "--session", sid,
+    ]).stdout);
+    const transform = session.tasks.find((t: { id: string }) => t.id === "transform");
+    const enhance = session.tasks.find((t: { id: string }) => t.id === "enhance");
+    assert.equal(transform.status, "done");
+    assert.equal(enhance.status, "done");
+  });
+
+  it("revert-to-discuss when enhanced.md missing", () => {
+    const sid = setupSession({ slug: "demo-revert", withEnhanced: false });
+    const result = JSON.parse(
+      run(["migrate-session", "--project", "dataAssets", "--session-id", sid],
+        { WORKSPACE_DIR: join(TMP, "workspace") }).stdout,
+    );
+    assert.equal(result.migrated[0].action, "revert-to-discuss");
+
+    const session = JSON.parse(run([
+      "session-read", "--project", "dataAssets", "--session", sid,
+    ]).stdout);
+    const transform = session.tasks.find((t: { id: string }) => t.id === "transform");
+    const discuss = session.tasks.find((t: { id: string }) => t.id === "discuss");
+    assert.equal(transform, undefined);
+    assert.equal(discuss.status, "pending");
+  });
+
+  it("dry-run reports without mutating", () => {
+    const sid = setupSession({ slug: "demo-dry", withEnhanced: true });
+    const result = JSON.parse(
+      run(["migrate-session", "--project", "dataAssets", "--session-id", sid, "--dry-run"],
+        { WORKSPACE_DIR: join(TMP, "workspace") }).stdout,
+    );
+    assert.equal(result.dry_run, true);
+    assert.equal(result.migrated[0].action, "auto-done");
+
+    const session = JSON.parse(run([
+      "session-read", "--project", "dataAssets", "--session", sid,
+    ]).stdout);
+    const transform = session.tasks.find((t: { id: string }) => t.id === "transform");
+    assert.equal(transform.status, "pending");
+  });
+
+  it("migrates all sessions when --session-id omitted", () => {
+    setupSession({ slug: "batch-a", withEnhanced: true });
+    setupSession({ slug: "batch-b", withEnhanced: false });
+    const result = JSON.parse(
+      run(["migrate-session", "--project", "dataAssets"],
+        { WORKSPACE_DIR: join(TMP, "workspace") }).stdout,
+    );
+    assert.equal(result.migrated.length, 2);
+    const actions = result.migrated.map((r: { action: string }) => r.action).sort();
+    assert.deepEqual(actions, ["auto-done", "revert-to-discuss"]);
+  });
+});

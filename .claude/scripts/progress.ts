@@ -19,7 +19,9 @@ import { ExitCode } from "./lib/progress-types.ts";
 import type { TaskStatus } from "./lib/progress-types.ts";
 import {
   migrateKataState, migrateUiAutotest, discoverLegacyFiles,
+  migrateSession,
 } from "./lib/progress-migrator.ts";
+import type { MigrateSessionReport } from "./lib/progress-migrator.ts";
 
 function slugFromPath(p: string): string {
   return basename(p, ".md").replace(/\.[^.]+$/, "");
@@ -322,6 +324,23 @@ async function runMigrate(opts: {
   emit({ migrated, results });
 }
 
+// ── migrate-session ─────────────────────────────────────
+
+function runMigrateSession(opts: {
+  project: string;
+  sessionId?: string;
+  dryRun?: boolean;
+}): void {
+  const dryRun = !!opts.dryRun;
+  const ids: readonly string[] = opts.sessionId
+    ? [opts.sessionId]
+    : listSessions({ project: opts.project });
+  const reports: MigrateSessionReport[] = ids.map((id) =>
+    migrateSession(opts.project, id, { dryRun }),
+  );
+  emit({ project: opts.project, dry_run: dryRun, migrated: reports });
+}
+
 // ── registration ────────────────────────────────────────
 
 export const program = createCli({
@@ -501,6 +520,16 @@ export const program = createCli({
         { flag: "--dry-run", description: "Show plan without writing anything", defaultValue: false },
       ],
       action: runMigrate,
+    },
+    {
+      name: "migrate-session",
+      description: "Migrate in-flight session(s) per enhanced.md presence (auto-done | revert-to-discuss | noop)",
+      options: [
+        { flag: "--project <name>", description: "Project name", required: true },
+        { flag: "--session-id <id>", description: "Target session id; if omitted, all sessions of the project" },
+        { flag: "--dry-run", description: "Report only, no writes", defaultValue: false },
+      ],
+      action: runMigrateSession,
     },
   ],
 });
