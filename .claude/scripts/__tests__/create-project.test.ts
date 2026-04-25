@@ -70,7 +70,7 @@ describe("create-project create --dry-run", () => {
     assert.ok(Array.isArray(data.will_create.dirs));
     assert.ok(Array.isArray(data.will_create.files));
     assert.ok(Array.isArray(data.will_create.gitkeeps));
-    assert.equal(data.will_create.dirs.length, 13);
+    assert.equal(data.will_create.dirs.length, 12);
     // Disk must remain untouched
     assert.equal(existsSync(join(WORKSPACE_DIR, "newProj")), false);
     // Config must remain unchanged
@@ -104,7 +104,6 @@ describe("create-project create --dry-run", () => {
       "knowledge/modules",
       "knowledge/pitfalls",
       ".repos",
-      ".temp",
     ]) mkdirSync(join(projDir, d), { recursive: true });
     for (const g of [
       "prds",
@@ -117,7 +116,6 @@ describe("create-project create --dry-run", () => {
       "knowledge/modules",
       "knowledge/pitfalls",
       ".repos",
-      ".temp",
     ]) writeFileSync(join(projDir, g, ".gitkeep"), "");
     writeFileSync(join(projDir, "rules", "README.md"), "# complete");
     writeFileSync(join(projDir, "knowledge", "overview.md"), "# complete");
@@ -163,8 +161,8 @@ describe("create-project scan", () => {
     assert.equal(data.valid_name, true);
     assert.equal(data.exists, false);
     assert.equal(data.skeleton_complete, false);
-    assert.equal(data.missing_dirs.length, 13);
-    assert.equal(data.missing_gitkeeps.length, 11);
+    assert.equal(data.missing_dirs.length, 12);
+    assert.equal(data.missing_gitkeeps.length, 10);
     assert.equal(data.missing_files.length, 3);
     assert.equal(data.config_registered, false);
   });
@@ -200,7 +198,6 @@ describe("create-project scan", () => {
       "knowledge/modules",
       "knowledge/pitfalls",
       ".repos",
-      ".temp",
     ];
     for (const d of dirs) mkdirSync(join(projDir, d), { recursive: true });
     const gks = [
@@ -214,7 +211,6 @@ describe("create-project scan", () => {
       "knowledge/modules",
       "knowledge/pitfalls",
       ".repos",
-      ".temp",
     ];
     for (const g of gks) writeFileSync(join(projDir, g, ".gitkeep"), "");
     writeFileSync(join(projDir, "rules", "README.md"), "# fullProj rules");
@@ -270,7 +266,6 @@ describe("create-project create --confirmed", () => {
       "knowledge/modules",
       "knowledge/pitfalls",
       ".repos",
-      ".temp",
     ]) {
       assert.ok(existsSync(join(projDir, d)), `dir missing: ${d}`);
     }

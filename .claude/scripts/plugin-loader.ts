@@ -83,7 +83,7 @@ function runResolve(opts: { url: string }): void {
 
       const command = fetchCmd
         .replace(/\{\{url\}\}/g, shellEscape(opts.url))
-        .replace(/\{\{output\}\}/g, shellEscape(`${workspaceDir}/.temp`));
+        .replace(/\{\{output\}\}/g, shellEscape(`${workspaceDir}/../.kata/plugin-output`));
 
       process.stdout.write(
         `${JSON.stringify({ plugin: plugin.name, command }, null, 2)}\n`,

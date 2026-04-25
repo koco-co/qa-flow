@@ -18,7 +18,6 @@ export const SKELETON_SPEC = {
     "knowledge/modules",
     "knowledge/pitfalls",
     ".repos",
-    ".temp",
   ],
   gitkeep_dirs: [
     "prds",
@@ -31,7 +30,6 @@ export const SKELETON_SPEC = {
     "knowledge/modules",
     "knowledge/pitfalls",
     ".repos",
-    ".temp",
   ],
   template_files: {
     "rules/README.md": "rules/README.md",
@@ -44,7 +42,6 @@ export const RESERVED_NAMES = [
   "workspace",
   "repos",
   ".repos",
-  ".temp",
   "knowledge",
   "rules",
   "archive",

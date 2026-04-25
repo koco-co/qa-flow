@@ -134,12 +134,12 @@ describe("configJsonPath", () => {
 });
 
 describe("SKELETON_SPEC shape", () => {
-  it("has 13 directories", () => {
-    assert.equal(SKELETON_SPEC.dirs.length, 13);
+  it("has 12 directories", () => {
+    assert.equal(SKELETON_SPEC.dirs.length, 12);
   });
 
-  it("has 11 gitkeep directories", () => {
-    assert.equal(SKELETON_SPEC.gitkeep_dirs.length, 11);
+  it("has 10 gitkeep directories", () => {
+    assert.equal(SKELETON_SPEC.gitkeep_dirs.length, 10);
   });
 
   it("has 3 template files", () => {
@@ -169,10 +169,10 @@ describe("resolveSkeletonPaths", () => {
     assert.ok(r.templates.every((t) => t.dst_abs.startsWith(projDir + "/")));
   });
 
-  it("produces 13 dirs, 11 gitkeeps, 3 templates", () => {
+  it("produces 12 dirs, 10 gitkeeps, 3 templates", () => {
     const r = resolveSkeletonPaths("/tmp/foo");
-    assert.equal(r.dirs.length, 13);
-    assert.equal(r.gitkeeps.length, 11);
+    assert.equal(r.dirs.length, 12);
+    assert.equal(r.gitkeeps.length, 10);
     assert.equal(r.templates.length, 3);
   });
 });
@@ -208,8 +208,8 @@ describe("diffProjectSkeleton", () => {
   it("empty project: exists=false, all missing", () => {
     const diff = diffProjectSkeleton(EMPTY_PROJ, TPL);
     assert.equal(diff.exists, false);
-    assert.equal(diff.missing_dirs.length, 13);
-    assert.equal(diff.missing_gitkeeps.length, 11);
+    assert.equal(diff.missing_dirs.length, 12);
+    assert.equal(diff.missing_gitkeeps.length, 10);
     assert.equal(diff.missing_files.length, 3);
     assert.equal(diff.skeleton_complete, false);
   });

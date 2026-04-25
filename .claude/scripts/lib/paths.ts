@@ -77,7 +77,7 @@ export function reposDir(project: string): string {
 }
 
 export function tempDir(project: string): string {
-  return join(projectDir(project), ".temp");
+  return join(kataRoot(), project);
 }
 
 export function probeCacheDir(project: string): string {

@@ -28,7 +28,7 @@ import {
   setArtifact,
 } from "./progress-store.ts";
 import type { TaskInput } from "./progress-store.ts";
-import { enhancedMd, legacyBackupDir, tempDir } from "./paths.ts";
+import { enhancedMd, legacyBackupDir, projectDir, tempDir } from "./paths.ts";
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -270,37 +270,50 @@ export interface LegacyEntry {
 }
 
 /**
- * Scan `workspace/{project}/.temp/` and return all recognizable legacy files.
+ * Scan legacy `.temp` directories and return all recognizable legacy files.
+ *
+ * Checks both the new `.kata/{project}/` and the old `workspace/{project}/.temp/`
+ * locations for backward compatibility during the transition.
  *
  * Matches:
  *   - `.kata-state-{slug}-{env}.json`
  *   - `ui-autotest-progress-{slug}.json`  (excludes alias files)
  */
 export function discoverLegacyFiles(project: string): LegacyEntry[] {
-  const dir = tempDir(project);
-  if (!existsSync(dir)) return [];
-
   const out: LegacyEntry[] = [];
-  for (const f of readdirSync(dir)) {
-    if (/^\.kata-state-.+\.json$/.test(f)) {
-      const m = f.match(/^\.kata-state-(.+)-([^-]+)\.json$/);
-      out.push({
-        path: join(dir, f),
-        kind: "kata-state",
-        env: m?.[2] ?? "default",
-      });
-    } else if (/^ui-autotest-progress-(?!alias-).+\.json$/.test(f)) {
-      const filePath = join(dir, f);
-      let env = "default";
-      try {
-        const raw = JSON.parse(readFileSync(filePath, "utf8")) as { env?: string };
-        if (raw.env) env = raw.env;
-      } catch { /* ignore malformed, leave default */ }
-      out.push({
-        path: filePath,
-        kind: "ui-autotest",
-        env,
-      });
+
+  // Scan both new and old legacy locations
+  const dirs = [
+    tempDir(project),
+    join(projectDir(project), ".temp"),
+  ];
+
+  for (const dir of dirs) {
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir)) {
+      if (/^\.kata-state-.+\.json$/.test(f)) {
+        const m = f.match(/^\.kata-state-(.+)-([^-]+)\.json$/);
+        // Deduplicate by filename — prefer the first match
+        if (out.some((e) => e.path.endsWith(f))) continue;
+        out.push({
+          path: join(dir, f),
+          kind: "kata-state",
+          env: m?.[2] ?? "default",
+        });
+      } else if (/^ui-autotest-progress-(?!alias-).+\.json$/.test(f)) {
+        if (out.some((e) => e.path.endsWith(f))) continue;
+        const filePath = join(dir, f);
+        let env = "default";
+        try {
+          const raw = JSON.parse(readFileSync(filePath, "utf8")) as { env?: string };
+          if (raw.env) env = raw.env;
+        } catch { /* ignore malformed, leave default */ }
+        out.push({
+          path: filePath,
+          kind: "ui-autotest",
+          env,
+        });
+      }
     }
   }
   return out;

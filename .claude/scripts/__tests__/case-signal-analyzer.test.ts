@@ -30,7 +30,7 @@ function prdPath(): string {
 }
 
 function cacheDir(): string {
-  return join(repoRoot, "workspace", project, ".temp", "probe-cache");
+  return join(repoRoot, ".kata", project, "probe-cache");
 }
 
 function cachePath(): string {
@@ -53,6 +53,7 @@ beforeEach(() => {
 afterEach(() => {
   // Clean up all fixture data
   rmSync(join(repoRoot, "workspace", project), { recursive: true, force: true });
+  rmSync(join(repoRoot, ".kata", project), { recursive: true, force: true });
 });
 
 describe("case-signal-analyzer CLI", () => {

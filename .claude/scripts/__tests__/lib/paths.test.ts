@@ -196,28 +196,28 @@ describe("reposDir", () => {
 });
 
 describe("tempDir", () => {
-  it("returns workspace/{project}/.temp", () => {
+  it("returns .kata/{project}", () => {
     const dir = tempDir("xyzh");
-    assert.ok(dir.endsWith("workspace/xyzh/.temp"));
+    assert.ok(dir.endsWith(".kata/xyzh"));
   });
 });
 
 describe("probeCacheDir", () => {
-  it("returns workspace/{project}/.temp/probe-cache", () => {
+  it("returns .kata/{project}/probe-cache", () => {
     const dir = probeCacheDir("dataAssets");
-    assert.ok(dir.endsWith("workspace/dataAssets/.temp/probe-cache"));
+    assert.ok(dir.endsWith(".kata/dataAssets/probe-cache"));
   });
 });
 
 describe("probeCachePath", () => {
-  it("returns workspace/{project}/.temp/probe-cache/{prdSlug}.json", () => {
+  it("returns .kata/{project}/probe-cache/{prdSlug}.json", () => {
     const path = probeCachePath("dataAssets", "15695-quality");
-    assert.ok(path.endsWith("workspace/dataAssets/.temp/probe-cache/15695-quality.json"));
+    assert.ok(path.endsWith(".kata/dataAssets/probe-cache/15695-quality.json"));
   });
 
   it("preserves slug verbatim including dashes and digits", () => {
     const path = probeCachePath("xyzh", "abc-123-xyz");
-    assert.ok(path.endsWith("workspace/xyzh/.temp/probe-cache/abc-123-xyz.json"));
+    assert.ok(path.endsWith(".kata/xyzh/probe-cache/abc-123-xyz.json"));
   });
 });
 
