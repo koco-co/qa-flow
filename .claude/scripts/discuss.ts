@@ -5,7 +5,7 @@
  * Usage:
  *   kata-cli discuss <action> --project <name> --yyyymm <ym> --prd-slug <slug> [...]
  * Actions: init | read | set-status | set-section | add-section | set-source-facts |
- *          add-pending | resolve | list-pending | compact | validate | migrate-plan
+ *          add-pending | resolve | list-pending | compact | validate
  */
 
 import { readFileSync } from "node:fs";
@@ -23,7 +23,6 @@ import {
   compactDoc,
   validateDoc,
 } from "./lib/enhanced-doc-store.ts";
-import { migratePlanToEnhanced } from "./lib/enhanced-doc-migrator.ts";
 
 // ============================================================================
 // CLI wiring
@@ -237,22 +236,6 @@ export const program = createCli({
           const zeroPendingIssue = r.issues.some((i: string) => i.includes("requireZeroPending"));
           process.exit(zeroPendingIssue ? 3 : 1);
         }
-      },
-    },
-    {
-      name: "migrate-plan",
-      description: "从 legacy plan.md 迁移到 enhanced.md",
-      options: [
-        { flag: "--project <name>", description: "项目名", required: true },
-        { flag: "--yyyymm <ym>", description: "月份", required: true },
-        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
-        { flag: "--dry-run", description: "只输出报告不落盘", defaultValue: false },
-      ],
-      action: (opts: any) => {
-        const report = migratePlanToEnhanced(opts.project, opts.yyyymm, opts.prdSlug, {
-          dryRun: !!opts.dryRun,
-        });
-        process.stdout.write(JSON.stringify(report) + "\n");
       },
     },
   ],
