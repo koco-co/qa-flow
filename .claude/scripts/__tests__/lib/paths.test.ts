@@ -23,8 +23,6 @@ import {
   knowledgePath,
   knowledgeModulesDir,
   knowledgePitfallsDir,
-  plansDir,
-  planPath,
   listProjects,
   repoRoot,
   scriptsDir,
@@ -260,34 +258,6 @@ describe("knowledgePitfallsDir", () => {
   it("returns <knowledge>/pitfalls", () => {
     const dir = knowledgePitfallsDir("dataAssets");
     assert.ok(dir.endsWith("workspace/dataAssets/knowledge/pitfalls"), `got: ${dir}`);
-  });
-});
-
-describe("plansDir", () => {
-  it("returns workspace/{project}/prds/{yyyymm}", () => {
-    const dir = plansDir("dataAssets", "202604");
-    assert.ok(dir.endsWith("workspace/dataAssets/prds/202604"), `got: ${dir}`);
-  });
-
-  it("nests under prdsDir for the given project", () => {
-    const dir = plansDir("xyzh", "202512");
-    const root = repoRoot();
-    assert.equal(dir, join(root, "workspace", "xyzh", "prds", "202512"));
-  });
-});
-
-describe("planPath", () => {
-  it("returns {plansDir}/{slug}.plan.md", () => {
-    const p = planPath("dataAssets", "202604", "15695-quality-check");
-    assert.ok(
-      p.endsWith("workspace/dataAssets/prds/202604/15695-quality-check.plan.md"),
-      `got: ${p}`,
-    );
-  });
-
-  it("preserves slug verbatim including dashes and digits", () => {
-    const p = planPath("dataAssets", "202604", "abc-123-xyz");
-    assert.ok(p.endsWith("abc-123-xyz.plan.md"), `got: ${p}`);
   });
 });
 
