@@ -53,12 +53,13 @@ repo#studio/src/approval/list.tsx:L123
 repo#backend/ApprovalController.java:L45-L60
 ```
 
-### plan 锚点（Legacy，Phase D3 前保留）
+### plan 锚点（Phase D3 起 DEPRECATED）
 
-迁移期旧用例或旧 plan.md 可能仍存在 `plan#q<id>-<slug>` 格式。reviewer F16 放行但 stderr 打 warning：
+旧用例若仍出现 `plan#q<id>-<slug>` 格式，reviewer F16 计为不可解析（不再放行）。所有澄清问题已统一迁移到 `enhanced#q{n}`（与 enhanced.md §4 待确认项锚点对齐）。
 
 ```
-plan#q3-审批状态             # 迁移后应改写为 enhanced#q3
+# 已废弃，应改写为 enhanced#q3
+plan#q3-审批状态
 ```
 
 ## Phase D2 使用约束

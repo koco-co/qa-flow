@@ -222,7 +222,7 @@
 ### F16: source_ref 锚点可解析性（Phase C 新增）
 
 - 每条 test_case 必带 `source_ref` 字段；缺失即 F16 命中
-- 调 `kata-cli source-ref resolve --ref <source_ref> --plan <plan.md> --prd <prd path> --project <proj>`；退出码 0 视为通过，1 视为不可解析
+- 主路径：`kata-cli discuss validate --project <proj> --yyyymm <ym> --prd-slug <slug> --check-source-refs <csv>`；退出码 0 视为通过，1 时 `issues[]` 中以 `source_ref unresolved:` 开头的行视为不可解析
 - **不可自动修正**：锚点是事实性引用，错误锚点需回退到源头（analyze / writer / discuss）；reviewer 标 `[F16-MANUAL]` 并把不可解析原因写到 issues[].description
 - **严重度**：`pass_with_warnings`；单条 F16 不阻断整个 review，但进入问题率计算
 
