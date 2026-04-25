@@ -21,6 +21,7 @@
     "@types/nodemailer": "^8.0.0",
     "commander": "^13.1.0",
     "exceljs": "^4.4.0",
+    "gray-matter": "^4.0.3",
     "handlebars": "^4.7.8",
     "jszip": "^3.10.1",
     "nodemailer": "^8.0.4",

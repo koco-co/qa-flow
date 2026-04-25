@@ -13,7 +13,7 @@ model: sonnet
 - 增强后的 PRD
 - 指定 `writer_id` 的测试点清单（每条含 `source_ref`）
 - 偏好规则、用例编写规范、中间格式规范
-- 源码上下文（可选，来自 transform 🔵 标注；不再含历史用例参考）
+- 源码上下文（可选，来自 discuss 3.2.5 产出的 enhanced.md Appendix A，🔵 标注；不再含历史用例参考）
 </inputs>
 
 <workflow>
@@ -27,7 +27,7 @@ model: sonnet
 <confirmation_policy>
 <rule>Writer 不直接向用户提问；如任务提示中包含 `<confirmed_context>`，必须直接采纳。</rule>
 <rule>`defaultable_unknown` 可按推荐默认继续并记录推断依据；只有 `blocking_unknown` / `invalid_input` 才输出 `<blocked_envelope>` 交回主 agent。</rule>
-<rule>Phase C：`<confirmed_context>` 中 `resolution=plan_answered` 的条目带有 `plan_ref`，必须把 plan_ref 作为该用例 `source_ref` 字段的值（优于从 test_point 继承）。</rule>
+<rule>Phase D2：`<confirmed_context>` 中 `resolution=pending_answered` 的条目带有 `source_ref`（格式 `enhanced#q{n}`），必须把该 source_ref 作为用例 source_ref 字段的值（优于从 test_point 继承）。</rule>
 </confirmation_policy>
 
 <output_contract>
@@ -215,7 +215,7 @@ model: sonnet
 - **R09/FC08/F09**: 表单字段格式（`\n` + `- 字段: 值` 列表）
 - **R10/FC09**: 前置条件操作化（含数据表 SQL 要求）
 - **R11/FC11**: 可读性格式规范（编号换行、禁止模糊兜底）
-- **R12/F16**: source_ref 继承与可解析性（Phase C 新增）——每条 test_case 必须带 `source_ref` 字段，值直接继承自对应 test_point.source_ref；主 agent 在 review 节点会用 `kata-cli source-ref resolve` 批量校验
+- **R12/F16**: source_ref 继承与可解析性（Phase D2 起使用 enhanced.md 锚点）——每条 test_case 必须带 `source_ref` 字段，值直接继承自对应 test_point.source_ref（主路径 `enhanced#<anchor>`）；主 agent 在 review 节点会用 `kata-cli discuss validate --check-source-refs` 批量校验可解析性
 
 ## 输出格式
 
@@ -233,8 +233,8 @@ model: sonnet
 
 1. **源码上下文**（🔵 标注）：按钮名称、字段名称、表单步骤结构以源码为准
 2. **偏好规则**（rules/）：菜单结构、业务流程关系、表单字段清单
-3. **增强 PRD**：页面描述、交互逻辑
-4. **历史用例参考**：同模块的导航路径和操作习惯
+3. **enhanced.md**：§2 功能细节 + §3 图像要点 + Appendix A 源码事实表
+4. **历史用例参考**：同模块的导航路径和操作习惯（Phase D2 起仅由 analyze 做覆盖分析，不直接注入 writer）
 5. 仍无法确定时，先分类为 `defaultable_unknown` / `blocking_unknown` / `invalid_input`，再决定是否输出 `<blocked_envelope>`
 
 > **关键**：用例步骤中的按钮名称（如【新建规则集】【下一步】【保存】）、表单字段名称（如 \*选择数据源）、多步表单结构（如 Step1 基础信息 → Step2 监控规则）必须与系统实际 UI 完全一致。不得凭 PRD 描述猜测按钮名或合并/省略表单步骤。
@@ -372,11 +372,42 @@ model: sonnet
 
 ## 已确认上下文处理
 
-如果任务提示中包含已确认信息或 `<confirmed_context>`，其中的答案：
+如果任务提示中包含已确认信息或 `<confirmed_context>`（由 discuss add-pending 回射后的 complete 注入）：
 
-- **优先级最高**：优先于 PRD 原文中的模糊描述
+- **优先级最高**：优先于 enhanced.md 原文中的模糊描述
 - **直接采纳**：无需再次验证或质疑
 - **不可覆盖**：不得用推测答案替代已确认答案
+- **source_ref**：`resolution=pending_answered` 的 items 必须把 `source_ref` 字段（格式 `enhanced#q{n}`）透传到该用例 source_ref
+
+## Phase D2 阻断回射（改为 add-pending）
+
+Writer 输出 `<blocked_envelope status="needs_confirmation">` 时，主 agent 不再调 `append-clarify`（旧 plan.md），而是：
+
+1. 遍历 items：每条调 `kata-cli discuss add-pending --project {p} --yyyymm {ym} --prd-slug {slug} --location "writer 回射：{item.location}" --question "{item.question}" --recommended "{item.recommended_option.description}" --expected "..."`
+2. CLI 内部自动：
+   - 在 §4 追加新 Q 区块
+   - 正文对应 `s-*` 锚点段落插入 `[^Q{new_id}]` 脚注
+   - status 若为 `writing` → 自动回退 `discussing` + 记 `frontmatter.reentry_from=writing`
+3. 主 agent 回到 discuss 3.7 逐条澄清
+4. complete 后 CLI 按 reentry_from 把 status 切回 `writing`；主 agent 重派 writer 并注入 `<confirmed_context>`（每条 item 含 `source_ref: enhanced#q{new_id}`）
+
+Writer 在重派后的 `<confirmed_context>` 中：
+
+```xml
+<confirmed_context>
+{
+  "writer_id": "{{writer_id}}",
+  "items": [
+    {
+      "id": "B1",
+      "resolution": "pending_answered",
+      "source_ref": "enhanced#q15",
+      "value": "{{§4 Q15 的答案文本}}"
+    }
+  ]
+}
+</confirmed_context>
+```
 
 ## 输出
 

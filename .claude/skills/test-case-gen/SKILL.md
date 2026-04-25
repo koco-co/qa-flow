@@ -48,7 +48,7 @@ kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/ru
 </inputs>
 
 <workflow>
-  <primary>init → probe → discuss → transform → enhance → analyze → write → review → format-check → output</primary>
+  <primary>init → probe → discuss → analyze → write → review → format-check → output</primary>
 </workflow>
 
 ### 确认策略
@@ -57,8 +57,8 @@ kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/ru
 
 <output_contract>
 <contract_preservation>保留 Task 2 已批准的 A/B 产物契约与文案，不改写 Writer 中间 JSON、Archive MD、XMind 的职责边界。</contract_preservation>
-<transform_handoff>transform 通过 `<clarify_envelope>` / `<confirmed_context>` 交接，不再依赖旧式 Markdown 协议块。</transform_handoff>
-<writer_handoff>writer 通过 `<blocked_envelope>` / `<confirmed_context>` 交接；阻断时也必须保持机器可读。</writer_handoff>
+<discuss_handoff>discuss 节点产出 enhanced.md（见 `references/enhanced-doc-template.md`）；transform/enhance 节点已合入，不再有 `<clarify_envelope>` 协议。</discuss_handoff>
+<writer_handoff>writer 通过 `<blocked_envelope>` / `<confirmed_context>` 交接；阻断时回射到 `discuss add-pending`（enhanced.md §4），半冻结状态机自动处理 reentry_from。</writer_handoff>
 </output_contract>
 
 <error_handling>
@@ -82,7 +82,7 @@ kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/ru
 
 | 模式   | 触发      | 差异                           |
 | ------ | --------- | ------------------------------ |
-| normal | 默认      | 完整 7 节点 + 复审             |
+| normal | 默认      | 完整 8 节点 + 复审             |
 | quick  | `--quick` | 跳过复审，format-check 仅 1 轮 |
 
 ---
@@ -91,22 +91,20 @@ kata-cli rule-loader load --project {{project}} > workspace/{{project}}/.temp/ru
 
 > 全流程使用 `TaskCreate` / `TaskUpdate` 工具展示实时进度，让用户在终端看到全局视图。
 
-### 主流程（10 节点）
+### 主流程（8 节点）
 
-workflow 启动时（节点 1 开始前），使用 `TaskCreate` 一次性创建 10 个任务（含 discuss 与 format-check），按顺序设置 `addBlockedBy` 依赖：
+workflow 启动时（节点 1 开始前），使用 `TaskCreate` 一次性创建 8 个任务（含 discuss 与 format-check），按顺序设置 `addBlockedBy` 依赖：
 
-| 任务 subject                        | activeForm                       |
-| ----------------------------------- | -------------------------------- |
-| `init — 输入解析与环境准备`         | `解析输入与检测断点`             |
-| `probe — 4 维信号探针与策略派发`    | `采集 4 维信号并路由策略`        |
-| `discuss — 主 agent 主持需求讨论`   | `主持需求讨论与 plan.md 落地`    |
-| `transform — 源码分析与 PRD 结构化` | `分析源码与结构化 PRD`           |
-| `enhance — PRD 增强`                | `增强 PRD（图片识别、要点提取）` |
-| `analyze — 测试点规划`              | `生成测试点清单`                 |
-| `write — 并行生成用例`              | `派发 Writer 生成用例`           |
-| `review — 质量审查`                 | `执行质量审查与修正`             |
-| `format-check — 格式合规检查`       | `检查格式合规性`                 |
-| `output — 产物生成`                 | `生成 XMind + Archive MD`        |
+| 任务 subject                          | activeForm                        |
+| ------------------------------------- | --------------------------------- |
+| `init — 输入解析与环境准备`           | `解析输入与检测断点`              |
+| `probe — 4 维信号探针与策略派发`      | `采集 4 维信号并路由策略`         |
+| `discuss — 主持需求讨论 + 素材扫描`  | `主持讨论与 enhanced.md 落地`     |
+| `analyze — 测试点规划`                | `生成测试点清单`                  |
+| `write — 并行生成用例`                | `派发 Writer 生成用例`            |
+| `review — 质量审查`                   | `执行质量审查与修正`              |
+| `format-check — 格式合规检查`         | `检查格式合规性`                  |
+| `output — 产物生成`                   | `生成 XMind + Archive MD`         |
 
 **状态推进规则**：
 
@@ -141,7 +139,7 @@ Writer Sub-Agent 完成时更新：`[write] {{模块名}} — {{n}} 条用例`
 
 | 场景                | 触发词                                                                                           | 输入                               | 流程结构                                                                                                 | 读取文件           |
 | ------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------ |
-| `primary`（主生成） | 生成测试用例、生成用例、写用例、为 \<需求名称\> 生成用例、test case、重新生成 xxx 模块、追加用例 | PRD 路径 / 蓝湖 URL / 模块重跑指令 | 10 节点：init → probe → discuss → transform → enhance → analyze → write → review → format-check → output | `workflow/main.md` |
+| `primary`（主生成） | 生成测试用例、生成用例、写用例、为 \<需求名称\> 生成用例、test case、重新生成 xxx 模块、追加用例 | PRD 路径 / 蓝湖 URL / 模块重跑指令 | 8 节点：init → probe → discuss → analyze → write → review → format-check → output | `workflow/main.md` |
 
 `--quick` 参数对 `primary` 场景生效：跳过复审、format-check 仅 1 轮。
 
@@ -149,44 +147,11 @@ Writer Sub-Agent 完成时更新：`[write] {{模块名}} — {{n}} 条用例`
 
 ---
 
-## Writer 阻断中转协议
+## Writer 阻断中转协议（Phase D2：回射到 discuss add-pending）
 
-当 Writer Sub-Agent 返回 `<blocked_envelope>` 时，表示需求信息不足以继续编写，或输入无效。
+**核心变更**：不再现场 AskUserQuestion 处理。Writer `<blocked_envelope>` 内每个 item 通过 `kata-cli discuss add-pending` 沉淀为 enhanced.md §4，半冻结状态机自动回退 status 到 discussing + 记 reentry_from=writing；用户在 discuss 3.7 resolve 后 complete 时 CLI 按 reentry_from 恢复 status=writing，writer 以 `<confirmed_context>` 带 `source_ref: enhanced#q{n}` 重派。
 
-### 处理流程
-
-1. **解析**：从 `<blocked_envelope>` 中提取 `items`
-2. **逐条询问**（使用 AskUserQuestion 工具）：每次只向用户提出一个问题，使用 AskUserQuestion 工具：
-
-- 问题：`Writer 需要确认（{{current}}/{{total}}）：{{question_description}}`
-- 选项按候选答案列出，AI 推荐项标注"（推荐）"
-
-3. **默认项处理**：若 item 为 `defaultable_unknown`，直接采用推荐项并记录为 `auto_defaulted`
-4. **invalid_input 处理**：若 `status = "invalid_input"`，停止该模块并要求修正输入，不重启 Writer
-5. **收集完毕**：将所有答案与默认项注入 `<confirmed_context>`，重启该模块的 Writer
-6. **注入格式**：
-
-```xml
-<confirmed_context>
-{
-  "writer_id": "{{writer_id}}",
-  "items": [
-    {
-      "id": "B1",
-      "resolution": "user_selected",
-      "selected_option": "A",
-      "value": "{{answer_1}}"
-    },
-    {
-      "id": "B2",
-      "resolution": "auto_defaulted",
-      "selected_option": "B",
-      "value": "{{answer_2}}"
-    }
-  ]
-}
-</confirmed_context>
-```
+详细流程见 `workflow/main.md` 的"Writer 阻断中转协议"章节。`invalid_input` 分支仍直接停止模块并要求修正输入。
 
 ---
 

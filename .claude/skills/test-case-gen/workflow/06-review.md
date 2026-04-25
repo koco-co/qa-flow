@@ -1,12 +1,12 @@
-# 节点 8: review — 质量审查与修正
+# 节点 6: review — 质量审查与修正
 
-> 由 workflow/main.md 路由后加载。上游：节点 7 write；下游：节点 9 format-check。
+> 由 workflow/main.md 路由后加载。上游：节点 5 write；下游：节点 7 format-check。
 
 **目标**：对 Writer 产出执行质量审查，按阈值自动决策。
 
 **⏳ Task**：将 `review` 任务标记为 `in_progress`。
 
-### 8.1 质量审查（AI 任务）
+### 6.1 质量审查（AI 任务）
 
 派发 `reviewer-agent`（model: opus）执行质量审查。
 
@@ -22,22 +22,30 @@
 
 --quick 模式仅执行 1 轮审查。普通模式最多 2 轮（修正后复审）。
 
-### 8.2 source_ref 锚点校验（Phase C 新增）
+### 6.2 source_ref 锚点校验（Phase D2）
 
 reviewer-agent 在第零轮审查中批量调：
 
 ```bash
 kata-cli source-ref batch --refs-json /tmp/refs-*.json \
-  --plan {{plan_path}} --prd {{prd_path}} --project {{project}}
+  --project {{project}} --yyyymm {{YYYYMM}} --prd-slug {{prd_slug}}
 ```
+
+CLI 内部按前缀 dispatch：
+
+- `enhanced#...` → 调 `discuss validate --check-source-refs`（D3 前仍可走 legacy plan.md path；D2 过渡期 CLI 兼容两种）
+- `prd#...` → 读 `{prd_dir}/original.md` slug 校验
+- `knowledge#...` → knowledge-keeper read 校验
+- `repo#...` → 文件 + 行号存在校验
+- `plan#...` → legacy 兼容，warning 放行
 
 批量结果按 F16 规则计入 issues。主 agent 不必在 skill 层重复调用——审查输出 JSON 中的 `issues[].code="F16"` 已承担结果汇聚职责。
 
-### 8.3 合并产出
+### 6.3 合并产出
 
 将所有 Writer 输出合并为最终 JSON。
 
-### 8.4 更新状态
+### 6.4 更新状态
 
 ```bash
 kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --task review --status done --payload '{{json}}'
@@ -45,7 +53,7 @@ kata-cli progress task-update --project {{project}} --session "$SESSION_ID" --ta
 
 **✅ Task**：将 `review` 任务标记为 `completed`（subject 更新为 `review — {{n}} 条用例，问题率 {{rate}}%`）。
 
-### 交互点 D — 质量门禁决策（仅在 reviewer 阻断时使用 AskUserQuestion 工具）
+### 交互点 C — 质量门禁决策（仅在 reviewer 阻断时使用 AskUserQuestion 工具）
 
 默认行为：
 

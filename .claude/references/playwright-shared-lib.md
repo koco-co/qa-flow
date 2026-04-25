@@ -4,31 +4,31 @@
 
 ## 函数清单
 
-| 分类       | 函数                                                       | 用途                            |
-| ---------- | ---------------------------------------------------------- | ------------------------------- |
-| Select     | `selectAntOption(page, trigger, text)`                     | 下拉选择（含虚拟滚动 fallback） |
-| Message    | `expectAntMessage(page, text, timeout?)`                   | 等待 Message/Notification 提示  |
-| Modal      | `waitForAntModal(page, title?)`                            | 等待 Modal 可见并返回 Locator   |
-|            | `confirmAntModal(page, modal?)`                            | 点击 Modal 主按钮确认           |
-|            | `closeAntModal(page, modal?)`                              | 关闭 Modal                      |
-| Drawer     | `waitForAntDrawer(page, title?)`                           | 等待 Drawer 可见并返回 Locator  |
-|            | `closeAntDrawer(page, drawer?)`                            | 关闭 Drawer                     |
-|            | `waitForOverlay(page, title?)`                             | 等待 Modal 或 Drawer            |
-| Popconfirm | `confirmPopconfirm(page, timeout?)`                        | 确认气泡确认框                  |
-|            | `cancelPopconfirm(page, timeout?)`                         | 取消气泡确认框                  |
-| Table      | `waitForTableLoaded(page, table?, timeout?)`               | 等待表格加载完成                |
-|            | `findTableRow(page, rowText, table?)`                      | 按文本定位表格行                |
-| Form       | `locateFormItem(container, label)`                         | 按标签定位表单字段              |
-|            | `expectFormError(container, errorText?, timeout?)`         | 断言表单验证错误可见            |
-|            | `expectNoFormError(container, timeout?)`                   | 断言无表单验证错误              |
-| Tabs       | `switchAntTab(page, tabName, container?)`                  | 切换标签页                      |
-| Checkbox   | `checkAntCheckbox(checkbox)`                               | 勾选（幂等）                    |
-|            | `uncheckAntCheckbox(checkbox)`                             | 取消勾选（幂等）                |
-| Radio      | `clickAntRadio(container, label)`                          | 点击 Radio 选项                 |
-| Dropdown   | `clickDropdownMenuItem(page, text, timeout?)`              | 点击下拉菜单项（右键菜单等）    |
-| Navigation | `navigateViaMenu(page, menuPath)`                          | 侧边栏菜单导航                  |
-| Utils      | `uniqueName(prefix)`                                       | 带时间戳唯一名称                |
-|            | `todayStr()`                                               | 当天日期 "YYYYMMDD"             |
+| 分类       | 函数                                               | 用途                            |
+| ---------- | -------------------------------------------------- | ------------------------------- |
+| Select     | `selectAntOption(page, trigger, text)`             | 下拉选择（含虚拟滚动 fallback） |
+| Message    | `expectAntMessage(page, text, timeout?)`           | 等待 Message/Notification 提示  |
+| Modal      | `waitForAntModal(page, title?)`                    | 等待 Modal 可见并返回 Locator   |
+|            | `confirmAntModal(page, modal?)`                    | 点击 Modal 主按钮确认           |
+|            | `closeAntModal(page, modal?)`                      | 关闭 Modal                      |
+| Drawer     | `waitForAntDrawer(page, title?)`                   | 等待 Drawer 可见并返回 Locator  |
+|            | `closeAntDrawer(page, drawer?)`                    | 关闭 Drawer                     |
+|            | `waitForOverlay(page, title?)`                     | 等待 Modal 或 Drawer            |
+| Popconfirm | `confirmPopconfirm(page, timeout?)`                | 确认气泡确认框                  |
+|            | `cancelPopconfirm(page, timeout?)`                 | 取消气泡确认框                  |
+| Table      | `waitForTableLoaded(page, table?, timeout?)`       | 等待表格加载完成                |
+|            | `findTableRow(page, rowText, table?)`              | 按文本定位表格行                |
+| Form       | `locateFormItem(container, label)`                 | 按标签定位表单字段              |
+|            | `expectFormError(container, errorText?, timeout?)` | 断言表单验证错误可见            |
+|            | `expectNoFormError(container, timeout?)`           | 断言无表单验证错误              |
+| Tabs       | `switchAntTab(page, tabName, container?)`          | 切换标签页                      |
+| Checkbox   | `checkAntCheckbox(checkbox)`                       | 勾选（幂等）                    |
+|            | `uncheckAntCheckbox(checkbox)`                     | 取消勾选（幂等）                |
+| Radio      | `clickAntRadio(container, label)`                  | 点击 Radio 选项                 |
+| Dropdown   | `clickDropdownMenuItem(page, text, timeout?)`      | 点击下拉菜单项（右键菜单等）    |
+| Navigation | `navigateViaMenu(page, menuPath)`                  | 侧边栏菜单导航                  |
+| Utils      | `uniqueName(prefix)`                               | 带时间戳唯一名称                |
+|            | `todayStr()`                                       | 当天日期 "YYYYMMDD"             |
 
 ## 引用方式
 

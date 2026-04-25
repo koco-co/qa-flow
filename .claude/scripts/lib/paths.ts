@@ -44,6 +44,30 @@ export function planPath(project: string, yyyymm: string, slug: string): string 
   return join(plansDir(project, yyyymm), `${slug}.plan.md`);
 }
 
+export function prdDir(project: string, yyyymm: string, slug: string): string {
+  return join(prdsDir(project), yyyymm, slug);
+}
+
+export function enhancedMd(project: string, yyyymm: string, slug: string): string {
+  return join(prdDir(project, yyyymm, slug), "enhanced.md");
+}
+
+export function sourceFactsJson(project: string, yyyymm: string, slug: string): string {
+  return join(prdDir(project, yyyymm, slug), "source-facts.json");
+}
+
+export function resolvedMd(project: string, yyyymm: string, slug: string): string {
+  return join(prdDir(project, yyyymm, slug), "resolved.md");
+}
+
+export function prdImagesDir(project: string, yyyymm: string, slug: string): string {
+  return join(prdDir(project, yyyymm, slug), "images");
+}
+
+export function originalPrdMd(project: string, yyyymm: string, slug: string): string {
+  return join(prdDir(project, yyyymm, slug), "original.md");
+}
+
 export function issuesDir(project: string): string {
   return join(projectDir(project), "issues");
 }

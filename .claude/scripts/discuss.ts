@@ -29,6 +29,21 @@ import {
   setStrategyInPlan,
   validatePlanSchema,
 } from "./lib/discuss.ts";
+import {
+  initDoc,
+  readDoc,
+  writeFrontmatter,
+  setStatus,
+  setSection,
+  addSection,
+  setSourceFacts,
+  addPending,
+  resolvePending,
+  listPending,
+  compactDoc,
+  validateDoc,
+} from "./lib/enhanced-doc-store.ts";
+import { migratePlanToEnhanced } from "./lib/enhanced-doc-migrator.ts";
 import { parseFrontMatter } from "./lib/frontmatter.ts";
 import { planPath, plansDir, repoRoot } from "./lib/paths.ts";
 
@@ -493,30 +508,17 @@ function runValidate(opts: {
 
 export const program = createCli({
   name: "discuss",
-  description: "PRD 需求讨论 plan.md 管理 CLI",
+  description: "PRD 需求讨论 enhanced.md 管理 CLI (v2)",
   commands: [
-    {
-      name: "init",
-      description: "初始化 plan.md",
-      options: [
-        { flag: "--project <name>", description: "项目名", required: true },
-        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
-        { flag: "--force", description: "已存在时备份并重建", defaultValue: false },
-      ],
-      action: (opts: { project: string; prd: string; force: boolean }) => runInit(opts),
-    },
-    {
-      name: "read",
-      description: "读取 plan.md 完整结构",
-      options: [
-        { flag: "--project <name>", description: "项目名", required: true },
-        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
-      ],
-      action: (opts: { project: string; prd: string }) => runRead(opts),
-    },
+    // ── legacy (plan.md) shims ──────────────────────────────────────────────
+    // Preserved for D2 regression coverage. Non-colliding commands (append-clarify,
+    // complete, reset, set-strategy, set-repo-consent) are restored verbatim.
+    // Colliding commands (init, read, validate) use dual-mode dispatch:
+    //   --prd <path>  → legacy runXxx (plan.md)
+    //   otherwise     → new enhanced-doc-store functions
     {
       name: "append-clarify",
-      description: "追加或替换一条澄清记录",
+      description: "追加或替换一条澄清记录（legacy plan.md）",
       options: [
         { flag: "--project <name>", description: "项目名", required: true },
         { flag: "--prd <path>", description: "PRD 文件路径", required: true },
@@ -527,7 +529,7 @@ export const program = createCli({
     },
     {
       name: "complete",
-      description: "完成讨论，标记 status=ready",
+      description: "完成讨论，标记 status=ready（legacy plan.md）",
       options: [
         { flag: "--project <name>", description: "项目名", required: true },
         { flag: "--prd <path>", description: "PRD 文件路径", required: true },
@@ -555,7 +557,7 @@ export const program = createCli({
     },
     {
       name: "reset",
-      description: "备份并清除当前 plan.md",
+      description: "备份并清除当前 plan.md（legacy plan.md）",
       options: [
         { flag: "--project <name>", description: "项目名", required: true },
         { flag: "--prd <path>", description: "PRD 文件路径", required: true },
@@ -564,7 +566,7 @@ export const program = createCli({
     },
     {
       name: "set-strategy",
-      description: "Write strategy resolution into plan.md frontmatter",
+      description: "Write strategy resolution into plan.md frontmatter（legacy plan.md）",
       options: [
         { flag: "--project <name>", description: "项目名", required: true },
         { flag: "--prd <path>", description: "PRD 文件路径", required: true },
@@ -582,7 +584,7 @@ export const program = createCli({
     },
     {
       name: "set-repo-consent",
-      description: "写入或清空源码引用许可（frontmatter.repo_consent）",
+      description: "写入或清空源码引用许可 frontmatter.repo_consent（legacy plan.md）",
       options: [
         { flag: "--project <name>", description: "项目名", required: true },
         { flag: "--prd <path>", description: "PRD 文件路径", required: true },
@@ -603,29 +605,267 @@ export const program = createCli({
         clear: boolean;
       }) => runSetRepoConsent(opts),
     },
+    // ── dual-mode: init (legacy --prd | new --yyyymm + --prd-slug) ──────────
     {
-      name: "validate",
-      description: "校验 plan.md 状态，可作为下游节点门禁",
+      name: "init",
+      description: "初始化 plan.md（legacy: --prd）或创建 enhanced.md 骨架（新: --yyyymm + --prd-slug）",
       options: [
         { flag: "--project <name>", description: "项目名", required: true },
-        { flag: "--prd <path>", description: "PRD 文件路径", required: true },
-        {
-          flag: "--require-zero-blocking",
-          description: "未答 blocking_unknown > 0 则退出码 2",
-          defaultValue: false,
-        },
-        {
-          flag: "--require-zero-pending",
-          description: "pending_count > 0 则退出码 3",
-          defaultValue: false,
-        },
+        { flag: "--prd <path>", description: "[legacy] PRD 文件路径" },
+        { flag: "--force", description: "[legacy] 已存在时备份并重建", defaultValue: false },
+        { flag: "--yyyymm <ym>", description: "[new] 月份 YYYYMM" },
+        { flag: "--prd-slug <slug>", description: "[new] PRD slug" },
+        { flag: "--migrated-from-plan", description: "[new] 从 plan.md 迁移", defaultValue: false },
       ],
       action: (opts: {
         project: string;
-        prd: string;
-        requireZeroBlocking: boolean;
-        requireZeroPending: boolean;
-      }) => runValidate(opts),
+        prd?: string;
+        force: boolean;
+        yyyymm?: string;
+        prdSlug?: string;
+        migratedFromPlan: boolean;
+      }) => {
+        if (opts.prd) {
+          runInit({ project: opts.project, prd: opts.prd, force: opts.force });
+        } else if (opts.yyyymm && opts.prdSlug) {
+          initDoc(opts.project, opts.yyyymm, opts.prdSlug, { migratedFromPlan: opts.migratedFromPlan });
+          process.stdout.write(JSON.stringify({ ok: true }) + "\n");
+        } else {
+          fail("init requires either --prd <path> (legacy) or --yyyymm + --prd-slug (new)");
+        }
+      },
+    },
+    // ── dual-mode: read (legacy --prd | new --yyyymm + --prd-slug) ──────────
+    {
+      name: "read",
+      description: "读取 plan.md（legacy: --prd）或 enhanced.md（新: --yyyymm + --prd-slug）",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "[legacy] PRD 文件路径" },
+        { flag: "--yyyymm <ym>", description: "[new] 月份 YYYYMM" },
+        { flag: "--prd-slug <slug>", description: "[new] PRD slug" },
+      ],
+      action: (opts: {
+        project: string;
+        prd?: string;
+        yyyymm?: string;
+        prdSlug?: string;
+      }) => {
+        if (opts.prd) {
+          runRead({ project: opts.project, prd: opts.prd });
+        } else if (opts.yyyymm && opts.prdSlug) {
+          const doc = readDoc(opts.project, opts.yyyymm, opts.prdSlug);
+          process.stdout.write(JSON.stringify(doc) + "\n");
+        } else {
+          fail("read requires either --prd <path> (legacy) or --yyyymm + --prd-slug (new)");
+        }
+      },
+    },
+    {
+      name: "set-status",
+      description: "切换 frontmatter.status",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--status <s>", description: "新状态", required: true },
+      ],
+      action: (opts: { project: string; yyyymm: string; prdSlug: string; status: string }) => {
+        setStatus(opts.project, opts.yyyymm, opts.prdSlug, opts.status as any);
+        process.stdout.write(JSON.stringify({ ok: true }) + "\n");
+      },
+    },
+    {
+      name: "set-section",
+      description: "按锚点替换小节正文",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--anchor <a>", description: "目标锚点", required: true },
+        { flag: "--content <str>", description: "Markdown 正文", required: true },
+      ],
+      action: (opts: { project: string; yyyymm: string; prdSlug: string; anchor: string; content: string }) => {
+        setSection(opts.project, opts.yyyymm, opts.prdSlug, opts.anchor, opts.content);
+        process.stdout.write(JSON.stringify({ ok: true }) + "\n");
+      },
+    },
+    {
+      name: "add-section",
+      description: "在 §2 或 §3 下新增小节",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--parent-level <n>", description: "2 或 3", required: true },
+        { flag: "--title <s>", description: "小节标题", required: true },
+        { flag: "--body <s>", description: "小节正文", required: true },
+      ],
+      action: (opts: { project: string; yyyymm: string; prdSlug: string; parentLevel: string; title: string; body: string }) => {
+        const anchor = addSection(opts.project, opts.yyyymm, opts.prdSlug, {
+          parentLevel: Number(opts.parentLevel) as 2 | 3,
+          title: opts.title,
+          body: opts.body,
+        });
+        process.stdout.write(JSON.stringify({ anchor }) + "\n");
+      },
+    },
+    {
+      name: "set-source-facts",
+      description: "写入 Appendix A 源码事实表（自动外溢 >64KB）",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--content <json>", description: "SourceFacts JSON 或 @<path>", required: true },
+      ],
+      action: (opts: { project: string; yyyymm: string; prdSlug: string; content: string }) => {
+        const raw = opts.content.startsWith("@")
+          ? readFileSync(opts.content.slice(1), "utf8")
+          : opts.content;
+        setSourceFacts(opts.project, opts.yyyymm, opts.prdSlug, JSON.parse(raw));
+        process.stdout.write(JSON.stringify({ ok: true }) + "\n");
+      },
+    },
+    {
+      name: "add-pending",
+      description: "新增待确认项 Q",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--location <anchor>", description: "锚点", required: true },
+        { flag: "--label <s>", description: "位置标签", required: true },
+        { flag: "--question <s>", description: "问题文本", required: true },
+        { flag: "--recommended <s>", description: "推荐方案", required: true },
+        { flag: "--expected <s>", description: "预期", required: true },
+        { flag: "--severity <s>", description: "blocking_unknown | defaultable_unknown | pending_for_pm", required: true },
+      ],
+      action: (opts: any) => {
+        const id = addPending(opts.project, opts.yyyymm, opts.prdSlug, {
+          locationAnchor: opts.location,
+          locationLabel: opts.label,
+          question: opts.question,
+          recommended: opts.recommended,
+          expected: opts.expected,
+          severity: opts.severity,
+        });
+        process.stdout.write(JSON.stringify({ id }) + "\n");
+      },
+    },
+    {
+      name: "resolve",
+      description: "解决一条 Q（套 <del>）",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--id <qid>", description: "Q ID (q1, q2, ...)", required: true },
+        { flag: "--answer <s>", description: "回答", required: true },
+        { flag: "--as-default", description: "标记为默认采用", defaultValue: false },
+      ],
+      action: (opts: any) => {
+        resolvePending(opts.project, opts.yyyymm, opts.prdSlug, opts.id, {
+          answer: opts.answer,
+          asDefault: !!opts.asDefault,
+        });
+        process.stdout.write(JSON.stringify({ ok: true }) + "\n");
+      },
+    },
+    {
+      name: "list-pending",
+      description: "列出待确认项",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--format <f>", description: "json | table", defaultValue: "json" },
+        { flag: "--include-resolved", description: "包含已解决", defaultValue: false },
+      ],
+      action: (opts: any) => {
+        const items = listPending(opts.project, opts.yyyymm, opts.prdSlug, {
+          includeResolved: !!opts.includeResolved,
+        });
+        if (opts.format === "table") {
+          for (const it of items) {
+            process.stdout.write(`${it.id}\t${it.status}\t${it.question}\n`);
+          }
+        } else {
+          process.stdout.write(JSON.stringify(items) + "\n");
+        }
+      },
+    },
+    {
+      name: "compact",
+      description: "归档 resolved Q 到 resolved.md",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--threshold <n>", description: "阈值", defaultValue: "50" },
+      ],
+      action: (opts: any) => {
+        const moved = compactDoc(opts.project, opts.yyyymm, opts.prdSlug, {
+          threshold: Number(opts.threshold),
+        });
+        process.stdout.write(JSON.stringify({ moved }) + "\n");
+      },
+    },
+    // ── dual-mode: validate (legacy --prd | new --yyyymm + --prd-slug) ───────
+    {
+      name: "validate",
+      description: "校验 plan.md（legacy: --prd）或 enhanced.md（新: --yyyymm + --prd-slug）完整性",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--prd <path>", description: "[legacy] PRD 文件路径" },
+        { flag: "--require-zero-blocking", description: "[legacy] blocking_unknown > 0 则退 2", defaultValue: false },
+        { flag: "--yyyymm <ym>", description: "[new] 月份" },
+        { flag: "--prd-slug <slug>", description: "[new] PRD slug" },
+        { flag: "--require-zero-pending", description: "pending>0 则退 3", defaultValue: false },
+        { flag: "--check-source-refs <csv>", description: "[new] 逗号分隔的 source_ref 列表" },
+      ],
+      action: (opts: any) => {
+        if (opts.prd) {
+          runValidate({
+            project: opts.project,
+            prd: opts.prd,
+            requireZeroBlocking: !!opts.requireZeroBlocking,
+            requireZeroPending: !!opts.requireZeroPending,
+          });
+        } else if (opts.yyyymm && opts.prdSlug) {
+          const r = validateDoc(opts.project, opts.yyyymm, opts.prdSlug, {
+            requireZeroPending: !!opts.requireZeroPending,
+            checkSourceRefs: opts.checkSourceRefs ? opts.checkSourceRefs.split(",") : undefined,
+          });
+          process.stdout.write(JSON.stringify(r) + "\n");
+          if (!r.ok) {
+            const zeroPendingIssue = r.issues.some((i: string) => i.includes("requireZeroPending"));
+            process.exit(zeroPendingIssue ? 3 : 1);
+          }
+        } else {
+          fail("validate requires either --prd <path> (legacy) or --yyyymm + --prd-slug (new)");
+        }
+      },
+    },
+    {
+      name: "migrate-plan",
+      description: "从 legacy plan.md 迁移到 enhanced.md",
+      options: [
+        { flag: "--project <name>", description: "项目名", required: true },
+        { flag: "--yyyymm <ym>", description: "月份", required: true },
+        { flag: "--prd-slug <slug>", description: "PRD slug", required: true },
+        { flag: "--dry-run", description: "只输出报告不落盘", defaultValue: false },
+      ],
+      action: (opts: any) => {
+        const report = migratePlanToEnhanced(opts.project, opts.yyyymm, opts.prdSlug, {
+          dryRun: !!opts.dryRun,
+        });
+        process.stdout.write(JSON.stringify(report) + "\n");
+      },
     },
   ],
 });
+
+if (import.meta.main) {
+  program.parseAsync(process.argv);
+}
