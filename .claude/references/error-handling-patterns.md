@@ -25,7 +25,7 @@
 
 | Agent                    | 负责阶段   | 处理方式                                                                                                                   |
 | ------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **transform-agent**      | PRD 增强   | `invalid_input` → clarify_envelope；`blocking_unknown` → clarify_envelope 且标记 🔴；`defaultable_unknown` → PRD 中标记 🟡 |
+| **source-facts-agent**   | 源码事实探查 | `invalid_input` → clarify_envelope；`blocking_unknown` → clarify_envelope 且标记 🔴；`defaultable_unknown` → source-facts.json 中标记 🟡 |
 | **analyze-agent**        | 测试分析   | `invalid_input` → 输出警告并失败；`defaultable_unknown` → 继续分析并记录；外部脚本失败 → 跳过该步骤                        |
 | **writer-agent**         | 用例编写   | `blocking_unknown` → blocked_envelope；`defaultable_unknown` → 继续并在思路中保留依据                                      |
 | **reviewer-agent**       | 用例审查   | `invalid_input` → 返回 envelope；`blocking_unknown` → context_gaps；自动修正时若无法修正 → 标记 `[FXX-MANUAL]`             |
@@ -59,7 +59,7 @@
 }
 ```
 
-### transform-agent 的 clarify_envelope 格式
+### source-facts-agent 的 clarify_envelope 格式
 
 ```xml
 <clarify_envelope>
@@ -72,11 +72,11 @@
       "severity": "blocking_unknown|defaultable_unknown|invalid_input",
       "question": "具体问题",
       "context": {
-        "lanhu": "蓝湖原文描述",
-        "source": "源码中找到的相关内容",
+        "repo": "源码仓库路径与分支",
+        "source_ref": "命中文件 / 行号 / commit",
         "archive": "归档历史用例参考"
       },
-      "location": "页面名 → 章节 → 字段/规则",
+      "location": "模块 → 文件 → 函数/字段",
       "recommended_option": "A",
       "options": [
         { "id": "A", "description": "选项", "reason": "推荐理由" }
@@ -111,7 +111,7 @@
 - 不继续处理
 - 若是可选文件（如历史用例参考），改为 `defaultable_unknown`，跳过该步骤
 
-**示例**（transform-agent）：
+**示例**（source-facts-agent）：
 
 ```json
 {
@@ -119,8 +119,8 @@
   "items": [
     {
       "severity": "invalid_input",
-      "field": "prd_path",
-      "description": "增强 PRD 文件不存在：workspace/xxx/prds/202604/xxx.md"
+      "field": "repo_path",
+      "description": "源码仓库路径不存在或不可读：workspace/dataAssets/.repos/dt-insight-studio"
     }
   ]
 }
@@ -196,12 +196,12 @@
 - 记录推断的依据和置信度
 - 继续处理，不阻断
 
-**示例**（transform-agent）：
+**示例**（source-facts-agent）：
 
 ```
-🟡 [推测：基于同模块 UserListPage 组件推断] 导航路径为「用户管理 → 用户列表」
+🟡 [推测：基于 dt-insight-studio src/pages/approval/ApprovalListPage.tsx#L42 useApprovalStore.status 字段推断] 「审批状态」枚举为 pending/approving/approved/rejected
 
-🟡 归档#15694 列表页搜索功能默认支持模糊匹配
+🟡 归档#15694 同模块列表页 endpoints 表显示 GET /api/approval/list 支持 keyword 模糊匹配，未在源码中复现
 ```
 
 ### 场景 5：外部脚本执行失败
