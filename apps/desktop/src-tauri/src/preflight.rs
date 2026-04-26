@@ -28,7 +28,8 @@ mod tests {
         let saved = std::env::var("PATH").ok();
         std::env::set_var("PATH", "");
         let result = detect_cli_version();
+        let ok = result.is_none();
         if let Some(v) = saved { std::env::set_var("PATH", v); }
-        assert!(result.is_none());
+        assert!(ok);
     }
 }
