@@ -4,6 +4,7 @@ pub mod paths;
 pub mod preflight;
 pub mod projects;
 pub mod state;
+pub mod log;
 pub mod stream;
 
 use tauri::Manager;
