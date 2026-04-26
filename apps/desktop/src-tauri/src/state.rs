@@ -1,4 +1,5 @@
 use crate::db::DbPool;
+use crate::pty::PtyManager;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -7,6 +8,7 @@ pub struct AppState {
     pub ui_db: DbPool,
     pub project_dbs: RwLock<HashMap<String, DbPool>>,
     pub current_project: RwLock<Option<String>>,
+    pub pty_manager: Arc<PtyManager>,
 }
 
 impl AppState {
@@ -15,6 +17,7 @@ impl AppState {
             ui_db,
             project_dbs: RwLock::new(HashMap::new()),
             current_project: RwLock::new(None),
+            pty_manager: PtyManager::new(),
         })
     }
 

@@ -3,6 +3,7 @@ pub mod db;
 pub mod paths;
 pub mod preflight;
 pub mod projects;
+pub mod pty;
 pub mod state;
 pub mod log;
 pub mod stream;
