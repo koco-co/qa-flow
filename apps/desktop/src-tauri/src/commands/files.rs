@@ -18,14 +18,11 @@ fn safe_join(project: &str, sub: Option<&str>) -> Result<PathBuf, String> {
         None => base.clone(),
     };
     let canon_base = base.canonicalize().map_err(|e| e.to_string())?;
-    let canon_target = target
-        .canonicalize()
-        .or_else(|_| Ok::<PathBuf, String>(target.clone()))
-        .unwrap();
+    let canon_target = target.canonicalize().map_err(|_| "path not found".to_string())?;
     if !canon_target.starts_with(&canon_base) {
         return Err("path escapes project root".into());
     }
-    Ok(target)
+    Ok(canon_target)
 }
 
 #[tauri::command]
