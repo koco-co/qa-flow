@@ -1,3 +1,4 @@
+pub mod commands;
 pub mod db;
 pub mod paths;
 pub mod preflight;
@@ -14,6 +15,12 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .invoke_handler(tauri::generate_handler![
+            commands::preflight::get_preflight_status,
+            commands::preflight::recheck,
+            commands::projects::list_projects_cmd,
+            commands::projects::switch_project_cmd,
+        ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
             {
