@@ -74,9 +74,8 @@ impl PtyManager {
             let map = self.handles.read().await;
             if let Some(h) = map.get(project) {
                 let state = h.state.read().await.clone();
-                if state == PtyState::Idle || state == PtyState::Active {
-                    let (_tx, rx) = mpsc::unbounded_channel();
-                    return Ok((h.clone(), rx));
+                if state == PtyState::Active {
+                    return Err(anyhow!("task already running for project: {project}"));
                 }
             }
         }
@@ -115,7 +114,9 @@ impl PtyManager {
                 match buf.read_line(&mut line) {
                     Ok(0) => break,
                     Ok(_) => {
-                        let _ = tx.send(line.clone());
+                        if tx.send(line.clone()).is_err() {
+                            break; // receiver dropped, stop reading
+                        }
                     }
                     Err(_) => break,
                 }
