@@ -106,7 +106,6 @@ impl PtyManager {
 
         let mut reader = pair.master.try_clone_reader()?;
         let (tx, rx) = mpsc::unbounded_channel::<String>();
-        let handle_for_task = handle.clone();
         tokio::task::spawn_blocking(move || {
             use std::io::BufRead;
             let mut buf = std::io::BufReader::new(&mut reader);
@@ -133,7 +132,6 @@ impl PtyManager {
         });
 
         *handle.state.write().await = PtyState::Idle;
-        let _ = handle_for_task; // hold ref via stdin/state
 
         let mut map = self.handles.write().await;
         map.insert(project.to_string(), handle.clone());
