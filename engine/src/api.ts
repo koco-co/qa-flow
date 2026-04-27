@@ -13,5 +13,16 @@
  * Populated incrementally: P1 ships skeleton; P2-P11 fill in domain functions.
  */
 
-// Placeholder — will re-export from ./domain/* in P1 Task 14
-export const PLACEHOLDER = "kata-engine api surface" as const;
+// ── Path resolution ─────────────────────────────────
+export {
+  repoRoot,
+  workspaceDir,
+  projectDir,
+  listProjects,
+} from "./lib/paths.ts";
+
+// ── Project metadata ───────────────────────────────
+// (more exports added in P3+ as features/ becomes the norm)
+
+// ── Marker for P1 ─────────────────────────────────
+export const KATA_ENGINE_VERSION = "3.0.0-alpha.1" as const;
