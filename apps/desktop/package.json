@@ -12,7 +12,10 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "dev:vite": "vite",
-    "build:vite": "tsc --noEmit && vite build"
+    "build:vite": "tsc --noEmit && vite build",
+    "test:e2e:layer1": "playwright test --config e2e/playwright.config.ts --grep @critical",
+    "test:e2e:layer2": "playwright test --config e2e/playwright.config.ts --grep @component",
+    "test:e2e:all": "playwright test --config e2e/playwright.config.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.0",
