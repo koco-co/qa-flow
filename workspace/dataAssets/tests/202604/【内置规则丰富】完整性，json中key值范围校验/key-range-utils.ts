@@ -25,8 +25,8 @@ import {
   SPARKTHRIFT_DATABASE,
   SPARKTHRIFT_DATASOURCE_KEYWORD,
   injectProjectContext,
-  QUALITY_PROJECT_ID,
 } from "./data-15693";
+import { resolveEffectiveQualityProjectId } from "./test-data";
 
 // ── 类型定义 ──────────────────────────────────────────────────
 
@@ -114,6 +114,7 @@ async function postProjectApi<T>(
   path: string,
   body: unknown,
 ): Promise<T> {
+  const projectId = await resolveEffectiveQualityProjectId(page);
   return page.evaluate(
     async ({ requestPath, requestBody, projectId }) => {
       const response = await fetch(requestPath, {
@@ -131,7 +132,7 @@ async function postProjectApi<T>(
     {
       requestPath: path,
       requestBody: body,
-      projectId: QUALITY_PROJECT_ID,
+      projectId,
     },
   ) as Promise<T>;
 }
@@ -186,12 +187,13 @@ async function ensureMonitorDatasource(
     );
   }
 
+  const effectiveProjectId = await resolveEffectiveQualityProjectId(page);
   const authResponse = await postProjectApi<{
     success?: boolean;
     message?: string;
   }>(page, "/dmetadata/v1/dataSource/authDataSourceToProject", {
     dataSourceId: Number(matchedDatasource.dataSourceId),
-    projectList: [QUALITY_PROJECT_ID],
+    projectList: [effectiveProjectId],
   });
 
   if (!authResponse.success) {
@@ -218,10 +220,11 @@ async function ensureMonitorDatasource(
  */
 export async function gotoRuleSetList(page: Page): Promise<void> {
   await applyRuntimeCookies(page);
-  await page.goto(buildDataAssetsUrl("/dq/ruleSet", QUALITY_PROJECT_ID));
+  const projectId = await resolveEffectiveQualityProjectId(page);
+  await page.goto(buildDataAssetsUrl("/dq/ruleSet", projectId));
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(500);
-  await injectProjectContext(page, QUALITY_PROJECT_ID);
+  await injectProjectContext(page, projectId);
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1000);
@@ -233,10 +236,11 @@ export async function gotoRuleSetList(page: Page): Promise<void> {
  */
 export async function gotoRuleSetCreate(page: Page): Promise<void> {
   await applyRuntimeCookies(page);
-  await page.goto(buildDataAssetsUrl("/dq/ruleSet/add", QUALITY_PROJECT_ID));
+  const projectId = await resolveEffectiveQualityProjectId(page);
+  await page.goto(buildDataAssetsUrl("/dq/ruleSet/add", projectId));
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(500);
-  await injectProjectContext(page, QUALITY_PROJECT_ID);
+  await injectProjectContext(page, projectId);
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1000);
@@ -620,10 +624,46 @@ export async function addKeyRangeRule(
 ): Promise<Locator> {
   const ruleForm = await addRuleToPackage(page, packageName, "完整性校验");
 
-  // 选择统计函数：key范围校验
-  const functionRow = ruleForm.locator(".rule__function-list__item").first();
-  const functionSelect = functionRow.locator(".ant-select").first();
-  await functionSelect.waitFor({ state: "visible", timeout: 10000 });
+  // 新版 UI：必须先选「规则类型 = 字段级」才会渲染出「统计函数」下拉
+  const ruleTypeSelect = ruleForm
+    .locator(".ant-form-item")
+    .filter({ hasText: /规则类型/ })
+    .first()
+    .locator(".ant-select")
+    .first();
+  if (await ruleTypeSelect.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await selectAntOption(page, ruleTypeSelect, /字段级|字段/);
+    await page.waitForTimeout(300);
+  }
+
+  // 双路径定位统计函数 Select：
+  //   - legacy DOM：.rule__function-list__item .ant-select
+  //   - 新版 inline form-item：含"统计函数"标签的 .ant-form-item 内的 .ant-select
+  const legacyFunctionSelect = ruleForm
+    .locator(".rule__function-list__item .ant-select")
+    .first();
+  const inlineFunctionSelect = ruleForm
+    .locator(".ant-form-item")
+    .filter({ hasText: /统计函数/ })
+    .first()
+    .locator(".ant-select")
+    .first();
+
+  await expect
+    .poll(
+      async () =>
+        (await legacyFunctionSelect.isVisible().catch(() => false)) ||
+        (await inlineFunctionSelect.isVisible().catch(() => false)),
+      { timeout: 10000, message: "waiting for function select to render" },
+    )
+    .toBe(true);
+
+  const functionSelect = (await legacyFunctionSelect
+    .isVisible()
+    .catch(() => false))
+    ? legacyFunctionSelect
+    : inlineFunctionSelect;
+
   await selectAntOption(page, functionSelect, "key范围校验");
   await page.waitForTimeout(500);
 
@@ -651,20 +691,10 @@ export async function selectJsonKeys(
   keyNames: string[] | "全部",
 ): Promise<void> {
   // 定位校验内容的 TreeSelect（JsonFormatConfiguration 组件）
-  // 在 key范围校验函数行中，TreeSelect 通常紧跟在校验方法 Select 之后
-  const functionRow = ruleForm.locator(".rule__function-list__item").first();
-
-  // TreeSelect 的 trigger selector：.ant-select.ant-tree-select 或 含 treeSelect 的容器
-  const treeSelectTrigger = functionRow
+  // 新版 UI：直接在 ruleForm 范围内找 TreeSelect；不再依赖 .rule__function-list__item 容器
+  const triggerLocator = ruleForm
     .locator(".ant-select.ant-tree-select, .ant-tree-select")
     .first();
-
-  // 若 TreeSelect 不在 functionRow，退回到整个 ruleForm 中查找
-  const triggerLocator = (await treeSelectTrigger
-    .isVisible({ timeout: 2000 })
-    .catch(() => false))
-    ? treeSelectTrigger
-    : ruleForm.locator(".ant-select.ant-tree-select, .ant-tree-select").first();
 
   // 展开 TreeSelect 下拉
   await triggerLocator.click();
@@ -782,23 +812,23 @@ export async function configureKeyRangeRule(
   config: KeyRangeRuleConfig,
 ): Promise<void> {
   // 1. 选择字段（key范围校验后字段变为单选）
+  // 注意：必须用 /^字段/ 精确匹配，否则会命中"规则类型 = 字段级"行
   const fieldFormItem = ruleForm
     .locator(".ant-form-item")
-    .filter({ hasText: /字段/ })
+    .filter({ hasText: /^字段/ })
     .first();
   const fieldSelect = fieldFormItem.locator(".ant-select").first();
   await selectAntOption(page, fieldSelect, config.field);
   await page.waitForTimeout(300);
 
   // 2. 校验方法：包含 / 不包含（IntegrityJsonKeyVerifyType 组件）
-  const functionRow = ruleForm.locator(".rule__function-list__item").first();
-  // 校验方法通常是 functionRow 中第 2 个 Select（第 1 个是统计函数选择器）
-  const methodSelects = functionRow.locator(
-    ".ant-select:not(.ant-tree-select)",
-  );
-  const methodSelectCount = await methodSelects.count();
-  // 跳过第 0 个（统计函数），取第 1 个（校验方法）
-  const methodSelect = methodSelects.nth(methodSelectCount > 1 ? 1 : 0);
+  // 新版 UI：校验方法 select 在 ruleForm 顶层 form-item，不在 .rule__function-list__item 内
+  const methodSelect = ruleForm
+    .locator(".ant-form-item")
+    .filter({ hasText: /校验方法/ })
+    .first()
+    .locator(".ant-select")
+    .first();
   await selectAntOption(page, methodSelect, config.method);
   await page.waitForTimeout(300);
 

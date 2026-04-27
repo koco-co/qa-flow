@@ -23,7 +23,7 @@ export const SHARED_DATABASE = "pw_test";
 export const DORIS_DATABASE = SHARED_DATABASE;
 export const SPARKTHRIFT_DATABASE = SHARED_DATABASE;
 export const DORIS_DATASOURCE_KEYWORD = "doris";
-export const SPARKTHRIFT_DATASOURCE_KEYWORD = "spark|thrift";
+export const SPARKTHRIFT_DATASOURCE_KEYWORD = "spark|thrift|hadoop";
 
 // ── 测试表 ────────────────────────────────────────────────────
 /** key 值范围校验专用测试表（建在 "pw" 数据库下） */

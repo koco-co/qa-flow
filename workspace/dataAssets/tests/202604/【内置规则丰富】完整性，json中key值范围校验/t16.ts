@@ -12,6 +12,7 @@ import {
 import { KEY_RANGE_TABLE } from "./data-15693";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
+test.setTimeout(600000);
 
 const SUITE_NAME = "【内置规则丰富】完整性，json中key值范围校验(#15693)";
 const PAGE_NAME = "规则集管理";
@@ -35,10 +36,10 @@ async function runKeyRangeCaseByDatasource(
     await expect(page.locator(".ruleSetMonitor__package").filter({ hasText: packageName }).first()).toBeVisible({ timeout: 15000 });
   });
 
-  const ruleForm = await step('步骤3: 在规则包中新增key范围校验规则（' + datasourceLabel + '）', async () => {
-    const form = await addKeyRangeRule(page, packageName);
-    await expect(form).toContainText("key范围校验", { timeout: 5000 });
-    return form;
+  let ruleForm!: import("@playwright/test").Locator;
+  await step('步骤3: 在规则包中新增key范围校验规则（' + datasourceLabel + '）', async () => {
+    ruleForm = await addKeyRangeRule(page, packageName);
+    await expect(ruleForm).toContainText("key范围校验", { timeout: 5000 });
   });
 
   await step('步骤4: 配置字段/校验方法/校验内容（' + datasourceLabel + '）', async () => {

@@ -8,7 +8,8 @@ import {
   gotoRuleSetList,
   saveRuleSet,
 } from "./key-range-utils";
-import { KEY_RANGE_TABLE, QUALITY_PROJECT_ID } from "./data-15693";
+import { KEY_RANGE_TABLE } from "./data-15693";
+import { resolveEffectiveQualityProjectId } from "./test-data";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 
@@ -21,9 +22,10 @@ test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
     const cleanupPage = await browser.newPage({ storageState: ".auth/session.json" });
     try {
       await cleanupPage.goto("about:blank");
+      const effectiveProjectId = await resolveEffectiveQualityProjectId(cleanupPage);
       await cleanupPage.evaluate((pid) => {
         sessionStorage.setItem("X-Valid-Project-ID", String(pid));
-      }, QUALITY_PROJECT_ID);
+      }, effectiveProjectId);
       await deleteRuleSetsByTableName(cleanupPage, KEY_RANGE_TABLE);
     } finally {
       await cleanupPage.close();
