@@ -37,7 +37,7 @@ export const SPARKTHRIFT_DATABASE = SHARED_DATABASE;
 
 /** 数据源匹配关键字 */
 export const DORIS_DATASOURCE_KEYWORD = "doris";
-export const SPARKTHRIFT_DATASOURCE_KEYWORD = "spark|thrift";
+export const SPARKTHRIFT_DATASOURCE_KEYWORD = "spark|thrift|hadoop";
 
 /**
  * 用于 json格式校验规则的测试表名。
