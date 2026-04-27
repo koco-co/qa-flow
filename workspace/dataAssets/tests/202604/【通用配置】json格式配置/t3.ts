@@ -1,47 +1,88 @@
-// META: {"id":"t3","priority":"P1","title":"【P1】验证新增key时key字段输入超255字符不可提交"}
-import { test, expect } from "../../fixtures/step-screenshot";
+// META: {"id":"t3","priority":"P0","title":"【P0】验证导出列表数据完整流程及文件命名"}
+import { expect, test } from "../../fixtures/step-screenshot";
+import { uniqueName } from "../../helpers/test-setup";
 import {
   gotoJsonConfigPage,
   clickHeaderButton,
-  waitModal,
-  fillKeyInput,
-  clickModalConfirm,
+  addKey,
+  deleteKey,
+  ensureRowVisibleByKey,
 } from "./json-config-helpers";
 
+test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
+test.setTimeout(600000);
 
-test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P1】验证新增key时key字段输入超255字符不可提交", async ({ page, step }) => {
-    await step("步骤1: 进入json格式校验管理页面 → 页面正常加载，列表加载完成", async () => {
+const SUITE_NAME = "【通用配置】json格式配置(#15696)";
+const PAGE_NAME = "json格式校验管理";
+
+test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
+  const exportKey1 = uniqueName("json_cfg_exp1");
+  const exportKey2 = uniqueName("json_cfg_exp2");
+
+  test.beforeEach(async ({ page }) => {
+    // 前置条件：创建两条测试记录，确保导出列表中有数据
+    await gotoJsonConfigPage(page);
+    await addKey(page, exportKey1, {
+      chineseName: "导出测试1",
+      dataSourceType: "SparkThrift2.x",
+    });
+    await addKey(page, exportKey2, {
+      chineseName: "导出测试2",
+      dataSourceType: "Hive2.x",
+    });
+  });
+
+  test.afterEach(async ({ page }) => {
+    await deleteKey(page, exportKey1).catch(() => undefined);
+    await deleteKey(page, exportKey2).catch(() => undefined);
+  });
+
+  test("验证导出列表数据完整流程及文件命名", async ({ page, step }) => {
+    await step("步骤1: 进入json格式校验管理页面，等待列表加载完成（含前置数据）", async () => {
       await gotoJsonConfigPage(page);
       await expect(page.locator(".json-format-check")).toBeVisible({ timeout: 15000 });
+
+      // 验证前置数据在列表中
+      await ensureRowVisibleByKey(page, exportKey1, 15000);
+      await ensureRowVisibleByKey(page, exportKey2, 15000);
     });
 
-    await step("步骤2: 点击【新增】按钮 → 新建弹窗出现", async () => {
-      await clickHeaderButton(page, "新增");
+    await step("步骤2: 点击【导出】按钮，验证 Popconfirm 出现，提示文本正确", async () => {
+      await clickHeaderButton(page, "导出");
+
+      // 等待 Popconfirm 出现
+      const popconfirm = page.locator(".ant-popover:visible, .ant-popconfirm:visible").last();
+      await expect(popconfirm).toBeVisible({ timeout: 10000 });
+
+      // 验证提示文本
+      await expect(popconfirm).toContainText("请确认是否导出列表数据");
+
+      // 验证含【确认】和【取消】按钮
+      const confirmBtn = popconfirm.getByRole("button", { name: /确\s*[认定]/ }).first();
+      await expect(confirmBtn).toBeVisible({ timeout: 5000 });
     });
 
-    const modal = await waitModal(page, "新建");
+    await step("步骤3: 点击 Popconfirm 中的【确认】，等待文件下载，验证文件命名格式", async () => {
+      const popconfirm = page.locator(".ant-popover:visible, .ant-popconfirm:visible").last();
+      const confirmBtn = popconfirm.getByRole("button", { name: /确\s*[认定]/ }).first();
 
-    await step("步骤3: 在key输入框输入256个字符并点击确定 → 表单校验触发，key字段显示超长错误", async () => {
-      await fillKeyInput(modal, "a".repeat(256));
-      await clickModalConfirm(modal);
+      // 监听 download 事件
+      const [download] = await Promise.all([
+        page.waitForEvent("download", { timeout: 60000 }),
+        confirmBtn.click(),
+      ]);
 
-      // Ant Design 校验错误以 role=alert 渲染，比 .ant-form-item-explain-error 更稳定
-      const keyErrorLocator = modal
-        .locator('[role="alert"]')
-        .filter({ hasText: "key长度不能超过255个字符" })
-        .first();
+      // 验证文件命名格式：json_format_YYYYMMDD.xlsx
+      const filename = download.suggestedFilename();
+      expect(filename).toMatch(/^json_format_\d{8}\.xlsx$/);
 
-      await keyErrorLocator.waitFor({ state: "visible", timeout: 8000 });
-      await expect(keyErrorLocator).toContainText("255");
-    }, modal
-      .locator('[role="alert"]')
-      .filter({ hasText: "key长度不能超过255个字符" })
-      .first());
-
-    const modalLocator = page.locator(".ant-modal:visible").last();
-    await step("步骤4: 验证弹窗仍可见（未关闭）→ 弹窗未关闭，数据未提交", async () => {
-      await expect(modalLocator).toBeVisible({ timeout: 3000 });
-    }, modalLocator);
+      // 验证文件命名中的日期为今天
+      const today = new Date();
+      const yyyy = today.getFullYear().toString();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const expectedDateStr = `${yyyy}${mm}${dd}`;
+      expect(filename).toContain(expectedDateStr);
+    });
   });
 });

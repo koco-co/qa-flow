@@ -1,6 +1,4 @@
-// 冒烟测试（P0）
-// 生成时间：2026-04-17T08:42:41.077Z
-// 用例数量：3
-import "./t1.ts";
-import "./t16.ts";
-import "./t36.ts";
+// 冒烟测试（P0 only）
+import "./t1";
+import "./t2";
+import "./t3";

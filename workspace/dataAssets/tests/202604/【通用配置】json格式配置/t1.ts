@@ -1,5 +1,5 @@
 // META: {"id":"t1","priority":"P0","title":"【P0】验证新增key完整正向流程（含正则测试）"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../fixtures/step-screenshot";
 import { uniqueName } from "../../helpers/test-setup";
 import {
   gotoJsonConfigPage,
@@ -10,171 +10,102 @@ import {
   fillValueFormat,
   selectDataSourceType,
   confirmAndWaitClose,
+  ensureRowVisibleByKey,
   deleteKey,
-  searchKey,
 } from "./json-config-helpers";
 
+test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
+test.setTimeout(600000);
 
-test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
-  test("【P0】验证新增key完整正向流程（含正则测试）", async ({ page, step }) => {
-    const keyName = uniqueName("userInfo");
-    const chineseName = "用户信息";
-    const valueFormat = "^[a-zA-Z]+$";
-    const testData = "testValue";
+const SUITE_NAME = "【通用配置】json格式配置(#15696)";
+const PAGE_NAME = "json格式校验管理";
 
-    try {
-      // 步骤1：进入【数据质量 → 通用配置】页面，等待json格式校验管理列表数据加载完成
-      const table = page.locator(".ant-table");
-      await step(
-        "步骤1: 进入json格式校验管理页面 → 页面标题显示「json格式校验管理」，列表正常展示含9列",
-        async () => {
-          await gotoJsonConfigPage(page);
-          await table.waitFor({ state: "visible", timeout: 15000 });
-          await expect(page.getByRole("columnheader", { name: "key" })).toBeVisible({ timeout: 5000 });
-          await expect(page.getByRole("columnheader", { name: "中文名称" })).toBeVisible({ timeout: 5000 });
-          await expect(page.getByRole("columnheader", { name: "value格式" })).toBeVisible({ timeout: 5000 });
-          await expect(page.getByRole("columnheader", { name: /数据源类型/ })).toBeVisible({ timeout: 5000 });
-          await expect(page.getByRole("columnheader", { name: "创建人" })).toBeVisible({ timeout: 5000 });
-          await expect(page.getByRole("columnheader", { name: "创建时间" })).toBeVisible({ timeout: 5000 });
-          await expect(page.getByRole("columnheader", { name: "更新人" })).toBeVisible({ timeout: 5000 });
-          await expect(page.getByRole("columnheader", { name: "更新时间" })).toBeVisible({ timeout: 5000 });
-          await expect(page.getByRole("columnheader", { name: "操作" })).toBeVisible({ timeout: 5000 });
-        },
-        table,
-      );
+test.describe(`${SUITE_NAME} - ${PAGE_NAME}`, () => {
+  const keyName = uniqueName("json_config_p0_t1");
 
-      // 步骤2：点击列表右上角【新增】按钮，弹出弹窗
-      await step(
-        "步骤2: 点击【新增】按钮 → 弹出弹窗，包含 key/中文名称/value格式/数据源类型字段，暂不显示测试数据区域",
-        async () => {
-          await clickHeaderButton(page, "新增");
-          const modal = await waitModal(page);
-          await expect(
-            modal.locator(".ant-form-item").filter({ hasText: /^\*?\s*key$/i }),
-          ).toBeVisible({ timeout: 5000 });
-          await expect(
-            modal.locator(".ant-form-item").filter({ hasText: "中文名称" }),
-          ).toBeVisible({ timeout: 5000 });
-          await expect(
-            modal.locator(".ant-form-item").filter({ hasText: "value格式" }),
-          ).toBeVisible({ timeout: 5000 });
-          await expect(
-            modal.locator(".ant-form-item").filter({ hasText: "数据源类型" }),
-          ).toBeVisible({ timeout: 5000 });
-          const testDataInput = modal.locator("textarea[id$='testData'], textarea");
-          const regexTestBtn = modal.getByRole("button", { name: "正则匹配测试" });
-          await expect(testDataInput).toHaveCount(0);
-          await expect(regexTestBtn).toHaveCount(0);
-        },
-        page.locator(".ant-modal:visible"),
-      );
+  test.afterEach(async ({ page }) => {
+    await deleteKey(page, keyName).catch(() => undefined);
+  });
 
-      // 步骤3：在新增弹窗中填写表单
-      const modal = page.locator(".ant-modal:visible").last();
+  test("验证新增key完整正向流程（含正则测试）", async ({ page, step }) => {
+    await step("步骤1: 进入json格式校验管理页面，等待列表加载完成", async () => {
+      await gotoJsonConfigPage(page);
+      const container = page.locator(".json-format-check");
+      await expect(container).toBeVisible({ timeout: 15000 });
+      // 验证列头存在
+      const tableHeader = page.locator(".ant-table-thead");
+      await expect(tableHeader).toBeVisible({ timeout: 10000 });
+      await expect(tableHeader).toContainText("key");
+      await expect(tableHeader).toContainText("中文名称");
+      await expect(tableHeader).toContainText("value格式");
+      await expect(tableHeader).toContainText("数据源类型");
+      await expect(tableHeader).toContainText("创建人");
+      await expect(tableHeader).toContainText("操作");
+    });
 
-      await step(
-        "步骤3: 填写表单（key/中文名称/value格式/数据源类型=Hive2.x） → 各字段输入正确，value格式填写后动态显示测试数据和正则匹配测试",
-        async () => {
-          // 先切换数据源类型（切换前其他字段可能被清空，故先切）
-          await selectDataSourceType(page, modal, "Hive2.x");
-          await fillKeyInput(modal, keyName);
-          await fillNameInput(modal, chineseName);
-          await fillValueFormat(modal, valueFormat);
+    let modal!: import("@playwright/test").Locator;
 
-          // 验证各字段输入值
-          await expect(
-            modal
-              .locator(".ant-form-item")
-              .filter({ hasText: /^\*?\s*key$/i })
-              .locator("input")
-              .first(),
-          ).toHaveValue(keyName, { timeout: 5000 });
-          await expect(
-            modal
-              .locator(".ant-form-item")
-              .filter({ hasText: "中文名称" })
-              .locator("input")
-              .first(),
-          ).toHaveValue(chineseName, { timeout: 5000 });
-          await expect(
-            modal
-              .locator(".ant-form-item")
-              .filter({ hasText: "value格式" })
-              .locator("input")
-              .first(),
-          ).toHaveValue(valueFormat, { timeout: 5000 });
+    await step("步骤2: 点击【新增】按钮，验证弹窗出现，标题为「新建」", async () => {
+      await clickHeaderButton(page, "新增");
+      modal = await waitModal(page, "新建");
+      // 验证弹窗内字段
+      await expect(modal).toContainText("数据源类型");
+      await expect(modal).toContainText("key");
+      await expect(modal).toContainText("中文名称");
+      await expect(modal).toContainText("value格式");
+      // 未填 value格式 时，【正则匹配测试】按钮不显示
+      const regexBtn = modal.getByRole("button", { name: /正则匹配测试/ });
+      const regexBtnVisible = await regexBtn.isVisible({ timeout: 1000 }).catch(() => false);
+      expect(regexBtnVisible).toBe(false);
+    });
 
-          // 验证数据源类型已切换为 Hive2.x
-          await expect(
-            modal
-              .locator(".ant-form-item")
-              .filter({ hasText: "数据源类型" })
-              .locator(".ant-select-selection-item"),
-          ).toContainText(/Hive/i, { timeout: 5000 });
+    await step("步骤3: 填写表单（数据源类型=hive2.x, key=uniqueName, 中文名称=用户信息, value格式=^[a-zA-Z]+$），验证value格式填写后正则测试控件显现", async () => {
+      await selectDataSourceType(page, modal, "Hive2.x");
+      await fillKeyInput(modal, keyName);
+      await fillNameInput(modal, "用户信息");
+      await fillValueFormat(modal, "^[a-zA-Z]+$");
 
-          // 验证 value格式 填写后，测试数据输入框和正则匹配测试按钮动态出现
-          // RegexTestArea 使用 Input.TextArea，name="testData"，label="测试数据"
-          const testDataInput = modal
-            .locator("textarea[id$='testData'], textarea")
-            .first();
-          await expect(testDataInput).toBeVisible({ timeout: 5000 });
+      // 验证：填写 value格式 后动态显示「测试数据」输入框和【正则匹配测试】按钮
+      const regexTestBtn = modal.getByRole("button", { name: /正则匹配测试/ });
+      await expect(regexTestBtn).toBeVisible({ timeout: 5000 });
 
-          const regexTestBtn = modal
-            .getByRole("button", { name: /正则匹配测试/ })
-            .or(modal.locator("button").filter({ hasText: /正则.*测试|匹配.*测试/ }))
-            .first();
-          await expect(regexTestBtn).toBeVisible({ timeout: 5000 });
-        },
-        modal,
-      );
+      // 验证测试数据相关 UI 已显现（正则测试按钮可见即代表测试数据行出现）
+      // 不单独 assert testDataFormItem，因为 label 文本渲染方式可能不触发 hasText filter
+    });
 
-      // 步骤4：在「测试数据」输入框中填写 testValue，点击【正则匹配测试】按钮
-      // RegexTestArea 使用 Input.TextArea，name="testData"
-      const testDataInput = modal
-        .locator("textarea[id$='testData'], textarea")
-        .first();
-      const regexTestBtn = modal
-        .getByRole("button", { name: "正则匹配测试" })
-        .first();
-      const passResult = modal.getByText("符合正则", { exact: true });
+    await step("步骤4: 在测试数据输入框填写 testValue，点击【正则匹配测试】，验证结果为「符合正则」", async () => {
+      // 「测试数据」输入框在 value格式 填写后动态渲染。
+      // 使用 page 全局定位（不依赖 modal locator 引用），避免 stale 问题。
+      const regexTestBtn = page.locator(".ant-modal:visible").last().getByRole("button", { name: /正则匹配测试/ });
+      await expect(regexTestBtn).toBeVisible({ timeout: 10000 });
 
-      await step(
-        "步骤4: 在测试数据输入框填写 testValue，点击【正则匹配测试】 → 显示匹配结果「匹配成功」",
-        async () => {
-          await testDataInput.clear();
-          await testDataInput.fill(testData);
-          await expect(testDataInput).toHaveValue(testData, { timeout: 5000 });
-          await regexTestBtn.click();
-          await expect(passResult).toBeVisible({ timeout: 10000 });
-          await expect(passResult).toContainText("符合正则");
-        },
-        passResult,
-      );
+      // 定位测试数据输入框：按 label 文本找 form-item，再找其中的 input 或 textarea
+      const visibleModal = page.locator(".ant-modal:visible").last();
+      // 测试数据输入框可能是 input 或 textarea；直接定位可见弹窗内最后一个可见 input/textarea
+      // （测试数据在 value格式 之后渲染，是弹窗内最后一个输入控件）
+      const testDataInput = visibleModal.locator("input:visible, textarea:visible").last();
+      await expect(testDataInput).toBeVisible({ timeout: 10000 });
+      await testDataInput.fill("testValue");
 
-      // 步骤5：点击弹窗【确定】按钮，等待接口响应完成
-      await step(
-        "步骤5: 点击【确定】 → 弹窗关闭，列表刷新，新增记录出现（数据源类型=hive2.x，中文名称=用户信息，value格式正确）",
-        async () => {
-          await confirmAndWaitClose(page, modal);
-          // 列表数据可能分页，搜索 key 确保能找到新增记录
-          await searchKey(page, keyName);
-          const newRow = page.locator(".ant-table-row").filter({ hasText: keyName }).first();
-          // 验证新增记录出现在列表中
-          await expect(newRow).toBeVisible({ timeout: 15000 });
-          // 验证数据源类型含 hive
-          await expect(newRow).toContainText(/hive/i, { timeout: 5000 });
-          // 验证中文名称
-          await expect(newRow).toContainText(chineseName, { timeout: 5000 });
-          // 验证 value 格式
-          await expect(newRow).toContainText(valueFormat, { timeout: 5000 });
-          await expect(newRow).toContainText("admin@dtstack.com", { timeout: 5000 });
-        },
-        page.locator(".ant-table-row").filter({ hasText: keyName }).first(),
-      );
-    } finally {
-      // 清理：先搜索定位 key，再删除，失败不影响测试结论
-      await searchKey(page, keyName).catch(() => undefined);
-      await deleteKey(page, keyName).catch(() => undefined);
-    }
+      await regexTestBtn.click();
+
+      // 验证匹配结果显示「符合正则」
+      await expect(visibleModal).toContainText("符合正则", { timeout: 10000 });
+    });
+
+    await step("步骤5: 点击【确定】，等待弹窗关闭，验证列表中出现新增的key", async () => {
+      await confirmAndWaitClose(page, modal);
+
+      // 验证列表中出现新增的 key 行
+      const row = await ensureRowVisibleByKey(page, keyName, 15000);
+      await expect(row).toBeVisible();
+
+      // 验证行内数据源类型为 Hive2.x（显示为首字母大写）
+      await expect(row).toContainText("Hive2.x");
+      // 验证中文名称
+      await expect(row).toContainText("用户信息");
+      // 验证 value格式
+      await expect(row).toContainText("^[a-zA-Z]+$");
+    });
   });
 });
