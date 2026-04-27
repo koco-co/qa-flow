@@ -4,7 +4,7 @@
  * Responsibilities: session CRUD (create/read/write/delete), session ID
  * composition, listing, and file-system-based exclusive locking.
  *
- * See spec: docs/refactor/specs/2026-04-24-unified-progress-engine-design.md
+ * See spec: docs/architecture/progress-engine.md (TBD: written in P9)
  */
 
 import { createHash } from "node:crypto";

@@ -49,7 +49,7 @@
 
 读写：`rules/` 由 `kata-cli rule-loader load --project {{project}}` 合并加载，AI 在 case-format 等场景可追加写入；`knowledge/` 由 `knowledge-keeper` skill 统一读写，subagent 不得直接改文件；`memory/` 由 Claude Code 自动持久化。
 
-详见 [`docs/refactor/specs/2026-04-17-knowledge-architecture-design.md`](docs/refactor/specs/2026-04-17-knowledge-architecture-design.md)。
+详见 [docs/architecture/information-architecture.md](docs/architecture/information-architecture.md)（计划于 P9 阶段补齐；当前以 [docs/superpowers/specs/2026-04-27-architecture-redesign-design.md](docs/superpowers/specs/2026-04-27-architecture-redesign-design.md) §5 为权威定义）。
 
 ## 脚本变更（`.claude/scripts/`）
 

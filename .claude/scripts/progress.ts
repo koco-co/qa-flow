@@ -2,7 +2,7 @@
  * progress.ts — unified task progress engine CLI.
  *
  * Replaces kata-state.ts and ui-autotest-progress.ts. See spec:
- *   docs/refactor/specs/2026-04-24-unified-progress-engine-design.md
+ *   docs/architecture/progress-engine.md (TBD: written in P9)
  */
 import { basename } from "node:path";
 import { createCli } from "./lib/cli-runner.ts";

@@ -8,7 +8,7 @@
  * Also exposes `migrateSession` for in-flight Phase D3 sessions: rewrites
  * legacy `transform`/`enhance` task nodes when unified-discuss subsumes them.
  *
- * See spec: docs/refactor/specs/2026-04-24-unified-progress-engine-design.md
+ * See spec: docs/architecture/progress-engine.md (TBD: written in P9)
  */
 import {
   existsSync,
