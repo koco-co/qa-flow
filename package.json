@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "type": "module",
   "private": true,
-  "workspaces": ["tools/dtstack-cli"],
+  "workspaces": ["tools/dtstack-cli", "engine"],
   "description": "AI-driven QA workflows codified as reusable kata, powered by Claude Code Skills.",
   "bin": {
     "kata-cli": ".claude/scripts/kata-cli.ts"

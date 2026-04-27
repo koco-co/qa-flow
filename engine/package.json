@@ -1,0 +1,24 @@
+{
+  "name": "kata-engine",
+  "version": "3.0.0-alpha.1",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "kata-cli": "bin/kata-cli"
+  },
+  "scripts": {
+    "test": "bun test tests",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.8.0"
+  }
+}
