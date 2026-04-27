@@ -118,7 +118,7 @@ bun install
 cp .env.example .env
 cp .env.envs.example .env.envs
 kata-cli config            # config sanity check
-bun test ./.claude/scripts/__tests__          # must be all green
+bun test --cwd engine                         # must be all green
 bunx playwright install                       # only needed for UI automation
 ```
 

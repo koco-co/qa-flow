@@ -51,10 +51,10 @@
 
 详见 [docs/architecture/information-architecture.md](docs/architecture/information-architecture.md)（计划于 P9 阶段补齐；当前以 [docs/superpowers/specs/2026-04-27-architecture-redesign-design.md](docs/superpowers/specs/2026-04-27-architecture-redesign-design.md) §5 为权威定义）。
 
-## 脚本变更（`.claude/scripts/`）
+## 脚本变更（`engine/src/`）
 
 - 修改 ts 脚本后**必须**同步更新或新增对应单元测试
-- 交付前**必须**全量运行 `bun test ./.claude/scripts/__tests__` 确认全绿
+- 交付前**必须**全量运行 `bun test --cwd engine` 确认全绿
 
 ## 测试与提交纪律
 

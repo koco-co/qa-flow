@@ -127,7 +127,7 @@ bun install
 cp .env.example .env
 cp .env.envs.example .env.envs
 kata-cli config            # 配置校验
-bun test ./.claude/scripts/__tests__          # 单元测试必须全绿
+bun test --cwd engine                         # 单元测试必须全绿
 bunx playwright install                       # 仅 UI 自动化场景需要
 ```
 

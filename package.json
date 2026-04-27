@@ -5,9 +5,6 @@
   "private": true,
   "workspaces": ["tools/dtstack-cli", "engine"],
   "description": "AI-driven QA workflows codified as reusable kata, powered by Claude Code Skills.",
-  "bin": {
-    "kata-cli": ".claude/scripts/kata-cli.ts"
-  },
   "scripts": {
     "check": "biome check .",
     "check:fix": "biome check --fix .",
@@ -16,8 +13,8 @@
     "lint:debris": "bun run scripts/lint/check-debug-files.ts && bun run scripts/lint/check-stale-paths.ts && bun run scripts/lint/check-runtime-artifacts.ts",
     "type-check": "tsc --noEmit",
     "ci": "bun run lint && bun run lint:debris && bun run type-check && bun run test",
-    "test": "bun test ./.claude/scripts/__tests__",
-    "test:watch": "bun test --watch ./.claude/scripts/__tests__"
+    "test": "bun test --cwd engine",
+    "test:watch": "bun test --watch --cwd engine"
   },
   "dependencies": {
     "@types/nodemailer": "^8.0.0",

@@ -63,7 +63,7 @@ kata-cli config
 ### Step 5 — 单元测试
 
 ```bash
-bun test ./.claude/scripts/__tests__
+bun test --cwd engine
 ```
 
 必须全绿（`0 fail`）。有失败立即报告具体用例名，不要重试。
