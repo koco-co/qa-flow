@@ -2,7 +2,7 @@
 
 > 本文件由 `knowledge-keeper` skill 维护。
 > 用户可直接编辑，但 AI 写入前应经过 knowledge-keeper API。
-> 填充指南：见 [knowledge 架构设计](../../../docs/refactor/specs/2026-04-17-knowledge-architecture-design.md#42-目录结构目标态)。
+> 填充指南：见 [knowledge 架构设计](../../../docs/architecture/information-architecture.md#42-目录结构目标态)（计划于 P9 阶段补齐；当前以 architecture-redesign-design.md §5 为权威定义）。
 
 ## 产品定位
 
