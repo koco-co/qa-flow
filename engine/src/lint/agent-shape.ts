@@ -20,12 +20,15 @@ export function lintAgentShape(scanPath: string): AgentReport {
   walk(scanPath, files);
   const violations: AgentViolation[] = [];
   for (const file of files) {
-    const lines = readFileSync(file, "utf8").split("\n").length;
+    const content = readFileSync(file, "utf8");
+    const raw = content.split("\n").length;
+    const lines = content.endsWith("\n") ? raw - 1 : raw;
     if (lines >= FAIL_LINES) {
       violations.push({
         rule: "A1",
         file,
         lineCount: lines,
+        severity: "fail",
         message: `agent body ${lines} lines >= ${FAIL_LINES} (A1 fail); split into sub-agents per spec §10.2`,
       });
     } else if (lines > WARN_LINES) {
@@ -33,6 +36,7 @@ export function lintAgentShape(scanPath: string): AgentReport {
         rule: "A1",
         file,
         lineCount: lines,
+        severity: "warn",
         message: `agent body ${lines} lines > ${WARN_LINES} (A1 warn); extract sections to references/`,
       });
     }

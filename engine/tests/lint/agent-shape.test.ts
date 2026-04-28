@@ -27,4 +27,9 @@ describe("lintAgentShape (A1)", () => {
     const r = lintAgentShape(join(FIX, "agent-shape-good"));
     expect(r.agents).toBe(1);
   });
+
+  test("violation includes severity field", () => {
+    const r = lintAgentShape(join(FIX, "agent-shape-bad"));
+    expect(r.violations.every((v) => v.severity === "warn" || v.severity === "fail")).toBe(true);
+  });
 });

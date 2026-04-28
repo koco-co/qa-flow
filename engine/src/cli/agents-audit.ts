@@ -9,7 +9,8 @@ export function registerAgentsAudit(program: Command): void {
     .command("agents:audit")
     .description("Audit .claude/agents/ shape (A1 line count) + naming (N1 subagent-* ban) per spec §10.2/§10.4")
     .option("--exit-code", "exit non-zero on any violation", false)
-    .action((opts: { exitCode: boolean }) => {
+    .option("--severity <level>", "filter exit-code by severity (all|fail-only)", "all")
+    .action((opts: { exitCode: boolean; severity: string }) => {
       const agentsDir = join(repoRoot(), ".claude", "agents");
       const shape = lintAgentShape(agentsDir);
       const naming = lintAgentNaming(agentsDir);
@@ -20,6 +21,9 @@ export function registerAgentsAudit(program: Command): void {
         console.log(`${rel}: [${v.rule}] ${detail} ${v.message}`);
       }
       console.log(`\n[agents:audit] scanned=${shape.agents} violations=${all.length}`);
-      if (opts.exitCode && all.length > 0) process.exit(1);
+      const exitableViolations = opts.severity === "fail-only"
+        ? all.filter((v) => v.severity !== "warn")
+        : all;
+      if (opts.exitCode && exitableViolations.length > 0) process.exit(1);
     });
 }

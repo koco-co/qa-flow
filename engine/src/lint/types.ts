@@ -56,6 +56,7 @@ export interface AgentViolation {
   file: string;
   lineCount?: number;
   matched?: string;
+  severity?: "warn" | "fail";
   message: string;
 }
 
