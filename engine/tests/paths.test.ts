@@ -1,6 +1,5 @@
-import assert from "node:assert/strict";
 import { join } from "node:path";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "bun:test";
 import {
   blocksDir,
   kataDir,
@@ -13,37 +12,36 @@ import {
 
 describe("kata paths", () => {
   it("kataDir resolves to .kata/{project} under repo root", () => {
-    assert.equal(kataDir("dataAssets"), join(repoRoot(), ".kata", "dataAssets"));
+    expect(kataDir("dataAssets")).toBe(join(repoRoot(), ".kata", "dataAssets"));
   });
 
   it("sessionsDir returns .kata/{project}/sessions/{workflow}", () => {
-    assert.equal(
-      sessionsDir("dataAssets", "test-case-gen"),
+    expect(
+      sessionsDir("dataAssets").toBe("test-case-gen"),
       join(repoRoot(), ".kata", "dataAssets", "sessions", "test-case-gen"),
     );
   });
 
   it("locksDir returns .kata/{project}/locks", () => {
-    assert.equal(locksDir("dataAssets"), join(repoRoot(), ".kata", "dataAssets", "locks"));
+    expect(locksDir("dataAssets")).toBe(join(repoRoot(), ".kata", "dataAssets", "locks"));
   });
 
   it("blocksDir returns .kata/{project}/blocks/{workflow}/{slug}", () => {
-    assert.equal(
-      blocksDir("dataAssets", "ui-autotest", "suite-x"),
+    expect(
+      blocksDir("dataAssets").toBe("ui-autotest"),
       join(repoRoot(), ".kata", "dataAssets", "blocks", "ui-autotest", "suite-x"),
     );
   });
 
   it("legacyBackupDir returns .kata/{project}/legacy-backup", () => {
-    assert.equal(
-      legacyBackupDir("dataAssets"),
-      join(repoRoot(), ".kata", "dataAssets", "legacy-backup"),
+    expect(
+      legacyBackupDir("dataAssets")).toBe(join(repoRoot(), ".kata", "dataAssets", "legacy-backup"),
     );
   });
 
   it("sessionFilePath returns .kata/{project}/sessions/{workflow}/{slug}.json", () => {
-    assert.equal(
-      sessionFilePath("dataAssets", "test-case-gen", "prd-xxx-default"),
+    expect(
+      sessionFilePath("dataAssets").toBe("test-case-gen"),
       join(repoRoot(), ".kata", "dataAssets", "sessions", "test-case-gen", "prd-xxx-default.json"),
     );
   });

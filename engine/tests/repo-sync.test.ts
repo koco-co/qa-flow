@@ -1,7 +1,6 @@
-import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "bun:test";
 import { parseGitUrl } from "../src/lib/paths.ts";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -31,12 +30,12 @@ describe("repo-sync --help", () => {
   it("outputs usage information", () => {
     const { stdout, stderr, code } = run(["sync", "--help"]);
     const output = stdout + stderr;
-    assert.equal(code, 0);
-    assert.match(output, /repo-sync|Clone|update/i);
-    assert.match(output, /--url/);
-    assert.match(output, /--branch/);
-    assert.match(output, /--project/);
-    assert.match(output, /--base-dir/);
+    expect(code).toBe(0);
+    expect(output).toMatch(/repo-sync|Clone|update/i);
+    expect(output).toMatch(/--url/);
+    expect(output).toMatch(/--branch/);
+    expect(output).toMatch(/--project/);
+    expect(output).toMatch(/--base-dir/);
   });
 });
 
@@ -45,22 +44,22 @@ describe("repo-sync URL parsing (via parseGitUrl)", () => {
     const { group, repo } = parseGitUrl(
       "http://gitlab.dtstack.com/customItem/dt-center-assets.git",
     );
-    assert.equal(group, "customItem");
-    assert.equal(repo, "dt-center-assets");
+    expect(group).toBe("customItem");
+    expect(repo).toBe("dt-center-assets");
   });
 
   it("parses https GitHub URL without .git suffix", () => {
     const { group, repo } = parseGitUrl("https://github.com/dtstack/taier");
-    assert.equal(group, "dtstack");
-    assert.equal(repo, "taier");
+    expect(group).toBe("dtstack");
+    expect(repo).toBe("taier");
   });
 
   it("parses nested group path, takes last two segments", () => {
     const { group, repo } = parseGitUrl(
       "https://gitlab.com/org/sub-group/my-repo.git",
     );
-    assert.equal(group, "sub-group");
-    assert.equal(repo, "my-repo");
+    expect(group).toBe("sub-group");
+    expect(repo).toBe("my-repo");
   });
 });
 
@@ -72,8 +71,8 @@ describe("repo-sync target directory calculation", () => {
     // Without --project, base-dir defaults to workspace/.repos
     const expectedSuffix = `customItem/dt-center-assets`;
     const computedPath = `workspace/.repos/${group}/${repo}`;
-    assert.ok(
-      computedPath.endsWith(expectedSuffix),
+    expect(
+      computedPath.endsWith(expectedSuffix).toBeTruthy(),
       `Expected path ending with ${expectedSuffix}, got: ${computedPath}`,
     );
   });
@@ -84,9 +83,8 @@ describe("repo-sync target directory calculation", () => {
 
     // With --project dataAssets, base-dir becomes workspace/dataAssets/.repos
     const computedPath = `workspace/dataAssets/.repos/${group}/${repo}`;
-    assert.equal(
-      computedPath,
-      "workspace/dataAssets/.repos/customItem/dt-center-assets",
+    expect(
+      computedPath).toBe("workspace/dataAssets/.repos/customItem/dt-center-assets",
     );
   });
 });
@@ -105,8 +103,8 @@ describe("repo-sync git operation failure", () => {
       "/tmp/kata-repo-sync-test-invalid",
     ]);
     // Git clone should fail → script should exit 1
-    assert.equal(code, 1);
-    assert.ok(stderr.length > 0, "should output error to stderr");
+    expect(code).toBe(1);
+    expect(stderr.length > 0).toBeTruthy();
   });
 });
 
@@ -117,7 +115,7 @@ describe("repo-sync output format", () => {
     const expectedFields = ["repo", "group", "branch", "commit", "path"];
     // Just verify the fields exist conceptually by checking our type definition
     for (const field of expectedFields) {
-      assert.ok(typeof field === "string", `field ${field} should be a string`);
+      expect(typeof field === "string", `field ${field} should be a string`).toBeTruthy();
     }
   });
 });

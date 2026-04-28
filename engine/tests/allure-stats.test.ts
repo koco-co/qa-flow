@@ -1,8 +1,7 @@
-import assert from "node:assert/strict";
 import { mkdirSync, rmSync, writeFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { after, before, describe, it } from "node:test";
+import { after, before, describe, it, expect } from "bun:test";
 import {
   collectAllureStats,
   snapshotResultFiles,
@@ -43,16 +42,16 @@ describe("collectAllureStats — counts by status", () => {
     writeResult(dir, "d", { status: "skipped", name: "d" });
 
     const stats = collectAllureStats(dir);
-    assert.equal(stats.total, 4);
-    assert.equal(stats.passed, 1);
-    assert.equal(stats.failed, 1);
-    assert.equal(stats.broken, 1);
-    assert.equal(stats.skipped, 1);
+    expect(stats.total).toBe(4);
+    expect(stats.passed).toBe(1);
+    expect(stats.failed).toBe(1);
+    expect(stats.broken).toBe(1);
+    expect(stats.skipped).toBe(1);
     // duration sums only when start+stop present
-    assert.equal(stats.durationMs, 99 + 199 + 49);
-    assert.equal(stats.failedCases.length, 2);
+    expect(stats.durationMs).toBe(99 + 199 + 49);
+    expect(stats.failedCases.length).toBe(2);
     const titles = stats.failedCases.map((f) => f.title).sort();
-    assert.deepEqual(titles, ["b", "c"]);
+    expect(titles).toEqual(["b", "c"]);
   });
 
   it("trims long failure messages to first line", () => {
@@ -64,7 +63,7 @@ describe("collectAllureStats — counts by status", () => {
       statusDetails: { message: "first\nsecond\nthird" },
     });
     const stats = collectAllureStats(dir);
-    assert.equal(stats.failedCases[0].message, "first");
+    expect(stats.failedCases[0].message).toBe("first");
   });
 });
 
@@ -78,9 +77,9 @@ describe("collectAllureStats — excludeFiles filter", () => {
     writeResult(dir, "new", { status: "failed", name: "new" });
 
     const stats = collectAllureStats(dir, { excludeFiles: snapshot });
-    assert.equal(stats.total, 1);
-    assert.equal(stats.failed, 1);
-    assert.equal(stats.failedCases[0].title, "new");
+    expect(stats.total).toBe(1);
+    expect(stats.failed).toBe(1);
+    expect(stats.failedCases[0].title).toBe("new");
   });
 });
 
@@ -94,8 +93,8 @@ describe("collectAllureStats — sinceMtimeMs filter", () => {
     writeResult(dir, "recent", { status: "failed", name: "recent" });
 
     const stats = collectAllureStats(dir, { sinceMtimeMs: threshold });
-    assert.equal(stats.total, 1);
-    assert.equal(stats.failed, 1);
+    expect(stats.total).toBe(1);
+    expect(stats.failed).toBe(1);
   });
 });
 
@@ -107,7 +106,7 @@ describe("collectAllureStats — skips malformed result files", () => {
     writeResult(dir, "ok", { status: "passed", name: "ok" });
 
     const stats = collectAllureStats(dir);
-    assert.equal(stats.total, 1);
-    assert.equal(stats.passed, 1);
+    expect(stats.total).toBe(1);
+    expect(stats.passed).toBe(1);
   });
 });

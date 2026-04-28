@@ -1,7 +1,6 @@
-import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 
@@ -28,21 +27,21 @@ function run(
 describe("kata-cli unified CLI", () => {
   it("top-level --help exits 0", () => {
     const { code } = run(["--help"]);
-    assert.equal(code, 0);
+    expect(code).toBe(0);
   });
 
   it("top-level --help shows kata-cli name", () => {
     const { stdout } = run(["--help"]);
-    assert.match(stdout, /kata-cli/);
+    expect(stdout).toMatch(/kata-cli/);
   });
 
   it("top-level --help shows description", () => {
     const { stdout } = run(["--help"]);
-    assert.match(stdout, /kata unified CLI/);
+    expect(stdout).toMatch(/kata unified CLI/);
   });
 
   it("unknown subcommand exits non-zero", () => {
     const { code } = run(["nonexistent-module"]);
-    assert.notEqual(code, 0);
+    expect(code).not.toBe(0);
   });
 });
