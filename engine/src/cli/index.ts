@@ -107,6 +107,10 @@ registerAgentsAudit(kata);
 import { registerCasesLint } from "./cases-lint.ts";
 registerCasesLint(kata);
 
+// ── Codemod (P7.5) ─────────────────────────────────────────
+import { registerCodemodApply } from "./codemod-apply.ts";
+registerCodemodApply(kata);
+
 initEnv();
 
 kata.parseAsync(process.argv).catch((err) => {
