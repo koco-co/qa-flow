@@ -154,7 +154,7 @@ describe("task-add + task-query + task-update", () => {
     const s = JSON.parse(run(["session-read", "--project", "dataAssets", "--session", sid]).stdout);
     const t2 = s.tasks.find((t: { id: string }) => t.id === "t2");
     expect(t2.attempts).toBe(1);
-    expect(t2.errors.some((e: { message: string }) => /forced-start/.test(e.message)).toBeTruthy());
+    expect(t2.errors.some((e: { message: string }) => /forced-start/.test(e.message))).toBeTruthy();
   });
 
   it("task-query default hides tasks with unsatisfied deps", () => {

@@ -94,7 +94,7 @@ describe("history-convert --detect", () => {
       type: string;
       outputDir: string;
     }[];
-    expect(Array.isArray(entries).toBeTruthy());
+    expect(Array.isArray(entries)).toBeTruthy();
     expect(entries.length > 0).toBeTruthy();
     expect(entries[0].type).toBe("csv");
     expect(

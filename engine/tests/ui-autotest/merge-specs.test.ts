@@ -106,7 +106,7 @@ describe("parseBlockMeta", () => {
     expect(meta).toBeTruthy();
     expect(meta.id).toBe("t1");
     expect(meta.priority).toBe("P0");
-    expect(meta.title.includes("验证列表页").toBeTruthy());
+    expect(meta.title.includes("验证列表页")).toBeTruthy();
   });
 
   it("无 META 注释时返回 null", () => {

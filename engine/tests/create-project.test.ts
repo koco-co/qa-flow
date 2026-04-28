@@ -66,9 +66,9 @@ describe("create-project create --dry-run", () => {
     expect(data.dry_run).toBe(true);
     expect(data.will_register).toBe(true);
     expect(data.will_call_index).toBe(true);
-    expect(Array.isArray(data.will_create.dirs).toBeTruthy());
-    expect(Array.isArray(data.will_create.files).toBeTruthy());
-    expect(Array.isArray(data.will_create.gitkeeps).toBeTruthy());
+    expect(Array.isArray(data.will_create.dirs)).toBeTruthy();
+    expect(Array.isArray(data.will_create.files)).toBeTruthy();
+    expect(Array.isArray(data.will_create.gitkeeps)).toBeTruthy();
     expect(data.will_create.dirs.length).toBe(12);
     // Disk must remain untouched
     expect(existsSync(join(WORKSPACE_DIR).toBe("newProj")), false);
@@ -249,7 +249,7 @@ describe("create-project create --confirmed", () => {
     expect(data.project).toBe("fresh");
     expect(data.registered_config).toBe(true);
     expect(data.index_generated).toBe(true);
-    expect(data.index_path.endsWith("knowledge/_index.md").toBeTruthy());
+    expect(data.index_path.endsWith("knowledge/_index.md")).toBeTruthy();
 
     const projDir = join(WORKSPACE_DIR, "fresh");
     for (const d of [
@@ -266,10 +266,10 @@ describe("create-project create --confirmed", () => {
       "knowledge/pitfalls",
       ".repos",
     ]) {
-      expect(existsSync(join(projDir, d).toBeTruthy()), `dir missing: ${d}`);
+      expect(existsSync(join(projDir, d)).toBeTruthy());
     }
-    expect(existsSync(join(projDir, "prds").toBeTruthy()));
-    expect(existsSync(join(projDir, "knowledge", "modules").toBeTruthy()));
+    expect(existsSync(join(projDir, "prds")).toBeTruthy());
+    expect(existsSync(join(projDir, "knowledge", "modules")).toBeTruthy());
     const rulesReadme = readFileSync(
       join(projDir, "rules", "README.md"),
       "utf8",
@@ -280,7 +280,7 @@ describe("create-project create --confirmed", () => {
       "utf8",
     );
     expect(overview).toMatch(/# fresh 业务概览/);
-    expect(existsSync(join(projDir, "knowledge").toBeTruthy()));
+    expect(existsSync(join(projDir, "knowledge")).toBeTruthy());
     const indexContent = readFileSync(
       join(projDir, "knowledge", "_index.md"),
       "utf8",
@@ -339,8 +339,8 @@ describe("create-project create --confirmed", () => {
     ]);
     expect(code).toBe(0);
     const data = JSON.parse(stdout);
-    expect(Array.isArray(data.created_dirs).toBeTruthy());
-    expect(data.created_dirs.some((p: string) => p.endsWith("knowledge/modules")).toBeTruthy());
+    expect(Array.isArray(data.created_dirs)).toBeTruthy();
+    expect(data.created_dirs.some((p: string) => p.endsWith("knowledge/modules"))).toBeTruthy();
     const content = readFileSync(overviewPath, "utf8");
     // create-project must not have replaced user content with the template
     expect(
@@ -475,8 +475,8 @@ describe("create-project clone-repo", () => {
     expect(data.project).toBe("withRepo");
     expect(data.repo).toBe("demo");
     expect(data.branch).toBe("main");
-    expect(data.local_path.endsWith("/demo").toBeTruthy());
-    expect(existsSync(join(data.local_path).toBeTruthy()), "cloned .git exists");
+    expect(data.local_path.endsWith("/demo")).toBeTruthy();
+    expect(existsSync(join(data.local_path)).toBeTruthy(), "cloned .git exists");
   });
 
   it("rejects when repo already cloned at target path", () => {

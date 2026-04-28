@@ -93,7 +93,17 @@ function isRegexStart(input: string, i: number): boolean {
   if (i === 0) return true;
   const prev = input[i - 1]!;
   return (
-    prev === "(" || prev === "," || prev === "=" || prev === "!" || prev === "&" || prev === "|"
+    prev === "(" ||
+    prev === "," ||
+    prev === "=" ||
+    prev === "!" ||
+    prev === "&" ||
+    prev === "|" ||
+    prev === "{" ||
+    prev === "[" ||
+    prev === " " ||
+    prev === "\t" ||
+    prev === "\n"
   );
 }
 

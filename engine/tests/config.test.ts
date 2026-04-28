@@ -105,7 +105,7 @@ describe("config.ts — output structure", () => {
   it("source_repos is empty array when SOURCE_REPOS is not set", () => {
     const { stdout } = runConfig({ SOURCE_REPOS: "" });
     const cfg = JSON.parse(stdout) as { source_repos: string[] };
-    expect(Array.isArray(cfg.source_repos).toBeTruthy());
+    expect(Array.isArray(cfg.source_repos)).toBeTruthy();
     expect(cfg.source_repos.length).toBe(0);
   });
 
@@ -134,7 +134,7 @@ describe("config.ts — plugins field", () => {
     const { stdout } = runConfig();
     const cfg = JSON.parse(stdout) as { plugins: unknown };
     expect(typeof cfg.plugins).toBe("object");
-    expect(!Array.isArray(cfg.plugins).toBeTruthy());
+    expect(!Array.isArray(cfg.plugins)).toBeTruthy();
   });
 
   it("plugin without env_required is always active", () => {

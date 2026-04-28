@@ -89,8 +89,8 @@ describe("knowledge-keeper CLI skeleton", () => {
   it("prints help when no args", () => {
     const { stdout, code } = runKk(["--help"]);
     expect(code).toBe(0);
-    expect(stdout.includes("knowledge-keeper").toBeTruthy());
-    expect(stdout.includes("read-core").toBeTruthy());
+    expect(stdout.includes("knowledge-keeper")).toBeTruthy();
+    expect(stdout.includes("read-core")).toBeTruthy();
   });
 
   it("errors when --project missing", () => {
@@ -110,11 +110,11 @@ describe("read-core", () => {
     expect(obj.project).toBe(PROJECT);
     expect(obj.overview).toBeTruthy();
     expect(typeof obj.overview.title).toBe("string");
-    expect(obj.overview.content.includes("产品定位").toBeTruthy());
-    expect(Array.isArray(obj.terms).toBeTruthy());
+    expect(obj.overview.content.includes("产品定位")).toBeTruthy();
+    expect(Array.isArray(obj.terms)).toBeTruthy();
     expect(obj.index).toBeTruthy();
-    expect(Array.isArray(obj.index.modules).toBeTruthy());
-    expect(Array.isArray(obj.index.pitfalls).toBeTruthy());
+    expect(Array.isArray(obj.index.modules)).toBeTruthy();
+    expect(Array.isArray(obj.index.pitfalls)).toBeTruthy();
   });
 
   it("parses terms table with rows", () => {
@@ -170,13 +170,13 @@ updated: 2026-04-17
     expect(obj.module).toBe("data-source");
     expect(obj.frontmatter.title).toBe("数据源接入");
     expect(obj.frontmatter.tags).toEqual(["ds", "auth"]);
-    expect(obj.content.includes("模块正文").toBeTruthy());
+    expect(obj.content.includes("模块正文")).toBeTruthy();
   });
 
   it("exits 1 when module not found", () => {
     const { code, stderr } = runKk(["read-module", "--project", PROJECT, "--module", "nope"]);
     expect(code).not.toBe(0);
-    expect(stderr.includes("Module not found").toBeTruthy());
+    expect(stderr.includes("Module not found")).toBeTruthy();
   });
 });
 
@@ -215,7 +215,7 @@ body`,
     const obj = JSON.parse(stdout);
     expect(obj.matches.length).toBe(1);
     expect(obj.matches[0].name).toBe("ui-dom-drift");
-    expect(obj.matches[0].match_by.includes("filename").toBeTruthy());
+    expect(obj.matches[0].match_by.includes("filename")).toBeTruthy();
   });
 
   it("matches tag substring", () => {
@@ -223,7 +223,7 @@ body`,
     const obj = JSON.parse(stdout);
     expect(obj.matches.length).toBe(1);
     expect(obj.matches[0].name).toBe("auth-expire");
-    expect(obj.matches[0].match_by.includes("tags").toBeTruthy());
+    expect(obj.matches[0].match_by.includes("tags")).toBeTruthy();
   });
 
   it("returns empty matches with exit 0", () => {
@@ -260,9 +260,9 @@ body`,
     expect(obj.pitfalls_count).toBe(0);
 
     const idxContent = readFileSync(join(PROJECT_KNOWLEDGE, "_index.md"), "utf8");
-    expect(idxContent.includes("## Core").toBeTruthy());
+    expect(idxContent.includes("## Core")).toBeTruthy();
     expect(idxContent.includes("[ds.md](modules/ds.md).toBeTruthy()"));
-    expect(idxContent.includes("<!-- last-indexed: ").toBeTruthy());
+    expect(idxContent.includes("<!-- last-indexed: ")).toBeTruthy();
   });
 
   it("fixes missing frontmatter and reports in fixed_frontmatter", () => {
@@ -272,10 +272,10 @@ body`,
     );
     const { stdout } = runKk(["index", "--project", PROJECT]);
     const obj = JSON.parse(stdout);
-    expect(obj.fixed_frontmatter.includes("modules/legacy.md").toBeTruthy());
+    expect(obj.fixed_frontmatter.includes("modules/legacy.md")).toBeTruthy();
     const fixed = readFileSync(join(PROJECT_KNOWLEDGE, "modules", "legacy.md"), "utf8");
-    expect(fixed.startsWith("---\n").toBeTruthy());
-    expect(fixed.includes("type: module").toBeTruthy());
+    expect(fixed.startsWith("---\n")).toBeTruthy();
+    expect(fixed.includes("type: module")).toBeTruthy();
   });
 });
 
@@ -306,9 +306,9 @@ describe("write --type term", () => {
     ]);
     expect(code).toBe(0);
     const obj = JSON.parse(stdout);
-    expect(obj.file.endsWith("terms.md").toBeTruthy());
+    expect(obj.file.endsWith("terms.md")).toBeTruthy();
     const terms = readFileSync(join(PROJECT_KNOWLEDGE, "terms.md"), "utf8");
-    expect(terms.includes("| XYZ | 术语 X | 说明 | x |").toBeTruthy());
+    expect(terms.includes("| XYZ | 术语 X | 说明 | x |")).toBeTruthy();
   });
 
   it("medium without --confirmed fails", () => {
@@ -319,7 +319,7 @@ describe("write --type term", () => {
       "--confidence", "medium",
     ]);
     expect(code).not.toBe(0);
-    expect(stderr.includes("--confirmed").toBeTruthy());
+    expect(stderr.includes("--confirmed")).toBeTruthy();
   });
 
   it("low always fails", () => {
@@ -331,7 +331,7 @@ describe("write --type term", () => {
       "--confirmed",
     ]);
     expect(code).not.toBe(0);
-    expect(stderr.includes("Low").toBeTruthy());
+    expect(stderr.includes("Low")).toBeTruthy();
   });
 });
 
@@ -348,8 +348,8 @@ describe("write --type overview", () => {
     ]);
     expect(code).toBe(0);
     const ov = readFileSync(join(PROJECT_KNOWLEDGE, "overview.md"), "utf8");
-    expect(ov.includes("企业级数据资产平台").toBeTruthy());
-    expect(!ov.includes("占位。\n").toBeTruthy());
+    expect(ov.includes("企业级数据资产平台")).toBeTruthy();
+    expect(!ov.includes("占位。\n")).toBeTruthy();
   });
 
   it("appends to a section body", () => {
@@ -361,7 +361,7 @@ describe("write --type overview", () => {
     ]);
     expect(code).toBe(0);
     const ov = readFileSync(join(PROJECT_KNOWLEDGE, "overview.md"), "utf8");
-    expect(ov.includes("新增一条流程说明").toBeTruthy());
+    expect(ov.includes("新增一条流程说明")).toBeTruthy();
   });
 });
 
@@ -377,11 +377,11 @@ describe("write --type module", () => {
     ]);
     expect(code).toBe(0);
     const obj = JSON.parse(stdout);
-    expect(obj.file.endsWith("modules/data-source.md").toBeTruthy());
+    expect(obj.file.endsWith("modules/data-source.md")).toBeTruthy();
     const content = readFileSync(join(PROJECT_KNOWLEDGE, "modules", "data-source.md"), "utf8");
-    expect(content.startsWith("---\n").toBeTruthy());
-    expect(content.includes("title: 数据源").toBeTruthy());
-    expect(content.includes("正文").toBeTruthy());
+    expect(content.startsWith("---\n")).toBeTruthy();
+    expect(content.includes("title: 数据源")).toBeTruthy();
+    expect(content.includes("正文")).toBeTruthy();
   });
 
   it("refuses to overwrite existing file without --overwrite", () => {
@@ -392,7 +392,7 @@ describe("write --type module", () => {
       "--confidence", "high",
     ]);
     expect(code).not.toBe(0);
-    expect(stderr.includes("File exists").toBeTruthy());
+    expect(stderr.includes("File exists")).toBeTruthy();
   });
 
   it("allows overwrite with --overwrite", () => {
@@ -405,7 +405,7 @@ describe("write --type module", () => {
     ]);
     expect(code).toBe(0);
     const content = readFileSync(join(PROJECT_KNOWLEDGE, "modules", "data-source.md"), "utf8");
-    expect(content.includes("title: 已覆盖").toBeTruthy());
+    expect(content.includes("title: 已覆盖")).toBeTruthy();
   });
 });
 
@@ -421,7 +421,7 @@ describe("write --type pitfall", () => {
     ]);
     expect(code).toBe(0);
     const content = readFileSync(join(PROJECT_KNOWLEDGE, "pitfalls", "dom-drift.md"), "utf8");
-    expect(content.includes("type: pitfall").toBeTruthy());
+    expect(content.includes("type: pitfall")).toBeTruthy();
   });
 });
 
@@ -457,12 +457,12 @@ updated: 2026-04-15
     ]);
     expect(code).toBe(0);
     const content = readFileSync(join(PROJECT_KNOWLEDGE, "modules", "m1.md"), "utf8");
-    expect(content.includes("title: 新标题").toBeTruthy());
-    expect(content.includes("tags: [a, b]").toBeTruthy());
+    expect(content.includes("title: 新标题")).toBeTruthy();
+    expect(content.includes("tags: [a, b]")).toBeTruthy();
     // unchanged fields stay
-    expect(content.includes("source: old").toBeTruthy());
+    expect(content.includes("source: old")).toBeTruthy();
     // body unchanged
-    expect(content.includes("原 body").toBeTruthy());
+    expect(content.includes("原 body")).toBeTruthy();
   });
 
   it("patches body for module type replaces new_body fully", () => {
@@ -477,8 +477,8 @@ updated: 2026-04-15
     ]);
     expect(code).toBe(0);
     const content = readFileSync(join(PROJECT_KNOWLEDGE, "modules", "m1.md"), "utf8");
-    expect(content.includes("更新后的正文").toBeTruthy());
-    expect(!content.includes("原 body").toBeTruthy());
+    expect(content.includes("更新后的正文")).toBeTruthy();
+    expect(!content.includes("原 body")).toBeTruthy();
   });
 
   it("module body_patch with section appends when section missing (preserves body)", () => {
@@ -512,11 +512,11 @@ updated: 2026-04-15
     expect(code).toBe(0);
     const content = readFileSync(join(PROJECT_KNOWLEDGE, "modules", "m1.md"), "utf8");
     // 原内容必须保留
-    expect(content.includes("## 已有章节").toBeTruthy());
-    expect(content.includes("已有内容").toBeTruthy());
+    expect(content.includes("## 已有章节")).toBeTruthy();
+    expect(content.includes("已有内容")).toBeTruthy();
     // 新 section 被追加
-    expect(content.includes("## 新章节").toBeTruthy());
-    expect(content.includes("新增的正文段落").toBeTruthy());
+    expect(content.includes("## 新章节")).toBeTruthy();
+    expect(content.includes("新增的正文段落")).toBeTruthy();
   });
 
   it("module body_patch with existing section replaces only that section", () => {
@@ -553,11 +553,11 @@ B 旧内容
     ]);
     expect(code).toBe(0);
     const content = readFileSync(join(PROJECT_KNOWLEDGE, "modules", "m1.md"), "utf8");
-    expect(content.includes("A 新内容").toBeTruthy());
-    expect(!content.includes("A 旧内容").toBeTruthy());
+    expect(content.includes("A 新内容")).toBeTruthy();
+    expect(!content.includes("A 旧内容")).toBeTruthy();
     // 其他 section 不变
-    expect(content.includes("## 章节B").toBeTruthy());
-    expect(content.includes("B 旧内容").toBeTruthy());
+    expect(content.includes("## 章节B")).toBeTruthy();
+    expect(content.includes("B 旧内容")).toBeTruthy();
   });
 
   it("dry-run does not persist", () => {
@@ -570,7 +570,7 @@ B 旧内容
     const obj = JSON.parse(stdout);
     expect(obj.dry_run).toBe(true);
     const content = readFileSync(join(PROJECT_KNOWLEDGE, "modules", "m1.md"), "utf8");
-    expect(!content.includes("title: XXX").toBeTruthy());
+    expect(!content.includes("title: XXX")).toBeTruthy();
   });
 
   it("exits 1 on missing file", () => {
@@ -601,8 +601,8 @@ describe("write/update auto-triggers index", () => {
     ]);
 
     const idx = readFileSync(idxPath, "utf8");
-    expect(idx.includes("auto-idx.md").toBeTruthy());
-    expect(idx.includes("<!-- last-indexed: ").toBeTruthy());
+    expect(idx.includes("auto-idx.md")).toBeTruthy();
+    expect(idx.includes("<!-- last-indexed: ")).toBeTruthy();
   });
 
   it("after update module, _index.md last-indexed timestamp advances", () => {
@@ -652,8 +652,8 @@ body`,
     const obj = JSON.parse(stdout);
     expect(obj.errors.length >= 2, `expected >= 2 errors. got: ${JSON.stringify(obj.errors).toBeTruthy()}`);
     const rules = obj.errors.map((e: { rule: string }) => e.rule);
-    expect(rules.includes("non-kebab-case-name").toBeTruthy());
-    expect(rules.includes("type-dir-mismatch").toBeTruthy());
+    expect(rules.includes("non-kebab-case-name")).toBeTruthy();
+    expect(rules.includes("type-dir-mismatch")).toBeTruthy();
   });
 
   it("returns exit 2 when only warnings", () => {

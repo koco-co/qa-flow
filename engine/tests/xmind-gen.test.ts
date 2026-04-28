@@ -100,7 +100,7 @@ describe("xmind-gen.ts create mode", () => {
     expect(result.root_title).toBe("数据资产v6.4.10迭代用例(#23)");
     expect(result.l1_title).toBe("质量问题台账");
     expect(result.mode).toBe("create");
-    expect(result.output_path.endsWith("test-stdout.xmind").toBeTruthy());
+    expect(result.output_path.endsWith("test-stdout.xmind")).toBeTruthy();
     // 3 sub_group cases + 1 page-level case (列表页) + 1 page-level case (新增页) = 5
     expect(result.case_count).toBe(5);
   });
@@ -356,7 +356,7 @@ describe("xmind-gen.ts append mode", () => {
 
   it("creates new file if output does not exist in append mode", () => {
     const output = join(TMP_DIR, "test-append-new.xmind");
-    expect(!existsSync(output).toBeTruthy());
+    expect(!existsSync(output)).toBeTruthy();
 
     const { code, stderr } = run([
       "--input",

@@ -124,7 +124,7 @@ describe("configJsonPath", () => {
     delete process.env.CONFIG_JSON_PATH;
     try {
       const p = configJsonPath();
-      expect(p.endsWith("/config.json").toBeTruthy());
+      expect(p.endsWith("/config.json")).toBeTruthy();
       expect(p.startsWith("/").toBeTruthy(), "absolute path");
     } finally {
       if (original !== undefined) process.env.CONFIG_JSON_PATH = original;
@@ -155,7 +155,7 @@ describe("SKELETON_SPEC shape", () => {
   });
 
   it("template_files dst paths are not in gitkeep_dirs' directories of same file", () => {
-    expect(!SKELETON_SPEC.gitkeep_dirs.includes("rules").toBeTruthy());
+    expect(!SKELETON_SPEC.gitkeep_dirs.includes("rules")).toBeTruthy();
   });
 });
 
@@ -163,9 +163,9 @@ describe("resolveSkeletonPaths", () => {
   it("returns absolute paths derived from projectDir", () => {
     const projDir = "/tmp/x/workspace/demoProj";
     const r = resolveSkeletonPaths(projDir);
-    expect(r.dirs.every((d) => d.startsWith(projDir + "/")).toBeTruthy());
-    expect(r.gitkeeps.every((g) => g.endsWith(".gitkeep")).toBeTruthy());
-    expect(r.templates.every((t) => t.dst_abs.startsWith(projDir + "/")).toBeTruthy());
+    expect(r.dirs.every((d) => d.startsWith(projDir + "/"))).toBeTruthy();
+    expect(r.gitkeeps.every((g) => g.endsWith(".gitkeep"))).toBeTruthy();
+    expect(r.templates.every((t) => t.dst_abs.startsWith(projDir + "/"))).toBeTruthy();
   });
 
   it("produces 12 dirs, 10 gitkeeps, 3 templates", () => {

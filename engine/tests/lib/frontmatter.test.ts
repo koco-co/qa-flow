@@ -45,22 +45,22 @@ describe("parseFrontMatter", () => {
   it("parses a string array", () => {
     const content = `---\ntags:\n  - 测试\n  - 自动化\n---\n\n## Body`;
     const { frontMatter } = parseFrontMatter(content);
-    expect(Array.isArray(frontMatter["tags"]).toBeTruthy());
+    expect(Array.isArray(frontMatter["tags"])).toBeTruthy();
     expect(frontMatter["tags"]).toEqual(["测试", "自动化"]);
   });
 
   it("parses an empty array", () => {
     const content = `---\nhealth_warnings: []\n---\n\n## Body`;
     const { frontMatter } = parseFrontMatter(content);
-    expect(Array.isArray(frontMatter["health_warnings"]).toBeTruthy());
+    expect(Array.isArray(frontMatter["health_warnings"])).toBeTruthy();
     expect(frontMatter["health_warnings"]).toEqual([]);
   });
 
   it("extracts body after front-matter block", () => {
     const content = `---\nkey: value\n---\n\n## Section\n\nBody text here.`;
     const { body } = parseFrontMatter(content);
-    expect(body.includes("## Section").toBeTruthy());
-    expect(body.includes("Body text here.").toBeTruthy());
+    expect(body.includes("## Section")).toBeTruthy();
+    expect(body.includes("Body text here.")).toBeTruthy();
   });
 
   it("handles multiple fields of different types", () => {
@@ -96,43 +96,43 @@ describe("parseFrontMatter", () => {
 describe("serializeFrontMatter", () => {
   it("wraps output with --- delimiters", () => {
     const result = serializeFrontMatter({ name: "test" });
-    expect(result.startsWith("---\n").toBeTruthy());
-    expect(result.endsWith("\n---").toBeTruthy());
+    expect(result.startsWith("---\n")).toBeTruthy();
+    expect(result.endsWith("\n---")).toBeTruthy();
   });
 
   it("serializes string values in double quotes", () => {
     const result = serializeFrontMatter({ suite_name: "My Suite" });
-    expect(result.includes('suite_name: "My Suite"').toBeTruthy());
+    expect(result.includes('suite_name: "My Suite"')).toBeTruthy();
   });
 
   it("serializes number values without quotes", () => {
     const result = serializeFrontMatter({ prd_id: 42 });
-    expect(result.includes("prd_id: 42").toBeTruthy());
-    expect(!result.includes('"42"').toBeTruthy());
+    expect(result.includes("prd_id: 42")).toBeTruthy();
+    expect(!result.includes('"42"')).toBeTruthy();
   });
 
   it("serializes boolean values without quotes", () => {
     const result = serializeFrontMatter({ enabled: true, archived: false });
-    expect(result.includes("enabled: true").toBeTruthy());
-    expect(result.includes("archived: false").toBeTruthy());
+    expect(result.includes("enabled: true")).toBeTruthy();
+    expect(result.includes("archived: false")).toBeTruthy();
   });
 
   it("serializes non-empty string arrays with - items", () => {
     const result = serializeFrontMatter({ tags: ["a", "b", "c"] });
-    expect(result.includes("tags:").toBeTruthy());
-    expect(result.includes('  - "a"').toBeTruthy());
-    expect(result.includes('  - "b"').toBeTruthy());
-    expect(result.includes('  - "c"').toBeTruthy());
+    expect(result.includes("tags:")).toBeTruthy();
+    expect(result.includes('  - "a"')).toBeTruthy();
+    expect(result.includes('  - "b"')).toBeTruthy();
+    expect(result.includes('  - "c"')).toBeTruthy();
   });
 
   it("serializes empty arrays as []", () => {
     const result = serializeFrontMatter({ health_warnings: [] });
-    expect(result.includes("health_warnings: []").toBeTruthy());
+    expect(result.includes("health_warnings: []")).toBeTruthy();
   });
 
   it("skips undefined values", () => {
     const result = serializeFrontMatter({ key: "value", missing: undefined });
-    expect(!result.includes("missing").toBeTruthy());
+    expect(!result.includes("missing")).toBeTruthy();
   });
 });
 
@@ -162,10 +162,10 @@ describe("buildMarkdown", () => {
     const fm = { key: "val" };
     const body = "## Section\n\nContent.";
     const result = buildMarkdown(fm, body);
-    expect(result.includes("---").toBeTruthy());
-    expect(result.includes('key: "val"').toBeTruthy());
-    expect(result.includes("## Section").toBeTruthy());
-    expect(result.includes("Content.").toBeTruthy());
+    expect(result.includes("---")).toBeTruthy();
+    expect(result.includes('key: "val"')).toBeTruthy();
+    expect(result.includes("## Section")).toBeTruthy();
+    expect(result.includes("Content.")).toBeTruthy();
   });
 
   it("separates front-matter and body with a blank line", () => {

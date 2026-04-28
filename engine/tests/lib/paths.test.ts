@@ -136,103 +136,103 @@ describe("projectDir", () => {
 
   it("works with different project names", () => {
     const dir = projectDir("xyzh");
-    expect(dir.endsWith("workspace/xyzh").toBeTruthy());
+    expect(dir.endsWith("workspace/xyzh")).toBeTruthy();
   });
 });
 
 describe("projectPath", () => {
   it("joins segments under project dir", () => {
     const p = projectPath("dataAssets", "prds", "202604");
-    expect(p.endsWith("workspace/dataAssets/prds/202604").toBeTruthy());
+    expect(p.endsWith("workspace/dataAssets/prds/202604")).toBeTruthy();
   });
 });
 
 describe("xmindDir", () => {
   it("returns workspace/{project}/xmind", () => {
     const dir = xmindDir("dataAssets");
-    expect(dir.endsWith("workspace/dataAssets/xmind").toBeTruthy());
+    expect(dir.endsWith("workspace/dataAssets/xmind")).toBeTruthy();
   });
 });
 
 describe("xmindPath", () => {
   it("joins segments under xmind dir", () => {
     const p = xmindPath("dataAssets", "202604", "test.xmind");
-    expect(p.endsWith("workspace/dataAssets/xmind/202604/test.xmind").toBeTruthy());
+    expect(p.endsWith("workspace/dataAssets/xmind/202604/test.xmind")).toBeTruthy();
   });
 });
 
 describe("archiveDir", () => {
   it("returns workspace/{project}/archive", () => {
     const dir = archiveDir("dataAssets");
-    expect(dir.endsWith("workspace/dataAssets/archive").toBeTruthy());
+    expect(dir.endsWith("workspace/dataAssets/archive")).toBeTruthy();
   });
 });
 
 describe("prdsDir", () => {
   it("returns workspace/{project}/prds", () => {
     const dir = prdsDir("xyzh");
-    expect(dir.endsWith("workspace/xyzh/prds").toBeTruthy());
+    expect(dir.endsWith("workspace/xyzh/prds")).toBeTruthy();
   });
 });
 
 describe("issuesDir", () => {
   it("returns workspace/{project}/issues", () => {
     const dir = issuesDir("dataAssets");
-    expect(dir.endsWith("workspace/dataAssets/issues").toBeTruthy());
+    expect(dir.endsWith("workspace/dataAssets/issues")).toBeTruthy();
   });
 });
 
 describe("reportsDir", () => {
   it("returns workspace/{project}/reports", () => {
     const dir = reportsDir("dataAssets");
-    expect(dir.endsWith("workspace/dataAssets/reports").toBeTruthy());
+    expect(dir.endsWith("workspace/dataAssets/reports")).toBeTruthy();
   });
 });
 
 describe("testsDir", () => {
   it("returns workspace/{project}/tests", () => {
     const dir = testsDir("dataAssets");
-    expect(dir.endsWith("workspace/dataAssets/tests").toBeTruthy());
+    expect(dir.endsWith("workspace/dataAssets/tests")).toBeTruthy();
   });
 });
 
 describe("reposDir", () => {
   it("returns workspace/{project}/.repos", () => {
     const dir = reposDir("dataAssets");
-    expect(dir.endsWith("workspace/dataAssets/.repos").toBeTruthy());
+    expect(dir.endsWith("workspace/dataAssets/.repos")).toBeTruthy();
   });
 });
 
 describe("tempDir", () => {
   it("returns .kata/{project}", () => {
     const dir = tempDir("xyzh");
-    expect(dir.endsWith(".kata/xyzh").toBeTruthy());
+    expect(dir.endsWith(".kata/xyzh")).toBeTruthy();
   });
 });
 
 describe("probeCacheDir", () => {
   it("returns .kata/{project}/probe-cache", () => {
     const dir = probeCacheDir("dataAssets");
-    expect(dir.endsWith(".kata/dataAssets/probe-cache").toBeTruthy());
+    expect(dir.endsWith(".kata/dataAssets/probe-cache")).toBeTruthy();
   });
 });
 
 describe("probeCachePath", () => {
   it("returns .kata/{project}/probe-cache/{prdSlug}.json", () => {
     const path = probeCachePath("dataAssets", "15695-quality");
-    expect(path.endsWith(".kata/dataAssets/probe-cache/15695-quality.json").toBeTruthy());
+    expect(path.endsWith(".kata/dataAssets/probe-cache/15695-quality.json")).toBeTruthy();
   });
 
   it("preserves slug verbatim including dashes and digits", () => {
     const path = probeCachePath("xyzh", "abc-123-xyz");
-    expect(path.endsWith(".kata/xyzh/probe-cache/abc-123-xyz.json").toBeTruthy());
+    expect(path.endsWith(".kata/xyzh/probe-cache/abc-123-xyz.json")).toBeTruthy();
   });
 });
 
 describe("projectRulesDir", () => {
   it("returns workspace/{project}/rules", () => {
     const dir = projectRulesDir("dataAssets");
-    expect(dir.endsWith("workspace/dataAssets/rules").toBeTruthy());
+    expect(dir.endsWith("workspace/dataAssets/rules")).toBeTruthy();
   });
 });
 
@@ -272,7 +272,7 @@ describe("knowledgePitfallsDir", () => {
 describe("listProjects", () => {
   it("returns an array", () => {
     const projects = listProjects();
-    expect(Array.isArray(projects).toBeTruthy());
+    expect(Array.isArray(projects)).toBeTruthy();
   });
 
   it("does not include dot-prefixed directories", () => {

@@ -53,13 +53,13 @@ describe("buildPhasePlans", () => {
 
     const [parallel, serial] = plans;
     expect(parallel.name).toBe("parallel");
-    expect(parallel.args.includes("--grep-invert=@serial").toBeTruthy());
-    expect(parallel.args.includes("--pass-with-no-tests").toBeTruthy());
+    expect(parallel.args.includes("--grep-invert=@serial")).toBeTruthy();
+    expect(parallel.args.includes("--pass-with-no-tests")).toBeTruthy();
     expect(parallel.envOverrides.PW_FULLY_PARALLEL).toBe("1");
 
     expect(serial.name).toBe("serial");
-    expect(serial.args.includes("--grep=@serial").toBeTruthy());
-    expect(serial.args.includes("--pass-with-no-tests").toBeTruthy());
+    expect(serial.args.includes("--grep=@serial")).toBeTruthy();
+    expect(serial.args.includes("--pass-with-no-tests")).toBeTruthy();
     expect(serial.envOverrides.PW_WORKERS).toBe("1");
     expect(serial.envOverrides.PW_FULLY_PARALLEL).toBe("");
   });

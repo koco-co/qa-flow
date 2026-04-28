@@ -167,7 +167,7 @@ describe("prd-frontmatter normalize (actual write)", () => {
     const { code, stdout } = run(["normalize", "--file", filePath]);
     expect(code).toBe(0);
     const out = JSON.parse(stdout) as { changes: string[] };
-    expect(out.changes.some((c) => c.includes("suite_name")).toBeTruthy());
+    expect(out.changes.some((c) => c.includes("suite_name"))).toBeTruthy();
     const written = readFileSync(filePath, "utf8");
     // Should contain the filename-derived suite_name
     expect(written).toMatch(/商品管理/);

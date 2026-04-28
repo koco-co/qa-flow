@@ -71,7 +71,7 @@ describe("buildRootName with project", () => {
   it("works without project (uses global)", () => {
     const name = buildRootName("v6.4.9");
     expect(name.length > 0).toBeTruthy();
-    expect(name.includes("6.4.9").toBeTruthy());
+    expect(name.includes("6.4.9")).toBeTruthy();
   });
 
   it("returns empty string for undefined version", () => {

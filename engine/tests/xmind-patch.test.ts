@@ -142,7 +142,7 @@ describe("xmind-patch search", () => {
     ]);
     expect(code).toBe(0);
     const results = JSON.parse(stdout) as unknown[];
-    expect(Array.isArray(results).toBeTruthy());
+    expect(Array.isArray(results)).toBeTruthy();
     expect(results.length).toBe(0);
   });
 

@@ -274,7 +274,7 @@ describe("plugin-loader.ts notify", () => {
     expect(code).toBe(0);
     const result = JSON.parse(stdout) as { skipped: boolean; reason: string };
     expect(result.skipped).toBe(true);
-    expect(result.reason.includes("notify plugin not active").toBeTruthy());
+    expect(result.reason.includes("notify plugin not active")).toBeTruthy();
   });
 
   it("returns command when notify plugin is active", () => {

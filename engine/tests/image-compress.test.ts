@@ -128,6 +128,6 @@ describe("image-compress JSON output shape", () => {
     expect("processed" in out).toBeTruthy();
     expect("skipped" in out).toBeTruthy();
     expect("files" in out).toBeTruthy();
-    expect(Array.isArray(out.files).toBeTruthy());
+    expect(Array.isArray(out.files)).toBeTruthy();
   });
 });

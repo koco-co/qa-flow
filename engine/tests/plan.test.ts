@@ -457,11 +457,11 @@ describe("plan.ts render", () => {
     expect(code).toBe(0);
     const result = JSON.parse(stdout);
     expect(result.rendered).toBe(true);
-    expect(result.path.endsWith(".md").toBeTruthy());
+    expect(result.path.endsWith(".md")).toBeTruthy();
 
     const md = readFileSync(result.path, "utf8");
-    expect(md.includes("test-case-gen").toBeTruthy());
-    expect(md.includes("\u2705").toBeTruthy());
+    expect(md.includes("test-case-gen")).toBeTruthy();
+    expect(md.includes("\u2705")).toBeTruthy();
   });
 
   it("exits 1 for nonexistent plan", () => {
@@ -499,8 +499,8 @@ describe("plan.ts list", () => {
     expect(code).toBe(0);
     const plans = JSON.parse(stdout) as Array<{ plan_id: string }>;
     const ids = plans.map((p) => p.plan_id);
-    expect(ids.includes("tcg-list-a").toBeTruthy());
-    expect(ids.includes("uat-list-b").toBeTruthy());
+    expect(ids.includes("tcg-list-a")).toBeTruthy();
+    expect(ids.includes("uat-list-b")).toBeTruthy();
   });
 
   it("filters by workflow type", () => {
@@ -573,12 +573,12 @@ describe("plan.ts MD rendering", () => {
     ]);
 
     const md = readFileSync(planMdPath("dataAssets", planId), "utf8");
-    expect(md.includes("test-case-gen").toBeTruthy());
-    expect(md.includes("dataAssets").toBeTruthy());
-    expect(md.includes("| # | 步骤 | 状态 | 耗时 |").toBeTruthy());
-    expect(md.includes("init").toBeTruthy());
-    expect(md.includes("prd").toBeTruthy());
-    expect(md.includes("\u23F3").toBeTruthy()); // pending emoji
+    expect(md.includes("test-case-gen")).toBeTruthy();
+    expect(md.includes("dataAssets")).toBeTruthy();
+    expect(md.includes("| # | 步骤 | 状态 | 耗时 |")).toBeTruthy();
+    expect(md.includes("init")).toBeTruthy();
+    expect(md.includes("prd")).toBeTruthy();
+    expect(md.includes("\u23F3")).toBeTruthy(); // pending emoji
   });
 
   it("skipped status renders correctly", () => {
@@ -599,6 +599,6 @@ describe("plan.ts MD rendering", () => {
     ]);
 
     const md = readFileSync(planMdPath("dataAssets", planId), "utf8");
-    expect(md.includes("跳过").toBeTruthy());
+    expect(md.includes("跳过")).toBeTruthy();
   });
 });

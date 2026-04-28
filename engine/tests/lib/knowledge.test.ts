@@ -87,10 +87,10 @@ describe("serializeFrontmatter", () => {
       updated: "2026-04-17",
     };
     const out = serializeFrontmatter(fm);
-    expect(out.startsWith("---\n").toBeTruthy());
-    expect(out.includes("title: x").toBeTruthy());
-    expect(out.includes("tags: [y, z]").toBeTruthy());
-    expect(out.endsWith("---\n").toBeTruthy());
+    expect(out.startsWith("---\n")).toBeTruthy();
+    expect(out.includes("title: x")).toBeTruthy();
+    expect(out.includes("tags: [y, z]")).toBeTruthy();
+    expect(out.endsWith("---\n")).toBeTruthy();
 
     const reparsed = parseFrontmatter(out + "\ntail");
     expect(reparsed.frontmatter).toEqual(fm);
@@ -106,8 +106,8 @@ describe("serializeFrontmatter", () => {
       updated: "2026-04-17",
     };
     const out = serializeFrontmatter(fm);
-    expect(out.includes("tags: []").toBeTruthy());
-    expect(out.includes('source: ""').toBeTruthy());
+    expect(out.includes("tags: []")).toBeTruthy();
+    expect(out.includes('source: ""')).toBeTruthy();
   });
 });
 
@@ -180,11 +180,11 @@ describe("renderIndex", () => {
       terms_count: 0,
     };
     const out = renderIndex("dataAssets", data);
-    expect(out.includes("# dataAssets Knowledge Index").toBeTruthy());
-    expect(out.includes("## Core").toBeTruthy());
-    expect(out.includes("## Modules").toBeTruthy());
-    expect(out.includes("## Pitfalls").toBeTruthy());
-    expect(out.includes("<!-- last-indexed: ").toBeTruthy());
+    expect(out.includes("# dataAssets Knowledge Index")).toBeTruthy();
+    expect(out.includes("## Core")).toBeTruthy();
+    expect(out.includes("## Modules")).toBeTruthy();
+    expect(out.includes("## Pitfalls")).toBeTruthy();
+    expect(out.includes("<!-- last-indexed: ")).toBeTruthy();
   });
 
   it("lists module entries sorted by name", () => {
@@ -203,8 +203,8 @@ describe("renderIndex", () => {
     const qIdx = out.indexOf("quality.md");
     expect(dsIdx > 0 && qIdx > 0).toBeTruthy();
     expect(dsIdx < qIdx).toBeTruthy();
-    expect(out.includes("[tags: ds]").toBeTruthy());
-    expect(out.includes("confidence: high").toBeTruthy());
+    expect(out.includes("[tags: ds]")).toBeTruthy();
+    expect(out.includes("confidence: high")).toBeTruthy();
   });
 
   it("lists pitfalls correctly", () => {
@@ -219,7 +219,7 @@ describe("renderIndex", () => {
     };
     const out = renderIndex("p", data);
     expect(out.includes("[ui-drift.md](pitfalls/ui-drift.md).toBeTruthy()"));
-    expect(out.includes("[tags: ui, playwright]").toBeTruthy());
+    expect(out.includes("[tags: ui, playwright]")).toBeTruthy();
   });
 
   it("terms_count appears in Core block", () => {
@@ -231,7 +231,7 @@ describe("renderIndex", () => {
       terms_count: 7,
     };
     const out = renderIndex("p", data);
-    expect(out.includes("术语表（7 条").toBeTruthy());
+    expect(out.includes("术语表（7 条")).toBeTruthy();
   });
 });
 
@@ -246,7 +246,7 @@ describe("searchPitfalls", () => {
     const res = searchPitfalls("DOM", files);
     expect(res.length).toBe(1);
     expect(res[0].name).toBe("ui-dom-drift");
-    expect(res[0].match_by.includes("filename").toBeTruthy());
+    expect(res[0].match_by.includes("filename")).toBeTruthy();
   });
 
   it("matches by tag substring", () => {
@@ -324,12 +324,12 @@ describe("autoFixFrontmatter", () => {
 `;
     const result = autoFixFrontmatter(raw, "/path/workspace/p/knowledge/modules/foo.md", "2026-04-17");
     expect(result.fixed).toBe(true);
-    expect(result.content.startsWith("---\n").toBeTruthy());
-    expect(result.content.includes("title: 某模块标题").toBeTruthy());
-    expect(result.content.includes("type: module").toBeTruthy());
-    expect(result.content.includes("tags: []").toBeTruthy());
-    expect(result.content.includes("confidence: high").toBeTruthy());
-    expect(result.content.includes("updated: 2026-04-17").toBeTruthy());
+    expect(result.content.startsWith("---\n")).toBeTruthy();
+    expect(result.content.includes("title: 某模块标题")).toBeTruthy();
+    expect(result.content.includes("type: module")).toBeTruthy();
+    expect(result.content.includes("tags: []")).toBeTruthy();
+    expect(result.content.includes("confidence: high")).toBeTruthy();
+    expect(result.content.includes("updated: 2026-04-17")).toBeTruthy();
   });
 
   it("does not modify file that already has frontmatter", () => {
@@ -352,28 +352,28 @@ body`;
     const raw = "# 坑标题\n正文\n";
     const result = autoFixFrontmatter(raw, "/w/p/knowledge/pitfalls/bad.md", "2026-04-17");
     expect(result.fixed).toBe(true);
-    expect(result.content.includes("type: pitfall").toBeTruthy());
+    expect(result.content.includes("type: pitfall")).toBeTruthy();
   });
 
   it("infers type=overview for overview.md", () => {
     const raw = "# X 业务概览\n\n正文\n";
     const result = autoFixFrontmatter(raw, "/w/p/knowledge/overview.md", "2026-04-17");
     expect(result.fixed).toBe(true);
-    expect(result.content.includes("type: overview").toBeTruthy());
+    expect(result.content.includes("type: overview")).toBeTruthy();
   });
 
   it("infers type=term for terms.md", () => {
     const raw = "# 术语表\n\n| 术语 | 中文 |\n";
     const result = autoFixFrontmatter(raw, "/w/p/knowledge/terms.md", "2026-04-17");
     expect(result.fixed).toBe(true);
-    expect(result.content.includes("type: term").toBeTruthy());
+    expect(result.content.includes("type: term")).toBeTruthy();
   });
 
   it("falls back to filename when no H1 present", () => {
     const raw = "没有 H1 的正文\n";
     const result = autoFixFrontmatter(raw, "/w/p/knowledge/modules/my-module.md", "2026-04-17");
     expect(result.fixed).toBe(true);
-    expect(result.content.includes("title: my-module").toBeTruthy());
+    expect(result.content.includes("title: my-module")).toBeTruthy();
   });
 });
 

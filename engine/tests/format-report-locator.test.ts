@@ -64,7 +64,7 @@ describe("format-report-locator.ts locate — maps issues to line numbers", () =
     };
     expect(result.total_issues).toBe(8);
     expect(result.located > 0).toBeTruthy();
-    expect(result.output_path.endsWith("enriched-report.json").toBeTruthy());
+    expect(result.output_path.endsWith("enriched-report.json")).toBeTruthy();
   });
 
   it("enriched JSON contains line numbers for located issues", () => {

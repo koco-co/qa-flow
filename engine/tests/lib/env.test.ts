@@ -116,7 +116,7 @@ describe("getEnvOrThrow", () => {
   it("throws if key is not set", async () => {
     const { getEnvOrThrow } = await import("../../src/lib/env.ts");
     expect(() => getEnvOrThrow("__DEFINITELY_NOT_SET_KEY_THROW_TEST__")).toThrow((err: Error) => {
-        expect(err.message.includes("__DEFINITELY_NOT_SET_KEY_THROW_TEST__").toBeTruthy());
+        expect(err.message.includes("__DEFINITELY_NOT_SET_KEY_THROW_TEST__")).toBeTruthy();
         return true;
       });
   });
