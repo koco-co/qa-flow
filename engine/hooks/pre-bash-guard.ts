@@ -14,8 +14,10 @@ if (!command) process.exit(0);
 
 type Pattern = { regex: RegExp; reason: string };
 const PATTERNS: Pattern[] = [
-  { regex: /\brm\s+-rf?\s+workspace\b/, reason: "rm -rf workspace/ would destroy all features" },
-  { regex: /\brm\s+-rf?\s+\//, reason: "rm -rf / variant detected" },
+  // 仅根目录 workspace（带可选尾斜线 + 终止符），不拦截子目录
+  { regex: /(?<!["'`])\brm\s+-rf?\s+workspace\/?(?:\s|$|;|&|\|)/, reason: "rm -rf workspace/ would destroy all features (use rm -rf workspace/{project}/{subdir} instead)" },
+  // 仅孤立的 rm -rf /（终止符 / 行尾），不拦截 /tmp/ /home/ 或 echo 字符串内的
+  { regex: /(?<!["'`])\brm\s+-rf?\s+\/(?:\s|$|;|&|\|)/, reason: "rm -rf / variant detected" },
   { regex: /\.repos\/.*git\s+push|git\s+push.*\.repos\//, reason: ".repos/ is read-only — never push" },
 ];
 
