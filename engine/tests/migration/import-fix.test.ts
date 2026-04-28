@@ -43,7 +43,7 @@ test("rewriteSharedImports: leaves unrelated relative imports alone", () => {
   cpSync(fxRoot, tmp, { recursive: true });
   try {
     rewriteSharedImports(join(tmp, "feature-1/tests"));
-    const full = readFileSync(join(tmp, "feature-1/tests/full.spec.ts"), "utf8");
+    const full = readFileSync(join(tmp, "feature-1/tests/full-spec-content.ts"), "utf8");
     expect(full).toContain('import "./t1.ts"'); // ./tN.ts imports unchanged
     expect(full).toContain('import "./t2.ts"');
   } finally {
