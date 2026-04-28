@@ -37,4 +37,9 @@ describe("transformNodeTestToBunTest", () => {
     const [b, a] = pair("comprehensive");
     expect(transformNodeTestToBunTest(b)).toBe(a);
   });
+
+  it("handles edge cases — backtick msg, nested calls, multi-line, regex", () => {
+    const [b, a] = pair("edge-cases");
+    expect(transformNodeTestToBunTest(b)).toBe(a);
+  });
 });
