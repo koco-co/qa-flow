@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "timestamp": "2026-04-28T02:49:08.044Z",
+  "project": "xyzh",
+  "mode": "real",
+  "features": [],
+  "skipped": [],
+  "operations": [
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-20260408-数据目录管理-管理域目录管理新增功能"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-20260410-数据货架管理-数据集管理, 数据货架管理-API管理, 数据货架-数据集资源, 数据货架-API资源"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0111版本】数据标准"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0111版本】数据目录"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0111版本】数据货架-数据目录管理【需求变更】"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0111版本】数据质量"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0127版本】数据目录管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0127版本】流程中心"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0208版本】数据目录管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0208版本】流程中心"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0305版本】数据目录发布"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0305版本】数据目录管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0305版本】流程中心"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据安全-安全问题台账"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据目录-数据目录台账"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据货架管理-拓展属性管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据货架管理-数据集管理&数据货架-数据集"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据质量-质量问题台账"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【1223版本】数据货架-指标资源"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-数据货架-数据集"
+    },
+    {
+      "type": "log",
+      "message": "── feature migrations ──"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0111版本】数据标准"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0111版本】数据标准.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0111版本】数据标准/archive.md",
+      "checksumBefore": "e73e86b8891ea3f79e316509c4f619782a860a43e268570d6c4d9de153bc32e5"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0111版本】数据目录"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0111版本】数据目录.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0111版本】数据目录/archive.md",
+      "checksumBefore": "c05de730f1a1b0897a453273e0f947204eb3c03d30d9871437efb76b8df0c5cc"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0111版本】数据货架-数据目录管理【需求变更】"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0111版本】数据货架-数据目录管理【需求变更】.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0111版本】数据货架-数据目录管理【需求变更】/archive.md",
+      "checksumBefore": "2d27af7f08c800d219cd28c64971aa08d30de2b925495b270144436ab78588ba"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0111版本】数据质量"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0111版本】数据质量.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0111版本】数据质量/archive.md",
+      "checksumBefore": "024f076a16e4a6e6ed9f76c22b284997a403d089fb7e4c25fdeb6ff1d4aadf96"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0127版本】数据目录管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0127版本】数据目录管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0127版本】数据目录管理/archive.md",
+      "checksumBefore": "26b503397d837a2a20842e2b5640a6a6296ce1debc1334a6af926606aef2c27e"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0127版本】流程中心"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0127版本】流程中心.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0127版本】流程中心/archive.md",
+      "checksumBefore": "1bd510f05c1ad5d7e32eae67b584856bc2b6895abc4e44e099ad185bbea64d01"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0208版本】数据目录管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0208版本】数据目录管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0208版本】数据目录管理/archive.md",
+      "checksumBefore": "7e657b215bd339b88bd065ee10207142808a4415a58c557fa9a73967e2b62ed3"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0208版本】流程中心"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0208版本】流程中心.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0208版本】流程中心/archive.md",
+      "checksumBefore": "49de251748d60960ba1bfc44daf069fbfa880b5799071adad282dfe791e5f208"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0305版本】数据目录发布"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0305版本】数据目录发布.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0305版本】数据目录发布/archive.md",
+      "checksumBefore": "c0a8e136827e73365ad9e5c2e81b9c0111725f6100d2b58bfccce707d71b4e47"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0305版本】数据目录管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0305版本】数据目录管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0305版本】数据目录管理/archive.md",
+      "checksumBefore": "9dad18b7fb5117ee9e575635532e952a8f987c89590f4884e62d8422776c8aac"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0305版本】流程中心"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0305版本】流程中心.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0305版本】流程中心/archive.md",
+      "checksumBefore": "6ab2b687fdfe11a8143a3e0f94704434f6b4cbbfb535a4ef01ada60f63767dd3"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0322版本】数据安全-安全问题台账"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0322版本】数据安全-安全问题台账.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据安全-安全问题台账/archive.md",
+      "checksumBefore": "7be37b979b0eb9d6dd608e2b6a4c5fdcd9d5ea41abf4c7c927ee004f6ec4a92a"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0322版本】数据目录-数据目录台账"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0322版本】数据目录-数据目录台账.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据目录-数据目录台账/archive.md",
+      "checksumBefore": "ccb5686fed9cbf0638e27eac32483b4b5e94fdeba0236db589eac71014b9ec07"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0322版本】数据货架管理-拓展属性管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0322版本】数据货架管理-拓展属性管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据货架管理-拓展属性管理/archive.md",
+      "checksumBefore": "96689e2c88973d02df610c22bd0269bc0aa40d44cef91c35f92960397641e5da"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0322版本】数据货架管理-数据集管理&数据货架-数据集"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0322版本】数据货架管理-数据集管理&数据货架-数据集.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据货架管理-数据集管理&数据货架-数据集/archive.md",
+      "checksumBefore": "202ceba1158e4136fe9457e4c884154de7e85d209345491eb3305f806f9510a8"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【0322版本】数据质量-质量问题台账"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【0322版本】数据质量-质量问题台账.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【0322版本】数据质量-质量问题台账/archive.md",
+      "checksumBefore": "d86476cc7ebc77111d0089191b94c83c5b75a0cb61893f3671d1716c91a17330"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【1223版本】数据货架-指标资源"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/【1223版本】数据货架-指标资源.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-【1223版本】数据货架-指标资源/archive.md",
+      "checksumBefore": "95737aa9c0eed656f70a64c9f6a69f8d801fa8ba50782fe78fa58f49669e133a"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-20260408-数据目录管理-管理域目录管理新增功能"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/20260408-数据目录管理-管理域目录管理新增功能.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-20260408-数据目录管理-管理域目录管理新增功能/archive.md",
+      "checksumBefore": "ee4eca7c57aedc54cdefe7788437317ef20e9ef275081a2943c7e2f22ca1dfc7"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-20260410-数据货架管理-数据集管理, 数据货架管理-API管理, 数据货架-数据集资源, 数据货架-API资源"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/20260410-数据货架管理-数据集管理, 数据货架管理-API管理, 数据货架-数据集资源, 数据货架-API资源.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-20260410-数据货架管理-数据集管理, 数据货架管理-API管理, 数据货架-数据集资源, 数据货架-API资源/archive.md",
+      "checksumBefore": "b971094d2ec8067e18aa5e64f280a3da3f8a659909af742a17890e2e53682a77"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/xmind/202604/20260410-数据货架管理-数据集管理, 数据货架管理-API管理, 数据货架-数据集资源, 数据货架-API资源.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-20260410-数据货架管理-数据集管理, 数据货架管理-API管理, 数据货架-数据集资源, 数据货架-API资源/cases.xmind",
+      "checksumBefore": "bbce553fb44969afefdb0d29e9d4aed0359a61595c905b2ea0d8746499b514ea"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-数据货架-数据集"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/xyzh/archive/202604/数据货架-数据集.md",
+      "dst": "/Users/poco/Projects/kata/workspace/xyzh/features/202604-数据货架-数据集/archive.md",
+      "checksumBefore": "03aab9c859968ebe062926087fe7aa599bcd9ad7babdf3b86ea4deffac722c57"
+    }
+  ],
+  "warnings": []
+}
