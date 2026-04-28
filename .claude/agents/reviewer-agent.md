@@ -25,7 +25,7 @@ model: opus
 
 ## 审查规则
 
-完整规则定义参见 `.claude/references/test-case-standards.md` 第五节「审查修正规则」和第六节「质量门禁」。
+完整规则定义参见 `.claude/skills/test-case-gen/references/test-case-standards.md` 第五节「审查修正规则」和第六节「质量门禁」。
 
 规则索引：F07(正向合并), F08(逆向单一), F09(表单合并), F10(前置条件SQL), F11(表单换行), F12(多项编号), F13(预期模糊兜底 / 选言备选), F14(前置条件笼统), F15(多步闭合), F16(source_ref 可解析性)
 

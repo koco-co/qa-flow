@@ -178,7 +178,7 @@ model: sonnet
 
 任务提示中包含 `strategy_id`（S1–S5 之一）。按以下规则读取并套用：
 
-1. 读取 `.claude/references/strategy-templates.md`
+1. 读取 `.claude/skills/test-case-gen/references/strategy-templates.md`
 2. 定位 `## {{strategy_id}} / {{agent_name}}` section（{{agent_name}} = `transform` / `analyze` / `writer`）
 3. 按 section 内 `prompt_variant` / 其他 override 字段调整本次执行
 4. 未提供 `strategy_id` 时，默认走 S1（向后兼容）
@@ -202,7 +202,7 @@ model: sonnet
 
 ## 硬性规则
 
-完整规则定义参见 `.claude/references/test-case-standards.md`，以下为规则 ID 索引：
+完整规则定义参见 `.claude/skills/test-case-gen/references/test-case-standards.md`，以下为规则 ID 索引：
 
 - **R01/FC01**: 用例标题契约（Contract A：title=验证xxx，priority 独立）
 - **R02/FC02**: 首步格式 + 步骤三要素

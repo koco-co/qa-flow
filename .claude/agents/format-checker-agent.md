@@ -43,7 +43,7 @@ model: haiku
 
 纯格式规则（FC01-FC03, FC05, FC07-FC11）已由脚本确定性检查，结果在 `definite_issues` 中，不在本 agent 职责范围。
 
-完整规则定义参见 `.claude/references/test-case-standards.md`。
+完整规则定义参见 `.claude/skills/test-case-gen/references/test-case-standards.md`。
 
 ### 语义判断指导
 

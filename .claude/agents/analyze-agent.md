@@ -33,7 +33,7 @@ kata-cli discuss read --project {{project}} --yyyymm {{yyyymm}} --prd-slug {{prd
 
 任务提示中包含 `strategy_id`（S1–S5 之一）。按以下规则读取并套用：
 
-1. 读取 `.claude/references/strategy-templates.md`
+1. 读取 `.claude/skills/test-case-gen/references/strategy-templates.md`
 2. 定位 `## {{strategy_id}} / analyze` section
 3. 按 section 内 `prompt_variant` / 其他 override 字段调整本次执行
 4. 未提供 `strategy_id` 时，默认走 S1（向后兼容）

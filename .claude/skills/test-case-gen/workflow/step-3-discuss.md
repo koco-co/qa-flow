@@ -307,7 +307,7 @@ strategy_id: {{resolution.strategy_id}}
 
 （若 probe 节点返回空 resolution，默认 S1）
 
-subagent 按 `.claude/references/strategy-templates.md` 对应 section 调整行为。
+subagent 按 `.claude/skills/test-case-gen/references/strategy-templates.md` 对应 section 调整行为。
 
 ---
 

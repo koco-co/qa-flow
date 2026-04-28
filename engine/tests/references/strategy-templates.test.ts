@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "../../..");
-const templatesPath = resolve(repoRoot, ".claude/references/strategy-templates.md");
+const templatesPath = resolve(repoRoot, ".claude/skills/test-case-gen/references/strategy-templates.md");
 
 describe("strategy-templates.md", () => {
   const content = readFileSync(templatesPath, "utf8");
@@ -28,7 +28,7 @@ describe("strategy-templates.md", () => {
 
 describe("strategy-schema.json", () => {
   test("is valid JSON and exposes required definitions", () => {
-    const schemaPath = resolve(repoRoot, ".claude/references/strategy-schema.json");
+    const schemaPath = resolve(repoRoot, ".claude/skills/test-case-gen/references/strategy-schema.json");
     const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
     expect(schema.definitions).toBeDefined();
     expect(schema.definitions.SignalProfile).toBeDefined();

@@ -166,7 +166,7 @@ echo "$APPENDIX_A_JSON" > "$CACHE_FILE"
 
 ## 策略模板
 
-任务提示中包含 `strategy_id`（S1–S5）。读取 `.claude/references/strategy-templates.md` 定位 `## {{strategy_id}} / source-facts` section 套用（无匹配则默认 S1）。
+任务提示中包含 `strategy_id`（S1–S5）。读取 `.claude/skills/test-case-gen/references/strategy-templates.md` 定位 `## {{strategy_id}} / source-facts` section 套用（无匹配则默认 S1）。
 
 strategy_id === "S5" 时：`source-facts-agent` 立即停止并 stderr 输出 `[source-facts] blocked by S5`（无源码参考，且 PRD 也不完整，讨论无意义）。
 

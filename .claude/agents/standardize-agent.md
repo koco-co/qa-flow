@@ -36,7 +36,7 @@ model: sonnet
 
 同时读取：
 
-- `.claude/references/test-case-standards.md` — 用例编写规范（权威来源）
+- `.claude/skills/test-case-gen/references/test-case-standards.md` — 用例编写规范（权威来源）
 - `.claude/skills/test-case-gen/references/intermediate-format.md` — 中间 JSON 格式规范
 
 ## 步骤
