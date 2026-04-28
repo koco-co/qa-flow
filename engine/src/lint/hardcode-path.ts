@@ -9,9 +9,21 @@ interface RuleDef {
 }
 
 const RULES: RuleDef[] = [
-  { id: "E1-PATH", regex: /["']\/Users\/[^"']+["']/g, message: "hardcoded absolute /Users/ path — use join(import.meta.dirname, ...) or env var" },
-  { id: "E1-PATH", regex: /["']\/home\/[^"']+["']/g, message: "hardcoded absolute /home/ path — use env var" },
-  { id: "E1-PATH", regex: /["']\/private\/tmp\/[^"']+["']/g, message: "hardcoded absolute /private/tmp/ path — use os.tmpdir() or env var" },
+  {
+    id: "E1-PATH",
+    regex: /["']\/Users\/[^"']+["']/g,
+    message: "hardcoded absolute /Users/ path — use join(import.meta.dirname, ...) or env var",
+  },
+  {
+    id: "E1-PATH",
+    regex: /["']\/home\/[^"']+["']/g,
+    message: "hardcoded absolute /home/ path — use env var",
+  },
+  {
+    id: "E1-PATH",
+    regex: /["']\/private\/tmp\/[^"']+["']/g,
+    message: "hardcoded absolute /private/tmp/ path — use os.tmpdir() or env var",
+  },
 ];
 
 const SUFFIXES = [".ts", ".tsx", ".js", ".json", ".yaml", ".yml", ".md"];
@@ -25,11 +37,13 @@ function walk(dir: string, out: string[]): void {
     }
     if (!st.isDirectory()) return;
     // Skip generated/report directories to avoid noise
-    if (dir.includes("/reports/") || dir.includes("/.temp/") || dir.includes("/archive/")) return;
+    if (dir.includes("/reports/") || dir.includes("/.temp/")) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       walk(join(dir, entry.name), out);
     }
-  } catch { /* skip */ }
+  } catch {
+    /* skip */
+  }
 }
 
 export function lintHardcodePath(scanPath: string): CaseLintReport {
@@ -44,7 +58,14 @@ export function lintHardcodePath(scanPath: string): CaseLintReport {
         rule.regex.lastIndex = 0;
         const m = rule.regex.exec(line);
         if (m) {
-          violations.push({ rule: rule.id, file, lineNumber: i + 1, matched: m[0], severity: "warn", message: rule.message });
+          violations.push({
+            rule: rule.id,
+            file,
+            lineNumber: i + 1,
+            matched: m[0],
+            severity: "warn",
+            message: rule.message,
+          });
         }
       }
     }
