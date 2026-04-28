@@ -27,14 +27,6 @@ const EXCLUDED_PATH_FRAGMENTS = [
   "/workspace/",
   // engine test fixture data (v2 paths as test input for backward-compat migration logic)
   "engine/tests/fixtures/",
-  "engine/tests/lib/paths.test.ts",
-  "engine/tests/lib/progress-migrator.test.ts",
-  "engine/tests/lib/progress-store.test.ts",
-  "engine/tests/lib/signal-probe.test.ts",
-  "engine/tests/plan.test.ts",
-  "engine/tests/progress.test.ts",
-  "engine/tests/run-tests-notify.test.ts",
-  "engine/tests/search-filter.test.ts",
   // plugins test files — reference v2 paths as input data
   "plugins/",
   // old refactor log files
