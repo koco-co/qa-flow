@@ -1,4 +1,4 @@
-import { describe, it, after, expect } from "bun:test";
+import { describe, it, afterEach, expect } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -56,7 +56,7 @@ describe("kata-cli source-ref resolve --prd-slug + --yyyymm (enhanced scheme)", 
       ],
       { encoding: "utf8" },
     );
-    expect(r.status).toBe(0, `stderr=${r.stderr}\nstdout=${r.stdout}`);
+    expect(r.status).toBe(0);
     expect(r.stdout + r.stderr).toMatch(/"ok":\s*true/);
   });
 
@@ -79,7 +79,7 @@ describe("kata-cli source-ref resolve --prd-slug + --yyyymm (enhanced scheme)", 
       ],
       { encoding: "utf8" },
     );
-    expect(r.status).toBe(0, `stderr=${r.stderr}\nstdout=${r.stdout}`);
+    expect(r.status).toBe(0);
   });
 
   it("resolve fails when --prd-slug or --yyyymm omitted (no enhancedDocPath built)", () => {
@@ -129,5 +129,5 @@ describe("kata-cli source-ref resolve --prd-slug + --yyyymm (enhanced scheme)", 
     expect(r.stdout + r.stderr).toMatch(/"total":\s*2/);
   });
 
-  after(() => rmSync(tmp, { recursive: true, force: true }));
+  afterEach(() => rmSync(tmp, { recursive: true, force: true }));
 });

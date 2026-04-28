@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const TMP_DIR = join(tmpdir(), `kata-prd-frontmatter-test-${process.pid}`);
@@ -34,11 +34,11 @@ function writeMd(name: string, content: string): string {
   return filePath;
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -94,8 +94,7 @@ describe("prd-frontmatter normalize --dry-run", () => {
     ]);
     expect(code).toBe(0);
     const out = JSON.parse(stdout) as { changes: string[] };
-    expect(
-      out.changes.some((c).toBeTruthy() => c.includes("create_at")),
+    expect(out.changes.some((c) => c.includes("create_at")).toBeTruthy(),
       "should report added create_at",
     );
   });
@@ -113,8 +112,7 @@ describe("prd-frontmatter normalize --dry-run", () => {
     ]);
     expect(code).toBe(0);
     const out = JSON.parse(stdout) as { changes: string[] };
-    expect(
-      out.changes.some((c).toBeTruthy() => c.includes("status")),
+    expect(out.changes.some((c) => c.includes("status")).toBeTruthy(),
       "should report added status",
     );
   });
@@ -132,8 +130,7 @@ describe("prd-frontmatter normalize (actual write)", () => {
 
     const out = JSON.parse(stdout) as { changes: string[]; dry_run: boolean };
     expect(out.dry_run).toBe(false);
-    expect(
-      out.changes.some((c).toBeTruthy() => c.includes("status")),
+    expect(out.changes.some((c) => c.includes("status")).toBeTruthy(),
       "should normalize status",
     );
 
@@ -154,10 +151,9 @@ describe("prd-frontmatter normalize (actual write)", () => {
         `---\nsuite_name: "Test"\ncreate_at: "2026-01-01"\nstatus: "${input}"\n---\n\n## Body\n`,
       );
       const { code, stdout } = run(["normalize", "--file", filePath]);
-      expect(code).toBe(0, `should succeed for status="${input}"`);
+      expect(code).toBe(0);
       const out = JSON.parse(stdout) as { changes: string[] };
-      expect(
-        out.changes.some((c).toBeTruthy() => c.includes(expected)),
+      expect(out.changes.some((c) => c.includes(expected)).toBeTruthy(),
         `should normalize "${input}" to "${expected}"`,
       );
     }
@@ -171,7 +167,7 @@ describe("prd-frontmatter normalize (actual write)", () => {
     const { code, stdout } = run(["normalize", "--file", filePath]);
     expect(code).toBe(0);
     const out = JSON.parse(stdout) as { changes: string[] };
-    expect(out.changes.some((c).toBeTruthy() => c.includes("suite_name")));
+    expect(out.changes.some((c) => c.includes("suite_name")).toBeTruthy());
     const written = readFileSync(filePath, "utf8");
     // Should contain the filename-derived suite_name
     expect(written).toMatch(/商品管理/);

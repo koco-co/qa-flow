@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const FIXTURE_REPORT = join(
@@ -33,11 +33,11 @@ function run(args: string[]): { stdout: string; stderr: string; code: number } {
   }
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -54,7 +54,7 @@ describe("format-report-locator.ts locate — maps issues to line numbers", () =
       "--archive", FIXTURE_ARCHIVE,
       "--output", outputPath,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       total_issues: number;

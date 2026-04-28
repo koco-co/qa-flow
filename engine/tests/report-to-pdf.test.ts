@@ -149,14 +149,12 @@ after(() => {
 describe("extractStepLabel", () => {
   it("strips emoji prefix from step name", () => {
     expect(
-      extractStepLabel("✅ 步骤-1 进入页面 预期-1 正常打开")).toBe("步骤-1 进入页面 预期-1 正常打开",
-    );
+      extractStepLabel("✅ 步骤-1 进入页面 预期-1 正常打开")).toBe("步骤-1 进入页面 预期-1 正常打开");
   });
 
   it("strips cross-mark emoji prefix", () => {
     expect(
-      extractStepLabel("❌ 步骤-2 查看菜单 预期-2 名称已修改")).toBe("步骤-2 查看菜单 预期-2 名称已修改",
-    );
+      extractStepLabel("❌ 步骤-2 查看菜单 预期-2 名称已修改")).toBe("步骤-2 查看菜单 预期-2 名称已修改");
   });
 
   it("handles names without emoji prefix", () => {
@@ -169,8 +167,7 @@ describe("extractStepLabel", () => {
 
   it("preserves Chinese brackets", () => {
     expect(
-      extractStepLabel("【P0】验证功能")).toBe("【P0】验证功能",
-    );
+      extractStepLabel("【P0】验证功能")).toBe("【P0】验证功能");
   });
 });
 
@@ -261,7 +258,7 @@ describe("report-to-pdf with minimal report", () => {
   it("generates PDF from JSON report data", () => {
     const jsonPath = createMinimalReportJson(join(TMP_DIR, "pdf-gen"));
     const { stdout, code } = run([jsonPath]);
-    expect(code).toBe(0, `Expected exit code 0, got ${code}`);
+    expect(code).toBe(0);
     expect(stdout).toMatch(/PDF saved/);
 
     const expectedPdf = jsonPath.replace(/\.json$/, ".pdf");

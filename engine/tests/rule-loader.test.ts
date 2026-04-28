@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, describe, it, expect } from "bun:test";
+import { afterEach, describe, it, expect } from "bun:test";
 
 const TMP_DIR = join(tmpdir(), `kata-rule-loader-test-${process.pid}`);
 const GLOBAL_RULES_DIR = join(TMP_DIR, "global-rules");
@@ -49,7 +49,7 @@ function writeProjectRule(project: string, filename: string, content: string): v
   writeFileSync(join(dir, filename), content, "utf8");
 }
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -70,7 +70,7 @@ describe("rule-loader.ts load — project overrides global", () => {
     );
 
     const { stdout, code } = runLoader(["load", "--project", "myProject"]);
-    expect(code).toBe(0, `expected exit 0, got stderr: ${stdout}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as Record<string, Record<string, string>>;
     expect("case-writing" in result).toBeTruthy();
@@ -88,7 +88,7 @@ describe("rule-loader.ts load — falls back to global when no project rules", (
     // no project rules for this project
 
     const { stdout, code } = runLoader(["load", "--project", "emptyProject"]);
-    expect(code).toBe(0, `expected exit 0`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as Record<string, Record<string, string>>;
     expect("xmind-structure" in result).toBeTruthy();
@@ -102,7 +102,7 @@ describe("rule-loader.ts load — empty when no rule files exist", () => {
     const { stdout, code } = runLoader(["load", "--project", "ghostProject"], {
       QA_RULES_DIR: join(TMP_DIR, "nonexistent-global"),
     });
-    expect(code).toBe(0, `expected exit 0`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as Record<string, unknown>;
     expect(result).toEqual({});

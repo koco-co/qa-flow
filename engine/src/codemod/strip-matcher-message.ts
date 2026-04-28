@@ -8,6 +8,27 @@
  * silently fail or throw. This codemod normalizes them to single-arg form.
  */
 
+/**
+ * Regex-aware balanced-paren matcher: skips string literals (" ' `) and
+ * regex literals (/pattern/) to avoid mis-counting parens inside them.
+ */
+function skipRegexLiteral(input: string, i: number): number {
+  // i points to the opening `/`; skip to closing `/` accounting for \/
+  let j = i + 1;
+  while (j < input.length) {
+    if (input[j] === "\\") {
+      j += 2;
+      continue;
+    }
+    if (input[j] === "/") break;
+    j++;
+  }
+  // skip past closing / and any flags
+  j++; // past closing /
+  while (j < input.length && /[gimsuydv]/.test(input[j]!)) j++;
+  return j;
+}
+
 export function matchCloseParen(input: string, startIdx: number): number {
   let depth = 1;
   let i = startIdx;
@@ -21,6 +42,10 @@ export function matchCloseParen(input: string, startIdx: number): number {
         i++;
       }
       i++;
+      continue;
+    }
+    if (ch === "/" && isRegexStart(input, i)) {
+      i = skipRegexLiteral(input, i);
       continue;
     }
     if (ch === "(") depth++;
@@ -47,6 +72,10 @@ export function splitArgs(content: string): string[] {
       i++;
       continue;
     }
+    if (ch === "/" && isRegexStart(content, i)) {
+      i = skipRegexLiteral(content, i);
+      continue;
+    }
     if (ch === "(" || ch === "{" || ch === "[") depth++;
     else if (ch === ")" || ch === "}" || ch === "]") depth--;
     else if (ch === "," && depth === 0) {
@@ -57,6 +86,15 @@ export function splitArgs(content: string): string[] {
   }
   args.push(content.slice(start).trim());
   return args;
+}
+
+/** Heuristic: a `/` after `(`, `,`, `=`, `!`, or at start of content is a regex literal. */
+function isRegexStart(input: string, i: number): boolean {
+  if (i === 0) return true;
+  const prev = input[i - 1]!;
+  return (
+    prev === "(" || prev === "," || prev === "=" || prev === "!" || prev === "&" || prev === "|"
+  );
 }
 
 export function stripMatcherMessage(source: string): string {

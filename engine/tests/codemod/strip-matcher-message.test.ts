@@ -29,4 +29,8 @@ describe("stripMatcherMessage", () => {
     const [b, a] = pair("toMatch");
     expect(stripMatcherMessage(b)).toBe(a);
   });
+  it("preserves regex literals with comma", () => {
+    const [b, a] = pair("regex");
+    expect(stripMatcherMessage(b)).toBe(a);
+  });
 });
