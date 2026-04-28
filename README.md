@@ -496,15 +496,14 @@ kata/
 │   └── notify/                   # IM 通知插件
 ├── workspace/                    # 多项目工作区（按项目隔离）
 │   ├── dataAssets/
-│   │   ├── prds/                 # PRD / Story 文档
-│   │   ├── xmind/                # XMind 输出（YYYYMM/）
-│   │   ├── archive/              # 归档 Markdown（YYYYMM/）
+│   │   ├── features/{ym}-{slug}/ # PRD / XMind / Archive 按 feature 聚合
 │   │   ├── issues/               # 线上问题用例
 │   │   ├── history/              # 历史 CSV / XMind 原始资料
 │   │   ├── reports/              # Bug / 冲突 / Playwright 报告
 │   │   ├── tests/                # Playwright 生成脚本
 │   │   ├── rules/               # 项目级规则（覆盖全局）
 │   │   ├── knowledge/           # 项目级业务知识库
+│   │   ├── shared/               # 项目级共享资源
 │   │   ├── .repos/               # 源码仓库（只读）
 │   │   └── .temp/                # 临时状态与 UI blocks
 │   └── xyzh/

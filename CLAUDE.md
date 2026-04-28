@@ -4,20 +4,20 @@
 
 ## 命令索引
 
-| 命令             | 功能                                       |
-| ---------------- | ------------------------------------------ |
-| `/using-kata`    | 功能菜单 + 项目创建                        |
-| `/test-case-gen` | 生成测试用例（PRD → 用例）                  |
-| `/case-format`   | XMind 编辑 / XMind↔Archive 同步 / 格式转换  |
-| `/daily-task`    | bug / conflict / hotfix 三模式             |
+| 命令             | 功能                                                                            |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `/using-kata`    | 功能菜单 + 项目创建                                                             |
+| `/test-case-gen` | 生成测试用例（PRD → 用例）                                                      |
+| `/case-format`   | XMind 编辑 / XMind↔Archive 同步 / 格式转换                                      |
+| `/daily-task`    | bug / conflict / hotfix 三模式                                                  |
 | `dtstack-cli`    | 平台前置条件 CLI（SQL/项目/资产同步），用法见 `tools/dtstack-sdk/docs/usage.md` |
-| `/ui-autotest`   | UI 自动化测试                              |
+| `/ui-autotest`   | UI 自动化测试                                                                   |
 
 ## 工作区布局
 
 `workspace/{project}/` 每项目独立组织，子目录：
 
-- `prds/` `xmind/` `archive/` — PRD、XMind、Archive Markdown 用例
+- `features/{ym}-{slug}/` — PRD / XMind / Archive 按 feature 聚合
 - `issues/` `reports/` `history/` — Hotfix 用例、分析报告、历史数据
 - `tests/` — Playwright 自动化脚本
 - `rules/` `knowledge/` — 项目级规则与业务知识库
@@ -41,11 +41,11 @@
 
 ## 三层信息架构
 
-| 层                | 路径                                    | 作用域      | 语义                  |
-| ----------------- | --------------------------------------- | ----------- | --------------------- |
-| memory（偏好）    | `~/.claude/projects/.../memory/`        | 用户级      | AI 协作偏好 + 项目状态 |
-| rules（规则）     | `rules/` + `workspace/{project}/rules/` | 项目 + 全局 | 编写/格式硬约束       |
-| knowledge（知识） | `workspace/{project}/knowledge/`        | 项目级      | 业务事实（流程、术语、踩坑）|
+| 层                | 路径                                    | 作用域      | 语义                         |
+| ----------------- | --------------------------------------- | ----------- | ---------------------------- |
+| memory（偏好）    | `~/.claude/projects/.../memory/`        | 用户级      | AI 协作偏好 + 项目状态       |
+| rules（规则）     | `rules/` + `workspace/{project}/rules/` | 项目 + 全局 | 编写/格式硬约束              |
+| knowledge（知识） | `workspace/{project}/knowledge/`        | 项目级      | 业务事实（流程、术语、踩坑） |
 
 读写：`rules/` 由 `kata-cli rule-loader load --project {{project}}` 合并加载，AI 在 case-format 等场景可追加写入；`knowledge/` 由 `knowledge-keeper` skill 统一读写，subagent 不得直接改文件；`memory/` 由 Claude Code 自动持久化。
 
@@ -72,12 +72,12 @@
 
 ## 禁止硬编码
 
-| 类型         | 错误示例                             | 正确做法                                                  |
-| ------------ | ------------------------------------ | --------------------------------------------------------- |
-| 绝对路径     | `"/Users/poco/Projects/kata"`        | `join(import.meta.dirname, "../../..")` 动态计算          |
-| 内部服务地址 | `"http://172.16.122.52"`             | 从 `.env` 读取（`process.env.CI_BASE_URL`）               |
-| 账号密码     | `username: "admin@dtstack.com"`      | 写入 `.env`，环境变量读取                                 |
-| Cookie/Token | `LANHU_COOKIE: "session=real_value"` | 测试用占位假值（如 `"test-stub"`），生产值写入 `.env`     |
+| 类型         | 错误示例                             | 正确做法                                              |
+| ------------ | ------------------------------------ | ----------------------------------------------------- |
+| 绝对路径     | `"/Users/poco/Projects/kata"`        | `join(import.meta.dirname, "../../..")` 动态计算      |
+| 内部服务地址 | `"http://172.16.122.52"`             | 从 `.env` 读取（`process.env.CI_BASE_URL`）           |
+| 账号密码     | `username: "admin@dtstack.com"`      | 写入 `.env`，环境变量读取                             |
+| Cookie/Token | `LANHU_COOKIE: "session=real_value"` | 测试用占位假值（如 `"test-stub"`），生产值写入 `.env` |
 
 - 单元测试仓库根路径：统一用 `join(import.meta.dirname, "../../..")` 或 `resolve(...)`，不写死字符串
 - 单元测试若向 `workspace/` 等真实目录写入，**必须**在 `after()` 清理
