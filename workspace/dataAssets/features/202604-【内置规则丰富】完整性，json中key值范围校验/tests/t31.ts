@@ -1,6 +1,6 @@
 // META: {"id":"t31","priority":"P1","title":"【P1】验证下载明细数据中校验字段标红展示"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

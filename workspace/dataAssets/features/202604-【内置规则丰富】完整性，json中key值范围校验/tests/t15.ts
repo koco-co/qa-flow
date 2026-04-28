@@ -1,6 +1,6 @@
 // META: {"id":"t15","priority":"P1","title":"【P1】验证规则配置参数卡片完整展示所有字段"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { expectAntMessage } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { expectAntMessage } from "../../../shared/helpers/test-setup";
 import {
   addAndConfigureKeyRangeRule,
   createRuleSetDraft,

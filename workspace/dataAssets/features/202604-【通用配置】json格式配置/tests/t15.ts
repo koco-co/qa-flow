@@ -1,6 +1,6 @@
 // META: {"id":"t15","priority":"P1","title":"【P1】验证value格式有内容时正则测试控件显示及匹配通过失败场景"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   clickHeaderButton,

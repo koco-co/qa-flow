@@ -1,6 +1,6 @@
 // META: {"id":"t16","priority":"P0","title":"【P0】验证key范围校验完整：规则集配置+导入规则包+执行任务+在校验结果查询中查看实例结果"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

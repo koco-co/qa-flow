@@ -1,6 +1,6 @@
 // META: {"id":"t3","priority":"P1","title":"【P1】验证当前 DOM 下「格式-json格式校验」在 INT 与 json/string 字段下均可见"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { selectAntOption, uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { selectAntOption, uniqueName } from "../../../shared/helpers/test-setup";
 import {
   FORMAT_JSON_VERIFICATION_FUNC,
   VALUE_FORMAT_TABLE,

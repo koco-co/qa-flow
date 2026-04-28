@@ -12,7 +12,7 @@
  *   （I18N key: AH）
  */
 import { expect, type Locator, type Page } from "@playwright/test";
-import { confirmAntModal, selectAntOption } from "../../helpers/test-setup";
+import { confirmAntModal, selectAntOption } from "../../../shared/helpers/test-setup";
 import {
   DORIS_DATABASE,
   DORIS_DATASOURCE_KEYWORD,

@@ -1,6 +1,6 @@
 // META: {"id":"t10","priority":"P1","title":"【P1】验证点击「value格式预览」弹窗仅展示已勾选key的格式信息且支持分页"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addJsonFormatRule,
   openValueFormatPreview,

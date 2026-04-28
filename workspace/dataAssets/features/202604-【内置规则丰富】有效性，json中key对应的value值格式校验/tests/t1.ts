@@ -1,6 +1,6 @@
 // META: {"id":"t1","priority":"P1","title":"【P1】验证规则配置页「统计规则」下拉框中「格式-json格式校验」选项位置在自定义正则上方"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   FORMAT_JSON_VERIFICATION_FUNC,
   VALUE_FORMAT_TABLE,

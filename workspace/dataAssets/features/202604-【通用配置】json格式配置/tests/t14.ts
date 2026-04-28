@@ -1,6 +1,6 @@
 // META: {"id":"t14","priority":"P1","title":"【P1】验证5层层级展开下钻及展开图标显示逻辑"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   addKey,

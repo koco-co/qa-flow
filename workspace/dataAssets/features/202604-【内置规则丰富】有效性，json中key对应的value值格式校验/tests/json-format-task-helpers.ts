@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { normalizeDataAssetsBaseUrl } from "../../helpers/test-setup";
+import { normalizeDataAssetsBaseUrl } from "../../../shared/helpers/test-setup";
 import { prepareJsonTaskEnvironment } from "./json-format-task-runtime";
 import { createMonitorWithDuplicateRetry } from "./monitor-create-retry";
 import {

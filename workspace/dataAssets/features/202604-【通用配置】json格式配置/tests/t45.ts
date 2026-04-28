@@ -1,6 +1,6 @@
 // META: {"id":"t45","priority":"P1","title":"【P1】验证编辑页与新增页表单结构保持一致（字段顺序、必填项、title 拼接中文名称）"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   clickHeaderButton,

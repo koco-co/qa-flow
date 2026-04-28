@@ -1,9 +1,9 @@
 // META: {"id":"t5","priority":"P1","title":"验证key范围校验表单必填提示"}
-import { test } from "../../fixtures/step-screenshot";
+import { test } from "../../../shared/fixtures/step-screenshot";
 import { addRuleToPackage } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { SCENARIOS, expectRuleError, saveInvalidRuleSet, selectRuleFunction, setVerificationContent, startRuleSetDraft } from "./suite-helpers";
-import { selectAntOption } from "../../helpers";
+import { selectAntOption } from "../../../shared/helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 test.setTimeout(600000);

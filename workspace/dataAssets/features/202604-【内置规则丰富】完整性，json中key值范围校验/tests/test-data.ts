@@ -1,8 +1,8 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
-import { setupPreconditions } from "../../helpers/preconditions";
-import { applyRuntimeCookies, normalizeDataAssetsBaseUrl } from "../../helpers/test-setup";
+import { setupPreconditions } from "../../../shared/helpers/preconditions";
+import { applyRuntimeCookies, normalizeDataAssetsBaseUrl } from "../../../shared/helpers/test-setup";
 import {
   clearCurrentDatasource as clearLegacyDatasource,
   setCurrentDatasource as setLegacyDatasource,

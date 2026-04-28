@@ -1,6 +1,6 @@
 // META: {"id":"t9","priority":"P1","title":"【P1】验证校验key输入框悬浮时展示全部key名，默认仅显示前两个"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addJsonFormatRule,
   getSelectedValidationKeyTexts,

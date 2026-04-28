@@ -1,8 +1,8 @@
 // META: {"id":"t35","priority":"P1","title":"【P1】验证导入功能正常(重复则跳过, 2~5层上一层key不存在 -> 报错)"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   uniqueName,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage } from "./json-config-helpers";
 import ExcelJS from "exceljs";
 import * as path from "path";

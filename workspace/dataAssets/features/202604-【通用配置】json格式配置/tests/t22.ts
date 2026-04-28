@@ -1,6 +1,6 @@
 // META: {"id":"t22","priority":"P1","title":"【P1】验证导入文件二层key上一层级key名无法匹配时标红并批注提示"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage, searchKey } from "./json-config-helpers";
 import ExcelJS from "exceljs";
 import * as path from "path";

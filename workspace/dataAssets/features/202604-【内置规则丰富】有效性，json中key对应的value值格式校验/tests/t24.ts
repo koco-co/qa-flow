@@ -1,5 +1,5 @@
 // META: {"id":"t24","priority":"P1","title":"【P1】验证规则库中「格式-json格式校验」内置规则展示信息正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { gotoRuleBaseAndSearch } from "./json-format-suite-helpers";
 import { describeByDatasource } from "./suite-case-helpers";
 

@@ -1,6 +1,6 @@
 // META: {"id":"t19","priority":"P1","title":"【P1】验证json格式配置中维护上千个key时执行校验与结果展示正常"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addRuleToPackage,
   configureJsonFormatRule,

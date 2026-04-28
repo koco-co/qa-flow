@@ -1,5 +1,5 @@
 // META: {"id":"t3","priority":"P1","title":"验证在规则集中仅填写取值范围可正常保存"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,

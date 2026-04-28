@@ -1,6 +1,6 @@
 // META: {"id":"t6","priority":"P1","title":"【P1】验证新增key表单中切换数据源类型后其余字段内容仍保留"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   clickHeaderButton,

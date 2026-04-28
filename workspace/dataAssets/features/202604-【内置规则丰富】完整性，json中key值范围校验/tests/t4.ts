@@ -1,9 +1,9 @@
 // META: {"id":"t4","priority":"P1","title":"验证string字段可配置且非json/string字段不可选择key范围校验"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { addRuleToPackage } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { SCENARIOS, collectFieldOptions, configureKeyRangeRule, selectRuleFunction, startRuleSetDraft } from "./suite-helpers";
-import { selectAntOption } from "../../helpers";
+import { selectAntOption } from "../../../shared/helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 test.setTimeout(600000);

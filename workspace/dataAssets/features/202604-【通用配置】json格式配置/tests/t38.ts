@@ -1,9 +1,9 @@
 // META: {"id":"t38","priority":"P2","title":"【P2】验证搜索无结果时的空状态展示"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   waitForTableLoaded,
   uniqueName,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage } from "./json-config-helpers";
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {

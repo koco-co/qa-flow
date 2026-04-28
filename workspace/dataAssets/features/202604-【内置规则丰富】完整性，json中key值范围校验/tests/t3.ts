@@ -1,9 +1,9 @@
 // META: {"id":"t3","priority":"P0","title":"验证json类型字段可成功配置key范围校验规则"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { addRuleToPackage } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { SCENARIOS, configureKeyRangeRule, startRuleSetDraft } from "./suite-helpers";
-import { selectAntOption } from "../../helpers";
+import { selectAntOption } from "../../../shared/helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 test.setTimeout(600000);

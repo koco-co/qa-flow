@@ -2,7 +2,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import ExcelJS from "exceljs";
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import {
   ensureExecutedJsonTask,
   openTaskInstanceDetail,

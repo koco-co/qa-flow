@@ -1,5 +1,5 @@
 // META: {"id":"t2","priority":"P1","title":"验证在规则集中配置取值范围&枚举范围规则或关系时保存成功"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,

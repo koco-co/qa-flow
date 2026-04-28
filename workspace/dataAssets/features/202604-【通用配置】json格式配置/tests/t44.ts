@@ -7,7 +7,7 @@
 //
 // 预期：子场景 A / C 的断言会失败（暴露 Bug），子场景 B 断言应通过。
 //
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   gotoJsonConfigPage,
   addKey,

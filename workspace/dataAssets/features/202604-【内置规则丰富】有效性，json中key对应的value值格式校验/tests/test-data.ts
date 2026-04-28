@@ -1,8 +1,8 @@
 process.env.QA_DATASOURCE_MATRIX ??= "sparkthrift2.x";
 
 import type { Page } from "@playwright/test";
-import { setupPreconditions } from "../../helpers/preconditions";
-import { applyRuntimeCookies } from "../../helpers/test-setup";
+import { setupPreconditions } from "../../../shared/helpers/preconditions";
+import { applyRuntimeCookies } from "../../../shared/helpers/test-setup";
 import type { DatasourceConfig as BaseDatasourceConfig } from "../有效性-取值范围枚举范围规则/test-data";
 import { buildSparkFixtureSql, versionJsonFixtureName } from "./json-fixture-sql";
 import { runRetriablePreconditions } from "./json-suite-preconditions";

@@ -1,6 +1,6 @@
 // META: {"id":"t7","priority":"P1","title":"【P1】验证校验key数据量超过200条时默认加载前200条展示"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addJsonFormatRule,
   getValidationKeyLabels,

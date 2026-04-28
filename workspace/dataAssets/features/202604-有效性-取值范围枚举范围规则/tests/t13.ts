@@ -1,6 +1,6 @@
 // META: {"id":"t13","priority":"P2","title":"验证在规则集中取值范围&枚举范围规则支持克隆且克隆后配置内容与原规则一致"}
 import type { Locator } from "@playwright/test";
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,

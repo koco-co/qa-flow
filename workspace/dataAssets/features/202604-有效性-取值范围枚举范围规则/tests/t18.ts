@@ -1,6 +1,6 @@
 // META: {"id":"t18","priority":"P2","title":"验证取值范围&枚举范围规则执行失败时可查看日志"}
 import type { Locator } from "@playwright/test";
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ensureExecutedRuleTasks, waitForTaskInstanceFinished } from "./rule-task-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 

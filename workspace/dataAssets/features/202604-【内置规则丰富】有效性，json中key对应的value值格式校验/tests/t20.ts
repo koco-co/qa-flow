@@ -1,5 +1,5 @@
 // META: {"id":"t20","priority":"P1","title":"【P1】验证删除已被有效性规则引用的key后规则配置页面回显和编辑功能正常"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import {
   deleteKey,
   gotoJsonConfigPage,

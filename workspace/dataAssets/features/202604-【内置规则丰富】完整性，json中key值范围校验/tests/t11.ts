@@ -1,5 +1,5 @@
 // META: {"id":"t11","priority":"P1","title":"验证校验结果查询中的明细/下载/通过无明细/失败日志"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { FAIL_LOG_TASK_NAME, MAIN_TASK_NAME, PASS_TASK_NAME, ensureExecutedRuleTasks, getTaskDetailRuleCard, openTaskInstanceDetail, openTaskLogDrawer, openTaskRuleDetailDataDrawer, waitForTaskInstanceFinished } from "./task-helpers";
 import { KEY_RANGE_RULE_NAME, assertOnlyTheseDetailRows, expectDetailTitle, expectHighlightedColumn } from "./suite-helpers";

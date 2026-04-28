@@ -1,6 +1,6 @@
 // META: {"id":"t36","priority":"P1","title":"【P1】验证质量报告中不包含校验方法的详情说明格式正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

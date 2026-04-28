@@ -1,5 +1,5 @@
 // META: {"id":"t20","priority":"P2","title":"验证对分区表指定分区执行取值范围&枚举范围校验结果正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   ensureExecutedRuleTasks,

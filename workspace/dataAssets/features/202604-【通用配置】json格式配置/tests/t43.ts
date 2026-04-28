@@ -1,5 +1,5 @@
 // META: {"id":"t43","priority":"P1","title":"【P1】验证导入失败时仅出现单个错误通知"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import { gotoJsonConfigPage } from "./json-config-helpers";
 import ExcelJS from "exceljs";
 import * as fs from "fs";

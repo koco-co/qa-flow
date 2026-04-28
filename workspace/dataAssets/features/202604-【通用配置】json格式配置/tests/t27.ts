@@ -1,6 +1,6 @@
 // META: {"id":"t27","priority":"P1","title":"【P1】验证导入功能正常(重复则覆盖更新, 2~5层上一层key存在+key存在+value不存在 -> 更新N层value)"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   addKey,

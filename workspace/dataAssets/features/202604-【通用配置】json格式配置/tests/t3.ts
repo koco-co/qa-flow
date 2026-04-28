@@ -1,5 +1,5 @@
 // META: {"id":"t3","priority":"P1","title":"【P1】验证新增key时key字段输入超255字符不可提交"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   gotoJsonConfigPage,
   clickHeaderButton,

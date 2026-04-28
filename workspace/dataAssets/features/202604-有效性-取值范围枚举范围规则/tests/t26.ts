@@ -1,5 +1,5 @@
 // META: {"id":"t26","priority":"P1","title":"验证仅配置枚举值in校验不通过时质量报告详情说明包含越界值数量统计"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   ensureQualityReportsReady,

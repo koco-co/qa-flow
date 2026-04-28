@@ -1,5 +1,5 @@
 // META: {"id":"t8","priority":"P1","title":"验证校验方法切换（包含与不包含）规则保存和执行结果差异"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { addRuleToPackage, getRulePackage, openRuleSetEditor, saveRuleSet } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { METHOD_SWITCH_TASK_NAME, ensureExecutedRuleTasks, openQualityReportDetail, getQualityReportRuleRow } from "./task-helpers";

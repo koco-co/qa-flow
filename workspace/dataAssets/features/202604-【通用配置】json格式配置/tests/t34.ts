@@ -1,6 +1,6 @@
 // META: {"id":"t34","priority":"P1","title":"【P1】验证导入功能正常(重复则跳过, 2~5层上一层key存在+key不存在 -> 新增N层key)"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   addKey,

@@ -1,8 +1,8 @@
 // META: {"id":"t32","priority":"P1","title":"【P1】验证导入功能正常(重复则跳过, 1层key不存在 -> 新增1层key)"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   uniqueName,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage, searchKey, buildImportXlsx } from "./json-config-helpers";
 import * as path from "path";
 import * as fs from "fs";

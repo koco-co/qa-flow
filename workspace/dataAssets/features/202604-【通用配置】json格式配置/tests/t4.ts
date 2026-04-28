@@ -1,5 +1,5 @@
 // META: {"id":"t4","priority":"P1","title":"【P1】验证新增key时key字段输入恰好255字符边界值可成功提交"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   gotoJsonConfigPage,
   addKey,

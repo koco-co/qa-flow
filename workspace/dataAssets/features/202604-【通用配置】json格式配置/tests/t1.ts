@@ -1,6 +1,6 @@
 // META: {"id":"t1","priority":"P0","title":"【P0】验证新增key完整正向流程（含正则测试）"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   clickHeaderButton,

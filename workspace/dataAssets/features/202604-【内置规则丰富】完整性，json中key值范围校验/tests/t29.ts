@@ -1,6 +1,6 @@
 // META: {"id":"t29","priority":"P1","title":"【P1】验证规则库中新增key范围校验内置规则展示信息正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

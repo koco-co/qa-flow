@@ -13,14 +13,14 @@ import type { Page } from "@playwright/test";
 import {
   applyRuntimeCookies,
   buildDataAssetsUrl,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import { versionJsonFixtureName } from "./json-fixture-sql";
 
 // ── Re-export 公共工具（方便 helpers 文件直接从此处 import）──────────────────
 export {
   applyRuntimeCookies,
   buildDataAssetsUrl,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 
 // ── 质量项目配置 ──────────────────────────────────────────────────────────────
 

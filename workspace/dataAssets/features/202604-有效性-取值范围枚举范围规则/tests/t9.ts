@@ -1,7 +1,7 @@
 // META: {"id":"t9","priority":"P1","title":"验证枚举值设置已选择in但未输入枚举值时点击保存提示校验错误"}
 import type { Locator } from "@playwright/test";
-import { expect, test } from "../../fixtures/step-screenshot";
-import { selectAntOption } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { selectAntOption } from "../../../shared/helpers/test-setup";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,

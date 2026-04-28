@@ -1,6 +1,6 @@
 // META: {"id":"t26","priority":"P1","title":"【P1】验证删除已被规则引用的key后执行校验任务不受影响"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

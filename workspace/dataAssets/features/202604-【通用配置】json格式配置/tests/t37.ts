@@ -1,6 +1,6 @@
 // META: {"id":"t37","priority":"P1","title":"【P1】验证筛选后导出仅包含筛选结果数据"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage, addKey, deleteKey } from "./json-config-helpers";
 import ExcelJS from "exceljs";
 import * as fs from "fs";

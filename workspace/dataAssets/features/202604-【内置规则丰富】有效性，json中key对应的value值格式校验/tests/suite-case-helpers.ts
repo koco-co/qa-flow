@@ -1,4 +1,4 @@
-import { test } from "../../fixtures/step-screenshot";
+import { test } from "../../../shared/fixtures/step-screenshot";
 import {
   ACTIVE_DATASOURCES,
   SUITE_NAME,

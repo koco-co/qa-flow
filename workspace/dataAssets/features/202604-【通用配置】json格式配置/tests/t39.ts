@@ -1,9 +1,9 @@
 // META: {"id":"t39","priority":"P2","title":"【P2】验证key数量达1000条以上时列表加载和搜索性能正常"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   waitForTableLoaded,
   uniqueName,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage } from "./json-config-helpers";
 
 // 注意：这是性能测试，不需要创建1000条数据。

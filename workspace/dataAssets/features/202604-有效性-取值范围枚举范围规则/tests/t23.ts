@@ -1,5 +1,5 @@
 // META: {"id":"t23","priority":"P1","title":"验证取值范围&枚举范围规则校验「不通过时下载」明细数据中校验字段标红展示"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   ensureExecutedRuleTasks,

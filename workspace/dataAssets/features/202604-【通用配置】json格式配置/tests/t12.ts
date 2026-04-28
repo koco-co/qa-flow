@@ -1,6 +1,6 @@
 // META: {"id":"t12","priority":"P1","title":"【P1】验证key名模糊搜索功能（含子层级key命中）"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   addKey,

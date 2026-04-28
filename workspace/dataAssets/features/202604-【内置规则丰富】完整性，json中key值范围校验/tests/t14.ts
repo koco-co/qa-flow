@@ -1,5 +1,5 @@
 // META: {"id":"t14","priority":"P1","title":"验证质量报告中不包含校验方法的详情说明格式正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { NOT_INCLUDE_TASK_NAME, ensureQualityReportsReady, getQualityReportRuleRow, openQualityReportDetail } from "./task-helpers";
 import { KEY_RANGE_RULE_NAME } from "./suite-helpers";

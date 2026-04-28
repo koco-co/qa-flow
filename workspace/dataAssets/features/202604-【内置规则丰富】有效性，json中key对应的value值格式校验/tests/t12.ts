@@ -1,6 +1,6 @@
 // META: {"id":"t12","priority":"P1","title":"【P1】验证未选择校验key时保存规则提示统计函数存在必填项未填写"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { selectAntOption, uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { selectAntOption, uniqueName } from "../../../shared/helpers/test-setup";
 import {
   FORMAT_JSON_VERIFICATION_FUNC,
   VALUE_FORMAT_TABLE,

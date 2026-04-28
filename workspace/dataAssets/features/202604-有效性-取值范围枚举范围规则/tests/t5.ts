@@ -1,6 +1,6 @@
 // META: {"id":"t5","priority":"P1","title":"验证在规则集中枚举值选择not in后保存成功且编辑时回显正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { selectAntOption } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { selectAntOption } from "../../../shared/helpers/test-setup";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,

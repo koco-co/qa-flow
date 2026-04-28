@@ -12,7 +12,7 @@ import type { Page } from "@playwright/test";
 import {
   applyRuntimeCookies,
   buildDataAssetsUrl,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 
 // ── 质量项目常量 ─────────────────────────────────────────────
 export const QUALITY_PROJECT_ID = 90;

@@ -83,6 +83,10 @@ kata.addCommand(writerContextBuilder);
 kata.addCommand(xmindGen);
 kata.addCommand(xmindPatch);
 
+// ── Features commands (§4.5 tooling) ──────────────────────────
+import { registerImportFix } from "./features-import-fix.ts";
+registerImportFix(kata);
+
 initEnv();
 
 kata.parseAsync(process.argv).catch((err) => {

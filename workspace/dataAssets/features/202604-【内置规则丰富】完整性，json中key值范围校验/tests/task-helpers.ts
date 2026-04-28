@@ -5,7 +5,7 @@ import {
   buildDataAssetsUrl,
   navigateViaMenu,
   selectAntOption,
-} from "../../helpers";
+} from "../../../shared/helpers";
 import { enableCompatibleMonitorDatasourceRouting } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import {
   executeTaskFromList as executeSharedTaskFromList,

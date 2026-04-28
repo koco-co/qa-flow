@@ -1,9 +1,9 @@
 // META: {"id":"t36","priority":"P0","title":"【P0】验证导出列表数据完整流程及文件命名"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   waitForTableLoaded,
   confirmPopconfirm,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage } from "./json-config-helpers";
 import ExcelJS from "exceljs";
 import * as fs from "fs";

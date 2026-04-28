@@ -1,6 +1,6 @@
 // META: {"id":"t13","priority":"P1","title":"【P1】验证保存后规则配置参数展示区域各字段内容正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { expectAntMessage, uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { expectAntMessage, uniqueName } from "../../../shared/helpers/test-setup";
 import {
   FORMAT_JSON_VERIFICATION_FUNC,
   VALUE_FORMAT_TABLE,

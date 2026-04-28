@@ -1,7 +1,7 @@
 // META: {"id":"t23","priority":"P1","title":"【P1】验证导入非xlsx格式文件时报错"}
 import * as fs from "fs";
 import * as path from "path";
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   gotoJsonConfigPage,
   clickHeaderButton,

@@ -6,7 +6,7 @@ import {
   navigateViaMenu,
   normalizeDataAssetsBaseUrl,
   selectAntOption,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import {
   createRuleSetForTable,
   deleteRuleSetsByTableNames,

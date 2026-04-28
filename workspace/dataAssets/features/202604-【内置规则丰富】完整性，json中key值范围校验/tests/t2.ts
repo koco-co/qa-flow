@@ -1,5 +1,5 @@
 // META: {"id":"t2","priority":"P1","title":"验证校验内容选择/搜索/回显/悬浮/标签提示"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { addRuleToPackage } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
 import {
   ACTIVE_DATASOURCES,
@@ -18,7 +18,7 @@ import {
   setVerificationContent,
   startRuleSetDraft,
 } from "./suite-helpers";
-import { selectAntOption } from "../../helpers";
+import { selectAntOption } from "../../../shared/helpers";
 
 test.use({
   storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json",

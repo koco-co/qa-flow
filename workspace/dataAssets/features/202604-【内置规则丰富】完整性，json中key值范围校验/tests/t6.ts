@@ -1,5 +1,5 @@
 // META: {"id":"t6","priority":"P1","title":"验证规则配置参数卡片完整展示所有字段"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { SCENARIOS, openScenarioEditor, seedScenarioRuleSet } from "./suite-helpers";
 

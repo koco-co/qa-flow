@@ -1,6 +1,6 @@
 // META: {"id":"t27","priority":"P1","title":"【P1】验证key范围校验规则结合抽样功能正确执行"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

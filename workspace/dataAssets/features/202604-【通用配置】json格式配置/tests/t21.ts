@@ -1,6 +1,6 @@
 // META: {"id":"t21","priority":"P1","title":"【P1】验证导入文件必填项未填写时标红并批注必填项未填写"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { todayStr } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { todayStr } from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage, searchKey } from "./json-config-helpers";
 import ExcelJS from "exceljs";
 import * as path from "path";

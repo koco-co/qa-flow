@@ -1,6 +1,6 @@
 // META: {"id":"t22","priority":"P1","title":"【P1】验证Hive2.x数据源的json字段支持key范围校验"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

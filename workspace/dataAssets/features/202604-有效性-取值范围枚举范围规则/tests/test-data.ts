@@ -5,8 +5,8 @@
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import type { Page } from "@playwright/test";
-import { setupPreconditions } from "../../helpers/preconditions";
-import { applyRuntimeCookies, normalizeDataAssetsBaseUrl } from "../../helpers/test-setup";
+import { setupPreconditions } from "../../../shared/helpers/preconditions";
+import { applyRuntimeCookies, normalizeDataAssetsBaseUrl } from "../../../shared/helpers/test-setup";
 
 export interface DatasourceConfig {
   readonly id: "sparkthrift2.x" | "doris3.x";

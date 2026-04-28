@@ -1,5 +1,5 @@
 // META: {"id":"t11","priority":"P1","title":"【P1】验证批量删除多条key（含子层级）"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   gotoJsonConfigPage,
   addKey,

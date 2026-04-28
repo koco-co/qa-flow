@@ -5,8 +5,8 @@
 //   但实际标红的是「key」列（第 2 列，列地址 B）。
 //   当 Bug 修复后，步骤6的断言将转为通过。
 //
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   buildImportXlsx,

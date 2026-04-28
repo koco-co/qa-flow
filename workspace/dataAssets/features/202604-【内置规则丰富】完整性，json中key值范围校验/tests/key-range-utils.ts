@@ -18,7 +18,7 @@ import {
   buildDataAssetsUrl,
   confirmAntModal,
   selectAntOption,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import {
   DORIS_DATABASE,
   DORIS_DATASOURCE_KEYWORD,

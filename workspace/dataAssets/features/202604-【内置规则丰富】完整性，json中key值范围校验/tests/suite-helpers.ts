@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
-import { selectAntOption, waitForTableLoaded } from "../../helpers";
+import { selectAntOption, waitForTableLoaded } from "../../../shared/helpers";
 import {
   addKey,
   deleteKey,

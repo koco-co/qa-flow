@@ -1,5 +1,5 @@
 // META: {"id":"t9","priority":"P1","title":"验证SparkThrift2.x数据源的string字段支持key范围校验"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { SPARK_COMPAT_TASK_NAME, ensureExecutedRuleTasks, openQualityReportDetail, getQualityReportRuleRow } from "./task-helpers";
 import { KEY_RANGE_RULE_NAME } from "./suite-helpers";

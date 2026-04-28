@@ -1,6 +1,6 @@
 // META: {"id":"t18","priority":"P1","title":"【P1】验证重复处理规则「重复则覆盖更新」生效"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   addKey,

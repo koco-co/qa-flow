@@ -1,5 +1,5 @@
 // META: {"id":"t25","priority":"P1","title":"验证仅配置枚举值in校验通过时质量报告详情说明使用枚举值独立说明模板"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   ensureQualityReportsReady,

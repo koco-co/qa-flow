@@ -1,5 +1,5 @@
 // META: {"id":"t21","priority":"P1","title":"验证规则库中新增取值范围&枚举范围内置规则展示正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { gotoRuleBase } from "./rule-editor-helpers";
 

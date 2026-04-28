@@ -1,6 +1,6 @@
 // META: {"id":"t11","priority":"P1","title":"验证取值范围和枚举值均未填写时点击保存提示至少填写一项"}
 import type { Locator } from "@playwright/test";
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,

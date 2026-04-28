@@ -1,5 +1,5 @@
 // META: {"id":"t7","priority":"P0","title":"验证key范围校验完整主流程：规则集配置+导入规则包+执行校验+查看实例结果"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import { KEY_RANGE_RULE_NAME, assertOnlyTheseDetailRows, expectDetailTitle, expectHighlightedColumn } from "./suite-helpers";
 import { MAIN_TASK_NAME, ensureExecutedRuleTasks, getTaskDetailRuleCard, openTaskInstanceDetail, openTaskRuleDetailDataDrawer, waitForTaskInstanceFinished } from "./task-helpers";

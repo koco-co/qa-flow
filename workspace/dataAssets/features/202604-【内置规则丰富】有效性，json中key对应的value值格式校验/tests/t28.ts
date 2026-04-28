@@ -1,5 +1,5 @@
 // META: {"id":"t28","priority":"P1","title":"【P1】验证质量报告中「格式-json格式校验」规则行各列字段展示正确（校验通过场景）"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import {
   getQualityReportRuleRow,
   openPreparedQualityReport,

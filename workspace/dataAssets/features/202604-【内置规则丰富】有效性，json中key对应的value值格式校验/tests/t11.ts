@@ -1,7 +1,7 @@
 // META: {"id":"t11","priority":"P1","title":"【P1】验证选择非json或string类型字段时「格式-json格式校验」统计规则选项不可选"}
 import type { Locator, Page } from "@playwright/test";
-import { expect, test } from "../../fixtures/step-screenshot";
-import { selectAntOption, uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { selectAntOption, uniqueName } from "../../../shared/helpers/test-setup";
 import { FORMAT_JSON_VERIFICATION_FUNC } from "./test-data-15694";
 import { prepareJsonRuleSetDraft } from "./json-format-suite-helpers";
 import { addRuleToPackage } from "./rule-editor-base";

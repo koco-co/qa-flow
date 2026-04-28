@@ -1,6 +1,6 @@
 // META: {"id":"t19","priority":"P1","title":"【P1】验证Doris3.x数据源的string字段支持key范围校验"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

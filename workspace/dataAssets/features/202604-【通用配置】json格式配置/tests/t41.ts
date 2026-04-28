@@ -12,12 +12,12 @@
 // 以下脚本实现核心验证：新增 refTestKey → 删除 refTestKey → 验证删除成功。
 // 规则集/规则任务的创建验证属于其他模块测试范围，不在此用例实现。
 //
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   waitForTableLoaded,
   confirmPopconfirm,
   uniqueName,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import { addKey, gotoJsonConfigPage, searchKey } from "./json-config-helpers";
 
 test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {

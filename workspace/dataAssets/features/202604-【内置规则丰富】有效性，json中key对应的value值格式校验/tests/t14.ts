@@ -1,5 +1,5 @@
 // META: {"id":"t14","priority":"P0","title":"【P0】验证格式-json格式校验完整主流程：规则集配置+导入规则包+执行任务+在校验结果查询中查看通过实例"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import {
   ensureExecutedJsonTask,
   getTaskDetailRuleCard,

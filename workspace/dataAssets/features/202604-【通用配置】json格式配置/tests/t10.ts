@@ -1,6 +1,6 @@
 // META: {"id":"t10","priority":"P1","title":"【P1】验证单个删除含子层级的key会联动删除子层级数据"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   addKey,

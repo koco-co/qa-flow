@@ -1,6 +1,6 @@
 // META: {"id":"t7","priority":"P1","title":"【P1】验证编辑key名称、value格式、数据源类型并保存生效"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   addKey,

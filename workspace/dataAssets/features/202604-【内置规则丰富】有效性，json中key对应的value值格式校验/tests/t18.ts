@@ -1,6 +1,6 @@
 // META: {"id":"t18","priority":"P1","title":"【P1】验证「格式-json格式校验」规则在Hive 2.x数据源下执行正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addRuleToPackage,
   configureJsonFormatRule,

@@ -35,7 +35,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { test, expect } from '../../fixtures/step-screenshot'
+import { test, expect } from '../../../shared/fixtures/step-screenshot'
 import {
   applyRuntimeCookies,
   buildDataAssetsUrl,
@@ -45,7 +45,7 @@ import {
   normalizeDataAssetsBaseUrl,
   syncMetadata,
   uniqueName,
-} from '../../helpers/test-setup'
+} from '../../../shared/helpers/test-setup'
 
 // ─── Types ───────────────────────────────────────────
 type Page = import('@playwright/test').Page

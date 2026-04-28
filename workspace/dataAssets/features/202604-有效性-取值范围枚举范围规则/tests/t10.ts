@@ -1,7 +1,7 @@
 // META: {"id":"t10","priority":"P1","title":"验证取值范围设置和枚举值设置均已填写但取值范围和枚举值关系未选择时点击保存提示校验错误"}
 import type { Locator } from "@playwright/test";
-import { expect, test } from "../../fixtures/step-screenshot";
-import { selectAntOption } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { selectAntOption } from "../../../shared/helpers/test-setup";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,

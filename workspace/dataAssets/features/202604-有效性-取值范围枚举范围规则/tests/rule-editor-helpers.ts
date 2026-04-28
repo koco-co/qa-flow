@@ -6,7 +6,7 @@ import {
   confirmAntModal,
   normalizeDataAssetsBaseUrl,
   selectAntOption,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import {
   DORIS3X_SOURCE_TYPE,
   DORIS3X_SOURCE_TYPE_NAME,

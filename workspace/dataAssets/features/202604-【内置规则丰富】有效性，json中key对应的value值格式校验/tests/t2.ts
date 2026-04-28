@@ -1,6 +1,6 @@
 // META: {"id":"t2","priority":"P1","title":"【P1】验证「格式-json格式校验」当前不展示独立悬浮提示图标"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { selectAntOption, uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { selectAntOption, uniqueName } from "../../../shared/helpers/test-setup";
 import {
   FORMAT_JSON_VERIFICATION_FUNC,
   VALUE_FORMAT_TABLE,

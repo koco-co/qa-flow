@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import {
   normalizeDataAssetsBaseUrl,
   selectAntOption,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import {
   JSON_KEY_PRESETS,
   getCurrentDatasource,

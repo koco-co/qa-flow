@@ -1,5 +1,5 @@
 // META: {"id":"t27","priority":"P1","title":"验证仅配置枚举值not in校验不通过时质量报告详情说明展示not in规则描述"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   ensureQualityReportsReady,

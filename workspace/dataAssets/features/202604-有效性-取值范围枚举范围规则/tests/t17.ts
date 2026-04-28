@@ -1,5 +1,5 @@
 // META: {"id":"t17","priority":"P2","title":"验证弱规则标识在校验结果查询实例详情中展示正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   ensureRuleTasks,

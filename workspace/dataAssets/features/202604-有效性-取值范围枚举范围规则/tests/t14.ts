@@ -1,6 +1,6 @@
 // META: {"id":"t14","priority":"P1","title":"验证在规则集中配置过滤条件后规则保存成功"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { selectAntOption } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { selectAntOption } from "../../../shared/helpers/test-setup";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   addRuleToPackage,

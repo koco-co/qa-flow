@@ -1,6 +1,6 @@
 // META: {"id":"t35","priority":"P0","title":"【P0】验证质量报告中校验不通过行的各列展示内容正确"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

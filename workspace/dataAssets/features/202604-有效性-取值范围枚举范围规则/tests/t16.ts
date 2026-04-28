@@ -1,5 +1,5 @@
 // META: {"id":"t16","priority":"P1","title":"验证执行含取值范围&枚举范围或关系规则的任务后校验通过"}
-import { expect, test } from "../../fixtures/step-screenshot";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "./test-data";
 import {
   ensureRuleTasks,

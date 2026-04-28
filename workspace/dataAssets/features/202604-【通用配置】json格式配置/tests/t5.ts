@@ -1,6 +1,6 @@
 // META: {"id":"t5","priority":"P2","title":"【P2】验证新增key时数据源类型三种选项可正常切换"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName, selectAntOption } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName, selectAntOption } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   clickHeaderButton,

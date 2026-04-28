@@ -1,6 +1,6 @@
 // META: {"id":"t30","priority":"P1","title":"【P1】验证校验不通过时查看明细：标题、字段标红及全字段展示"}
-import { expect, test } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { expect, test } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   addKeyRangeRule,
   configureKeyRangeRule,

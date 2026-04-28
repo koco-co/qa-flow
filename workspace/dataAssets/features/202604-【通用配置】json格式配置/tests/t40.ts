@@ -1,9 +1,9 @@
 // META: {"id":"t40","priority":"P1","title":"【P1】验证大数据量场景key记录下载数量是否存在限制"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
 import {
   waitForTableLoaded,
   confirmPopconfirm,
-} from "../../helpers/test-setup";
+} from "../../../shared/helpers/test-setup";
 import { gotoJsonConfigPage } from "./json-config-helpers";
 
 // 注意：简化为验证导出功能不报错。

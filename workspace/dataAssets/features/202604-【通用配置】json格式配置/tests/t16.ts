@@ -1,6 +1,6 @@
 // META: {"id":"t16","priority":"P0","title":"【P0】验证导入正确文件全流程（重复则跳过）"}
-import { test, expect } from "../../fixtures/step-screenshot";
-import { uniqueName } from "../../helpers/test-setup";
+import { test, expect } from "../../../shared/fixtures/step-screenshot";
+import { uniqueName } from "../../../shared/helpers/test-setup";
 import {
   gotoJsonConfigPage,
   expandRow,
