@@ -21,13 +21,14 @@ export function lintDebugFileNaming(scanPath: string): CaseLintReport {
   const violations: CaseLintViolation[] = [];
   for (const file of files) {
     const name = basename(file);
-    if (file.includes("/.debug/")) continue;
+    if (file.split("/").includes(".debug")) continue;
     if (FORBIDDEN.test(name) || DIAG.test(name)) {
       violations.push({
         rule: "E1-DEBUG",
         file,
         lineNumber: 1,
         matched: name,
+        severity: "fail",
         message: `${name} is a debug/repro/diag spec outside .debug/ — move to .debug/ directory`,
       });
     }

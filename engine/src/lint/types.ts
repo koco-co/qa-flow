@@ -74,6 +74,7 @@ export interface CaseLintViolation {
   file: string;
   lineNumber: number;
   matched: string;
+  severity?: "warn" | "fail";
   message: string;
 }
 

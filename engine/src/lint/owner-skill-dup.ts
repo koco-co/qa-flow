@@ -26,6 +26,7 @@ export function lintOwnerSkillDup(scanPath: string): CaseLintReport {
         file,
         lineNumber: 1,
         matched: "owner_skill",
+        severity: "fail",
         message: `owner_skill appears ${count} times — only 1 allowed in frontmatter; check for duplicate in body`,
       });
     }

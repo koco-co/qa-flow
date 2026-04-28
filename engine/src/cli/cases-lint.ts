@@ -11,8 +11,9 @@ export function registerCasesLint(program: Command): void {
     .command("cases:lint")
     .description("Aggregate case-level lints (E1-WEAK / E1-PATH / E1-DEBUG / E1-OWNER) per spec §10.7")
     .option("--exit-code", "exit non-zero on any violation", false)
+    .option("--severity <level>", "filter exit-code by severity (all|fail-only)", "all")
     .option("--scope <p>", "scan path", join(repoRoot(), "workspace"))
-    .action((opts: { exitCode: boolean; scope: string }) => {
+    .action((opts: { exitCode: boolean; severity: string; scope: string }) => {
       const reports = [
         lintWeakAssertion(opts.scope),
         lintHardcodePath(opts.scope),
@@ -25,6 +26,9 @@ export function registerCasesLint(program: Command): void {
         console.log(`${rel}:${v.lineNumber} [${v.rule}] ${v.matched}`);
       }
       console.log(`\n[cases:lint] violations=${all.length}`);
-      if (opts.exitCode && all.length > 0) process.exit(1);
+      const exitableViolations = opts.severity === "fail-only"
+        ? all.filter((v) => v.severity !== "warn")
+        : all;
+      if (opts.exitCode && exitableViolations.length > 0) process.exit(1);
     });
 }

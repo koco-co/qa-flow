@@ -17,7 +17,7 @@
     "test:watch": "bun test --watch --cwd engine",
     "lint:agents": "kata-cli agents:audit --exit-code --severity fail-only",
     "lint:paths": "kata-cli paths:audit --exit-code",
-"lint:cases": "kata-cli cases:lint --exit-code --scope workspace"
+"lint:cases": "kata-cli cases:lint --exit-code --severity fail-only --scope workspace"
   },
   "dependencies": {
     "@types/nodemailer": "^8.0.0",

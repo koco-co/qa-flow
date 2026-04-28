@@ -12,7 +12,7 @@ if (!filePath) process.exit(0);
 
 const name = filePath.split("/").pop() || "";
 const isDebug = /(.+)-(debug|repro)\.spec\.ts$/.test(name) || /^diag_.+\.spec\.ts$/.test(name);
-const inDebug = filePath.includes("/.debug/");
+const inDebug = filePath.split("/").includes(".debug");
 
 if (isDebug && !inDebug) {
   console.error(`[post-edit-debug-naming] WARNING: ${name} should be in a .debug/ directory`);

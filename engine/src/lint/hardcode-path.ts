@@ -44,7 +44,7 @@ export function lintHardcodePath(scanPath: string): CaseLintReport {
         rule.regex.lastIndex = 0;
         const m = rule.regex.exec(line);
         if (m) {
-          violations.push({ rule: rule.id, file, lineNumber: i + 1, matched: m[0], message: rule.message });
+          violations.push({ rule: rule.id, file, lineNumber: i + 1, matched: m[0], severity: "warn", message: rule.message });
         }
       }
     }

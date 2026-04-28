@@ -18,7 +18,6 @@ const content = await readFile(filePath, "utf8");
 const linkRe = /\[.+?\]\(([^)]+)\)/g;
 const baseDir = dirname(filePath);
 let match: RegExpExecArray | null;
-let hasBroken = false;
 
 while ((match = linkRe.exec(content)) !== null) {
   const target = match[1]!;
@@ -28,7 +27,6 @@ while ((match = linkRe.exec(content)) !== null) {
     statSync(resolved);
   } catch {
     console.error(`[post-edit-md-link] WARNING: broken relative link '${target}' in ${filePath}`);
-    hasBroken = true;
   }
 }
 
