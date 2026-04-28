@@ -110,7 +110,6 @@ tools: Read, Grep, Glob, Bash
 ---
 suite_name: "Hotfix 用例 - {{bug_title}}"
 description: "验证 Bug #{{bug_id}} 修复效果"
-owner_skill: daily-task
 tags:
   - hotfix
   - bug-{{bug_id}}

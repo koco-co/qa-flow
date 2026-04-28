@@ -46,3 +46,22 @@ export interface PathReport {
   violations: PathViolation[];
   passed: boolean;
 }
+
+// ── Agent audit (§10.2/§10.4) ───────────────────────────────────
+
+export type AgentRule = "A1" | "A6" | "N1";
+
+export interface AgentViolation {
+  rule: AgentRule;
+  file: string;
+  lineCount?: number;
+  matched?: string;
+  message: string;
+}
+
+export interface AgentReport {
+  scanRoot: string;
+  agents: number;
+  violations: AgentViolation[];
+  passed: boolean;
+}
