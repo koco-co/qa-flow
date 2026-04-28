@@ -47,15 +47,15 @@ Input parsing and environment preparation:
 
 ## <a id="step-2"></a>Step 2: Probe
 
-Executor: subagent (`source-scanner-agent`, haiku)
+Executor: main agent (direct) + subagent (`source-scanner-agent`, haiku)
 Gate after: [R1](#gate-r1)
 
 Collect 4 signals from the source system:
 
-1. **Source scan**: Scan `.repos/` for feature-related code (page objects, API endpoints, data models)
-2. **Image semantics**: Extract UI semantics from screenshots/designs in the PRD
-3. **Page key points**: Extract business logic from page elements
-4. **Historical cases**: Scan `archive/` and `history/` for related existing test cases
+1. **Source scan** (subagent): Dispatch `source-scanner-agent` to scan `.repos/` for feature-related code — page objects, API endpoints, data models. Outputs Appendix A.
+2. **Image semantics** (main agent inline): Read `images/` directory with Read tool, extract UI semantics from screenshots/designs in the PRD. Write §3 to enhanced.md via `discuss set-section --anchor s-3`.
+3. **Page key points** (main agent inline): Extract business logic from page elements, combine source scan + image results.
+4. **Historical cases**: Scan `archive/` and `history/` for related existing test cases.
 
 Output: `enhanced.md` — appended with source signals (Appendix A + §3). 
 
