@@ -3,15 +3,15 @@
  * parse-cases.ts — Archive MD 用例解析器
  *
  * 用法：
- *   bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file workspace/archive/202604/xxx.md
- *   bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --file workspace/archive/202604/xxx.md --priority P0
- *   bun run .claude/skills/ui-autotest/scripts/parse-cases.ts --help
+ *   bun run engine/src/ui-autotest/parse-cases.ts --file workspace/archive/202604/xxx.md
+ *   bun run engine/src/ui-autotest/parse-cases.ts --file workspace/archive/202604/xxx.md --priority P0
+ *   bun run engine/src/ui-autotest/parse-cases.ts --help
  */
 
 import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { Command } from "commander";
-import { parseFrontMatter } from "../../../../engine/src/lib/frontmatter.ts";
+import { parseFrontMatter } from "../lib/frontmatter.ts";
 
 // ────────────────────────────────────────────────────────────
 // 类型定义

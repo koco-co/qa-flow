@@ -3,7 +3,7 @@
  * merge-specs.ts — 合并 Playwright 代码块为 spec 文件
  *
  * 用法：
- *   bun run .claude/skills/ui-autotest/scripts/merge-specs.ts \
+ *   bun run engine/src/ui-autotest/merge-specs.ts \
  *     --input .kata/{{project}}/ui-blocks/ \
  *     --output tests/e2e/202604/xxx/
  */

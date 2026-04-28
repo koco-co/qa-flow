@@ -6,12 +6,11 @@ import { join, resolve } from "node:path";
 import { after, before, describe, it } from "node:test";
 
 // 通过 process.argv[1] 或文件系统路径推算 REPO_ROOT，确保在 --test worker 模式下也正确解析
-// 文件位置：.claude/scripts/__tests__/ui-autotest/parse-cases.test.ts
-// REPO_ROOT 需要向上 4 层：ui-autotest/ → __tests__/ → scripts/ → .claude/ → repo root
+// REPO_ROOT 需要向上 3 层：ui-autotest/ → tests/ → engine/ → repo root
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 const PARSE_CASES_PATH = resolve(
   REPO_ROOT,
-  ".claude/skills/ui-autotest/scripts/parse-cases.ts",
+  "engine/src/ui-autotest/parse-cases.ts",
 );
 
 const {
@@ -283,7 +282,7 @@ function runCli(args: string[]): {
   try {
     const stdout = execFileSync(
       "bun",
-      ["run", ".claude/skills/ui-autotest/scripts/parse-cases.ts", ...args],
+      ["run", "engine/src/ui-autotest/parse-cases.ts", ...args],
       { cwd: REPO_ROOT, encoding: "utf8" },
     );
     return { stdout, stderr: "", code: 0 };

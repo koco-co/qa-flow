@@ -9,7 +9,7 @@ import { after, before, describe, it } from "node:test";
 const REPO_ROOT_MERGE = resolve(import.meta.dirname, "../../..");
 const MERGE_SPECS_PATH = resolve(
   REPO_ROOT_MERGE,
-  ".claude/skills/ui-autotest/scripts/merge-specs.ts",
+  "engine/src/ui-autotest/merge-specs.ts",
 );
 
 const { buildSpecContent, mergeSpecs, parseBlockMeta, readCodeBlocks } = await import(
