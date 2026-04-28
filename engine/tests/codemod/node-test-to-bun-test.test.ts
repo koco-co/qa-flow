@@ -17,4 +17,24 @@ describe("transformNodeTestToBunTest", () => {
     const [before, after] = pair("equal");
     expect(transformNodeTestToBunTest(before)).toBe(after);
   });
+
+  it("converts match / doesNotMatch", () => {
+    const [b, a] = pair("match");
+    expect(transformNodeTestToBunTest(b)).toBe(a);
+  });
+
+  it("converts throws / doesNotThrow", () => {
+    const [b, a] = pair("throws");
+    expect(transformNodeTestToBunTest(b)).toBe(a);
+  });
+
+  it("converts ok", () => {
+    const [b, a] = pair("ok");
+    expect(transformNodeTestToBunTest(b)).toBe(a);
+  });
+
+  it("comprehensive — all assert types", () => {
+    const [b, a] = pair("comprehensive");
+    expect(transformNodeTestToBunTest(b)).toBe(a);
+  });
 });
