@@ -1,0 +1,854 @@
+{
+  "summary": [
+    {
+      "feature": "202604-【内置规则丰富】完整性，json中key值范围校验",
+      "ops": 44,
+      "warnings": 0
+    },
+    {
+      "feature": "202602-【数据质量】菜单名称修改",
+      "ops": 2,
+      "warnings": 2
+    },
+    {
+      "feature": "202604-【内置规则丰富】有效性，json中key对应的value值格式校验",
+      "ops": 54,
+      "warnings": 0
+    },
+    {
+      "feature": "202602-【岚图】【规则集管理】支持每个数据表的规则集管理",
+      "ops": 2,
+      "warnings": 2
+    },
+    {
+      "feature": "202604-资产-集成测试用例",
+      "ops": 1,
+      "warnings": 1
+    }
+  ],
+  "details": [
+    {
+      "feature": "202604-【内置规则丰富】完整性，json中key值范围校验",
+      "plan": {
+        "testsDir": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests",
+        "ops": [
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t21.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t21-hive2-x-string-key.ts",
+            "meta": {
+              "id": "t21",
+              "title": "【P1】验证Hive2.x数据源的string字段支持key范围校验"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t15.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t15-case-15.ts",
+            "meta": {
+              "id": "t15",
+              "title": "【P1】验证规则配置参数卡片完整展示所有字段"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t3.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t03-json-key.ts",
+            "meta": {
+              "id": "t3",
+              "title": "验证json类型字段可成功配置key范围校验规则"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t31.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t31-case-31.ts",
+            "meta": {
+              "id": "t31",
+              "title": "【P1】验证下载明细数据中校验字段标红展示"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t11.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t11-case-11.ts",
+            "meta": {
+              "id": "t11",
+              "title": "验证校验结果查询中的明细/下载/通过无明细/失败日志"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t25.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t25-key.ts",
+            "meta": {
+              "id": "t25",
+              "title": "【P1】验证删除已被规则引用的key后规则配置回显和编辑功能正常"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t35.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t35-case-35.ts",
+            "meta": {
+              "id": "t35",
+              "title": "【P0】验证质量报告中校验不通过行的各列展示内容正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t7.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t07-key.ts",
+            "meta": {
+              "id": "t7",
+              "title": "验证key范围校验完整主流程：规则集配置+导入规则包+执行校验+查看实例结果"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t10.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t10-key.ts",
+            "meta": {
+              "id": "t10",
+              "title": "验证规则库中新增key范围校验内置规则展示信息正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t24.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t24-key.ts",
+            "meta": {
+              "id": "t24",
+              "title": "【P1】验证千级key数据量下校验内容选择列表的加载搜索和选择性能"
+            }
+          },
+          {
+            "kind": "runner-clean",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/smoke.spec.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/runners/smoke.spec.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t34.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t34-case-34.ts",
+            "meta": {
+              "id": "t34",
+              "title": "【P0】验证质量报告中校验通过行的各列展示内容正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t6.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t06-case-06.ts",
+            "meta": {
+              "id": "t6",
+              "title": "验证规则配置参数卡片完整展示所有字段"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t20.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t20-sparkthrift2-x-string-key.ts",
+            "meta": {
+              "id": "t20",
+              "title": "【P1】验证SparkThrift2.x数据源的string字段支持key范围校验"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t14.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t14-case-14.ts",
+            "meta": {
+              "id": "t14",
+              "title": "验证质量报告中不包含校验方法的详情说明格式正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t2.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t02-case-02.ts",
+            "meta": {
+              "id": "t2",
+              "title": "验证校验内容选择/搜索/回显/悬浮/标签提示"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t30.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t30-case-30.ts",
+            "meta": {
+              "id": "t30",
+              "title": "【P1】验证校验不通过时查看明细：标题、字段标红及全字段展示"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t9.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t09-sparkthrift2-x-string-key.ts",
+            "meta": {
+              "id": "t9",
+              "title": "验证SparkThrift2.x数据源的string字段支持key范围校验"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/task-helpers.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/helpers/task-helpers.ts"
+          },
+          {
+            "kind": "data",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/test-data.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/data/test-data.ts"
+          },
+          {
+            "kind": "data",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/data-15693.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/data/data-15693.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t8.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t08-case-08.ts",
+            "meta": {
+              "id": "t8",
+              "title": "验证校验方法切换（包含与不包含）规则保存和执行结果差异"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t19.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t19-doris3-x-string-key.ts",
+            "meta": {
+              "id": "t19",
+              "title": "【P1】验证Doris3.x数据源的string字段支持key范围校验"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/suite-helpers.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/helpers/suite-helpers.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t29.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t29-key.ts",
+            "meta": {
+              "id": "t29",
+              "title": "【P1】验证规则库中新增key范围校验内置规则展示信息正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t28.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t28-key.ts",
+            "meta": {
+              "id": "t28",
+              "title": "【P1】验证对分区表配置key范围校验规则指定分区下数据校验正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t18.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t18-sparkthrift2-x-json-key.ts",
+            "meta": {
+              "id": "t18",
+              "title": "【P1】验证SparkThrift2.x数据源的json字段支持key范围校验"
+            }
+          },
+          {
+            "kind": "data",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/test-data-15693.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/data/test-data-15693.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t13.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t13-case-13.ts",
+            "meta": {
+              "id": "t13",
+              "title": "验证质量报告中校验不通过行的各列展示内容正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t27.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t27-key.ts",
+            "meta": {
+              "id": "t27",
+              "title": "【P1】验证key范围校验规则结合抽样功能正确执行"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t5.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t05-key.ts",
+            "meta": {
+              "id": "t5",
+              "title": "验证key范围校验表单必填提示"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t23.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t23-key.ts",
+            "meta": {
+              "id": "t23",
+              "title": "【P1】验证key数量几千个时按层级校验逻辑正确执行"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t17.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t17-doris3-x-json-key.ts",
+            "meta": {
+              "id": "t17",
+              "title": "【P1】验证Doris3.x数据源的json字段支持key范围校验"
+            }
+          },
+          {
+            "kind": "runner-clean",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/full.spec.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/runners/full.spec.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t1.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t01-key.ts",
+            "meta": {
+              "id": "t1",
+              "title": "验证统计函数选择key范围校验后字段选择变为单选"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t33.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t33-case-33.ts",
+            "meta": {
+              "id": "t33",
+              "title": "【P2】验证校验失败时支持查看日志"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t22.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t22-hive2-x-json-key.ts",
+            "meta": {
+              "id": "t22",
+              "title": "【P1】验证Hive2.x数据源的json字段支持key范围校验"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t16.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t16-key.ts",
+            "meta": {
+              "id": "t16",
+              "title": "【P0】验证key范围校验完整：规则集配置+导入规则包+执行任务+在校验结果查询中查看实例结果"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t32.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t32-case-32.ts",
+            "meta": {
+              "id": "t32",
+              "title": "【P1】验证校验通过时结果查询页不显示明细入口"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t12.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t12-case-12.ts",
+            "meta": {
+              "id": "t12",
+              "title": "验证质量报告中校验通过行的各列展示内容正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t26.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t26-key.ts",
+            "meta": {
+              "id": "t26",
+              "title": "【P1】验证删除已被规则引用的key后执行校验任务不受影响"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/key-range-utils.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/helpers/key-range-utils.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t36.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t36-case-36.ts",
+            "meta": {
+              "id": "t36",
+              "title": "【P1】验证质量报告中不包含校验方法的详情说明格式正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/t4.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests/cases/t04-string-json-string-key.ts",
+            "meta": {
+              "id": "t4",
+              "title": "验证string字段可配置且非json/string字段不可选择key范围校验"
+            }
+          }
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "feature": "202602-【数据质量】菜单名称修改",
+      "plan": {
+        "testsDir": "/Users/poco/Projects/kata/workspace/dataAssets/features/202602-【数据质量】菜单名称修改/tests",
+        "ops": [
+          {
+            "kind": "runner-inline",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202602-【数据质量】菜单名称修改/tests/smoke.spec.ts"
+          },
+          {
+            "kind": "runner-inline",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202602-【数据质量】菜单名称修改/tests/full.spec.ts"
+          }
+        ],
+        "warnings": [
+          "smoke.spec.ts appears to embed test bodies inline — flagged for MANUAL TRIAGE",
+          "full.spec.ts appears to embed test bodies inline — flagged for MANUAL TRIAGE"
+        ]
+      }
+    },
+    {
+      "feature": "202604-【内置规则丰富】有效性，json中key对应的value值格式校验",
+      "plan": {
+        "testsDir": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests",
+        "ops": [
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t21.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t21-key-value.ts",
+            "meta": {
+              "id": "t21",
+              "title": "【P1】验证删除已被规则引用的key后value格式预览弹窗和执行校验任务正常"
+            }
+          },
+          {
+            "kind": "unit",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-fixture-sql.test.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/unit/json-fixture-sql.test.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t15.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t15-json.ts",
+            "meta": {
+              "id": "t15",
+              "title": "【P0】验证格式-json格式校验校验不通过主流程：规则集配置+导入规则包+执行任务+在校验结果查询中查看失败明细"
+            }
+          },
+          {
+            "kind": "unit",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-suite-preconditions.test.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/unit/json-suite-preconditions.test.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t3.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t03-dom-json-int-json-string.ts",
+            "meta": {
+              "id": "t3",
+              "title": "【P1】验证当前 DOM 下「格式-json格式校验」在 INT 与 json/string 字段下均可见"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/validation-result-status.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/validation-result-status.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t11.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t11-json-string-json.ts",
+            "meta": {
+              "id": "t11",
+              "title": "【P1】验证选择非json或string类型字段时「格式-json格式校验」统计规则选项不可选"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t25.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t25-case-25.ts",
+            "meta": {
+              "id": "t25",
+              "title": "【P1】验证校验不通过时明细数据下载功能中校验字段标红"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t7.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t07-key-200-200.ts",
+            "meta": {
+              "id": "t7",
+              "title": "【P1】验证校验key数据量超过200条时默认加载前200条展示"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t10.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t10-value-key.ts",
+            "meta": {
+              "id": "t10",
+              "title": "【P1】验证点击「value格式预览」弹窗仅展示已勾选key的格式信息且支持分页"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t24.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t24-json.ts",
+            "meta": {
+              "id": "t24",
+              "title": "【P1】验证规则库中「格式-json格式校验」内置规则展示信息正确"
+            }
+          },
+          {
+            "kind": "data",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-fixture-sql.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/data/json-fixture-sql.ts"
+          },
+          {
+            "kind": "runner-clean",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/smoke.spec.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/runners/smoke.spec.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t6.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t06-key.ts",
+            "meta": {
+              "id": "t6",
+              "title": "【P1】验证校验key搜索功能正常"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t20.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t20-key.ts",
+            "meta": {
+              "id": "t20",
+              "title": "【P1】验证删除已被有效性规则引用的key后规则配置页面回显和编辑功能正常"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-suite-preconditions.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/json-suite-preconditions.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t14.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t14-json.ts",
+            "meta": {
+              "id": "t14",
+              "title": "【P0】验证格式-json格式校验完整主流程：规则集配置+导入规则包+执行任务+在校验结果查询中查看通过实例"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/monitor-create-retry.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/monitor-create-retry.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t2.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t02-json.ts",
+            "meta": {
+              "id": "t2",
+              "title": "【P1】验证「格式-json格式校验」当前不展示独立悬浮提示图标"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-format-suite-helpers.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/json-format-suite-helpers.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t9.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t09-key-key.ts",
+            "meta": {
+              "id": "t9",
+              "title": "【P1】验证校验key输入框悬浮时展示全部key名，默认仅显示前两个"
+            }
+          },
+          {
+            "kind": "data",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/test-data-15694.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/data/test-data-15694.ts"
+          },
+          {
+            "kind": "unit",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-tree-path-resolver.test.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/unit/json-tree-path-resolver.test.ts"
+          },
+          {
+            "kind": "data",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/test-data.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/data/test-data.ts"
+          },
+          {
+            "kind": "unit",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-format-task-runtime.test.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/unit/json-format-task-runtime.test.ts"
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-tree-path-resolver.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/json-tree-path-resolver.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t8.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t08-key.ts",
+            "meta": {
+              "id": "t8",
+              "title": "【P1】验证校验key回显格式及勾选仅对当前层级生效"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-format-task-helpers.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/json-format-task-helpers.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t19.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t19-json-key.ts",
+            "meta": {
+              "id": "t19",
+              "title": "【P1】验证json格式配置中维护上千个key时执行校验与结果展示正常"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/rule-editor-base.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/rule-editor-base.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t29.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t29-json.ts",
+            "meta": {
+              "id": "t29",
+              "title": "【P1】验证质量报告中「格式-json格式校验」规则行各列字段展示正确（校验不通过场景）"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-format-utils.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/json-format-utils.ts"
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/suite-case-helpers.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/suite-case-helpers.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t28.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t28-json.ts",
+            "meta": {
+              "id": "t28",
+              "title": "【P1】验证质量报告中「格式-json格式校验」规则行各列字段展示正确（校验通过场景）"
+            }
+          },
+          {
+            "kind": "data",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/data-15694.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/data/data-15694.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t18.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t18-json-hive-2-x.ts",
+            "meta": {
+              "id": "t18",
+              "title": "【P1】验证「格式-json格式校验」规则在Hive 2.x数据源下执行正确"
+            }
+          },
+          {
+            "kind": "unit",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/monitor-create-retry.test.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/unit/monitor-create-retry.test.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t13.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t13-case-13.ts",
+            "meta": {
+              "id": "t13",
+              "title": "【P1】验证保存后规则配置参数展示区域各字段内容正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t27.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t27-case-27.ts",
+            "meta": {
+              "id": "t27",
+              "title": "【P2】验证校验失败时支持查看日志"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t5.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t05-key.ts",
+            "meta": {
+              "id": "t5",
+              "title": "【P1】验证校验key支持多选和全选操作"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t23.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t23-json.ts",
+            "meta": {
+              "id": "t23",
+              "title": "【P1】验证对分区表配置格式-json格式校验规则后指定分区下的数据校验正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t17.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t17-json-doris-3-x.ts",
+            "meta": {
+              "id": "t17",
+              "title": "【P1】验证「格式-json格式校验」规则在Doris 3.x数据源下执行正确"
+            }
+          },
+          {
+            "kind": "runner-clean",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/full.spec.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/runners/full.spec.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t1.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t01-json.ts",
+            "meta": {
+              "id": "t1",
+              "title": "【P1】验证规则配置页「统计规则」下拉框中「格式-json格式校验」选项位置在自定义正则上方"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/validation-key-label.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/validation-key-label.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t22.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t22-json.ts",
+            "meta": {
+              "id": "t22",
+              "title": "【P1】验证配置格式-json格式校验规则时结合抽样功能执行校验结果正确"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t16.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t16-json-sparkthrift-2-x.ts",
+            "meta": {
+              "id": "t16",
+              "title": "【P1】验证「格式-json格式校验」规则在SparkThrift 2.x数据源下执行正确"
+            }
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/rule-task-base.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/rule-task-base.ts"
+          },
+          {
+            "kind": "helper",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/json-format-task-runtime.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/helpers/json-format-task-runtime.ts"
+          },
+          {
+            "kind": "unit",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/validation-result-status.test.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/unit/validation-result-status.test.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t12.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t12-key.ts",
+            "meta": {
+              "id": "t12",
+              "title": "【P1】验证未选择校验key时保存规则提示统计函数存在必填项未填写"
+            }
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t26.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t26-case-26.ts",
+            "meta": {
+              "id": "t26",
+              "title": "【P1】验证校验通过时不记录明细数据，查看详情入口不显示"
+            }
+          },
+          {
+            "kind": "unit",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/validation-key-label.test.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/unit/validation-key-label.test.ts"
+          },
+          {
+            "kind": "case",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/t4.ts",
+            "dst": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests/cases/t04-key-value-key-value-key.ts",
+            "meta": {
+              "id": "t4",
+              "title": "【P1】验证校验key列表中仅配置了value格式的key可被选中，未配置value格式的key不可选中"
+            }
+          }
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "feature": "202602-【岚图】【规则集管理】支持每个数据表的规则集管理",
+      "plan": {
+        "testsDir": "/Users/poco/Projects/kata/workspace/dataAssets/features/202602-【岚图】【规则集管理】支持每个数据表的规则集管理/tests",
+        "ops": [
+          {
+            "kind": "runner-inline",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202602-【岚图】【规则集管理】支持每个数据表的规则集管理/tests/smoke.spec.ts"
+          },
+          {
+            "kind": "runner-inline",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202602-【岚图】【规则集管理】支持每个数据表的规则集管理/tests/full.spec.ts"
+          }
+        ],
+        "warnings": [
+          "smoke.spec.ts appears to embed test bodies inline — flagged for MANUAL TRIAGE",
+          "full.spec.ts appears to embed test bodies inline — flagged for MANUAL TRIAGE"
+        ]
+      }
+    },
+    {
+      "feature": "202604-资产-集成测试用例",
+      "plan": {
+        "testsDir": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-资产-集成测试用例/tests",
+        "ops": [
+          {
+            "kind": "runner-inline",
+            "src": "/Users/poco/Projects/kata/workspace/dataAssets/features/202604-资产-集成测试用例/tests/smoke.spec.ts"
+          }
+        ],
+        "warnings": [
+          "smoke.spec.ts appears to embed test bodies inline — flagged for MANUAL TRIAGE"
+        ]
+      }
+    }
+  ]
+}

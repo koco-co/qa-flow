@@ -1,0 +1,26 @@
+// 全量测试（Spark-only 收敛版）
+import "../cases/t01-json.ts";
+import "../cases/t02-json.ts";
+import "../cases/t03-dom-json-int-json-string.ts";
+import "../cases/t04-key-value-key-value-key.ts";
+import "../cases/t05-key.ts";
+import "../cases/t06-key.ts";
+import "../cases/t07-key-200-200.ts";
+import "../cases/t08-key.ts";
+import "../cases/t09-key-key.ts";
+import "../cases/t10-value-key.ts";
+import "../cases/t11-json-string-json.ts";
+import "../cases/t12-key.ts";
+import "../cases/t13-case-13.ts";
+import "../cases/t14-json.ts";
+import "../cases/t15-json.ts";
+import "../cases/t20-key.ts";
+import "../cases/t21-key-value.ts";
+import "../cases/t22-json.ts";
+import "../cases/t23-json.ts";
+import "../cases/t24-json.ts";
+import "../cases/t25-case-25.ts";
+import "../cases/t26-case-26.ts";
+import "../cases/t27-case-27.ts";
+import "../cases/t28-json.ts";
+import "../cases/t29-json.ts";
