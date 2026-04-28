@@ -107,6 +107,10 @@ registerAgentsAudit(kata);
 import { registerCasesLint } from "./cases-lint.ts";
 registerCasesLint(kata);
 
+// ── Test bucket audit (P8.1) ──────────────────────────────
+import { registerTestBucketAudit } from "./test-bucket-audit.ts";
+registerTestBucketAudit(kata);
+
 // ── Codemod (P7.5) ─────────────────────────────────────────
 import { registerCodemodApply } from "./codemod-apply.ts";
 registerCodemodApply(kata);
