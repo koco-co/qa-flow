@@ -24,6 +24,8 @@ function walk(dir: string, out: string[]): void {
       return;
     }
     if (!st.isDirectory()) return;
+    // Skip generated/report directories to avoid noise
+    if (dir.includes("/reports/") || dir.includes("/.temp/") || dir.includes("/archive/")) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       walk(join(dir, entry.name), out);
     }
