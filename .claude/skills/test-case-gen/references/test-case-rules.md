@@ -306,7 +306,7 @@ CREATE TABLE IF NOT EXISTS qa_test.table_a (
 INSERT INTO qa_test.table_a VALUES (1, '测试数据A', 100.00, '启用', '2026-01-01 10:00:00');
 ```
 
-> **SQL 消费方式**：前置条件中的 SQL 将由 `dtstack-cli` 包的 `setupPreconditions` 自动执行（DDL 建表 → 数据源导入资产 → 元数据同步）。
+> **SQL 消费方式**：前置条件中的 SQL 将由 `dtstack-sdk` 包的 `setupPreconditions` 自动执行（DDL 建表 → 数据源导入资产 → 元数据同步）。
 > 默认使用 Doris 语法；每张表 SQL 以 `DROP TABLE IF EXISTS` 开头；必须包含 `INSERT INTO` 样例数据。
 > SQL 文件路径约定：`tests/e2e/YYYYMM/{suite}/sql/{name}.sql`。
 

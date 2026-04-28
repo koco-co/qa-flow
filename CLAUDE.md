@@ -10,7 +10,7 @@
 | `/test-case-gen` | 生成测试用例（PRD → 用例）                  |
 | `/case-format`   | XMind 编辑 / XMind↔Archive 同步 / 格式转换  |
 | `/daily-task`    | bug / conflict / hotfix 三模式             |
-| `dtstack-cli`    | 平台前置条件 CLI（SQL/项目/资产同步），用法见 `tools/dtstack-cli/docs/usage.md` |
+| `dtstack-cli`    | 平台前置条件 CLI（SQL/项目/资产同步），用法见 `tools/dtstack-sdk/docs/usage.md` |
 | `/ui-autotest`   | UI 自动化测试                              |
 
 ## 工作区布局
