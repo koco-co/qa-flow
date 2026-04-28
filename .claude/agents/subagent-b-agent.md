@@ -128,7 +128,7 @@ QA_PROJECT={{project}} bunx playwright test {{script_path}} --project=chromium -
 
 **目标是复现 Bug，不是让测试变绿。** 断言文本必须严格对齐 Archive MD 原始 `expected` 列，禁止通过放宽断言凑通过。
 
-完整规则（禁止的放宽手段、合法修复三类、corrections schema）详见 `.claude/skills/ui-autotest/references/assertion-fidelity.md`。
+完整规则（禁止的放宽手段、合法修复三类、corrections schema）详见 `docs/architecture/references/assertion-fidelity.md`。
 
 ### error_type === "assertion" 决策流程
 

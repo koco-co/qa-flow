@@ -276,7 +276,7 @@ model: sonnet
 - [ ] 正向用例中步骤 < 4 的是否已合并？
 - [ ] 逆向用例是否每条仅测一个条件？
 
-> **为什么这几条重要**：下游 ui-autotest 被强制禁止放宽断言（不准 `/A|B/` 兜底、不准祖先 filter、不准 toBeVisible 替代文本）。你写的预期会被原样翻译为 `expect().toContainText("原文")`。预期里留"或"、留模糊描述，下游就会失败或被误绕过。详见 `.claude/skills/ui-autotest/references/assertion-fidelity.md`。
+> **为什么这几条重要**：下游 ui-autotest 被强制禁止放宽断言（不准 `/A|B/` 兜底、不准祖先 filter、不准 toBeVisible 替代文本）。你写的预期会被原样翻译为 `expect().toContainText("原文")`。预期里留"或"、留模糊描述，下游就会失败或被误绕过。详见 `docs/architecture/references/assertion-fidelity.md`。
 
 ## 结构化阻断协议（强制自检）
 

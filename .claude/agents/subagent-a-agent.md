@@ -304,7 +304,7 @@ test("验证大文件导入全流程", { timeout: 180000, tag: "@serial" }, asyn
 
 **步骤可以按实际 DOM 修正，预期（`expected` 列）必须严格忠实于用例原文。断言失败即潜在 Bug 信号，禁止放宽断言"凑通过"。**
 
-完整规则（禁止模式、翻译表、DOM 差异处理）详见 `.claude/skills/ui-autotest/references/assertion-fidelity.md`。写脚本前必读。
+完整规则（禁止模式、翻译表、DOM 差异处理）详见 `docs/architecture/references/assertion-fidelity.md`。写脚本前必读。
 
 ---
 
