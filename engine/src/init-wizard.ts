@@ -18,7 +18,7 @@ import { initEnv } from "./lib/env.ts";
 // ---------------------------------------------------------------------------
 
 function repoRoot(): string {
-  // This file is at .claude/scripts/init-wizard.ts
+  // This file is at engine/src/init-wizard.ts
   // 3 levels up → repo root
   return resolve(fileURLToPath(import.meta.url), "../../..");
 }

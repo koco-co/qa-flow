@@ -4,8 +4,8 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-// dirname = /<repo>/.claude/scripts/__tests__
-// ../../.. → /<repo>
+// dirname = /<repo>/engine/tests
+// ../.. → /<repo>
 const repoRoot = resolve(import.meta.dirname, "../..");
 
 function runCli(args: string[]) {

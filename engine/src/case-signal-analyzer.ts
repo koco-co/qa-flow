@@ -32,7 +32,7 @@ import { parseFrontMatter } from "./lib/frontmatter.ts";
 // ---------------------------------------------------------------------------
 
 function invokeJson(args: string[], stdin?: string): unknown | null {
-  // Convert ".claude/scripts/xxx.ts" first arg to kata-cli subcommand name
+  // Convert "engine/src/xxx.ts" first arg to kata-cli subcommand name
   const [scriptPath, ...rest] = args;
   const subcommand = scriptPath.replace(/^.*\/([^/]+)\.ts$/, "$1");
   const result = spawnSync("kata-cli", [subcommand, ...rest], {
@@ -121,7 +121,7 @@ function collectSource(
   if (keywords.length === 0) return null;
 
   const result = invokeJson([
-    ".claude/scripts/source-analyze.ts",
+    "engine/src/source-analyze.ts",
     "analyze",
     "--repo",
     repoPath,
@@ -149,7 +149,7 @@ function collectHistory(
 
   // Call archive-gen search
   const searchRaw = invokeJson([
-    ".claude/scripts/archive-gen.ts",
+    "engine/src/archive-gen.ts",
     "search",
     "--query",
     query,
@@ -178,7 +178,7 @@ function collectHistory(
 
   // Pass through search-filter for deduplication/sorting
   const filterRaw = invokeJson(
-    [".claude/scripts/search-filter.ts", "filter", "--top", "5"],
+    ["engine/src/search-filter.ts", "filter", "--top", "5"],
     JSON.stringify(searchArr),
   );
 
@@ -219,7 +219,7 @@ function collectKnowledge(
 ): { core: KnowledgeReadCore | null; matchedModuleContent: string | null; moduleName: string | null } {
   // read-core
   const coreRaw = invokeJson([
-    ".claude/scripts/knowledge-keeper.ts",
+    "engine/src/knowledge-keeper.ts",
     "read-core",
     "--project",
     project,
@@ -264,7 +264,7 @@ function collectKnowledge(
     );
     if (existsSync(moduleFilePath)) {
       const moduleRaw = invokeJson([
-        ".claude/scripts/knowledge-keeper.ts",
+        "engine/src/knowledge-keeper.ts",
         "read-module",
         "--project",
         project,

@@ -341,7 +341,7 @@
     "env": "string",
     "source": { "type": "string — prd", "path": "string", "mtime": "string | null" },
     "meta": { "mode": "string — normal|quick" },
-    "tasks": "Task[] — 7 pipeline nodes + 可选 format-check；每个 task 的 payload 承载原 node_outputs 字段（transform.confidence、enhance.health_warnings 等），完整类型见 .claude/scripts/lib/progress-types.ts",
+    "tasks": "Task[] — 7 pipeline nodes + 可选 format-check；每个 task 的 payload 承载原 node_outputs 字段（transform.confidence、enhance.health_warnings 等），完整类型见 engine/src/lib/progress-types.ts",
     "artifacts": {
       "strategy_resolution": "object? — 见 signal_profile / strategy_resolution schema（strategy-schema.json）",
       "writers": "object? — writer-context-builder 产物",

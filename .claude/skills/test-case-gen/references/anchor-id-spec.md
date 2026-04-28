@@ -1,6 +1,6 @@
 # enhanced.md 稳定锚点规范
 
-> 供 `references/enhanced-doc-template.md` / `source-refs-schema.md` / `anchor-id-spec.md` 互相引用。CLI 强制约束见 `.claude/scripts/lib/enhanced-doc-anchors.ts`。
+> 供 `references/enhanced-doc-template.md` / `source-refs-schema.md` / `anchor-id-spec.md` 互相引用。CLI 强制约束见 `engine/src/lib/enhanced-doc-anchors.ts`。
 
 ## 锚点格式
 

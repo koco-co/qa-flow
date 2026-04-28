@@ -400,7 +400,7 @@ Phase 5 consolidated CLI / config / state / logging into four shared channels. N
 
 ### CLI Runner Factory
 
-`.claude/scripts/lib/cli-runner.ts` exposes `createCli({ name, description, commands })`. 27 of the 28 CLI scripts use the factory, getting for free:
+`engine/src/lib/cli-runner.ts` exposes `createCli({ name, description, commands })`. 27 of the 28 CLI scripts use the factory, getting for free:
 
 - Three-tier `.env` preload via `initEnv()`
 - `createLogger(name)` injection
@@ -501,7 +501,7 @@ kata/
 
 ## Script CLI Reference
 
-All scripts are located at `.claude/scripts/`. They share a unified entry factory (`lib/cli-runner.ts`) and are executed with `bun run`:
+All scripts are located at `engine/src/`. They share a unified entry factory (`lib/cli-runner.ts`) and are executed with `bun run`:
 
 | Script                      | Commands                                          | Description                                            |
 | --------------------------- | ------------------------------------------------- | ------------------------------------------------------ |
@@ -633,7 +633,7 @@ bun run test:watch
 bun test ./plugins/zentao/__tests__/fetch.test.ts
 ```
 
-Core script tests live in `.claude/scripts/__tests__/`; plugin tests live in `plugins/*/__tests__/`, with an 80%+ coverage target.
+Core script tests live in `engine/tests/`; plugin tests live in `plugins/*/__tests__/`, with an 80%+ coverage target.
 
 ---
 

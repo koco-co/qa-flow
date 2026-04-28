@@ -8,9 +8,9 @@
 
 | 类型           | 路径前缀                            | 用途                                   |
 | -------------- | ----------------------------------- | -------------------------------------- |
-| **跨 skill 共享脚本** | `.claude/scripts/`                  | 多个 skill 都可能调用（如 `config.ts`、`rule-loader.ts`） |
+| **跨 skill 共享脚本** | `engine/src/`                  | 多个 skill 都可能调用（如 `config.ts`、`rule-loader.ts`） |
 | **skill 私有脚本**   | `.claude/skills/{skill}/scripts/`   | 仅该 skill 使用（如 `parse-cases.ts`）  |
-| **共享库**      | `.claude/scripts/lib/`              | TypeScript 模块，被脚本 `import`，不直接 `bun run` |
+| **共享库**      | `engine/src/lib/`              | TypeScript 模块，被脚本 `import`，不直接 `bun run` |
 
 ---
 
@@ -80,7 +80,7 @@ kata-cli progress session-summary --project {{project}} --session "$SESSION_ID"
 
 新增/修改 SKILL/agent/workflow 文件时，自查：
 
-- [ ] 所有 `bun run` 路径以 `.claude/scripts/` 或 `.claude/skills/{skill}/scripts/` 开头
+- [ ] 所有 `bun run` 路径以 `engine/src/` 或 `.claude/skills/{skill}/scripts/` 开头
 - [ ] 涉及 `workspace/` 的命令显式传 `--project {{project}}`
 - [ ] 涉及环境隔离的命令显式传 `--env {{env}}`
 - [ ] 文档中的项目名/产品名使用占位符或加「示例」注释
