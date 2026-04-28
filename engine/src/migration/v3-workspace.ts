@@ -225,6 +225,9 @@ export function applyMigration(
     warnings: [],
   };
 
+  const FLUSH_EVERY = 10;
+  let mvCount = 0;
+
   for (const op of ops) {
     if (op.type === "log") {
       log.operations.push({ ...op });
@@ -245,6 +248,10 @@ export function applyMigration(
           continue;
         }
         renameSync(op.src!, op.dst!);
+        mvCount += 1;
+        if (mvCount % FLUSH_EVERY === 0) {
+          writeFileSync(options.logPath, JSON.stringify(log, null, 2));
+        }
       }
       log.operations.push({ ...op, checksumBefore: checksum });
       continue;

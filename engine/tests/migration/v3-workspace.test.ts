@@ -104,6 +104,19 @@ describe("applyMigration dry mode", () => {
   });
 });
 
+describe("applyMigration: incremental log persistence", () => {
+  test("log file exists and is valid JSON after applying first 3 non-log ops", () => {
+    const projectDir = freshShadow();
+    const { features } = discoverFeatures(projectDir);
+    const ops = planMigration(features, projectDir);
+    const logPath = join(projectDir, "..", "incremental.log.json");
+    const firstThree = ops.filter((o) => o.type !== "log").slice(0, 3);
+    applyMigration(firstThree, { mode: "real", project: "myproj", logPath });
+    const persisted = JSON.parse(readFileSync(logPath, "utf8"));
+    expect(persisted.operations.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe("applyMigration real mode + rollback (inverse property)", () => {
   test("apply(real) then rollbackFromLog produces a tree byte-identical to original", () => {
     const projectDir = freshShadow();
