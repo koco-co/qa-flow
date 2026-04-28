@@ -10,12 +10,12 @@ argument-hint: "[menu | create] [项目名或关键词]"
 
 | 模式 | 触发 | 入口文件 |
 |---|---|---|
-| `menu`（默认） | 空输入 / `help` / 功能菜单 / 帮助 | `workflow/menu.md` |
-| `create` | 创建项目 / 新建项目 / 补齐项目 / 项目初始化 / `create` | `workflow/create-project/README.md` |
+| `menu`（默认） | 空输入 / `help` / 功能菜单 / 帮助 | `workflow.md#workflow-menu` |
+| `create` | 创建项目 / 新建项目 / 补齐项目 / 项目初始化 / `create` | `workflow.md#workflow-create-project` |
 
 ## 菜单入口（默认）
 
-Read `workflow/menu.md` 并按其中的路由逻辑响应用户命令。
+Read `workflow.md#workflow-menu` 并按其中的路由逻辑响应用户命令。
 
 > 环境初始化不再由 skill 承担；参见仓库根目录 `INSTALL.md`（由 Coding Agent 按指令集执行）。
 

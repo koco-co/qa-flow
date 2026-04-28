@@ -1,6 +1,17 @@
-# using-kata 功能菜单
+# using-kata — Workflow
 
-## 路由逻辑
+This skill exposes 2 main workflows:
+
+- [Menu & routing](#workflow-menu) — user-facing feature menu
+- [Create project](#workflow-create-project) — initialize or repair a project
+
+See [quickstart.md](references/quickstart.md) for the quick-start guide.
+
+---
+
+## <a id="workflow-menu"></a>Workflow: Menu & Routing
+
+### Routing logic
 
 <routing>
   <first_run_policy>
@@ -22,7 +33,7 @@
 - 用户直接提供 `.xmind` 或 `.csv` 文件路径 → 自动路由到 `case-format`（标准化归档）
 - 用户粘贴禅道 Bug URL（含 `bug-view-`）→ 自动路由到 `daily-task` hotfix 模式
 
-## 项目选择
+### Project selection
 
 仅在已有项目后执行：
 
@@ -31,7 +42,7 @@
 3. 若有多个项目，提示用户选择
 4. 将选中项目记为 `{{project}}`
 
-## 功能菜单
+### Feature menu
 
 ```
 当前项目: {{project}}
@@ -48,9 +59,9 @@
 | 7    | 切换项目         | `/using-kata 7` 或 `切换项目`                   | 可用 |
 | 8    | 创建/补齐项目    | `/using-kata 8` 或 `创建项目`                   | 可用 |
 
-## 快速示例
+### Quick examples
 
-请查看下方快速开始指南，或直接输入对应命令：
+See [quickstart.md](references/quickstart.md) for detailed examples.
 
 ```
 为 商品管理需求 生成测试用例
@@ -61,4 +72,38 @@
 标准化归档 workspace/{{project}}/history/旧用例.xmind
 ```
 
-更多示例见 `workflow/references/quickstart.md`
+---
+
+## <a id="workflow-create-project"></a>Workflow: Create Project
+
+[Full content from create-project workflow.](workflow.md#workflow-create-project#note)
+
+> **Note**: `create-project` has its own detailed sub-workflow. The original full content from `workflow/create-project/README.md` would be inlined here. For pre-flight load, scenario descriptions (A-G), subagent rules, and error handling, refer to the `create-project` sub-workflow.
+
+The create-project workflow covers:
+
+### Pre-flight
+
+Load global rules:
+
+```bash
+kata-cli rule-loader load
+```
+
+### Scenario A: New project (primary flow)
+
+A1-A7 covering: collect name, CLI scan, diff review, confirmed create, repository setup, summary.
+
+### Scenario B: Repair incomplete project
+
+B1-B4: detect incomplete skeleton and fill missing directories/files.
+
+### Scenario C: Read-only status
+
+C1: query project structure without modifying anything.
+
+### Subagent rules
+
+- Subagents **must NOT** directly invoke `create` / `clone-repo` (write operations)
+- Subagents may freely invoke `scan` (read-only safe)
+- If a subagent identifies a need to create a project, it marks it in the return report
