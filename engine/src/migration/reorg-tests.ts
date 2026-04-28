@@ -146,48 +146,29 @@ export interface ApplyOptions {
   mode: "dry" | "real";
 }
 
-/** Post-reorg: fix shared/ import depth and local helper refs in case files */
+/** Post-reorg: fix shared/ import depth in all reorged files */
 export function fixCaseImports(plan: ReorgPlan): void {
-  const caseOps = plan.ops.filter((o) => o.kind === "case" && o.dst);
-  if (caseOps.length === 0) return;
+  const movedFiles = plan.ops.filter((o) => o.dst && o.kind !== "runner-inline");
+  if (movedFiles.length === 0) return;
 
-  // Determine how many nesting levels case files are relative to tests/
-  // e.g., cases/p0/ = 2 levels deep (cases/ + p0/), cases/ = 1 level
-  // The shared/ depth adjustment is (nestingLevel - 1) extra levels
-  for (const op of caseOps) {
+  // Base after import-fix: ../../../shared/ (from tests/, 3 up to dataAssets/)
+  // Each level deeper needs 1 extra ../ before shared/
+  for (const op of movedFiles) {
     if (!op.dst) continue;
     const content = readFileSync(op.dst, "utf8");
     const relDir = relative(plan.testsDir, dirname(op.dst));
     const nestingLevel = relDir === "" ? 0 : relDir.split("/").length;
-
-    // Fix 1: adjust shared/ import depth
-    // Base after import-fix: ../../../shared/ (from tests/, 3 up to dataAssets/)
-    // From cases/ (1 level deeper): need ../../../../shared/ (4 up)
-    // From cases/p0/ (2 levels deeper): need ../../../../../shared/ (5 up)
     const expectedSharedLevels = 3 + nestingLevel;
+
     let updated = content.replace(
       /((?:\.\.\/)+)shared\//g,
       (match, up: string) => {
-        const currentLevels = up.split("/").length - 1; // count ".." segments
-        if (currentLevels >= expectedSharedLevels) return match; // already deep enough
+        const currentLevels = up.split("/").length - 1;
+        if (currentLevels >= expectedSharedLevels) return match;
         const extra = expectedSharedLevels - currentLevels;
         return "../".repeat(extra) + match;
       }
     );
-
-    // Fix 2: local helper imports ./helper-name -> ../helpers/helper-name
-    // or -> ../../helpers/helper-name for deeper nesting
-    // Handles both `import "./helper"` and `import { x } from "./helper"`
-    if (nestingLevel >= 1) {
-      const helperPrefix = "../".repeat(nestingLevel) + "helpers/";
-      updated = updated.replace(
-        /(?:from|import)\s+["']\.\/((?:[^"'/]+\/)*[^"'.]+(?:\.[a-z]+)?)["']/g,
-        (m, path: string) => {
-          const quote = m.includes('"') ? '"' : "'";
-          return `${m.slice(0, m.indexOf(quote))}${quote}${helperPrefix}${path}${quote}`;
-        }
-      );
-    }
 
     if (updated !== content) {
       writeFileSync(op.dst, updated, "utf8");
@@ -212,10 +193,12 @@ export function applyReorg(plan: ReorgPlan, opts: ApplyOptions): void {
     renameSync(op.src, op.dst);
     let content = readFileSync(op.dst, "utf8");
     for (const [oldName, newName] of caseBasenameMap) {
-      content = content.replace(
-        new RegExp(`(['"])\\./${oldName.replace(".", "\\.")}\\1`, "g"),
-        `$1../cases/${newName}$1`
+      const oldNameBase = oldName.replace(/\.ts$/, "");
+      const regex = new RegExp(
+        `(['"])\\./${oldNameBase}(?:\\.ts)?\\1`,
+        "g"
       );
+      content = content.replace(regex, `$1../cases/${newName}$1`);
     }
     writeFileSync(op.dst, content, "utf8");
   }

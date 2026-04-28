@@ -49,22 +49,22 @@ test("applyReorg: moves files to canonical subdirs and renames cases", () => {
   }
 });
 
-test("fixCaseImports: adjusts shared/ depth and local helper refs in case files", () => {
+test("fixCaseImports: adjusts shared/ depth in all reorged files", () => {
   const tmp = setupFixture();
   try {
     const plan = planReorg(join(tmp, "feature-X/tests"));
     applyReorg(plan, { mode: "real" });
     const tests = join(tmp, "feature-X/tests");
-    // Cases in cases/ (1 level deep from tests/): ../../../shared/ -> ../../../../shared/
+    // Cases in cases/ (1 level deep): ../../../shared/ -> ../../../../shared/
     const t1 = readFileSync(join(tests, "cases/t01-create-rule-positive-flow.ts"), "utf8");
     expect(t1).toContain('from "../../../../shared/fixtures/step-screenshot"');
     expect(t1).not.toContain('from "../../../shared/');
-    // Local helper ref: ./helper-a.ts -> ../helpers/helper-a.ts
-    expect(t1).toContain('"../helpers/helper-a.ts"');
-    expect(t1).not.toContain('"./helper-a.ts"');
-    expect(t1).not.toContain('from "../../../shared/');
     const t2 = readFileSync(join(tests, "cases/t02-edit-rule-basic.ts"), "utf8");
     expect(t2).toContain('from "../../../../shared/helpers/test-setup"');
+    // Helpers in helpers/ (1 level deep): ../../../shared/ -> ../../../../shared/
+    const helper = readFileSync(join(tests, "helpers/helper-a.ts"), "utf8");
+    expect(helper).toContain('from "../../../../shared/fixtures/step-screenshot"');
+    expect(helper).not.toContain('from "../../../shared/');
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
