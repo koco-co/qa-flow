@@ -66,3 +66,20 @@ export interface AgentReport {
   violations: AgentViolation[];
   passed: boolean;
 }
+
+// ── Case lint (§10.7) ──────────────────────────────────────────
+
+export interface CaseLintViolation {
+  rule: string;
+  file: string;
+  lineNumber: number;
+  matched: string;
+  message: string;
+}
+
+export interface CaseLintReport {
+  scanRoot: string;
+  files: number;
+  violations: CaseLintViolation[];
+  passed: boolean;
+}
