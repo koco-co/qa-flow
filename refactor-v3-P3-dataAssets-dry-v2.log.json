@@ -1,0 +1,2648 @@
+{
+  "schemaVersion": 1,
+  "timestamp": "2026-04-28T02:43:22.872Z",
+  "project": "dataAssets-shadow",
+  "mode": "dry",
+  "features": [],
+  "skipped": [],
+  "operations": [
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202402-东风商用车-【字段元数据】字段元数据管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202407-东风商用车-【元数据】数据库元模型管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【元数据】支持DMDBforOracle类型的元数据采集"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【数据模型】支持引入表"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【数据质量】支持kingbase8.6数据源"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-AI"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-支持GaussDB数据源"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据模型数仓层级为非必填-华泰期货定制化分支"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据表支持发布审批"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据质量规则配置前端FPS性能优化-验证功能"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-质量temp表生成逻辑改造、sr支持脏数据存储"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-【太极】码表管理支持导出"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-支持批量删除数据库"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据模型支持dmfororacle建表"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据质量按照表负责人权限控制"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据质量校验支持dmfororacle"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-表详情内容展示顺序规范"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-质量报告支持pdf导出"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-首屏接口优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-元数据同步用户可根据控制台的自定义参数设置"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-字段标签查询优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-数据模型支持Doris建表"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-益禾堂-建表支持对接指标"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-词根管理，展示词根被引用的标准列表"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-doris多集群配置"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-doris建表优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-redis逻辑优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-周期同步任务展示最近一次实例状态"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-接口竞态影响改造"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-数据脱敏优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-水印对接公共组件全局水印"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-相似数据源"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-血缘统计问题解决"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-L1-L5内置属性逻辑优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-inceptor支持存储过程血缘解析"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-s3小文件治理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-【首创】tongweb8.0适配"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-太极质量报告"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-对接口优化，字段名称修改"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据地图支持字段模糊搜索"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据模型建表支持配置是否带入数仓层级命名"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据脱敏支持下载udf函数注册sql"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-资产国际化适配"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-资产平台隐藏除代码检查外的其他功能"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-完整性校验，支持单表字段值对比"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-完整性校验，支持多表行数比对"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-治理概览页面根据是否存在hive数据源类型展示概览图"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则校验详细结果表"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则通用改造说明"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则集报告生成设置"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-质检式质量报告查看、下载"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-质量报告管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-通用配置，报告关联维表设置"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】优化需求"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】新增功能权限点说明"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】质量内置规则库管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-元数据、数据质量支持doris3.x"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-完整性校验，支持多表数据内容对比"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-支持dmfororacle数据源采集"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-离线开发平台删除表后资产需要同步删除"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-hive数据源)"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【军工717】支持dmfororacle数据源类型采集"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【军工717】支持设置字段属性"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】分级数据支持级联搜索"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】分级跑批支持增量表"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】用户等级和公共组件对接"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】自动分级规则支持基于数据库维度的配置"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】自动分级规则支持批量导入字段数据"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据质量】支持立即生成当天实例"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-上传列表"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件编目"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件详情"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态权限点"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多表唯一性校验支持明细数据中统计重复数"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-报告支持持续生成"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-支持抽样检查"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-文件编目"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-明细数据下载支持100W条数据"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-生命周期统一"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量任务调度支持跟随离线任务调度设置周期"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量关联离线任务支持根据名称匹配自动关联"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量报告取值范围、枚举值不通过场景说明优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【gate二期】引入表支持doris"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【gate二期】支持跨源做行数对比"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【元数据】sparkthrift元数据同步优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【岚图】优化需求"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【数据建模】建表语句解析模式优化"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【数据质量】支持cron表达式设置调度周期"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据标准】支持dbc标准落标检查"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据模型】doris建表支持设置datetime精度"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据资产】产品名称修改"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-东风商用车-【数据安全】批量创建脱敏规则、批量进行脱敏应用"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-东风商用车-【数据治理】名称修改"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-支持适配spark的kyuubi模式"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】一致性，多表数据一致性校验"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】合理性，单调递减、单调递增"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】时效性，及时性，两个字段之间的时间差校验"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】时效性，周期性，同一个字段的时间差校验"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【岚图】【规则集管理】支持每个数据表的规则集管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【数据质量】菜单名称修改"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则任务配置优化】一个数据表支持创建多个质量规则任务"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则任务配置优化】质量规则任务支持编辑分区信息"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则库管理】支持自定义sql模版"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则调度设置】spark任务调参"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则调度设置】任务时长限制"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【质量规则库】内置规则增加规则项"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【元数据】数据库列表支持展示数据库版本号"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据安全】支持trino数据源权限管控"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据安全】数据表权限分配支持通配符匹配批量配置权限"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据标准】支持维护标准负责人，列表展示负责人、创建人信息"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据质量】质量校验不通过时支持发送邮件，邮件信息需要包含未通过的明细数据"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据资产】元数据、数据质量适配doris3.x"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【中电信息】【元数据】支持doris引擎下指标全链路血缘"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】合理性，单调递减、单调递增"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】完整性，json中key值范围校验"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】时效性，及时性，两个字段之间的时间差校验"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】时效性，周期性，同一个字段的时间差校验"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【数据质量】菜单名称修改"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则任务配置优化】一个数据表支持创建多个质量规则任务"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则任务配置优化】质量规则任务支持编辑分区信息"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则库管理】支持自定义sql模版"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则调度设置】spark任务调参"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则调度设置】任务时长限制"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则集管理】支持每个数据表的规则集管理"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【质量规则库】内置规则增加规则项"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【通用配置】json格式配置"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-信永中和-20260408-数据目录管理-管理域目录管理新增功能"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-指标全链路血缘"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-数据资产-主流程测试用例"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-有效性-取值范围枚举范围规则"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-资产-集成测试用例"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（1.28新增，未排期）【质量报告】支持根据字段维度进行报告内规则范围选择"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（1.28新增，未排期）支持控制每个规则开启"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（1.28新增，未排期）支持控制每个规则开启_关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（排期4.30）15525【内置规则丰富】一致性，多表数据一致性比对"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（暂未排期）15529【内置规则丰富】合理性，单表，字段值的计算关系对比"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（暂未排期）15530【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/209901-岚图-主流程用例"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/209901-标品v6.3-主流程用例"
+    },
+    {
+      "type": "mkdir",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/shared"
+    },
+    {
+      "type": "log",
+      "message": "── feature migrations ──"
+    },
+    {
+      "type": "log",
+      "message": "feature 202402-东风商用车-【字段元数据】字段元数据管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202402/东风商用车-【字段元数据】字段元数据管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202402-东风商用车-【字段元数据】字段元数据管理/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202402/东风商用车-【字段元数据】字段元数据管理.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202402-东风商用车-【字段元数据】字段元数据管理/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202407-东风商用车-【元数据】数据库元模型管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202407/东风商用车-【元数据】数据库元模型管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202407-东风商用车-【元数据】数据库元模型管理/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202407/东风商用车-【元数据】数据库元模型管理.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202407-东风商用车-【元数据】数据库元模型管理/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202412-【元数据】支持DMDBforOracle类型的元数据采集"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202412/【元数据】支持DMDBforOracle类型的元数据采集.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【元数据】支持DMDBforOracle类型的元数据采集/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202412/【元数据】支持DMDBforOracle类型的元数据采集.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【元数据】支持DMDBforOracle类型的元数据采集/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202412-【数据模型】支持引入表"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202412/【数据模型】支持引入表.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【数据模型】支持引入表/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202412/【数据模型】支持引入表.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【数据模型】支持引入表/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202412-【数据质量】支持kingbase8.6数据源"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202412/【数据质量】支持kingbase8.6数据源.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【数据质量】支持kingbase8.6数据源/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202412/【数据质量】支持kingbase8.6数据源.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202412-【数据质量】支持kingbase8.6数据源/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202502-AI"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202502/AI.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-AI/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202502/AI.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-AI/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202502-支持GaussDB数据源"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202502/支持GaussDB数据源.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-支持GaussDB数据源/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202502/支持GaussDB数据源.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-支持GaussDB数据源/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202502-数据模型数仓层级为非必填-华泰期货定制化分支"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202502/数据模型数仓层级为非必填-华泰期货定制化分支.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据模型数仓层级为非必填-华泰期货定制化分支/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202502/数据模型数仓层级为非必填-华泰期货定制化分支.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据模型数仓层级为非必填-华泰期货定制化分支/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202502-数据表支持发布审批"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202502/数据表支持发布审批.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据表支持发布审批/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202502/数据表支持发布审批.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据表支持发布审批/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202502-数据质量规则配置前端FPS性能优化-验证功能"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202502/数据质量规则配置前端FPS性能优化-验证功能.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据质量规则配置前端FPS性能优化-验证功能/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202502/数据质量规则配置前端FPS性能优化-验证功能.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-数据质量规则配置前端FPS性能优化-验证功能/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202502-质量temp表生成逻辑改造、sr支持脏数据存储"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202502/质量temp表生成逻辑改造、sr支持脏数据存储.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-质量temp表生成逻辑改造、sr支持脏数据存储/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202502/质量temp表生成逻辑改造、sr支持脏数据存储.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202502-质量temp表生成逻辑改造、sr支持脏数据存储/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202503-【太极】码表管理支持导出"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202503/【太极】码表管理支持导出.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-【太极】码表管理支持导出/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202503/【太极】码表管理支持导出.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-【太极】码表管理支持导出/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202503-支持批量删除数据库"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202503/支持批量删除数据库.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-支持批量删除数据库/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202503/支持批量删除数据库.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-支持批量删除数据库/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202503-数据模型支持dmfororacle建表"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202503/数据模型支持dmfororacle建表.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据模型支持dmfororacle建表/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202503/数据模型支持dmfororacle建表.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据模型支持dmfororacle建表/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202503-数据质量按照表负责人权限控制"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202503/数据质量按照表负责人权限控制.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据质量按照表负责人权限控制/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202503/数据质量按照表负责人权限控制.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据质量按照表负责人权限控制/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202503-数据质量校验支持dmfororacle"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202503/数据质量校验支持dmfororacle.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据质量校验支持dmfororacle/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202503/数据质量校验支持dmfororacle.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-数据质量校验支持dmfororacle/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202503-表详情内容展示顺序规范"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202503/表详情内容展示顺序规范.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-表详情内容展示顺序规范/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202503/表详情内容展示顺序规范.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-表详情内容展示顺序规范/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202503-质量报告支持pdf导出"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202503/质量报告支持pdf导出.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-质量报告支持pdf导出/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202503/质量报告支持pdf导出.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-质量报告支持pdf导出/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202503-首屏接口优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202503/首屏接口优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-首屏接口优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202503/首屏接口优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202503-首屏接口优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202504-元数据同步用户可根据控制台的自定义参数设置"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202504/元数据同步用户可根据控制台的自定义参数设置.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-元数据同步用户可根据控制台的自定义参数设置/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202504/元数据同步用户可根据控制台的自定义参数设置.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-元数据同步用户可根据控制台的自定义参数设置/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202504-字段标签查询优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202504/字段标签查询优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-字段标签查询优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202504/字段标签查询优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-字段标签查询优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202504-数据模型支持Doris建表"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202504/数据模型支持Doris建表.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-数据模型支持Doris建表/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202504/数据模型支持Doris建表.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-数据模型支持Doris建表/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202504-益禾堂-建表支持对接指标"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202504/益禾堂-建表支持对接指标.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-益禾堂-建表支持对接指标/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202504/益禾堂-建表支持对接指标.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-益禾堂-建表支持对接指标/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202504-词根管理，展示词根被引用的标准列表"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202504/词根管理，展示词根被引用的标准列表.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-词根管理，展示词根被引用的标准列表/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202504/词根管理，展示词根被引用的标准列表.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202504-词根管理，展示词根被引用的标准列表/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-doris多集群配置"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/doris多集群配置.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-doris多集群配置/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/doris多集群配置.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-doris多集群配置/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-doris建表优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/doris建表优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-doris建表优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/doris建表优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-doris建表优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-redis逻辑优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/redis逻辑优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-redis逻辑优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/redis逻辑优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-redis逻辑优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-周期同步任务展示最近一次实例状态"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/周期同步任务展示最近一次实例状态.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-周期同步任务展示最近一次实例状态/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/周期同步任务展示最近一次实例状态.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-周期同步任务展示最近一次实例状态/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-接口竞态影响改造"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/接口竞态影响改造.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-接口竞态影响改造/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/接口竞态影响改造.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-接口竞态影响改造/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-数据脱敏优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/数据脱敏优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-数据脱敏优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/数据脱敏优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-数据脱敏优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-水印对接公共组件全局水印"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/水印对接公共组件全局水印.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-水印对接公共组件全局水印/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/水印对接公共组件全局水印.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-水印对接公共组件全局水印/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-相似数据源"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/相似数据源.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-相似数据源/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/相似数据源.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-相似数据源/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202505-血缘统计问题解决"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202505/血缘统计问题解决.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-血缘统计问题解决/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202505/血缘统计问题解决.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202505-血缘统计问题解决/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-【首创】tongweb8.0适配"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/【首创】tongweb8.0适配.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-【首创】tongweb8.0适配/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/【首创】tongweb8.0适配.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-【首创】tongweb8.0适配/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-inceptor支持存储过程血缘解析"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/inceptor支持存储过程血缘解析.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-inceptor支持存储过程血缘解析/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/inceptor支持存储过程血缘解析.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-inceptor支持存储过程血缘解析/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-L1-L5内置属性逻辑优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/L1-L5内置属性逻辑优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-L1-L5内置属性逻辑优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/L1-L5内置属性逻辑优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-L1-L5内置属性逻辑优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-s3小文件治理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/s3小文件治理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-s3小文件治理/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/s3小文件治理.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-s3小文件治理/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-太极质量报告"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/太极质量报告.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-太极质量报告/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/太极质量报告.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-太极质量报告/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-对接口优化，字段名称修改"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/对接口优化，字段名称修改.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-对接口优化，字段名称修改/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/对接口优化，字段名称修改.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-对接口优化，字段名称修改/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-数据地图支持字段模糊搜索"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/数据地图支持字段模糊搜索.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据地图支持字段模糊搜索/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/数据地图支持字段模糊搜索.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据地图支持字段模糊搜索/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-数据模型建表支持配置是否带入数仓层级命名"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/数据模型建表支持配置是否带入数仓层级命名.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据模型建表支持配置是否带入数仓层级命名/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/数据模型建表支持配置是否带入数仓层级命名.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据模型建表支持配置是否带入数仓层级命名/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-数据脱敏支持下载udf函数注册sql"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/数据脱敏支持下载udf函数注册sql.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据脱敏支持下载udf函数注册sql/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/数据脱敏支持下载udf函数注册sql.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-数据脱敏支持下载udf函数注册sql/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-资产国际化适配"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/资产国际化适配.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-资产国际化适配/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/资产国际化适配.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-资产国际化适配/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202506-资产平台隐藏除代码检查外的其他功能"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202506/资产平台隐藏除代码检查外的其他功能.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-资产平台隐藏除代码检查外的其他功能/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202506/资产平台隐藏除代码检查外的其他功能.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202506-资产平台隐藏除代码检查外的其他功能/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-完整性校验，支持单表字段值对比"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/完整性校验，支持单表字段值对比.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-完整性校验，支持单表字段值对比/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/完整性校验，支持单表字段值对比.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-完整性校验，支持单表字段值对比/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-完整性校验，支持多表行数比对"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/完整性校验，支持多表行数比对.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-完整性校验，支持多表行数比对/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/完整性校验，支持多表行数比对.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-完整性校验，支持多表行数比对/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-治理概览页面根据是否存在hive数据源类型展示概览图"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/治理概览页面根据是否存在hive数据源类型展示概览图.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-治理概览页面根据是否存在hive数据源类型展示概览图/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/治理概览页面根据是否存在hive数据源类型展示概览图.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-治理概览页面根据是否存在hive数据源类型展示概览图/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-规则校验详细结果表"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/规则校验详细结果表.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则校验详细结果表/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/规则校验详细结果表.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则校验详细结果表/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-规则通用改造说明"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/规则通用改造说明.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则通用改造说明/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/规则通用改造说明.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则通用改造说明/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-规则集报告生成设置"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/规则集报告生成设置.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则集报告生成设置/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/规则集报告生成设置.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-规则集报告生成设置/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-质检式质量报告查看、下载"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/质检式质量报告查看、下载.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-质检式质量报告查看、下载/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/质检式质量报告查看、下载.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-质检式质量报告查看、下载/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-质量报告管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/质量报告管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-质量报告管理/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/质量报告管理.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-质量报告管理/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202509-通用配置，报告关联维表设置"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202509/通用配置，报告关联维表设置.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-通用配置，报告关联维表设置/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202509/通用配置，报告关联维表设置.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202509-通用配置，报告关联维表设置/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202510-【岚图】优化需求"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202510/【岚图】优化需求.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】优化需求/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202510/【岚图】优化需求.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】优化需求/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202510-【岚图】新增功能权限点说明"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202510/【岚图】新增功能权限点说明.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】新增功能权限点说明/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202510/【岚图】新增功能权限点说明.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】新增功能权限点说明/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202510-【岚图】质量内置规则库管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202510/【岚图】质量内置规则库管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】质量内置规则库管理/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202510/【岚图】质量内置规则库管理.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-【岚图】质量内置规则库管理/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202510-元数据、数据质量支持doris3.x"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202510/元数据、数据质量支持doris3.x.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-元数据、数据质量支持doris3.x/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202510/元数据、数据质量支持doris3.x.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-元数据、数据质量支持doris3.x/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202510-完整性校验，支持多表数据内容对比"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202510/完整性校验，支持多表数据内容对比.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-完整性校验，支持多表数据内容对比/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202510/完整性校验，支持多表数据内容对比.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-完整性校验，支持多表数据内容对比/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202510-支持dmfororacle数据源采集"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202510/支持dmfororacle数据源采集.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-支持dmfororacle数据源采集/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202510/支持dmfororacle数据源采集.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-支持dmfororacle数据源采集/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202510-离线开发平台删除表后资产需要同步删除"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202510/离线开发平台删除表后资产需要同步删除.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-离线开发平台删除表后资产需要同步删除/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202510/离线开发平台删除表后资产需要同步删除.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202510-离线开发平台删除表后资产需要同步删除/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-【军工717】支持dmfororacle数据源类型采集"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/【军工717】支持dmfororacle数据源类型采集.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【军工717】支持dmfororacle数据源类型采集/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/【军工717】支持dmfororacle数据源类型采集.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【军工717】支持dmfororacle数据源类型采集/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-【军工717】支持设置字段属性"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/【军工717】支持设置字段属性.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【军工717】支持设置字段属性/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/【军工717】支持设置字段属性.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【军工717】支持设置字段属性/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-【数据安全】分级数据支持级联搜索"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/【数据安全】分级数据支持级联搜索.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】分级数据支持级联搜索/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/【数据安全】分级数据支持级联搜索.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】分级数据支持级联搜索/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-【数据安全】分级跑批支持增量表"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/【数据安全】分级跑批支持增量表.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】分级跑批支持增量表/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/【数据安全】分级跑批支持增量表.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】分级跑批支持增量表/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-【数据安全】用户等级和公共组件对接"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/【数据安全】用户等级和公共组件对接.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】用户等级和公共组件对接/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/【数据安全】用户等级和公共组件对接.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】用户等级和公共组件对接/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-【数据安全】自动分级规则支持基于数据库维度的配置"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/【数据安全】自动分级规则支持基于数据库维度的配置.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】自动分级规则支持基于数据库维度的配置/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/【数据安全】自动分级规则支持基于数据库维度的配置.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】自动分级规则支持基于数据库维度的配置/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-【数据安全】自动分级规则支持批量导入字段数据"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/【数据安全】自动分级规则支持批量导入字段数据.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】自动分级规则支持批量导入字段数据/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/【数据安全】自动分级规则支持批量导入字段数据.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据安全】自动分级规则支持批量导入字段数据/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-【数据质量】支持立即生成当天实例"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/【数据质量】支持立即生成当天实例.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据质量】支持立即生成当天实例/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/【数据质量】支持立即生成当天实例.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-【数据质量】支持立即生成当天实例/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-hive数据源)"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/hive数据源).md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-hive数据源)/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/hive数据源).xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-hive数据源)/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-上传列表"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/上传列表.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-上传列表/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/上传列表.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-上传列表/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-多模态-文件管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/多模态-文件管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件管理/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/多模态-文件管理.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件管理/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-多模态-文件编目"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/多模态-文件编目.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件编目/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/多模态-文件编目.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件编目/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-多模态-文件详情"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/多模态-文件详情.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件详情/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/多模态-文件详情.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态-文件详情/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-多模态权限点"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/多模态权限点.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态权限点/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/多模态权限点.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多模态权限点/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-多表唯一性校验支持明细数据中统计重复数"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/多表唯一性校验支持明细数据中统计重复数.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多表唯一性校验支持明细数据中统计重复数/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/多表唯一性校验支持明细数据中统计重复数.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-多表唯一性校验支持明细数据中统计重复数/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-报告支持持续生成"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/报告支持持续生成.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-报告支持持续生成/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/报告支持持续生成.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-报告支持持续生成/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-支持抽样检查"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/支持抽样检查.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-支持抽样检查/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/支持抽样检查.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-支持抽样检查/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-文件编目"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/文件编目.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-文件编目/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/文件编目.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-文件编目/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-明细数据下载支持100W条数据"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/明细数据下载支持100W条数据.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-明细数据下载支持100W条数据/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/明细数据下载支持100W条数据.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-明细数据下载支持100W条数据/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-生命周期统一"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/生命周期统一.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-生命周期统一/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/生命周期统一.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-生命周期统一/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-质量任务调度支持跟随离线任务调度设置周期"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/质量任务调度支持跟随离线任务调度设置周期.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量任务调度支持跟随离线任务调度设置周期/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/质量任务调度支持跟随离线任务调度设置周期.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量任务调度支持跟随离线任务调度设置周期/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-质量关联离线任务支持根据名称匹配自动关联"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/质量关联离线任务支持根据名称匹配自动关联.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量关联离线任务支持根据名称匹配自动关联/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/质量关联离线任务支持根据名称匹配自动关联.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量关联离线任务支持根据名称匹配自动关联/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202511-质量报告取值范围、枚举值不通过场景说明优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202511/质量报告取值范围、枚举值不通过场景说明优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量报告取值范围、枚举值不通过场景说明优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202511/质量报告取值范围、枚举值不通过场景说明优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202511-质量报告取值范围、枚举值不通过场景说明优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202512-【gate二期】引入表支持doris"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202512/【gate二期】引入表支持doris.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【gate二期】引入表支持doris/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202512/【gate二期】引入表支持doris.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【gate二期】引入表支持doris/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202512-【gate二期】支持跨源做行数对比"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202512/【gate二期】支持跨源做行数对比.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【gate二期】支持跨源做行数对比/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202512/【gate二期】支持跨源做行数对比.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【gate二期】支持跨源做行数对比/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202512-【元数据】sparkthrift元数据同步优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202512/【元数据】sparkthrift元数据同步优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【元数据】sparkthrift元数据同步优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202512/【元数据】sparkthrift元数据同步优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【元数据】sparkthrift元数据同步优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202512-【岚图】优化需求"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202512/【岚图】优化需求.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【岚图】优化需求/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202512/【岚图】优化需求.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【岚图】优化需求/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202512-【数据建模】建表语句解析模式优化"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202512/【数据建模】建表语句解析模式优化.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【数据建模】建表语句解析模式优化/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202512/【数据建模】建表语句解析模式优化.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【数据建模】建表语句解析模式优化/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202512-【数据质量】支持cron表达式设置调度周期"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202512/【数据质量】支持cron表达式设置调度周期.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【数据质量】支持cron表达式设置调度周期/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202512/【数据质量】支持cron表达式设置调度周期.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202512-【数据质量】支持cron表达式设置调度周期/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202601-【数据标准】支持dbc标准落标检查"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202601/【数据标准】支持dbc标准落标检查.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据标准】支持dbc标准落标检查/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202601/【数据标准】支持dbc标准落标检查.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据标准】支持dbc标准落标检查/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202601-【数据模型】doris建表支持设置datetime精度"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202601/【数据模型】doris建表支持设置datetime精度.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据模型】doris建表支持设置datetime精度/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202601/【数据模型】doris建表支持设置datetime精度.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据模型】doris建表支持设置datetime精度/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202601-【数据资产】产品名称修改"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202601/【数据资产】产品名称修改.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据资产】产品名称修改/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202601/【数据资产】产品名称修改.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-【数据资产】产品名称修改/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202601-东风商用车-【数据安全】批量创建脱敏规则、批量进行脱敏应用"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202601/东风商用车-【数据安全】批量创建脱敏规则、批量进行脱敏应用.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-东风商用车-【数据安全】批量创建脱敏规则、批量进行脱敏应用/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202601/东风商用车-【数据安全】批量创建脱敏规则、批量进行脱敏应用.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-东风商用车-【数据安全】批量创建脱敏规则、批量进行脱敏应用/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202601-东风商用车-【数据治理】名称修改"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202601/东风商用车-【数据治理】名称修改.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-东风商用车-【数据治理】名称修改/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202601/东风商用车-【数据治理】名称修改.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-东风商用车-【数据治理】名称修改/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202601-支持适配spark的kyuubi模式"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202601/支持适配spark的kyuubi模式.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-支持适配spark的kyuubi模式/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202601/支持适配spark的kyuubi模式.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202601-支持适配spark的kyuubi模式/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【内置规则丰富】一致性，多表数据一致性校验"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【内置规则丰富】一致性，多表数据一致性校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】一致性，多表数据一致性校验/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【内置规则丰富】一致性，多表数据一致性校验.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】一致性，多表数据一致性校验/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【内置规则丰富】合理性，单调递减、单调递增"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【内置规则丰富】合理性，单调递减、单调递增.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】合理性，单调递减、单调递增/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【内置规则丰富】合理性，单调递减、单调递增.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】合理性，单调递减、单调递增/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【内置规则丰富】时效性，及时性，两个字段之间的时间差校验"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【内置规则丰富】时效性，及时性，两个字段之间的时间差校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】时效性，及时性，两个字段之间的时间差校验/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【内置规则丰富】时效性，及时性，两个字段之间的时间差校验.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】时效性，及时性，两个字段之间的时间差校验/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【内置规则丰富】时效性，周期性，同一个字段的时间差校验"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【内置规则丰富】时效性，周期性，同一个字段的时间差校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】时效性，周期性，同一个字段的时间差校验/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【内置规则丰富】时效性，周期性，同一个字段的时间差校验.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【内置规则丰富】时效性，周期性，同一个字段的时间差校验/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【岚图】【规则集管理】支持每个数据表的规则集管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【岚图】【规则集管理】支持每个数据表的规则集管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【岚图】【规则集管理】支持每个数据表的规则集管理/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【岚图】【规则集管理】支持每个数据表的规则集管理.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【岚图】【规则集管理】支持每个数据表的规则集管理/cases.xmind"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/202602/【岚图】【规则集管理】支持每个数据表的规则集管理",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【岚图】【规则集管理】支持每个数据表的规则集管理/tests"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【数据质量】菜单名称修改"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【数据质量】菜单名称修改.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【数据质量】菜单名称修改/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【数据质量】菜单名称修改.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【数据质量】菜单名称修改/cases.xmind"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/202602/【数据质量】菜单名称修改",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【数据质量】菜单名称修改/tests"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【规则任务配置优化】一个数据表支持创建多个质量规则任务"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【规则任务配置优化】一个数据表支持创建多个质量规则任务.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则任务配置优化】一个数据表支持创建多个质量规则任务/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【规则任务配置优化】一个数据表支持创建多个质量规则任务.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则任务配置优化】一个数据表支持创建多个质量规则任务/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【规则任务配置优化】质量规则任务支持编辑分区信息"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【规则任务配置优化】质量规则任务支持编辑分区信息.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则任务配置优化】质量规则任务支持编辑分区信息/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【规则任务配置优化】质量规则任务支持编辑分区信息.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则任务配置优化】质量规则任务支持编辑分区信息/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【规则库管理】支持自定义sql模版"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【规则库管理】支持自定义sql模版.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则库管理】支持自定义sql模版/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【规则库管理】支持自定义sql模版.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则库管理】支持自定义sql模版/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【规则调度设置】spark任务调参"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【规则调度设置】spark任务调参.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则调度设置】spark任务调参/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【规则调度设置】spark任务调参.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则调度设置】spark任务调参/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【规则调度设置】任务时长限制"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【规则调度设置】任务时长限制.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则调度设置】任务时长限制/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【规则调度设置】任务时长限制.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【规则调度设置】任务时长限制/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202602-【质量规则库】内置规则增加规则项"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202602/【质量规则库】内置规则增加规则项.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【质量规则库】内置规则增加规则项/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202602/【质量规则库】内置规则增加规则项.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202602-【质量规则库】内置规则增加规则项/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202603-【元数据】数据库列表支持展示数据库版本号"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202603/【元数据】数据库列表支持展示数据库版本号.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【元数据】数据库列表支持展示数据库版本号/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202603/【元数据】数据库列表支持展示数据库版本号.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【元数据】数据库列表支持展示数据库版本号/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202603-【数据安全】支持trino数据源权限管控"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202603/【数据安全】支持trino数据源权限管控.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据安全】支持trino数据源权限管控/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202603/【数据安全】支持trino数据源权限管控.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据安全】支持trino数据源权限管控/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202603-【数据安全】数据表权限分配支持通配符匹配批量配置权限"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202603/【数据安全】数据表权限分配支持通配符匹配批量配置权限.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据安全】数据表权限分配支持通配符匹配批量配置权限/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202603/【数据安全】数据表权限分配支持通配符匹配批量配置权限.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据安全】数据表权限分配支持通配符匹配批量配置权限/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202603-【数据标准】支持维护标准负责人，列表展示负责人、创建人信息"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202603/【数据标准】支持维护标准负责人，列表展示负责人、创建人信息.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据标准】支持维护标准负责人，列表展示负责人、创建人信息/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202603/【数据标准】支持维护标准负责人，列表展示负责人、创建人信息.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据标准】支持维护标准负责人，列表展示负责人、创建人信息/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202603-【数据质量】质量校验不通过时支持发送邮件，邮件信息需要包含未通过的明细数据"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202603/【数据质量】质量校验不通过时支持发送邮件，邮件信息需要包含未通过的明细数据.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据质量】质量校验不通过时支持发送邮件，邮件信息需要包含未通过的明细数据/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202603/【数据质量】质量校验不通过时支持发送邮件，邮件信息需要包含未通过的明细数据.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据质量】质量校验不通过时支持发送邮件，邮件信息需要包含未通过的明细数据/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202603-【数据资产】元数据、数据质量适配doris3.x"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202603/【数据资产】元数据、数据质量适配doris3.x.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据资产】元数据、数据质量适配doris3.x/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202603/【数据资产】元数据、数据质量适配doris3.x.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202603-【数据资产】元数据、数据质量适配doris3.x/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-（1.28新增，未排期）【质量报告】支持根据字段维度进行报告内规则范围选择"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（1.28新增，未排期）【质量报告】支持根据字段维度进行报告内规则范围选择/（1.28新增，未排期）【质量报告】支持根据字段维度进行报告内规则范围选择.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（1.28新增，未排期）【质量报告】支持根据字段维度进行报告内规则范围选择/prd.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（1.28新增，未排期）【质量报告】支持根据字段维度进行报告内规则范围选择/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（1.28新增，未排期）【质量报告】支持根据字段维度进行报告内规则范围选择/images"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-（1.28新增，未排期）支持控制每个规则开启"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（1.28新增，未排期）支持控制每个规则开启/关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（1.28新增，未排期）支持控制每个规则开启/关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-（1.28新增，未排期）支持控制每个规则开启_关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（1.28新增，未排期）支持控制每个规则开启_关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（1.28新增，未排期）支持控制每个规则开启_关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（1.28新增，未排期）支持控制每个规则开启_关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）/（1.28新增，未排期）支持控制每个规则开启_关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（1.28新增，未排期）支持控制每个规则开启_关闭，影响规则任务中的对应规则是否运行（待评估，不好实现）/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-（排期4.30）15525【内置规则丰富】一致性，多表数据一致性比对"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（排期4.30）15525【内置规则丰富】一致性，多表数据一致性比对/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（排期4.30）15525【内置规则丰富】一致性，多表数据一致性比对/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（排期4.30）15525【内置规则丰富】一致性，多表数据一致性比对/（排期4.30）15525【内置规则丰富】一致性，多表数据一致性比对.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（排期4.30）15525【内置规则丰富】一致性，多表数据一致性比对/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-（暂未排期）15529【内置规则丰富】合理性，单表，字段值的计算关系对比"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（暂未排期）15529【内置规则丰富】合理性，单表，字段值的计算关系对比/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（暂未排期）15529【内置规则丰富】合理性，单表，字段值的计算关系对比/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（暂未排期）15529【内置规则丰富】合理性，单表，字段值的计算关系对比/（暂未排期）15529【内置规则丰富】合理性，单表，字段值的计算关系对比.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（暂未排期）15529【内置规则丰富】合理性，单表，字段值的计算关系对比/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-（暂未排期）15530【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（暂未排期）15530【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（暂未排期）15530【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/（暂未排期）15530【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比/（暂未排期）15530【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-（暂未排期）15530【内置规则丰富】合理性，多表，字段大小对比以及字段计算逻辑对比/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【中电信息】【元数据】支持doris引擎下指标全链路血缘"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【中电信息】【元数据】支持doris引擎下指标全链路血缘/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【中电信息】【元数据】支持doris引擎下指标全链路血缘/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【中电信息】【元数据】支持doris引擎下指标全链路血缘/【中电信息】【元数据】支持doris引擎下指标全链路血缘.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【中电信息】【元数据】支持doris引擎下指标全链路血缘/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【内置规则丰富】合理性，单调递减、单调递增"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】合理性，单调递减、单调递增/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】合理性，单调递减、单调递增/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】合理性，单调递减、单调递增/【内置规则丰富】合理性，单调递减、单调递增.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】合理性，单调递减、单调递增/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【内置规则丰富】完整性，json中key值范围校验"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】完整性，json中key值范围校验/【内置规则丰富】完整性，json中key值范围校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】完整性，json中key值范围校验/prd.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】完整性，json中key值范围校验/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】完整性，json中key值范围校验/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】完整性，json中key值范围校验/tmp",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】完整性，json中key值范围校验/tmp"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202604/【内置规则丰富】完整性，json中key值范围校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】完整性，json中key值范围校验/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202604/【内置规则丰富】完整性，json中key值范围校验.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】完整性，json中key值范围校验/cases.xmind"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/202604/【内置规则丰富】完整性，json中key值范围校验",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】完整性，json中key值范围校验/tests"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【内置规则丰富】时效性，及时性，两个字段之间的时间差校验"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】时效性，及时性，两个字段之间的时间差校验/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】时效性，及时性，两个字段之间的时间差校验/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】时效性，及时性，两个字段之间的时间差校验/【内置规则丰富】时效性，及时性，两个字段之间的时间差校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】时效性，及时性，两个字段之间的时间差校验/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【内置规则丰富】时效性，周期性，同一个字段的时间差校验"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】时效性，周期性，同一个字段的时间差校验/【内置规则丰富】时效性，周期性，同一个字段的时间差校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】时效性，周期性，同一个字段的时间差校验/prd.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】时效性，周期性，同一个字段的时间差校验/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】时效性，周期性，同一个字段的时间差校验/images"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【内置规则丰富】有效性，json中key对应的value值格式校验"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】有效性，json中key对应的value值格式校验/【内置规则丰富】有效性，json中key对应的value值格式校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/prd.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】有效性，json中key对应的value值格式校验/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】有效性，json中key对应的value值格式校验/tmp",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tmp"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202604/【内置规则丰富】有效性，json中key对应的value值格式校验.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202604/【内置规则丰富】有效性，json中key对应的value值格式校验.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/cases.xmind"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/202604/【内置规则丰富】有效性，json中key对应的value值格式校验",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，json中key对应的value值格式校验/tests"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】有效性，支持设置字段多规则的且或关系/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】有效性，支持设置字段多规则的且或关系/【内置规则丰富】有效性，支持设置字段多规则的且或关系.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/prd.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【内置规则丰富】有效性，支持设置字段多规则的且或关系/tmp",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tmp"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202604/【内置规则丰富】有效性，支持设置字段多规则的且或关系.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202604/【内置规则丰富】有效性，支持设置字段多规则的且或关系.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【数据质量】菜单名称修改"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【数据质量】菜单名称修改/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【数据质量】菜单名称修改/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【数据质量】菜单名称修改/【数据质量】菜单名称修改.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【数据质量】菜单名称修改/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【规则任务配置优化】一个数据表支持创建多个质量规则任务"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则任务配置优化】一个数据表支持创建多个质量规则任务/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则任务配置优化】一个数据表支持创建多个质量规则任务/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则任务配置优化】一个数据表支持创建多个质量规则任务/【规则任务配置优化】一个数据表支持创建多个质量规则任务.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则任务配置优化】一个数据表支持创建多个质量规则任务/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【规则任务配置优化】质量规则任务支持编辑分区信息"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则任务配置优化】质量规则任务支持编辑分区信息/【规则任务配置优化】质量规则任务支持编辑分区信息.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则任务配置优化】质量规则任务支持编辑分区信息/prd.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则任务配置优化】质量规则任务支持编辑分区信息/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则任务配置优化】质量规则任务支持编辑分区信息/images"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【规则库管理】支持自定义sql模版"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则库管理】支持自定义sql模版/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则库管理】支持自定义sql模版/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则库管理】支持自定义sql模版/【规则库管理】支持自定义sql模版.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则库管理】支持自定义sql模版/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【规则调度设置】spark任务调参"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则调度设置】spark任务调参/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则调度设置】spark任务调参/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则调度设置】spark任务调参/【规则调度设置】spark任务调参.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则调度设置】spark任务调参/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【规则调度设置】任务时长限制"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则调度设置】任务时长限制/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则调度设置】任务时长限制/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则调度设置】任务时长限制/【规则调度设置】任务时长限制.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则调度设置】任务时长限制/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【规则集管理】支持每个数据表的规则集管理"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则集管理】支持每个数据表的规则集管理/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则集管理】支持每个数据表的规则集管理/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【规则集管理】支持每个数据表的规则集管理/【规则集管理】支持每个数据表的规则集管理.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【规则集管理】支持每个数据表的规则集管理/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【质量规则库】内置规则增加规则项"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【质量规则库】内置规则增加规则项/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【质量规则库】内置规则增加规则项/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【质量规则库】内置规则增加规则项/【质量规则库】内置规则增加规则项.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【质量规则库】内置规则增加规则项/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-【通用配置】json格式配置"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【通用配置】json格式配置/【通用配置】json格式配置.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【通用配置】json格式配置/prd.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【通用配置】json格式配置/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【通用配置】json格式配置/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/【通用配置】json格式配置/tmp",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【通用配置】json格式配置/tmp"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202604/【通用配置】json格式配置.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【通用配置】json格式配置/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202604/【通用配置】json格式配置.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【通用配置】json格式配置/cases.xmind"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/202604/【通用配置】json格式配置",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-【通用配置】json格式配置/tests"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-信永中和-20260408-数据目录管理-管理域目录管理新增功能"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202604/信永中和-20260408-数据目录管理-管理域目录管理新增功能.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-信永中和-20260408-数据目录管理-管理域目录管理新增功能/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-指标全链路血缘"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/指标全链路血缘/images",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-指标全链路血缘/images"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/prds/202604/指标全链路血缘/指标全链路血缘.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-指标全链路血缘/prd.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-数据资产-主流程测试用例"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/xmind/202604/数据资产-主流程测试用例.xmind",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-数据资产-主流程测试用例/cases.xmind"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-有效性-取值范围枚举范围规则"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/202604/有效性-取值范围枚举范围规则",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-有效性-取值范围枚举范围规则/tests"
+    },
+    {
+      "type": "log",
+      "message": "feature 202604-资产-集成测试用例"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/202604/资产-集成测试用例.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-资产-集成测试用例/archive.md"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/202604/资产-集成测试用例",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/202604-资产-集成测试用例/tests"
+    },
+    {
+      "type": "log",
+      "message": "feature 209901-岚图-主流程用例"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/209901/岚图-主流程用例.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/209901-岚图-主流程用例/archive.md"
+    },
+    {
+      "type": "log",
+      "message": "feature 209901-标品v6.3-主流程用例"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/archive/209901/标品v6.3-主流程用例.md",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/features/209901-标品v6.3-主流程用例/archive.md"
+    },
+    {
+      "type": "log",
+      "message": "── shared/ migrations ──"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/fixtures",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/shared/fixtures"
+    },
+    {
+      "type": "mv",
+      "src": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/tests/helpers",
+      "dst": "/Users/poco/Projects/kata/workspace/dataAssets-shadow/shared/helpers"
+    }
+  ],
+  "warnings": []
+}

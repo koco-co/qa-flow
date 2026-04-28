@@ -1,0 +1,3 @@
+[migrate-workspace] mode=dry project=xyzh-shadow
+[migrate-workspace] features=20 ops=63 warnings=0
+[migrate-workspace] log written to refactor-v3-P3-xyzh-shadow-dry.log.json

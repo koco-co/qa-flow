@@ -70,3 +70,5 @@ Thumbs.db
 
 # ── 保留 workspace 目录结构 ─────────────────────────────
 !workspace/.gitkeep
+workspace/xyzh-shadow/
+workspace/dataAssets-shadow/
