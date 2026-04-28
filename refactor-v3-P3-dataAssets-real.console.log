@@ -1,0 +1,5 @@
+[migrate-workspace] mode=real project=dataAssets
+[migrate-workspace] features=142 ops=585 warnings=0
+[migrate-workspace] log written to /Users/poco/Projects/kata/refactor-v3-P3-dataAssets-real.log.json
+[migrate-workspace] skipped non-yyyymm dirs: 1
+  - /Users/poco/Projects/kata/workspace/dataAssets/archive/数据资产-主流程用例
