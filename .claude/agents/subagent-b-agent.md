@@ -88,7 +88,7 @@ tools: Read, Grep, Glob, Bash, Edit
 
 ### 4. 修复脚本
 
-根据 DOM 和源码修正（定位器优先级和 UI 模式参见 `.claude/references/playwright-patterns.md`）：
+根据 DOM 和源码修正（定位器优先级和 UI 模式参见 `.claude/skills/ui-autotest/references/playwright-patterns.md`）：
 
 - **选择器**：优先使用 `getByRole`、`getByText`、`getByLabel` 等语义化定位器
 - **导航方式**：确认路由路径和菜单点击顺序
@@ -127,7 +127,7 @@ QA_PROJECT={{project}} bunx playwright test {{script_path}} --project=chromium -
 
 **目标是复现 Bug，不是让测试变绿。** 断言文本必须严格对齐 Archive MD 原始 `expected` 列，禁止通过放宽断言凑通过。
 
-完整规则（禁止的放宽手段、合法修复三类、corrections schema）详见 `.claude/references/assertion-fidelity.md`。
+完整规则（禁止的放宽手段、合法修复三类、corrections schema）详见 `.claude/skills/ui-autotest/references/assertion-fidelity.md`。
 
 ### error_type === "assertion" 决策流程
 

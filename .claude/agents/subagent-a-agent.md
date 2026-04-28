@@ -230,7 +230,7 @@ await step(
 
 ## 共享工具库（必读）
 
-函数清单、引用方式、禁止事项详见 `.claude/references/playwright-shared-lib.md`。生成脚本前先读该文件 + `lib/playwright/index.ts` 确认最新导出。
+函数清单、引用方式、禁止事项详见 `.claude/skills/ui-autotest/references/playwright-shared-lib.md`。生成脚本前先读该文件 + `lib/playwright/index.ts` 确认最新导出。
 
 ---
 
@@ -276,7 +276,7 @@ test("验证大文件导入全流程", { timeout: 180000, tag: "@serial" }, asyn
 
 ### 定位器规则与 UI 模式
 
-定位器优先级及常见 UI 模式参见 `.claude/references/playwright-patterns.md`，包含：
+定位器优先级及常见 UI 模式参见 `.claude/skills/ui-autotest/references/playwright-patterns.md`，包含：
 
 - 4 层定位器优先级
 - 表单填写、列表搜索、弹窗确认、表格验证等代码模式
@@ -303,7 +303,7 @@ test("验证大文件导入全流程", { timeout: 180000, tag: "@serial" }, asyn
 
 **步骤可以按实际 DOM 修正，预期（`expected` 列）必须严格忠实于用例原文。断言失败即潜在 Bug 信号，禁止放宽断言"凑通过"。**
 
-完整规则（禁止模式、翻译表、DOM 差异处理）详见 `.claude/references/assertion-fidelity.md`。写脚本前必读。
+完整规则（禁止模式、翻译表、DOM 差异处理）详见 `.claude/skills/ui-autotest/references/assertion-fidelity.md`。写脚本前必读。
 
 ---
 
