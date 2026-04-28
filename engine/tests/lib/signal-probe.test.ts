@@ -250,17 +250,17 @@ describe("isCacheValid and buildCacheEntry", () => {
   it("returns true when entry mtime values match the provided mtimes", () => {
     const profile = makeMinimalProfile();
     const entry = buildCacheEntry(profile, 1000, 2000);
-    expect(isCacheValid(entry).toBe(1000, 2000), true);
+    expect(isCacheValid(entry).toBe(1000), true);
   });
 
   it("returns false when prd mtime does not match", () => {
     const profile = makeMinimalProfile();
     const entry = buildCacheEntry(profile, 1000, 2000);
-    expect(isCacheValid(entry).toBe(9999, 2000), false);
+    expect(isCacheValid(entry).toBe(9999), false);
   });
 
   it("returns false when entry is null", () => {
-    expect(isCacheValid(null).toBe(1000, 2000), false);
+    expect(isCacheValid(null).toBe(1000), false);
   });
 });
 

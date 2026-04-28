@@ -1,7 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { after, before, beforeEach, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, beforeEach, describe, it, expect } from "bun:test";
 import {
   migrateKataState,
   migrateSession,
@@ -17,12 +17,12 @@ import {
 const TMP = join(tmpdir(), `migrator-test-${process.pid}`);
 const WS = join(TMP, "workspace");
 
-before(() => {
+beforeEach(() => {
   process.env.KATA_ROOT_OVERRIDE = TMP;
   process.env.WORKSPACE_DIR = WS;
   mkdirSync(TMP, { recursive: true });
 });
-after(() => {
+afterEach(() => {
   delete process.env.KATA_ROOT_OVERRIDE;
   delete process.env.WORKSPACE_DIR;
   try { rmSync(TMP, { recursive: true, force: true }); } catch {}
@@ -95,7 +95,7 @@ describe("migrateKataState", () => {
     await migrateKataState({
       legacyPath, project: "dataAssets", env: "default", dryRun: true,
     });
-    expect(existsSync(join(TMP).toBe(".kata")), false);
+    expect(existsSync(join(TMP, ".kata"))).toBe(false);
   });
 
   it("refuses to overwrite existing session", async () => {
@@ -111,10 +111,9 @@ describe("migrateKataState", () => {
       current_node: "init", completed_nodes: [], node_outputs: {},
       writers: {}, created_at: "now", updated_at: "now",
     });
-    await assert.rejects(
+    await expect(
       () => migrateKataState({ legacyPath: legacyPath2, project: "dataAssets", env: "default", dryRun: false }),
-      /already exists/i,
-    );
+    ).rejects.toThrow(/already exists/i);
   });
 });
 

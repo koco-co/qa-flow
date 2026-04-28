@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const TMP = join(tmpdir(), `kata-kk-test-${process.pid}`);
 const WORKSPACE_DIR = join(TMP, "workspace");
@@ -78,10 +78,10 @@ updated: 2026-04-17
   );
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(WORKSPACE_DIR, { recursive: true });
 });
-after(() => {
+afterEach(() => {
   try { rmSync(TMP, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
@@ -101,11 +101,11 @@ describe("knowledge-keeper CLI skeleton", () => {
 });
 
 describe("read-core", () => {
-  before(resetFixture);
+  beforeEach(resetFixture);
 
   it("returns shape: project / overview / terms / index", () => {
     const { stdout, code } = runKk(["read-core", "--project", PROJECT]);
-    expect(code).toBe(0, `stderr? stdout=${stdout}`);
+    expect(code).toBe(0);
     const obj = JSON.parse(stdout);
     expect(obj.project).toBe(PROJECT);
     expect(obj.overview).toBeTruthy();
@@ -145,7 +145,7 @@ updated: 2026-04-17
 });
 
 describe("read-module", () => {
-  before(resetFixture);
+  beforeEach(resetFixture);
 
   it("returns frontmatter + content for existing module", () => {
     writeFileSync(
@@ -181,7 +181,7 @@ updated: 2026-04-17
 });
 
 describe("read-pitfall", () => {
-  before(() => {
+  beforeEach(() => {
     resetFixture();
     writeFileSync(
       join(PROJECT_KNOWLEDGE, "pitfalls", "ui-dom-drift.md"),
@@ -235,7 +235,7 @@ body`,
 });
 
 describe("index", () => {
-  before(() => {
+  beforeEach(() => {
     resetFixture();
     writeFileSync(
       join(PROJECT_KNOWLEDGE, "modules", "ds.md"),
@@ -280,7 +280,7 @@ body`,
 });
 
 describe("write --type term", () => {
-  before(resetFixture);
+  beforeEach(resetFixture);
 
   it("dry-run does not persist", () => {
     const { stdout, code } = runKk([
@@ -336,7 +336,7 @@ describe("write --type term", () => {
 });
 
 describe("write --type overview", () => {
-  before(resetFixture);
+  beforeEach(resetFixture);
 
   it("replaces a section body", () => {
     const { code } = runKk([
@@ -366,7 +366,7 @@ describe("write --type overview", () => {
 });
 
 describe("write --type module", () => {
-  before(resetFixture);
+  beforeEach(resetFixture);
 
   it("creates a new module file with frontmatter", () => {
     const { stdout, code } = runKk([
@@ -410,7 +410,7 @@ describe("write --type module", () => {
 });
 
 describe("write --type pitfall", () => {
-  before(resetFixture);
+  beforeEach(resetFixture);
 
   it("creates a pitfall file", () => {
     const { code } = runKk([
@@ -426,7 +426,7 @@ describe("write --type pitfall", () => {
 });
 
 describe("update action", () => {
-  before(() => {
+  beforeEach(() => {
     resetFixture();
     writeFileSync(
       join(PROJECT_KNOWLEDGE, "modules", "m1.md"),
@@ -586,7 +586,7 @@ B 旧内容
 });
 
 describe("write/update auto-triggers index", () => {
-  before(resetFixture);
+  beforeEach(resetFixture);
 
   it("after write module, _index.md is regenerated", () => {
     // Remove existing _index.md so we can verify re-creation
@@ -628,7 +628,7 @@ describe("write/update auto-triggers index", () => {
 });
 
 describe("lint action", () => {
-  before(() => {
+  beforeEach(() => {
     resetFixture();
     // Create a module with all errors
     writeFileSync(
@@ -648,7 +648,7 @@ body`,
 
   it("reports errors and exits 1 for violations", () => {
     const { stdout, code } = runKk(["lint", "--project", PROJECT]);
-    expect(code).toBe(1, `expected exit 1, got ${code}. stdout=${stdout}`);
+    expect(code).toBe(1);
     const obj = JSON.parse(stdout);
     expect(obj.errors.length >= 2, `expected >= 2 errors. got: ${JSON.stringify(obj.errors).toBeTruthy()}`);
     const rules = obj.errors.map((e: { rule: string }) => e.rule);
@@ -675,7 +675,7 @@ body`,
     rmSync(join(PROJECT_KNOWLEDGE, "_index.md"), { force: true });
 
     const { stdout, code } = runKk(["lint", "--project", PROJECT]);
-    expect(code).toBe(2, `expected exit 2 (warnings). got ${code}. stdout=${stdout}`);
+    expect(code).toBe(2);
     const obj = JSON.parse(stdout);
     expect(obj.errors.length).toBe(0);
     expect(obj.warnings.length >= 1).toBeTruthy();
@@ -686,7 +686,7 @@ body`,
     rmSync(join(PROJECT_KNOWLEDGE, "modules", "notag.md"), { force: true });
     runKk(["index", "--project", PROJECT]);
     const { stdout, code } = runKk(["lint", "--project", PROJECT]);
-    expect(code).toBe(0, `expected exit 0. stdout=${stdout}`);
+    expect(code).toBe(0);
   });
 
   it("--strict upgrades warnings to errors", () => {

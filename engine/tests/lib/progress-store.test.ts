@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, rmSync, writeFileSync, writeFileSync as fsWriteFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { after, before, beforeEach, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, beforeEach, describe, it, expect } from "bun:test";
 import {
   createSession,
   readSession,
@@ -21,12 +21,12 @@ import type { Session } from "../../src/lib/progress-types.ts";
 
 const TMP = join(tmpdir(), `progress-store-test-${process.pid}`);
 
-before(() => {
+beforeEach(() => {
   process.env.KATA_ROOT_OVERRIDE = TMP; // progress-store reads this via getEnv (see paths.ts kataRoot JSDoc)
   mkdirSync(TMP, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   delete process.env.KATA_ROOT_OVERRIDE;
   try { rmSync(TMP, { recursive: true, force: true }); } catch { /* ignore */ }
 });
@@ -38,10 +38,7 @@ beforeEach(() => {
 
 describe("sessionIdFor", () => {
   it("composes workflow/slug-env", () => {
-    expect(
-      sessionIdFor({ workflow: "test-case-gen").toBe(slug: "prd-xxx", env: "default" }),
-      "test-case-gen/prd-xxx-default",
-    );
+    expect(sessionIdFor({ workflow: "test-case-gen", slug: "prd-xxx", env: "default" })).toBe("test-case-gen/prd-xxx-default");
   });
 });
 
@@ -111,10 +108,9 @@ describe("withSessionLock", () => {
     mkdirSync(lockDir, { recursive: true });
     writeFileSync(join(lockDir, `${base.session_id.replace("/", "__")}.lock`), "99999");
 
-    await assert.rejects(
+    await expect(
       withSessionLock(project, base.session_id, async () => {}, { timeoutMs: 200 }),
-      /lock/i,
-    );
+    ).rejects.toThrow(/lock/i);
   });
 });
 
@@ -308,6 +304,156 @@ describe("cycle detection", () => {
     expect(() => addTasks(project, s.session_id, [
         { id: "b", name: "b", kind: "node", order: 2, depends_on: ["a"] },
       ])).toThrow(/cycle/i);
+  });
+
+  it("rejects updateTask --depends-on introducing cycle", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "c2", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [
+      { id: "a", name: "a", kind: "node", order: 1 },
+      { id: "b", name: "b", kind: "node", order: 2, depends_on: ["a"] },
+    ]);
+    expect(() => updateTask(project, s.session_id, "a", { depends_on: ["b"] })).toThrow(/cycle/i);
+  });
+});
+
+describe("rollupTask", () => {
+  const project = "dataAssets";
+  it("sets parent to done when all children done/skipped", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "r1", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [
+      { id: "p", name: "p", kind: "phase", order: 1 },
+      { id: "c1", name: "c1", kind: "case", order: 1, parent: "p" },
+      { id: "c2", name: "c2", kind: "case", order: 2, parent: "p" },
+    ]);
+    updateTask(project, s.session_id, "p", { status: "running" });
+    updateTask(project, s.session_id, "c1", { status: "done" });
+    updateTask(project, s.session_id, "c2", { status: "skipped" });
+    rollupTask(project, s.session_id, "p");
+    const cur = readSession(project, s.session_id)!;
+    expect(cur.tasks.find((t) => t.id === "p")!.status).toBe("done");
+  });
+
+  it("throws when any child unfinished", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "r2", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [
+      { id: "p", name: "p", kind: "phase", order: 1 },
+      { id: "c1", name: "c1", kind: "case", order: 1, parent: "p" },
+    ]);
+    updateTask(project, s.session_id, "p", { status: "running" });
+    expect(() => rollupTask(project, s.session_id, "p")).toThrow(/unfinished/i);
+  });
+});
+
+describe("artifacts inline + overflow", () => {
+  const project = "dataAssets";
+
+  it("stores small artifact inline", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "a1", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    setArtifact(project, s.session_id, "k1", { a: 1 });
+    const cur = readSession(project, s.session_id)!;
+    expect(cur.artifacts.k1).toEqual({ a: 1 });
+    expect(getArtifact(project).toEqual(s.session_id), { a: 1 });
+  });
+
+  it("spills large artifact to blocks/ and stores $ref inline", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "a2", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    const big = { data: "x".repeat(100_000) };
+    setArtifact(project, s.session_id, "blob", big);
+    const cur = readSession(project, s.session_id)!;
+    const ref = cur.artifacts.blob as { $ref?: string };
+    expect(ref.$ref).toBeTruthy();
+    const loaded = getArtifact(project, s.session_id, "blob");
+    expect(loaded).toEqual(big);
+  });
+});
+
+describe("resumeSession", () => {
+  const project = "dataAssets";
+
+  it("resets running → pending", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "res1", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [{ id: "t1", name: "n", kind: "node", order: 1 }]);
+    updateTask(project, s.session_id, "t1", { status: "running" });
+    resumeSession(project, s.session_id, {});
+    expect(readSession(project).toBe(s.session_id)!.tasks[0].status, "pending");
+  });
+
+  it("--retry-failed clears errors and resets attempts", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "res2", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [{ id: "t1", name: "n", kind: "node", order: 1 }]);
+    updateTask(project, s.session_id, "t1", { status: "failed", error: "boom" });
+    resumeSession(project, s.session_id, { retryFailed: true });
+    const t = readSession(project, s.session_id)!.tasks[0];
+    expect(t.status).toBe("pending");
+    expect(t.attempts).toBe(0);
+    expect(t.errors).toEqual([]);
+  });
+
+  it("--retry-blocked clears reason and resets to pending", () => {
+    const s = createSession({
+      project, workflow: "w", slug: "res3", env: "default",
+      source: { type: "prd", path: "x", mtime: null }, meta: {},
+    });
+    writeSession(project, s);
+    addTasks(project, s.session_id, [{ id: "t1", name: "n", kind: "node", order: 1 }]);
+    updateTask(project, s.session_id, "t1", { status: "blocked", reason: "r" });
+    resumeSession(project, s.session_id, { retryBlocked: true });
+    const t = readSession(project, s.session_id)!.tasks[0];
+    expect(t.status).toBe("pending");
+    expect(t.reason).toBe(null);
+  });
+
+  it("clears artifacts.cached_parse_result when source.mtime changed", () => {
+    const prdPath = join(TMP, "fake.md");
+    fsWriteFileSync(prdPath, "content");
+    const originalMtime = new Date(Date.now() - 60_000);
+    utimesSync(prdPath, originalMtime, originalMtime);
+
+    const s = createSession({
+      project, workflow: "w", slug: "res4", env: "default",
+      source: { type: "prd", path: prdPath, mtime: originalMtime.toISOString() },
+      meta: {},
+    });
+    writeSession(project, s);
+    setArtifact(project, s.session_id, "cached_parse_result", { cached: true });
+
+    const nowMtime = new Date();
+    utimesSync(prdPath, nowMtime, nowMtime);
+    resumeSession(project, s.session_id, {});
+
+    const cur = readSession(project, s.session_id)!;
+    expect(cur.artifacts.cached_parse_result).toBe(undefined);
+  });
+
+  it("--payload-path-check: missing file → reset task).toThrow(/cycle/i);
   });
 
   it("rejects updateTask --depends-on introducing cycle", () => {

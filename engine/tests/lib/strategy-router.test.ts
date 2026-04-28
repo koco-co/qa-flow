@@ -172,7 +172,7 @@ describe("composeResolution", () => {
     expect(resolution.resolved_at).toBe("2026-04-18T02:30:00.000Z");
     expect(resolution.strategy_id).toBe("S1");
     expect(resolution.strategy_name).toBe(STRATEGY_NAMES["S1"]);
-    assert.strictEqual(resolution.signal_profile, profile);
+    expect(resolution.signal_profile).toBe(profile);
   });
 
   it("14. all required fields are present and non-empty", () => {

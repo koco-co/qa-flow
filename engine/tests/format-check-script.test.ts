@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const TMP_DIR = join(tmpdir(), `kata-format-check-test-${process.pid}`);
@@ -56,11 +56,11 @@ function writeTempArchive(content: string): string {
   return path;
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -77,7 +77,7 @@ describe("format-check-script.ts check — FC01 标题缺少优先级前缀", ()
     ]);
     const path = writeTempArchive(md);
     const { code, stdout } = run(["check", "--input", path]);
-    expect(code).toBe(0, `stdout: ${stdout}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       definite_issues: { rule: string }[];

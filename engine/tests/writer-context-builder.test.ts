@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, afterEach, before, describe, it, expect } from "bun:test";
+import { afterEach, afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const TMP_DIR = join(tmpdir(), `kata-writer-context-builder-test-${process.pid}`);
@@ -75,11 +75,11 @@ const MOCK_RULES = {
   language: "zh-CN",
 };
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -101,7 +101,7 @@ describe("writer-context-builder build — module match", () => {
       "--writer-id", "商品管理",
     ]);
 
-    expect(code).toBe(0, `expected exit 0, stderr was: ${stdout}`);
+    expect(code).toBe(0);
     const out = JSON.parse(stdout) as {
       writer_id: string;
       module_prd_section: string;
@@ -473,7 +473,7 @@ describe("writer-context-builder build — --prd-slug + --yyyymm (enhanced.md pr
   const TP_PATH = join(ENH_TMP, "test-points-enh.json");
   const LEGACY_PRD = join(ENH_TMP, "legacy.md");
 
-  before(() => {
+  beforeEach(() => {
     mkdirSync(PRD_DIR_ABS, { recursive: true });
 
     writeFileSync(
@@ -530,7 +530,7 @@ describe("writer-context-builder build — --prd-slug + --yyyymm (enhanced.md pr
     );
   });
 
-  after(() => {
+  afterEach(() => {
     try {
       rmSync(ENH_TMP, { recursive: true, force: true });
     } catch {
@@ -550,7 +550,7 @@ describe("writer-context-builder build — --prd-slug + --yyyymm (enhanced.md pr
       "--knowledge-injection", "none",
     ]);
 
-    expect(code).toBe(0, `expected exit 0, stderr=${stderr}\nstdout=${stdout}`);
+    expect(code).toBe(0);
     const ctx = JSON.parse(stdout) as {
       module_prd_section: string;
       fallback: boolean;
@@ -568,7 +568,7 @@ describe("writer-context-builder build — --prd-slug + --yyyymm (enhanced.md pr
       "--knowledge-injection", "none",
     ]);
 
-    expect(code).toBe(0, `expected exit 0, stderr=${stderr}\nstdout=${stdout}`);
+    expect(code).toBe(0);
     const ctx = JSON.parse(stdout) as { module_prd_section: string };
     expect(ctx.module_prd_section).toMatch(/legacy 模块描述/);
   });

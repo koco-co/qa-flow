@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 // 文件位置：engine/tests/ui-autotest/merge-specs.test.ts
 // REPO_ROOT 需要向上 3 层
@@ -84,11 +84,11 @@ test('without meta', async ({ page }) => {
 // setup/teardown
 // ────────────────────────────────────────────────────────────
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {

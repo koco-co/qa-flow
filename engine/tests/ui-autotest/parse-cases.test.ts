@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 // 通过 process.argv[1] 或文件系统路径推算 REPO_ROOT，确保在 --test worker 模式下也正确解析
 // REPO_ROOT 需要向上 3 层：ui-autotest/ → tests/ → engine/ → repo root
@@ -295,11 +295,11 @@ function runCli(args: string[]): {
   }
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {

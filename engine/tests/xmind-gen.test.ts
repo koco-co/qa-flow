@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 import JSZip from "jszip";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -46,11 +46,11 @@ async function readContentJson(xmindPath: string): Promise<unknown> {
   return JSON.parse(str);
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -74,7 +74,7 @@ describe("xmind-gen.ts create mode", () => {
   it("creates .xmind file from valid JSON fixture", () => {
     const output = join(TMP_DIR, "test-create.xmind");
     const { code, stderr } = run(["--input", FIXTURE, "--output", output]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
     expect(existsSync(output).toBeTruthy(), ".xmind file was not created");
     expect(statSync(output).toBeTruthy().size > 0, ".xmind file is empty");
   });
@@ -87,7 +87,7 @@ describe("xmind-gen.ts create mode", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       output_path: string;
@@ -156,7 +156,7 @@ prd_version: "v6.4.10"
       "--project",
       "CLI项目名",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
     expect(
       stdout.includes("自定义 Root 节点").toBeTruthy() || existsSync(output),
       "xmind-gen should finish and create the output file",
@@ -221,7 +221,7 @@ describe("xmind-gen.ts content.json validation", () => {
   it("created .xmind contains valid content.json", async () => {
     const output = join(TMP_DIR, "test-content.xmind");
     const { code, stderr } = run(["--input", FIXTURE, "--output", output]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const sheets = await readContentJson(output);
     expect(
@@ -237,7 +237,7 @@ describe("xmind-gen.ts content.json validation", () => {
   it("content.json has correct hierarchy: root → L1 → L2 → L3 → cases", async () => {
     const output = join(TMP_DIR, "test-hierarchy.xmind");
     const { code, stderr } = run(["--input", FIXTURE, "--output", output]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     type SheetNode = {
       title?: string;
@@ -253,9 +253,7 @@ describe("xmind-gen.ts content.json validation", () => {
 
     // Root title
     expect(
-      rootTopic.title).toBe("数据资产v6.4.10迭代用例(#23)",
-      "root title mismatch",
-    );
+      rootTopic.title).toBe("数据资产v6.4.10迭代用例(#23)");
 
     // L1: requirement_name with version prefix
     const l1Nodes = rootTopic.children?.attached ?? [];
@@ -305,15 +303,11 @@ describe("xmind-gen.ts content.json validation", () => {
     const stepNodes = firstCase.children?.attached ?? [];
     expect(stepNodes.length > 0).toBeTruthy();
     expect(
-      stepNodes[0].title).toBe("进入【数据质量 → 质量问题台账】页面",
-      "step title mismatch",
-    );
+      stepNodes[0].title).toBe("进入【数据质量 → 质量问题台账】页面");
     const expectedNodes = stepNodes[0].children?.attached ?? [];
     expect(expectedNodes.length > 0).toBeTruthy();
     expect(
-      expectedNodes[0].title).toBe("页面正常加载",
-      "expected result mismatch",
-    );
+      expectedNodes[0].title).toBe("页面正常加载");
   });
 });
 
@@ -346,7 +340,7 @@ describe("xmind-gen.ts append mode", () => {
       "--mode",
       "append",
     ]);
-    expect(second.code).toBe(0, `stderr: ${second.stderr}`);
+    expect(second.code).toBe(0);
 
     type SheetNode = { title?: string; children?: { attached?: SheetNode[] } };
     type Sheet = { rootTopic?: SheetNode };
@@ -372,7 +366,7 @@ describe("xmind-gen.ts append mode", () => {
       "--mode",
       "append",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
     expect(existsSync(output).toBeTruthy(), "file should have been created");
   });
 });
@@ -386,7 +380,7 @@ describe("xmind-gen.ts <br> tag sanitization", () => {
   it("converts <br> tags to newlines in step, expected, and preconditions", async () => {
     const output = join(TMP_DIR, "test-br-sanitize.xmind");
     const { code, stderr } = run(["--input", BR_FIXTURE, "--output", output]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     type SheetNode = {
       title?: string;
@@ -472,13 +466,11 @@ describe("xmind-gen.ts L1 title strips trailing (#id)", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as { l1_title: string };
     expect(
-      result.l1_title).toBe("质量问题台账",
-      "l1_title should strip trailing (#23)",
-    );
+      result.l1_title).toBe("质量问题台账");
   });
 
   it("l1_title unchanged when no trailing (#id)", () => {
@@ -489,13 +481,11 @@ describe("xmind-gen.ts L1 title strips trailing (#id)", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as { l1_title: string };
     expect(
-      result.l1_title).toBe("质量问题台账",
-      "l1_title should remain unchanged",
-    );
+      result.l1_title).toBe("质量问题台账");
   });
 });
 
@@ -545,7 +535,7 @@ describe("xmind-gen.ts replace mode", () => {
       "--mode",
       "replace",
     ]);
-    expect(second.code).toBe(0, `stderr: ${second.stderr}`);
+    expect(second.code).toBe(0);
 
     type SheetNode = { title?: string; children?: { attached?: SheetNode[] } };
     type Sheet = { rootTopic?: SheetNode };
@@ -560,8 +550,6 @@ describe("xmind-gen.ts replace mode", () => {
       "L1 should be present (replaced with new version)",
     );
     expect(
-      attached.length).toBe(1,
-      "Should still have exactly 1 L1 node after replace",
-    );
+      attached.length).toBe(1);
   });
 });

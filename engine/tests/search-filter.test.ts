@@ -2,7 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const TMP_DIR = join(tmpdir(), `kata-search-filter-test-${process.pid}`);
@@ -55,11 +55,11 @@ interface FilteredResult {
   preview: string;
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -93,7 +93,7 @@ describe("search-filter.ts filter — sorts by case_count desc and truncates to 
     ]);
 
     const { code, stdout, stderr } = run(["filter", "--top", "2"], input);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     expect(results.length).toBe(2);
@@ -111,7 +111,7 @@ describe("search-filter.ts filter — sorts by case_count desc and truncates to 
     const input = JSON.stringify(items);
 
     const { code, stdout, stderr } = run(["filter"], input);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     expect(results.length).toBe(5);
@@ -129,7 +129,7 @@ describe("search-filter.ts filter — sorts by case_count desc and truncates to 
     ]);
 
     const { code, stdout, stderr } = run(["filter", "--top", "10"], input);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     expect(results.length).toBe(1);
@@ -162,20 +162,16 @@ describe("search-filter.ts filter — deduplicates by suite_name keeping max cas
     ]);
 
     const { code, stdout, stderr } = run(["filter", "--top", "5"], input);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     const bloodLineageResults = results.filter(
       (r) => r.suite_name === "数据血缘",
     );
     expect(
-      bloodLineageResults.length).toBe(1,
-      "should deduplicate to one entry",
-    );
+      bloodLineageResults.length).toBe(1);
     expect(
-      bloodLineageResults[0].case_count).toBe(15,
-      "should keep larger case_count",
-    );
+      bloodLineageResults[0].case_count).toBe(15);
     expect(
       bloodLineageResults[0].path.includes("v2.md").toBeTruthy(),
       "should keep path of larger entry",
@@ -212,7 +208,7 @@ describe("search-filter.ts filter — deduplicates by suite_name keeping max cas
     ]);
 
     const { code, stdout, stderr } = run(["filter", "--top", "5"], input);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     const suiteA = results.find((r) => r.suite_name === "套件A");
@@ -265,7 +261,7 @@ suite_name: "档案套件A"
       "--top",
       "3",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     expect(results.length).toBe(1);
@@ -297,7 +293,7 @@ suite_name: "Stdin套件"
     ]);
 
     const { code, stdout, stderr } = run(["filter", "--top", "5"], input);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     expect(results.length).toBe(1);
@@ -310,7 +306,7 @@ suite_name: "Stdin套件"
 describe("search-filter.ts filter — handles empty input gracefully", () => {
   it("returns [] when stdin is empty", () => {
     const { code, stdout, stderr } = run(["filter"], "");
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as unknown[];
     expect(Array.isArray(results).toBeTruthy(), "should return array");
@@ -323,19 +319,17 @@ describe("search-filter.ts filter — handles empty input gracefully", () => {
       "--input",
       "/nonexistent/path/results.json",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as unknown[];
     expect(Array.isArray(results).toBeTruthy(), "should return array");
     expect(
-      results.length).toBe(0,
-      "should return empty array for missing file",
-    );
+      results.length).toBe(0);
   });
 
   it("returns [] when input is an empty JSON array", () => {
     const { code, stdout, stderr } = run(["filter"], "[]");
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as unknown[];
     expect(results.length).toBe(0);
@@ -375,7 +369,7 @@ suite_name: "预览测试"
     ]);
 
     const { code, stdout, stderr } = run(["filter", "--top", "5"], input);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     expect(results.length).toBe(1);
@@ -408,7 +402,7 @@ suite_name: "预览测试"
     ]);
 
     const { code, stdout, stderr } = run(["filter", "--top", "5"], input);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as FilteredResult[];
     expect(results.length).toBe(1);

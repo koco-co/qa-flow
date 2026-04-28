@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const TMP_DIR = join(tmpdir(), `kata-config-test-${process.pid}`);
 const PLUGINS_DIR = join(TMP_DIR, "plugins");
@@ -43,12 +43,12 @@ function runConfig(extraEnv: Record<string, string> = {}): {
   }
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
   mkdirSync(PLUGINS_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -160,13 +160,9 @@ describe("config.ts — plugins field", () => {
     };
     for (const entry of Object.values(cfg.plugins)) {
       expect(
-        typeof entry.description).toBe("string",
-        "description should be a string",
-      );
+        typeof entry.description).toBe("string");
       expect(
-        typeof entry.commands).toBe("object",
-        "commands should be an object",
-      );
+        typeof entry.commands).toBe("object");
     }
   });
 });

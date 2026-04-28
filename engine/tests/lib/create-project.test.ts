@@ -1,7 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 import {
   configJsonPath,
@@ -90,7 +90,7 @@ describe("validateProjectName", () => {
     for (const reserved of RESERVED_NAMES) {
       if (!/^[A-Za-z]/.test(reserved)) continue; // 保留名 '.repos'/'.temp' 本就被字符集规则拒
       const r = validateProjectName(reserved);
-      expect(r.valid).toBe(false, `expected "${reserved}" to be rejected`);
+      expect(r.valid).toBe(false);
     }
   });
 });
@@ -163,9 +163,9 @@ describe("resolveSkeletonPaths", () => {
   it("returns absolute paths derived from projectDir", () => {
     const projDir = "/tmp/x/workspace/demoProj";
     const r = resolveSkeletonPaths(projDir);
-    expect(r.dirs.every((d).toBeTruthy() => d.startsWith(projDir + "/")));
-    expect(r.gitkeeps.every((g).toBeTruthy() => g.endsWith(".gitkeep")));
-    expect(r.templates.every((t).toBeTruthy() => t.dst_abs.startsWith(projDir + "/")));
+    expect(r.dirs.every((d) => d.startsWith(projDir + "/")).toBeTruthy());
+    expect(r.gitkeeps.every((g) => g.endsWith(".gitkeep")).toBeTruthy());
+    expect(r.templates.every((t) => t.dst_abs.startsWith(projDir + "/")).toBeTruthy());
   });
 
   it("produces 12 dirs, 10 gitkeeps, 3 templates", () => {
@@ -182,7 +182,7 @@ describe("diffProjectSkeleton", () => {
   const EMPTY_PROJ = join(TMP, "empty-proj");
   const FULL_PROJ = join(TMP, "full-proj");
 
-  before(() => {
+  beforeEach(() => {
     mkdirSync(join(TPL, "rules"), { recursive: true });
     mkdirSync(join(TPL, "knowledge"), { recursive: true });
     writeFileSync(join(TPL, "rules", "README.md"), "# {{project}}");
@@ -200,7 +200,7 @@ describe("diffProjectSkeleton", () => {
     }
   });
 
-  after(() => {
+  afterEach(() => {
     rmSync(TMP, { recursive: true, force: true });
   });
 
@@ -252,13 +252,9 @@ describe("mergeProjectConfig", () => {
     const { merged, added } = mergeProjectConfig(existing, "newProj");
     expect(added).toBe(true);
     expect(
-      (merged as any).projects.dataAssets.repo_profiles).toEqual({ 岚图: { repos: [] } },
-      "existing project untouched",
-    );
+      (merged as any).projects.dataAssets.repo_profiles).toEqual({ 岚图: { repos: [] } });
     expect(
-      (merged as any).projects.newProj).toEqual({ repo_profiles: {} },
-      "new project registered",
-    );
+      (merged as any).projects.newProj).toEqual({ repo_profiles: {} });
   });
 
   it("skips when project already registered", () => {
@@ -270,9 +266,7 @@ describe("mergeProjectConfig", () => {
     const { merged, added } = mergeProjectConfig(existing, "existProj");
     expect(added).toBe(false);
     expect(
-      (merged as any).projects.existProj.repo_profiles).toEqual({ foo: { repos: [{ path: "a" }] } },
-      "existing repo_profiles preserved",
-    );
+      (merged as any).projects.existProj.repo_profiles).toEqual({ foo: { repos: [{ path: "a" }] } });
   });
 
   it("preserves top-level keys outside projects", () => {

@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, beforeEach, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, beforeEach, describe, it, expect } from "bun:test";
 
 const TMP = join(tmpdir(), `kata-cp-int-${process.pid}`);
 const WORKSPACE_DIR = join(TMP, "workspace");
@@ -50,8 +50,8 @@ function resetFixture(): void {
 }
 
 describe("create-project create --dry-run", () => {
-  before(() => resetFixture());
-  after(() => rmSync(TMP, { recursive: true, force: true }));
+  beforeEach(() => resetFixture());
+  afterEach(() => rmSync(TMP, { recursive: true, force: true }));
   beforeEach(() => resetFixture());
 
   it("returns will_create plan without touching disk", () => {
@@ -142,8 +142,8 @@ describe("create-project create --dry-run", () => {
 });
 
 describe("create-project scan", () => {
-  before(() => resetFixture());
-  after(() => rmSync(TMP, { recursive: true, force: true }));
+  beforeEach(() => resetFixture());
+  afterEach(() => rmSync(TMP, { recursive: true, force: true }));
   beforeEach(() => resetFixture());
 
   it("rejects invalid project name", () => {
@@ -233,8 +233,8 @@ describe("create-project scan", () => {
 });
 
 describe("create-project create --confirmed", () => {
-  before(() => resetFixture());
-  after(() => rmSync(TMP, { recursive: true, force: true }));
+  beforeEach(() => resetFixture());
+  afterEach(() => rmSync(TMP, { recursive: true, force: true }));
   beforeEach(() => resetFixture());
 
   it("materialises full skeleton end-to-end", () => {
@@ -340,7 +340,7 @@ describe("create-project create --confirmed", () => {
     expect(code).toBe(0);
     const data = JSON.parse(stdout);
     expect(Array.isArray(data.created_dirs).toBeTruthy());
-    expect(data.created_dirs.some((p: string).toBeTruthy() => p.endsWith("knowledge/modules")));
+    expect(data.created_dirs.some((p: string) => p.endsWith("knowledge/modules")).toBeTruthy());
     const content = readFileSync(overviewPath, "utf8");
     // create-project must not have replaced user content with the template
     expect(
@@ -428,7 +428,7 @@ describe("create-project clone-repo", () => {
   const BARE_DIR = join(TMP, "bare");
   const BARE_REPO = join(BARE_DIR, "demo.git");
 
-  before(() => {
+  beforeEach(() => {
     resetFixture();
     mkdirSync(BARE_DIR, { recursive: true });
     execSync(`git init --bare "${BARE_REPO}"`);
@@ -441,7 +441,7 @@ describe("create-project clone-repo", () => {
     rmSync(wt, { recursive: true, force: true });
   });
 
-  after(() => rmSync(TMP, { recursive: true, force: true }));
+  afterEach(() => rmSync(TMP, { recursive: true, force: true }));
   beforeEach(() => {
     const barePreserve = readFileSync(CONFIG_PATH, "utf8");
     void barePreserve;

@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 import JSZip from "jszip";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -78,17 +78,17 @@ async function readContentJson(
 function createTestXmind(name: string): string {
   const outputPath = join(TMP_DIR, `${name}.xmind`);
   const { code, stderr } = runGen(["--input", FIXTURE, "--output", outputPath]);
-  expect(code).toBe(0, `xmind-gen failed: ${stderr}`);
+  expect(code).toBe(0);
   return outputPath;
 }
 
 // ─── Setup ───────────────────────────────────────────────────────────────────
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -109,7 +109,7 @@ describe("xmind-patch search", () => {
       "--limit",
       "10",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as {
       file: string;
@@ -177,7 +177,7 @@ describe("xmind-patch show", () => {
       "--title",
       "验证默认加载列表页",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const caseData = JSON.parse(stdout) as {
       title: string;
@@ -228,7 +228,7 @@ describe("xmind-patch patch", () => {
       "--case-json",
       patch,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       before: { priority: string };
@@ -259,10 +259,7 @@ describe("xmind-patch patch", () => {
     expect(rootTopic).toBeTruthy();
     const caseNode = findByTitle(rootTopic, "验证默认加载列表页");
     expect(caseNode).toBeTruthy();
-    expect(
-      caseNode.markers?.some((m).toBeTruthy() => m.markerId === "priority-3"),
-      "marker should be priority-3 (P2)",
-    );
+    expect(caseNode.markers?.some((m) => m.markerId === "priority-3")).toBeTruthy();
   });
 
   it("patches steps of an existing case", async () => {
@@ -282,7 +279,7 @@ describe("xmind-patch patch", () => {
       "--case-json",
       patch,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     // Verify file was updated with new steps
     const { code: showCode, stdout: showOut } = runEdit([
@@ -370,7 +367,7 @@ describe("xmind-patch patch", () => {
       patch,
       "--dry-run",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       dry_run: boolean;
@@ -416,7 +413,7 @@ describe("xmind-patch add", () => {
       "--case-json",
       newCase,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       added: { title: string; priority: string };
@@ -539,7 +536,7 @@ describe("xmind-patch add", () => {
       newCase,
       "--dry-run",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       dry_run: boolean;
@@ -583,7 +580,7 @@ describe("xmind-patch delete", () => {
       "验证翻页功能",
       "--dry-run",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       dry_run: boolean;
@@ -625,7 +622,7 @@ describe("xmind-patch delete", () => {
       "--title",
       "验证翻页功能",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       deleted: { title: string };

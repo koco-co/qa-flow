@@ -1,7 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 import {
   collectAllureStats,
   snapshotResultFiles,
@@ -24,11 +24,11 @@ function writeResult(
   return file;
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   rmSync(TMP, { recursive: true, force: true });
 });
 

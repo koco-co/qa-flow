@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 import { parseFrontMatter } from "../src/lib/frontmatter.js";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
@@ -30,11 +30,11 @@ function run(args: string[]): { stdout: string; stderr: string; code: number } {
   }
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -54,7 +54,7 @@ describe("archive-gen.ts convert — generates valid Markdown with front-matter"
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as {
       output_path: string;
@@ -86,15 +86,13 @@ describe("archive-gen.ts convert — correct suite_name in front-matter", () => 
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { frontMatter } = parseFrontMatter(content);
 
     expect(
-      frontMatter.suite_name).toBe("质量问题台账",
-      "suite_name should match meta.requirement_name",
-    );
+      frontMatter.suite_name).toBe("质量问题台账");
   });
 });
 
@@ -108,7 +106,7 @@ describe("archive-gen.ts convert — correct case_count", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as { case_count: number };
     // 3 sub_group cases (搜索筛选) + 1 page-level (列表页) + 1 page-level (新增页) = 5
@@ -117,9 +115,7 @@ describe("archive-gen.ts convert — correct case_count", () => {
     const content = readFileSync(output, "utf8");
     const { frontMatter } = parseFrontMatter(content);
     expect(
-      frontMatter.case_count).toBe(5,
-      "front-matter case_count should be 5",
-    );
+      frontMatter.case_count).toBe(5);
   });
 });
 
@@ -133,7 +129,7 @@ describe("archive-gen.ts convert — H2/H3/H4/H5 body structure", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { body } = parseFrontMatter(content);
@@ -147,17 +143,11 @@ describe("archive-gen.ts convert — H2/H3/H4/H5 body structure", () => {
     expect(body).toMatch(/^#### 搜索筛选/m);
     // H5 — test case with priority prefix
     expect(
-      body).toMatch(/^##### 【P0】验证默认加载列表页/m,
-      "H5 case with P0 prefix missing",
-    );
+      body).toMatch(/^##### 【P0】验证默认加载列表页/m);
     expect(
-      body).toMatch(/^##### 【P1】验证按问题类型筛选/m,
-      "H5 case with P1 prefix missing",
-    );
+      body).toMatch(/^##### 【P1】验证按问题类型筛选/m);
     expect(
-      body).toMatch(/^##### 【P0】验证填写完整表单后成功提交/m,
-      "H5 case with P0 prefix missing",
-    );
+      body).toMatch(/^##### 【P0】验证填写完整表单后成功提交/m);
   });
 });
 
@@ -197,17 +187,13 @@ describe("archive-gen.ts convert — strips duplicate priority prefix", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     expect(
-      content).not.toMatch(/【P\d】【P\d】/,
-      "Archive must not contain duplicated priority prefix",
-    );
+      content).not.toMatch(/【P\d】【P\d】/);
     expect(
-      content).toMatch(/^##### 【P0】验证默认加载列表页/m,
-      "Single P0 prefix expected after stripping",
-    );
+      content).toMatch(/^##### 【P0】验证默认加载列表页/m);
   });
 });
 
@@ -221,7 +207,7 @@ describe("archive-gen.ts convert — step table format", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { body } = parseFrontMatter(content);
@@ -249,7 +235,7 @@ describe("archive-gen.ts convert — step table format", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { body } = parseFrontMatter(content);
@@ -257,9 +243,7 @@ describe("archive-gen.ts convert — step table format", () => {
     // Precondition block should contain the text from the fixture
     expect(body).toMatch(/> 前置条件/);
     expect(
-      body).toMatch(/环境已部署/,
-      "Precondition content '环境已部署' missing",
-    );
+      body).toMatch(/环境已部署/);
   });
 });
 
@@ -302,7 +286,7 @@ origin: "xmind"
       "--dir",
       archiveDir,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as Array<{
       path: string;
@@ -313,9 +297,7 @@ origin: "xmind"
     expect(Array.isArray(results).toBeTruthy(), "search output should be an array");
     expect(results.length > 0).toBeTruthy();
     expect(
-      results[0].suite_name).toBe("质量问题台账",
-      "suite_name should match",
-    );
+      results[0].suite_name).toBe("质量问题台账");
     expect(
       results[0].path.includes("test-archive.md").toBeTruthy(),
       "path should reference the file",
@@ -360,7 +342,7 @@ origin: "xmind"
       "--dir",
       archiveDir,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as Array<{ suite_name: string }>;
     expect(results.length > 0).toBeTruthy();
@@ -400,14 +382,12 @@ origin: "xmind"
       "--dir",
       archiveDir,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as unknown[];
     expect(Array.isArray(results).toBeTruthy(), "result should be an array");
     expect(
-      results.length).toBe(0,
-      "result should be empty for unknown keyword",
-    );
+      results.length).toBe(0);
   });
 
   it("returns [] when archive directory is empty", () => {
@@ -421,13 +401,11 @@ origin: "xmind"
       "--dir",
       emptyDir,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as unknown[];
     expect(
-      results.length).toBe(0,
-      "empty directory should return empty results",
-    );
+      results.length).toBe(0);
   });
 });
 
@@ -472,7 +450,7 @@ origin: "xmind"
         "--project",
         "testProject",
       ]);
-      expect(code).toBe(0, `stderr: ${stderr}`);
+      expect(code).toBe(0);
 
       const results = JSON.parse(stdout) as Array<{
         path: string;
@@ -526,7 +504,7 @@ origin: "xmind"
       "--dir",
       archiveDir,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const results = JSON.parse(stdout) as Array<{ suite_name: string }>;
     expect(results.length > 0).toBeTruthy();
@@ -546,14 +524,12 @@ describe("archive-gen.ts convert — --project injects project field into front-
       "--project",
       "dataAssets",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { frontMatter } = parseFrontMatter(content);
     expect(
-      frontMatter.project).toBe("dataAssets",
-      "front-matter should contain project field",
-    );
+      frontMatter.project).toBe("dataAssets");
   });
 
   it("omits project from front-matter when --project is not provided", () => {
@@ -565,14 +541,12 @@ describe("archive-gen.ts convert — --project injects project field into front-
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { frontMatter } = parseFrontMatter(content);
     expect(
-      frontMatter.project).toBe(undefined,
-      "front-matter should not contain project field when not provided",
-    );
+      frontMatter.project).toBe(undefined);
   });
 });
 
@@ -599,7 +573,7 @@ describe("archive-gen.ts convert — tag inference from meta fields", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { frontMatter } = parseFrontMatter(content);
@@ -638,7 +612,7 @@ describe("archive-gen.ts convert — tag inference from meta fields", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { frontMatter } = parseFrontMatter(content);
@@ -691,7 +665,7 @@ describe("archive-gen.ts convert — tag inference from meta fields", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     const { frontMatter } = parseFrontMatter(content);
@@ -747,7 +721,7 @@ describe("archive-gen.ts convert — case counting edge cases", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as { case_count: number };
     expect(result.case_count).toBe(2);
@@ -763,13 +737,11 @@ describe("archive-gen.ts convert — case counting edge cases", () => {
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as { case_count: number };
     expect(
-      result.case_count).toBe(5,
-      "should count 3 sub_group + 1 page-level (列表页) + 1 page-level (新增页) = 5",
-    );
+      result.case_count).toBe(5);
   });
 });
 
@@ -816,7 +788,7 @@ describe("archive-gen.ts convert — pipe and newline escaping in step tables", 
       "--output",
       output,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const content = readFileSync(output, "utf8");
     expect(

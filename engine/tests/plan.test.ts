@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const TMP_DIR = join(tmpdir(), `kata-plan-test-${process.pid}`);
@@ -45,11 +45,11 @@ function planMdPath(project: string, planId: string): string {
   return join(TMP_DIR, ".kata", project, `plan-${planId}.md`);
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(join(TMP_DIR, ".kata", "dataAssets"), { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -69,7 +69,7 @@ describe("plan.ts create", () => {
       "--plan-id", "tcg-my-feature-create",
     ]);
 
-    expect(code).toBe(0, `should exit 0, got stderr: ${stdout}`);
+    expect(code).toBe(0);
     const result = JSON.parse(stdout);
     expect(result.version).toBe(1);
     expect(result.workflow).toBe("test-case-gen");
@@ -527,7 +527,7 @@ describe("plan.ts list", () => {
     for (const p of plans) {
       expect(p.workflow).toBe("ui-autotest");
     }
-    expect(plans.some((p).toBeTruthy() => p.plan_id === "uat-filter-only"));
+    expect(plans.some((p) => p.plan_id === "uat-filter-only")).toBeTruthy();
   });
 
   it("returns empty array for nonexistent project", () => {

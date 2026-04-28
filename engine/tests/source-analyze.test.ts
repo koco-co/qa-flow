@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const TMP_DIR = join(tmpdir(), `kata-source-analyze-test-${process.pid}`);
@@ -48,11 +48,11 @@ interface AnalyzeResult {
   matched_files: number;
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -84,7 +84,7 @@ describe("source-analyze analyze — A-level exact match (function declaration)"
       "--keywords",
       "createTable",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(result.a_level.length > 0).toBeTruthy();
@@ -115,7 +115,7 @@ describe("source-analyze analyze — A-level exact match (function declaration)"
       "--keywords",
       "UserService",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(result.a_level.length > 0).toBeTruthy();
@@ -139,7 +139,7 @@ describe("source-analyze analyze — A-level exact match (function declaration)"
       "--keywords",
       "IDataSource",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(result.a_level.length > 0).toBeTruthy();
@@ -162,7 +162,7 @@ describe("source-analyze analyze — A-level exact match (function declaration)"
       "--keywords",
       "createTable",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(result.a_level.length > 0).toBeTruthy();
@@ -184,7 +184,7 @@ describe("source-analyze analyze — A-level exact match (function declaration)"
       "--keywords",
       "fetchData",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(result.a_level.length > 0).toBeTruthy();
@@ -211,7 +211,7 @@ describe("source-analyze analyze — B-level fuzzy match", () => {
       "--keywords",
       "createTable",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(result.b_level.length > 0).toBeTruthy();
@@ -236,7 +236,7 @@ describe("source-analyze analyze — B-level fuzzy match", () => {
       "--keywords",
       "myService",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     // Line 1 (function declaration) must only be in a_level
@@ -266,7 +266,7 @@ describe("source-analyze analyze — coverage_rate calculation", () => {
       "--keywords",
       "myFunc",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(result.searched_files).toBe(3);
@@ -290,7 +290,7 @@ describe("source-analyze analyze — coverage_rate calculation", () => {
       "--keywords",
       "nonExistentKeyword99999",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(result.matched_files).toBe(0);
@@ -338,13 +338,11 @@ describe("source-analyze analyze — ignores node_modules", () => {
       "--keywords",
       "ignoredFunction",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(
-      result.a_level.length + result.b_level.length).toBe(0,
-      "files in node_modules should be ignored",
-    );
+      result.a_level.length + result.b_level.length).toBe(0);
     expect(result.matched_files).toBe(0);
   });
 
@@ -367,13 +365,11 @@ describe("source-analyze analyze — ignores node_modules", () => {
       "--keywords",
       "gitHookFunc",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(
-      result.a_level.length + result.b_level.length).toBe(0,
-      ".git files should be ignored",
-    );
+      result.a_level.length + result.b_level.length).toBe(0);
   });
 });
 
@@ -401,7 +397,7 @@ describe("source-analyze analyze — multiple keywords", () => {
       "--keywords",
       "alphaFunc,betaFunc",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     const keywords = new Set(result.a_level.map((m) => m.keyword));
@@ -425,7 +421,7 @@ describe("source-analyze analyze — output JSON schema", () => {
       "--keywords",
       "schemaFunc",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     expect(Array.isArray(result.a_level).toBeTruthy(), "a_level should be array");
@@ -460,7 +456,7 @@ describe("source-analyze analyze — output JSON schema", () => {
       "--keywords",
       "sortedFunc",
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const result = JSON.parse(stdout) as AnalyzeResult;
     for (let i = 1; i < result.a_level.length; i++) {

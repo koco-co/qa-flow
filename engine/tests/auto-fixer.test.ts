@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const TMP_DIR = join(tmpdir(), `kata-auto-fixer-test-${process.pid}`);
@@ -28,11 +28,11 @@ function run(args: string[]): { stdout: string; stderr: string; code: number } {
   }
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -113,7 +113,7 @@ describe("auto-fixer fix — FC01 标题缺少优先级前缀", () => {
       outputPath,
     ]);
 
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const output = JSON.parse(readFileSync(outputPath, "utf8"));
     const title =
@@ -207,7 +207,7 @@ describe("auto-fixer fix — FC03 步骤内容含编号前缀", () => {
       "--output",
       outputPath,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const output = JSON.parse(readFileSync(outputPath, "utf8"));
     const steps = output.modules[0].pages[0].sub_groups[0].test_cases[0].steps as Array<{ step: string; expected: string }>;
@@ -301,7 +301,7 @@ describe("auto-fixer fix — F13 预期结果含模糊兜底", () => {
       "--output",
       outputPath,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const output = JSON.parse(readFileSync(outputPath, "utf8"));
     const expected =
@@ -449,7 +449,7 @@ describe("auto-fixer fix — F12 预期结果多项未编号", () => {
       "--output",
       outputPath,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const output = JSON.parse(readFileSync(outputPath, "utf8"));
     const expected =
@@ -594,7 +594,7 @@ describe("auto-fixer fix — manual=true 的问题跳过不修改", () => {
       "--output",
       outputPath,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const output = JSON.parse(readFileSync(outputPath, "utf8"));
     const title =
@@ -636,7 +636,7 @@ describe("auto-fixer fix — 无问题时输入输出一致", () => {
       "--output",
       outputPath,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const output = JSON.parse(readFileSync(outputPath, "utf8"));
     expect(output).toEqual(writerJson);
@@ -689,7 +689,7 @@ describe("auto-fixer fix — 混合 issues 正确统计", () => {
       "--output",
       outputPath,
     ]);
-    expect(code).toBe(0, `stderr: ${stderr}`);
+    expect(code).toBe(0);
 
     const report = JSON.parse(stdout) as { fixed: number; skipped_manual: number; total: number };
     expect(report.fixed).toBe(1);

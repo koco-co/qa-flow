@@ -34,9 +34,7 @@ describe("init-wizard scan", () => {
   it("exits 0 and outputs valid JSON", () => {
     const { stdout, code } = run(["scan"]);
     expect(
-      code).toBe(0,
-      `expected exit 0, got stderr: ${run(["scan"]).stderr}`,
-    );
+      code).toBe(0);
     const result = JSON.parse(stdout) as unknown;
     expect(
       typeof result === "object" && result !== null,
@@ -89,9 +87,7 @@ describe("init-wizard scan", () => {
     for (const p of result.plugins) {
       expect(typeof p.name).toBe("string");
       expect(
-        typeof p.active).toBe("boolean",
-        "plugin.active should be a boolean",
-      );
+        typeof p.active).toBe("boolean");
     }
   });
 
@@ -181,9 +177,7 @@ describe("init-wizard verify", () => {
     };
     expect(Array.isArray(result.checks).toBeTruthy(), "checks should be an array");
     expect(
-      typeof result.all_pass).toBe("boolean",
-      "all_pass should be a boolean",
-    );
+      typeof result.all_pass).toBe("boolean");
   });
 
   it("each check entry has name, status, and detail", () => {
@@ -198,9 +192,7 @@ describe("init-wizard verify", () => {
         `check.status "${c.status}" should be pass/fail/skip`,
       );
       expect(
-        typeof c.detail).toBe("string",
-        "check.detail should be a string",
-      );
+        typeof c.detail).toBe("string");
     }
   });
 
@@ -208,20 +200,14 @@ describe("init-wizard verify", () => {
     const { stdout } = run(["verify"]);
     const result = JSON.parse(stdout) as { checks: Array<{ name: string }> };
     const names = result.checks.map((c) => c.name);
-    expect(
-      names.some((n).toBeTruthy() => n.toLowerCase().includes("node")),
-      "should have Node.js check",
-    );
-    expect(
-      names.some((n).toBeTruthy() => n.includes("依赖安装")),
+    expect(names.some((n) => n.toLowerCase().includes("node"))).toBeTruthy();
+    expect(names.some((n) => n.includes("依赖安装")).toBeTruthy(),
       "should have deps check",
     );
-    expect(
-      names.some((n).toBeTruthy() => n.includes("工作区")),
+    expect(names.some((n) => n.includes("工作区")).toBeTruthy(),
       "should have workspace check",
     );
-    expect(
-      names.some((n).toBeTruthy() => n.includes(".env")),
+    expect(names.some((n) => n.includes(".env")).toBeTruthy(),
       "should have .env check",
     );
   });

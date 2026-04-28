@@ -84,8 +84,7 @@ describe("repo-sync target directory calculation", () => {
     // With --project dataAssets, base-dir becomes workspace/dataAssets/.repos
     const computedPath = `workspace/dataAssets/.repos/${group}/${repo}`;
     expect(
-      computedPath).toBe("workspace/dataAssets/.repos/customItem/dt-center-assets",
-    );
+      computedPath).toBe("workspace/dataAssets/.repos/customItem/dt-center-assets");
   });
 });
 

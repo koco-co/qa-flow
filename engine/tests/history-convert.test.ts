@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { after, before, describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const FIXTURE_CSV = join(import.meta.dirname, "fixtures/sample-history.csv");
@@ -44,11 +44,11 @@ function run(args: string[]): { stdout: string; stderr: string; code: number } {
   }
 }
 
-before(() => {
+beforeEach(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-after(() => {
+afterEach(() => {
   try {
     rmSync(TMP_DIR, { recursive: true, force: true });
   } catch {
@@ -147,9 +147,7 @@ describe("history-convert CSV conversion", () => {
     // Should have front-matter
     expect(content).toMatch(/^---/);
     expect(
-      content).toMatch(/suite_name/,
-      "should have suite_name in front-matter",
-    );
+      content).toMatch(/suite_name/);
     expect(content).toMatch(/origin.*csv/);
 
     // Should have module sections
@@ -209,8 +207,7 @@ describe("history-convert directory scan", () => {
       files: { input: string }[];
     };
     expect(out.converted).toBe(2);
-    expect(
-      out.files.every((f).toBeTruthy() => f.input.endsWith(".csv")),
+    expect(out.files.every((f) => f.input.endsWith(".csv")).toBeTruthy(),
       "should only process .csv files",
     );
   });
@@ -419,9 +416,7 @@ describe("history-convert --no-split XMind", () => {
       files: { output: string; status: string }[];
     };
     expect(
-      out.converted).toBe(2,
-      "default should produce 2 files (one per L1)",
-    );
+      out.converted).toBe(2);
 
     const outputs = out.files.map((entry) => entry.output).sort();
     expect(
@@ -437,21 +432,13 @@ describe("history-convert --no-split XMind", () => {
     const secondContent = readFileSync(outputs[1], "utf8");
 
     expect(
-      firstContent).toMatch(/suite_name: "需求A（#1001）"/,
-      "suite_name should preserve the full L1 title",
-    );
+      firstContent).toMatch(/suite_name: "需求A（#1001）"/);
     expect(
-      firstContent).toMatch(/case_id: 1001/,
-      "case_id should be extracted from full-width suffix",
-    );
+      firstContent).toMatch(/case_id: 1001/);
     expect(
-      secondContent).toMatch(/suite_name: "需求B（#1002）"/,
-      "suite_name should preserve the full L1 title",
-    );
+      secondContent).toMatch(/suite_name: "需求B（#1002）"/);
     expect(
-      secondContent).toMatch(/case_id: 1002/,
-      "case_id should be extracted from full-width suffix",
-    );
+      secondContent).toMatch(/case_id: 1002/);
   });
 
   it("merges duplicate L1 titles into one requirement file when splitting", async () => {
@@ -551,9 +538,7 @@ describe("history-convert --no-split XMind", () => {
       files: { output: string; caseCount?: number; status: string }[];
     };
     expect(
-      out.converted).toBe(1,
-      "duplicate requirement titles should merge into one output file",
-    );
+      out.converted).toBe(1);
     expect(out.files[0].caseCount).toBe(2);
     expect(
       out.files[0].output.endsWith("/重复需求.md").toBeTruthy(),

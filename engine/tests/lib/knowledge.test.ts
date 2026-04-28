@@ -1,4 +1,4 @@
-import { describe, it, before, after, expect } from "bun:test";
+import { describe, it, beforeEach, afterEach, expect } from "bun:test";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -381,11 +381,11 @@ describe("lintChecks", () => {
   const TMP = join(tmpdir(), `kk-lint-test-${process.pid}`);
   const knowledgeDirPath = join(TMP, "knowledge");
 
-  before(() => {
+  beforeEach(() => {
     mkdirSync(join(knowledgeDirPath, "modules"), { recursive: true });
     mkdirSync(join(knowledgeDirPath, "pitfalls"), { recursive: true });
   });
-  after(() => {
+  afterEach(() => {
     try { rmSync(TMP, { recursive: true, force: true }); } catch { /* ignore */ }
   });
 
@@ -408,8 +408,7 @@ body`,
         "# p Knowledge Index\n\n- [modules/broken.md](modules/broken.md)\n",
       );
       const result = lintChecks("p", knowledgeDirPath);
-      expect(result.errors.some((e).toBeTruthy() => e.rule === "missing-frontmatter-field"),
-        `expected missing-frontmatter-field error, got errors: ${JSON.stringify(result.errors)}`);
+      expect(result.errors.some((e) => e.rule === "missing-frontmatter-field")).toBeTruthy();
     } finally {
       try { rmSync(modulePath); } catch { /* ignore */ }
     }
@@ -435,7 +434,7 @@ body`,
         "# p\n\n- [modules/wrong-type.md](modules/wrong-type.md)\n",
       );
       const result = lintChecks("p", knowledgeDirPath);
-      expect(result.errors.some((e).toBeTruthy() => e.rule === "type-dir-mismatch"));
+      expect(result.errors.some((e) => e.rule === "type-dir-mismatch")).toBeTruthy();
     } finally {
       try { rmSync(modulePath); } catch { /* ignore */ }
     }
@@ -461,7 +460,7 @@ body`,
         "# p\n\n- [modules/Bad_Name.md](modules/Bad_Name.md)\n",
       );
       const result = lintChecks("p", knowledgeDirPath);
-      expect(result.errors.some((e).toBeTruthy() => e.rule === "non-kebab-case-name"));
+      expect(result.errors.some((e) => e.rule === "non-kebab-case-name")).toBeTruthy();
     } finally {
       try { rmSync(modulePath); } catch { /* ignore */ }
     }
@@ -488,7 +487,7 @@ body`,
       );
       const result = lintChecks("p", knowledgeDirPath);
       expect(result.errors.length).toBe(0);
-      expect(result.warnings.some((w).toBeTruthy() => w.rule === "empty-tags"));
+      expect(result.warnings.some((w) => w.rule === "empty-tags")).toBeTruthy();
     } finally {
       try { rmSync(modulePath); } catch { /* ignore */ }
     }
@@ -514,7 +513,7 @@ body`,
         "# p\n\n- [modules/nosrc.md](modules/nosrc.md)\n",
       );
       const result = lintChecks("p", knowledgeDirPath);
-      expect(result.warnings.some((w).toBeTruthy() => w.rule === "empty-source"));
+      expect(result.warnings.some((w) => w.rule === "empty-source")).toBeTruthy();
     } finally {
       try { rmSync(modulePath); } catch { /* ignore */ }
     }
@@ -540,7 +539,7 @@ body`,
         "# p Knowledge Index\n\n## Modules\n_（暂无）_\n",
       );
       const result = lintChecks("p", knowledgeDirPath);
-      expect(result.warnings.some((w).toBeTruthy() => w.rule === "orphan-file"));
+      expect(result.warnings.some((w) => w.rule === "orphan-file")).toBeTruthy();
     } finally {
       try { rmSync(modulePath); } catch { /* ignore */ }
     }

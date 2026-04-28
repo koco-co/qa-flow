@@ -18,8 +18,7 @@ describe("extractTenantFromCookie", () => {
 
   it("returns undefined when cookie is missing the key", () => {
     expect(
-      extractTenantFromCookie("foo=bar; baz=qux")).toBe(undefined,
-    );
+      extractTenantFromCookie("foo=bar; baz=qux")).toBe(undefined);
   });
 
   it("returns undefined for empty/undefined input", () => {
