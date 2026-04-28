@@ -20,6 +20,56 @@ export function projectPath(project: string, ...segments: string[]): string {
   return join(projectDir(project), ...segments);
 }
 
+// ── v3 path functions (spec §4.3) ────────────────────────────────────────────
+
+/**
+ * Feature directory: workspace/{project}/features/{yyyymm}-{slug}/.
+ * The unit of a PRD's derived artifacts (prd.md, archive.md, cases.xmind, tests/, ...).
+ */
+export function featureDir(project: string, yyyymm: string, slug: string): string {
+  return join(projectDir(project), "features", `${yyyymm}-${slug}`);
+}
+
+/**
+ * File or subdir inside a feature directory.
+ */
+export function featureFile(
+  project: string,
+  yyyymm: string,
+  slug: string,
+  ...segments: string[]
+): string {
+  return join(featureDir(project, yyyymm, slug), ...segments);
+}
+
+/**
+ * Project-level shared resources: workspace/{project}/shared/{kind}/...
+ * kind ∈ {"helpers", "fixtures", "pages"}.
+ */
+export function projectShared(
+  project: string,
+  kind: "helpers" | "fixtures" | "pages",
+  ...segments: string[]
+): string {
+  return join(projectDir(project), "shared", kind, ...segments);
+}
+
+/**
+ * Non-PRD-derived bucket for ad-hoc bug reports / console errors.
+ * workspace/{project}/incidents/{yyyymmdd}-{slug}/.
+ */
+export function incidentDir(project: string, yyyymmdd: string, slug: string): string {
+  return join(projectDir(project), "incidents", `${yyyymmdd}-${slug}`);
+}
+
+/**
+ * Periodic regression / smoke test batches.
+ * workspace/{project}/regressions/{yyyymmdd}-{batch}/.
+ */
+export function regressionDir(project: string, yyyymmdd: string, batch: string): string {
+  return join(projectDir(project), "regressions", `${yyyymmdd}-${batch}`);
+}
+
 export function xmindDir(project: string): string {
   return join(projectDir(project), "xmind");
 }
@@ -36,28 +86,44 @@ export function prdsDir(project: string): string {
   return join(projectDir(project), "prds");
 }
 
+let warnedPrdDir = false;
+/** @deprecated since v3 — use featureDir(project, yyyymm, slug). Returns features/{ym}-{slug}/. */
 export function prdDir(project: string, yyyymm: string, slug: string): string {
-  return join(prdsDir(project), yyyymm, slug);
+  if (!warnedPrdDir) {
+    console.warn("[paths] prdDir() is deprecated; use featureDir() (spec §6.3)");
+    warnedPrdDir = true;
+  }
+  return featureDir(project, yyyymm, slug);
 }
 
+/** @deprecated since v3 — use featureFile(..., "enhanced.md"). */
 export function enhancedMd(project: string, yyyymm: string, slug: string): string {
-  return join(prdDir(project, yyyymm, slug), "enhanced.md");
+  return featureFile(project, yyyymm, slug, "enhanced.md");
 }
 
+/** @deprecated since v3 — use featureFile(..., "source-facts.json"). */
 export function sourceFactsJson(project: string, yyyymm: string, slug: string): string {
-  return join(prdDir(project, yyyymm, slug), "source-facts.json");
+  return featureFile(project, yyyymm, slug, "source-facts.json");
 }
 
+/** @deprecated since v3 — use featureFile(..., "resolved.md"). */
 export function resolvedMd(project: string, yyyymm: string, slug: string): string {
-  return join(prdDir(project, yyyymm, slug), "resolved.md");
+  return featureFile(project, yyyymm, slug, "resolved.md");
 }
 
+let warnedPrdImagesDir = false;
+/** @deprecated since v3 — use featureFile(..., "images"). */
 export function prdImagesDir(project: string, yyyymm: string, slug: string): string {
-  return join(prdDir(project, yyyymm, slug), "images");
+  if (!warnedPrdImagesDir) {
+    console.warn("[paths] prdImagesDir() is deprecated; use featureFile(..., 'images') (spec §6.3)");
+    warnedPrdImagesDir = true;
+  }
+  return featureFile(project, yyyymm, slug, "images");
 }
 
+/** @deprecated since v3 — use featureFile(..., "prd.md"). Note rename: original.md → prd.md. */
 export function originalPrdMd(project: string, yyyymm: string, slug: string): string {
-  return join(prdDir(project, yyyymm, slug), "original.md");
+  return featureFile(project, yyyymm, slug, "prd.md");
 }
 
 export function issuesDir(project: string): string {

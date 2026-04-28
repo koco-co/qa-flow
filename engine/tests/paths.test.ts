@@ -60,9 +60,9 @@ import {
 } from "../src/lib/paths.ts";
 
 describe("enhanced doc paths", () => {
-  test("prdDir returns {project}/prds/{yyyymm}/{slug}/", () => {
+  test("prdDir returns {project}/features/{yyyymm}-{slug}/ (v3 redirect)", () => {
     const p = prdDir("dataAssets", "202604", "my-prd");
-    expect(p).toMatch(/workspace\/dataAssets\/prds\/202604\/my-prd$/);
+    expect(p).toMatch(/workspace\/dataAssets\/features\/202604-my-prd$/);
   });
 
   test("enhancedMd is {prdDir}/enhanced.md", () => {
@@ -85,8 +85,8 @@ describe("enhanced doc paths", () => {
       .toMatch(/my-prd\/images$/);
   });
 
-  test("originalPrdMd is {prdDir}/original.md", () => {
+  test("originalPrdMd is {featureDir}/prd.md (v3 redirect, renamed original.md -> prd.md)", () => {
     expect(originalPrdMd("dataAssets", "202604", "my-prd"))
-      .toMatch(/my-prd\/original\.md$/);
+      .toMatch(/my-prd\/prd\.md$/);
   });
 });
