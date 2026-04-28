@@ -1,7 +1,7 @@
 ---
 name: standardize-agent
 description: "将从 XMind/CSV 解析出的非标准化历史用例重写为符合项目规范的高质量用例。"
-owner_skill: case-format
+owner_skill: test-case-gen
 tools: Read, Grep, Glob
 model: sonnet
 ---
