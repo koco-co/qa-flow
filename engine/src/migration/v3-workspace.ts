@@ -1,4 +1,5 @@
-import { readdirSync, statSync, existsSync } from "node:fs";
+import { readdirSync, statSync, existsSync, mkdirSync, renameSync, writeFileSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join } from "node:path";
 import type { Feature, MigrationLog, MigrationOp } from "./types.ts";
 
@@ -183,11 +184,56 @@ export function planMigration(features: Feature[], projectDir: string): Migratio
   return ops;
 }
 
+function fileChecksum(path: string): string | undefined {
+  try {
+    return createHash("sha256").update(readFileSync(path)).digest("hex");
+  } catch {
+    return undefined;
+  }
+}
+
 export function applyMigration(
   ops: MigrationOp[],
   options: { mode: "dry" | "real"; project: string; logPath: string },
 ): MigrationLog {
-  throw new Error("not implemented");
+  const log: MigrationLog = {
+    schemaVersion: 1,
+    timestamp: new Date().toISOString(),
+    project: options.project,
+    mode: options.mode,
+    features: [],
+    operations: [],
+    warnings: [],
+  };
+
+  for (const op of ops) {
+    if (op.type === "log") {
+      log.operations.push({ ...op });
+      continue;
+    }
+    if (op.type === "mkdir") {
+      if (options.mode === "real") {
+        mkdirSync(op.dst!, { recursive: true });
+      }
+      log.operations.push({ ...op });
+      continue;
+    }
+    if (op.type === "mv") {
+      const checksum = options.mode === "real" ? fileChecksum(op.src!) : undefined;
+      if (options.mode === "real") {
+        if (!existsSync(op.src!)) {
+          log.warnings.push(`mv: src missing ${op.src}`);
+          continue;
+        }
+        renameSync(op.src!, op.dst!);
+      }
+      log.operations.push({ ...op, checksumBefore: checksum });
+      continue;
+    }
+  }
+
+  writeFileSync(options.logPath, JSON.stringify(log, null, 2));
+  return log;
 }
 
 export function rollbackFromLog(logPath: string): MigrationLog {
