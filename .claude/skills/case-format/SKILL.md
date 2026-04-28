@@ -8,9 +8,7 @@ description:
 argument-hint: "[edit | reverse-sync | other2md] [文件路径或关键词]"
 ---
 
-<precedence>
-用户当前指令 > 项目级 rules > 全局 rules > 本文件
-</precedence>
+规则优先级见 [engine/references/priority.md](../../engine/references/priority.md).
 
 <artifact_contract>
 <xmind_intermediate contract="A">

@@ -1,8 +1,6 @@
 # 测试用例编写硬性规则
 
-<precedence>
-用户当前指令 > 项目级 rules > 全局 rules > 本文件
-</precedence>
+规则优先级见 [engine/references/priority.md](../../engine/references/priority.md).
 
 <artifact_contract>
 <xmind_intermediate contract="A">
