@@ -11,12 +11,12 @@ export const uiAutotestSteps: WorkflowStep[] = [
   },
   { id: "merge", executor: "direct", dependsOn: ["subagent-a"] },
   {
-    id: "subagent-b",
+    id: "regression",
     executor: "subagent",
-    subagentConfig: { agentRef: "subagent-b-agent", model: "haiku" },
+    subagentConfig: { agentRef: "regression-runner-agent", model: "haiku" },
     dependsOn: ["merge"],
   },
-  { id: "result-notify", executor: "direct", dependsOn: ["subagent-b"] },
+  { id: "result-notify", executor: "direct", dependsOn: ["regression"] },
 ];
 
 export const uiAutotestGates: Record<string, GateConfig> = {

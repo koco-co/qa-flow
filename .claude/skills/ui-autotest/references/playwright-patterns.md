@@ -274,4 +274,4 @@ test.describe("功能名称 - 页面名", () => {
 
 - 步骤 3 Subagent A（生成+修复+收敛）：`.claude/agents/subagent-a-agent.md`
 - UI 自动化测试 Skill：`.claude/skills/ui-autotest/SKILL.md`
-- 步骤 5 Subagent B（全量回归执行）：`.claude/agents/subagent-b-agent.md`
+- 步骤 5 Regression Runner（全量回归执行）：`.claude/agents/regression-runner-agent.md`

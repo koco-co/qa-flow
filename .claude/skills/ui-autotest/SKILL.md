@@ -42,10 +42,10 @@ gate 后: gates/R1.md
 executor: direct
 指令: .claude/skills/ui-autotest/workflow.md#step-4
 
-### 步骤 5: subagent B（执行测试）
+### 步骤 5: regression runner（执行测试）
 
 executor: subagent
-agent: subagent-b-agent
+agent: regression-runner-agent
 model: haiku
 指令: .claude/skills/ui-autotest/workflow.md#step-5
 gate 后: gates/R2.md

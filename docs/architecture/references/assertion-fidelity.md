@@ -1,6 +1,6 @@
 # 断言忠实原则（Assertion Fidelity）
 
-> 所有 Playwright 脚本生成/修复 agent 必须遵守的共享规则。ui-autotest 链路的 `subagent-a-agent`（步骤 3）和 `subagent-b-agent`（步骤 5）引用本文件。
+> 所有 Playwright 脚本生成/修复 agent 必须遵守的共享规则。ui-autotest 链路的 `subagent-a-agent`（步骤 3）和 `regression-runner-agent`（步骤 5）引用本文件。
 
 ## 核心原则
 

@@ -42,6 +42,7 @@ workspace/*/reports/playwright/
 # ── 编译 / 构建产物 ─────────────────────────────────────
 dist/
 *.tsbuildinfo
+apps/desktop/src-tauri/target/
 
 # ── 自动生成的计划文档 ──────────────────────────────────
 docs/superpowers/
