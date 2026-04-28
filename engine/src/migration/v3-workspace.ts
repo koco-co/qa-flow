@@ -19,13 +19,24 @@ function isDir(p: string): boolean {
   }
 }
 
-export function discoverFeatures(projectDir: string, kataRoot?: string): Feature[] {
+export function discoverFeatures(projectDir: string, kataRoot?: string): { features: Feature[]; skipped: string[] } {
   const map = new Map<string, Feature>();
+  const skipped: string[] = [];
   const key = (ym: string, slug: string) => `${ym}::${slug}`;
   const upsert = (ym: string, slug: string, patch: Partial<Feature>) => {
     const k = key(ym, slug);
     const existing = map.get(k) ?? { yyyymm: ym, slug };
     map.set(k, { ...existing, ...patch });
+  };
+
+  const collectSkipped = (root: string, allowedExceptions: string[] = []) => {
+    for (const name of safeReaddir(root)) {
+      const full = join(root, name);
+      if (!isDir(full)) continue;
+      if (/^\d{6}$/.test(name)) continue;
+      if (allowedExceptions.includes(name)) continue;
+      if (!skipped.includes(full)) skipped.push(full);
+    }
   };
 
   // 1. prds/{ym}/{slug}/
@@ -44,6 +55,7 @@ export function discoverFeatures(projectDir: string, kataRoot?: string): Feature
       });
     }
   }
+  collectSkipped(prdsRoot);
 
   // 2. archive/{ym}/{slug}.md
   const archiveRoot = join(projectDir, "archive");
@@ -57,6 +69,7 @@ export function discoverFeatures(projectDir: string, kataRoot?: string): Feature
       upsert(ym, slug, { archivePath: join(ymDir, file) });
     }
   }
+  collectSkipped(archiveRoot);
 
   // 3. xmind/{ym}/{slug}.xmind
   const xmindRoot = join(projectDir, "xmind");
@@ -70,6 +83,7 @@ export function discoverFeatures(projectDir: string, kataRoot?: string): Feature
       upsert(ym, slug, { xmindPath: join(ymDir, file) });
     }
   }
+  collectSkipped(xmindRoot);
 
   // 4. tests/{ym}/{slug}/
   const testsRoot = join(projectDir, "tests");
@@ -83,6 +97,7 @@ export function discoverFeatures(projectDir: string, kataRoot?: string): Feature
       upsert(ym, slug, { testsPath: slugDir });
     }
   }
+  collectSkipped(testsRoot, ["fixtures", "helpers"]);
 
   // 5. .kata/{project}/sessions/{workflow}/{slug}.json
   if (kataRoot) {
@@ -108,9 +123,12 @@ export function discoverFeatures(projectDir: string, kataRoot?: string): Feature
     }
   }
 
-  return Array.from(map.values()).sort((a, b) =>
-    a.yyyymm === b.yyyymm ? a.slug.localeCompare(b.slug) : a.yyyymm.localeCompare(b.yyyymm),
-  );
+  return {
+    features: Array.from(map.values()).sort((a, b) =>
+      a.yyyymm === b.yyyymm ? a.slug.localeCompare(b.slug) : a.yyyymm.localeCompare(b.yyyymm),
+    ),
+    skipped: skipped.sort(),
+  };
 }
 
 function featureTarget(projectDir: string, f: Feature): string {
@@ -194,7 +212,7 @@ function fileChecksum(path: string): string | undefined {
 
 export function applyMigration(
   ops: MigrationOp[],
-  options: { mode: "dry" | "real"; project: string; logPath: string },
+  options: { mode: "dry" | "real"; project: string; logPath: string; skipped?: string[] },
 ): MigrationLog {
   const log: MigrationLog = {
     schemaVersion: 1,
@@ -202,6 +220,7 @@ export function applyMigration(
     project: options.project,
     mode: options.mode,
     features: [],
+    skipped: options.skipped ?? [],
     operations: [],
     warnings: [],
   };

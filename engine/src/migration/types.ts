@@ -28,6 +28,7 @@ export type MigrationLog = {
   project: string;
   mode: "dry" | "real";
   features: Feature[];
+  skipped: string[];   // non-yyyymm partitions reported by discoverFeatures
   operations: MigrationOp[];
   warnings: string[];
 };

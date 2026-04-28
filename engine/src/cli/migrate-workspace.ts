@@ -21,13 +21,14 @@ export const program = new Command("migrate-workspace")
     const root = repoRoot();
     const projectDirectory = projectDir(options.project);
     const kataRoot = join(root, ".kata");
-    const features = discoverFeatures(projectDirectory, kataRoot);
+    const { features, skipped } = discoverFeatures(projectDirectory, kataRoot);
     const ops = planMigration(features, projectDirectory);
     const logPath = options.log ?? join(root, `refactor-v3-P3-${options.project}-${options.mode}.log.json`);
     const log = applyMigration(ops, {
       mode: options.mode as "dry" | "real",
       project: options.project,
       logPath,
+      skipped,
     });
 
     console.log(`[migrate-workspace] mode=${options.mode} project=${options.project}`);
@@ -36,5 +37,9 @@ export const program = new Command("migrate-workspace")
     if (log.warnings.length > 0) {
       console.warn("[migrate-workspace] warnings:");
       for (const w of log.warnings) console.warn(`  - ${w}`);
+    }
+    if (skipped.length > 0) {
+      console.warn(`[migrate-workspace] skipped non-yyyymm dirs: ${skipped.length}`);
+      for (const s of skipped) console.warn(`  - ${s}`);
     }
   });

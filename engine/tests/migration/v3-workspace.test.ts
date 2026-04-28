@@ -22,7 +22,7 @@ function freshShadow(): string {
 describe("discoverFeatures", () => {
   test("finds all 3 features across full / archive-only / recent-only", () => {
     const projectDir = freshShadow();
-    const features = discoverFeatures(projectDir);
+    const { features } = discoverFeatures(projectDir);
     const slugs = features.map((f) => `${f.yyyymm}-${f.slug}`).sort();
     expect(slugs).toEqual([
       "202512-legacy-prd",
@@ -33,7 +33,8 @@ describe("discoverFeatures", () => {
 
   test("full-prd has all 4 source paths populated", () => {
     const projectDir = freshShadow();
-    const f = discoverFeatures(projectDir).find((x) => x.slug === "full-prd")!;
+    const { features } = discoverFeatures(projectDir);
+    const f = features.find((x) => x.slug === "full-prd")!;
     expect(f.prdDir).toBeDefined();
     expect(f.archivePath).toBeDefined();
     expect(f.xmindPath).toBeDefined();
@@ -42,7 +43,8 @@ describe("discoverFeatures", () => {
 
   test("recent-prd has only prdDir, no archive/xmind", () => {
     const projectDir = freshShadow();
-    const f = discoverFeatures(projectDir).find((x) => x.slug === "recent-prd")!;
+    const { features } = discoverFeatures(projectDir);
+    const f = features.find((x) => x.slug === "recent-prd")!;
     expect(f.prdDir).toBeDefined();
     expect(f.archivePath).toBeUndefined();
     expect(f.xmindPath).toBeUndefined();
@@ -50,17 +52,29 @@ describe("discoverFeatures", () => {
 
   test("legacy-prd has only archive + xmind, no prdDir", () => {
     const projectDir = freshShadow();
-    const f = discoverFeatures(projectDir).find((x) => x.slug === "legacy-prd")!;
+    const { features } = discoverFeatures(projectDir);
+    const f = features.find((x) => x.slug === "legacy-prd")!;
     expect(f.prdDir).toBeUndefined();
     expect(f.archivePath).toBeDefined();
     expect(f.xmindPath).toBeDefined();
   });
 });
 
+describe("discoverFeatures: non-yyyymm subdirs", () => {
+  test("non-yyyymm dirs under archive/ are reported as skipped, not silently ignored", () => {
+    const projectDir = freshShadow();
+    const result = discoverFeatures(projectDir);
+    expect(Array.isArray((result as any).features ?? result)).toBe(true);
+    const skipped = (result as any).skipped as string[] | undefined;
+    expect(skipped).toBeDefined();
+    expect(skipped!.some((p) => p.includes("non-yyyymm-folder"))).toBe(true);
+  });
+});
+
 describe("planMigration", () => {
   test("output is deterministic (same input -> same ops)", () => {
     const projectDir = freshShadow();
-    const features = discoverFeatures(projectDir);
+    const { features } = discoverFeatures(projectDir);
     const a = planMigration(features, projectDir);
     const b = planMigration(features, projectDir);
     expect(a).toEqual(b);
@@ -68,7 +82,7 @@ describe("planMigration", () => {
 
   test("all mkdir ops come before mv ops (no orphan moves)", () => {
     const projectDir = freshShadow();
-    const features = discoverFeatures(projectDir);
+    const { features } = discoverFeatures(projectDir);
     const ops = planMigration(features, projectDir);
     const lastMkdir = ops.findLastIndex((o) => o.type === "mkdir");
     const firstMv = ops.findIndex((o) => o.type === "mv");
@@ -79,7 +93,7 @@ describe("planMigration", () => {
 describe("applyMigration dry mode", () => {
   test("dry mode does not touch the filesystem", () => {
     const projectDir = freshShadow();
-    const features = discoverFeatures(projectDir);
+    const { features } = discoverFeatures(projectDir);
     const ops = planMigration(features, projectDir);
     const logPath = join(projectDir, "..", "dryrun.log.json");
     const before = readdirSync(projectDir).sort();
@@ -109,7 +123,7 @@ describe("applyMigration real mode + rollback (inverse property)", () => {
     }
 
     const before = snap(projectDir);
-    const features = discoverFeatures(projectDir);
+    const { features } = discoverFeatures(projectDir);
     const ops = planMigration(features, projectDir);
     const logPath = join(projectDir, "..", "real.log.json");
     applyMigration(ops, { mode: "real", project: "myproj", logPath });
