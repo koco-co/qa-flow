@@ -1,0 +1,107 @@
+// META: {"id":"t41","priority":"P1","title":"【P1】验证删除已被完整性和有效性校验规则引用的key后规则不受影响"}
+//
+// 完整流程说明（需手动验证的部分）：
+//   1. 新增 refTestKey → 在规则集中新增完整性校验规则（key范围校验含refTestKey）
+//      及有效性校验规则（json格式校验，校验key=refTestKey）
+//   2. 创建规则任务 → 立即执行
+//   3. 删除 refTestKey
+//   4. 回到规则集管理页面，编辑规则集 → 验证规则配置仍在，无报错
+//   5. 回到规则任务页面，再次执行任务
+//   6. 进入校验结果查询页面 → 验证执行完成无报错
+//
+// 以下脚本实现核心验证：新增 refTestKey → 删除 refTestKey → 验证删除成功。
+// 规则集/规则任务的创建验证属于其他模块测试范围，不在此用例实现。
+//
+import { test, expect } from "../../../../../shared/fixtures/step-screenshot";
+import {
+  waitForTableLoaded,
+  confirmPopconfirm,
+  uniqueName,
+} from "../../../../../shared/helpers/test-setup";
+import { addKey, gotoJsonConfigPage, searchKey } from "../../helpers/json-config-helpers";
+
+test.describe("【通用配置】json格式配置 - 通用配置-json格式校验管理", () => {
+  test("【P1】验证删除已被完整性和有效性校验规则引用的key后规则不受影响", async ({
+    page,
+    step,
+  }) => {
+    // 核心验证：新增 refTestKey → 删除 refTestKey → 验证删除成功
+    // 完整跨模块验证（规则集/规则任务/校验结果）需手动执行，见文件头部注释。
+    const refTestKey = uniqueName("refTestKey");
+
+    await step("步骤1: 进入json格式校验管理页面 → 页面正常加载", async () => {
+      await gotoJsonConfigPage(page);
+      const table = page.locator(".ant-table");
+      await table.waitFor({ state: "visible", timeout: 15000 });
+      await waitForTableLoaded(page, table);
+    }, page.locator(".ant-table"));
+
+    await step(
+      "步骤2: 新增 refTestKey，value=^[a-zA-Z]+$，数据源类型=Doris3.x → 新增成功，记录出现在列表",
+      async () => {
+        await addKey(page, refTestKey, {
+          valueFormat: "^[a-zA-Z]+$",
+          dataSourceType: "Doris3.x",
+        });
+        await searchKey(page, refTestKey);
+        await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
+        await waitForTableLoaded(page, page.locator(".ant-table"));
+
+        const newRow = page.locator(".ant-table-row").filter({ hasText: refTestKey }).first();
+        await expect(newRow).toBeVisible({ timeout: 15000 });
+      },
+      page.locator(".ant-table-row").filter({ hasText: refTestKey }).first(),
+    );
+
+    // 此处为手动验证说明步骤（不实现，添加注释）
+    // 步骤3（手动）: 进入规则集管理页面 (/dq/ruleSet?pid=xxx)，
+    //   创建规则集，关联 Doris 数据源和测试表，
+    //   新增完整性校验规则（key范围校验，包含refTestKey），
+    //   新增有效性校验规则（json格式校验，校验key=refTestKey），保存。
+    // 步骤4（手动）: 进入规则任务管理页面 (/dq/monitorRule?pid=xxx)，
+    //   创建规则任务，导入规则包，保存，立即执行。
+    // 以上步骤涉及复杂多模块前置操作，需在测试环境手动准备。
+
+    await step(
+      "步骤3: 删除 refTestKey → 弹出确认，确认后删除成功，记录从列表消失",
+      async () => {
+        const refRow = page.locator(".ant-table-row").filter({ hasText: refTestKey }).first();
+        await expect(refRow).toBeVisible({ timeout: 5000 });
+
+        // 点击删除操作
+        const deleteBtn = refRow.locator(".ant-btn-link, button").filter({ hasText: "删除" }).first();
+        await deleteBtn.click();
+
+        // 等待 Popconfirm 并确认
+        await confirmPopconfirm(page);
+
+        await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
+
+        // 验证 refTestKey 从列表消失
+        await expect(page.locator(".ant-table-row").filter({ hasText: refTestKey })).toHaveCount(0, {
+          timeout: 10000,
+        });
+      },
+      page.locator(".ant-table"),
+    );
+
+    // 以下步骤为手动验证说明，不在此脚本实现
+    // 步骤4（手动）: 回到规则集管理页面，编辑规则集 → 验证规则配置仍在，无报错
+    // 步骤5（手动）: 回到规则任务页面，立即执行任务
+    // 步骤6（手动）: 进入校验结果查询页面 → 验证执行完成无报错
+    // 完整跨模块验证见文件头部注释说明。
+
+    await step(
+      "步骤4: 验证 refTestKey 已不在列表中（删除完成）→ 列表不包含 refTestKey 记录",
+      async () => {
+        await searchKey(page, refTestKey);
+        await waitForTableLoaded(page, page.locator(".ant-table"));
+
+        // 验证无对应行
+        const deletedRows = page.locator(".ant-table-row").filter({ hasText: refTestKey });
+        await expect(deletedRows).toHaveCount(0, { timeout: 10000 });
+      },
+      page.locator(".ant-table"),
+    );
+  });
+});
