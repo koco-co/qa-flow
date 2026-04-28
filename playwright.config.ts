@@ -105,6 +105,7 @@ const workers =
 export default defineConfig({
   testMatch: [
     `workspace/${project}/tests/**/*.spec.ts`,
+    `workspace/${project}/features/**/tests/runners/*.spec.ts`,
     `.kata/${project}/ui-blocks/**/*.ts`,
   ],
   // 排除 .kata/ui-blocks 里的 helpers（被 t*.ts 以相对路径 import）
@@ -112,6 +113,7 @@ export default defineConfig({
   testIgnore: [
     `.kata/${project}/ui-blocks/**/*-helpers.ts`,
     `workspace/${project}/tests/**/*-helpers.ts`,
+    `workspace/${project}/features/**/tests/runners/*-helpers.ts`,
   ],
   outputDir: resolveOutputDir(),
   fullyParallel,
