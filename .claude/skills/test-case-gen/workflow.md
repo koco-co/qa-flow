@@ -36,7 +36,7 @@ Input parsing and environment preparation:
 
 1. Parse user input (PRD path, feature name, quick mode flag)
 2. Load project rules: `kata-cli rule-loader load --project {{project}}`
-3. Check for resume session (`.kata/{{project}}/sessions/test-case-gen/{{name}}-{{env}}.json`)
+3. Check for resume session (`.kata/{{project}}/workflow-state/test-case-gen-{{name}}-{{env}}.json`)
 4. Create Task visualization (8 tasks with blockedBy dependencies)
 5. Determine strategy from input signal:
    - PRD path → full workflow

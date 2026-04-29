@@ -45,7 +45,7 @@ Script reference: `bun run engine/src/ui-autotest/parse-cases.ts --file {{md_pat
 
 Continue an interrupted session from saved state.
 
-1. Read `.kata/{{project}}/sessions/ui-autotest/{{session-file}}.json`
+1. Read `.kata/{{project}}/workflow-state/ui-autotest-{{session-file}}.json`
 2. Restore all 6 task statuses
 3. Resume from the first non-completed step
 
@@ -132,6 +132,7 @@ bun run engine/src/ui-autotest/merge-specs.ts \
 ```
 
 The merge script:
+
 - Reads all `cases/` files with valid META headers
 - Generates `smoke.spec.ts` (P0 only) and `full.spec.ts` (all priorities)
 - Validates TypeScript compilation (optional `--compile-check`)
@@ -171,10 +172,10 @@ Summarize execution results and notify the user.
 
 ### Command aliases
 
-| Alias | Command |
-|-------|---------|
+| Alias          | Command                                                            |
+| -------------- | ------------------------------------------------------------------ |
 | `@parse-cases` | `bun run engine/src/ui-autotest/parse-cases.ts --file {{md_path}}` |
-| `@merge-specs` | `bun run engine/src/ui-autotest/merge-specs.ts ...` |
+| `@merge-specs` | `bun run engine/src/ui-autotest/merge-specs.ts ...`                |
 
 ### Task schema
 
@@ -184,19 +185,20 @@ Create 6 tasks in order, marking progress as each step completes.
 
 ## <a id="protocols-exception"></a>Protocols: Exception handling
 
-| Situation | Response |
-|-----------|----------|
-| Session login fails | Retry with new credentials; ask user if env changes |
-| Test compilation error | Route to Step 3b fix loop |
-| Flaky tests (intermittent failures) | Retry 3×; report as flaky if inconsistent |
-| Missing Archive MD | Ask user for file path or fallback to manual input |
-| Subagent timeout | Restart with `--resume` flag (Step 1.5) |
+| Situation                           | Response                                            |
+| ----------------------------------- | --------------------------------------------------- |
+| Session login fails                 | Retry with new credentials; ask user if env changes |
+| Test compilation error              | Route to Step 3b fix loop                           |
+| Flaky tests (intermittent failures) | Retry 3×; report as flaky if inconsistent           |
+| Missing Archive MD                  | Ask user for file path or fallback to manual input  |
+| Subagent timeout                    | Restart with `--resume` flag (Step 1.5)             |
 
 ---
 
 ## <a id="gate-r1"></a>Gate R1: Script generation review
 
 Checklist:
+
 - [ ] Selectors are reasonable (prefer `text`/`role`, avoid fragile CSS paths)
 - [ ] Assertions match Archive MD expectations
 - [ ] Test isolation is maintained (no shared mutable state)
@@ -207,6 +209,7 @@ Checklist:
 ## <a id="gate-r2"></a>Gate R2: Post-execution review
 
 Checklist:
+
 - [ ] Test pass rate ≥ threshold (default 80%)
 - [ ] Severe failures auto-converted to Bug report
 - [ ] Flaky tests documented with retry counts
