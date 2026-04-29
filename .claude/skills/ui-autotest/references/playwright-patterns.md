@@ -50,6 +50,31 @@ import {
 - 新写的函数如果**依赖项目特有配置**，放到 `workspace/{project}/tests/helpers/`
 - 新写的函数如果**仅当前套件使用**，放到套件目录的 `xxx-helpers.ts`
 
+### 1.5 lib/playwright vs site-knowledge 决策树
+
+```
+发现交互模式
+  ├── 跨站点通用？且不依赖具体业务 URL？
+  │   └── 是 → lib/playwright/（封装为共享函数）
+  ├── 仅当前站点有效？
+  │   └── 是 → knowledge/sites/（记录为知识文档，由 merge-site-knowledge 写入）
+  └── 不确定？
+      └── 先 knowledge/sites/，后续出现第二个站点时再提炼
+```
+
+### 1.6 站点知识参考
+
+站点操作知识存储在 `workspace/{project}/knowledge/sites/{hostname}/`，包含以下文件：
+
+| 文件           | 内容                             |
+| -------------- | -------------------------------- |
+| `selectors.md` | 稳定 selector、role、data-testid |
+| `traps.md`     | 交互陷阱、不稳定的选择器         |
+| `api.md`       | 后端 API 端点、请求参数          |
+| `overview.md`  | 站点概况、URL 模式、登录方式     |
+
+在 `script-case-agent` 生成脚本前，主 agent 会通过 Step 3a 自动读取相关站点知识并注入到 prompt 中。
+
 ---
 
 ## 2. 定位器优先级
@@ -272,8 +297,7 @@ test.describe("功能名称 - 页面名", () => {
 
 ## 参考
 
-- 步骤 3-1 Script Writer（脚本生成）：`.claude/agents/script-writer-agent.md`
-- 步骤 3-2 Script Fixer（自测修复）：`.claude/agents/script-fixer-agent.md`
+- 步骤 3 Case Processing（写+修一条龙）：`.claude/agents/script-case-agent.md`
 - 步骤 3-3 Convergence（共性收敛）：`.claude/agents/convergence-agent.md`
 - UI 自动化测试 Skill：`.claude/skills/ui-autotest/SKILL.md`
 - 步骤 5 Regression Runner（全量回归执行）：`.claude/agents/regression-runner-agent.md`
