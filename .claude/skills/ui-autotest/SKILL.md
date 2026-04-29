@@ -12,8 +12,7 @@ UI自动化、e2e回归、冒烟测试
 
 ## 编排步骤
 
-共享协议（确认策略、命令别名、Task schema、输出目录约定等）见 workflow.md → Protocols: Standard。
-异常处理见 workflow.md → Protocols: Exception handling，按需加载。
+共享协议见 `references/protocols.md`，目录规范见 `references/directory-layout.md`，Task schema 见 `references/task-schema.md`。按需加载。
 
 ### 步骤 0: 环境检查（Pre-flight）
 
