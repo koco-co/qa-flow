@@ -12,27 +12,17 @@ UI自动化、e2e回归、冒烟测试
 
 ## 编排步骤
 
-共享协议见 `references/protocols.md`，目录规范见 `references/directory-layout.md`，Task schema 见 `references/task-schema.md`。按需加载。
+参考材料：协议见 `references/protocols.md`，目录规范见 `references/directory-layout.md`，Task schema 见 `references/task-schema.md`。按需加载。
 
 ### 步骤 0: 环境检查（Pre-flight）
 
 executor: direct
 指令: .claude/skills/ui-autotest/workflow.md#step-0
 
-> **编排层强制执行**，不是文字参考。必须按顺序执行以下 5 个子步骤：
-
-1. `0a. 目录结构检查` — 运行 `kata-cli features:lint-tests --project {{project}} --feature {{feature}} --exit-code`，有严重违规时报告用户
-2. `0b. 续传检测` — 检查 `.task-state.json` 是否存在，展示进度摘要，问用户是否续传
-3. `0c. 注册命令别名` — 执行 alias 注册脚本别名
-4. `0d. 创建主任务` — 创建 T0~T6 并设置依赖关系
-5. `0e. 确认副作用的操作策略` — 按硬规则/需确认/需预览三级策略执行
-
 ### 步骤 1: 解析输入与确认范围
 
 executor: direct
 指令: .claude/skills/ui-autotest/workflow.md#step-1
-
-> 步骤 1 完成后自动检查 .task-state.json（替代旧的 Step 1.5 续传路径）。
 
 ### 步骤 2: 登录态准备
 
@@ -41,14 +31,11 @@ executor: direct
 
 ### 步骤 3: 并行处理用例（写+修一条龙）
 
-executor: subagent (并行派发)
+executor: subagent（并行派发）
 agent: script-case-agent
 model: sonnet
 指令: .claude/skills/ui-autotest/workflow.md#step-3
-
-> script-case-agent 合并了原 script-writer（生成）和 script-fixer（修复）的职责，同一 agent 完成写→测→修全流程。
-> 收敛分析在全部 case 完成后由主 agent 自行完成，或选择性派发 convergence-agent。
-> gate 后: .claude/skills/ui-autotest/workflow.md#gate-r1
+gate 后: .claude/skills/ui-autotest/workflow.md#gate-r1
 
 ### 步骤 4: 合并脚本
 
