@@ -84,28 +84,31 @@ TaskUpdate taskId="T0" status=completed
 
 Executor: direct (main agent)
 
-1. 解析用户输入：Archive MD path / feature name / 场景描述
-2. 确认范围：feature、优先级（P0/P1/P2）、冒烟或全量
-3. 初始化 tests 目录：
+1. 解析用户输入：Archive MD path / feature name / 场景描述，识别 project/feature/URL
+2. 展示确认信息：
+
+```
+project: dataAssets
+feature: 202604-xxx
+URL:     http://...
+archive: 36 条用例，无历史状态，全新执行
+确认开始？(y/N)
+```
+
+- 用户说"只跑 P0" → 设 smokeOnly=true
+- 其余情况默认 full
+
+3. 有 `.task-state.json` → 走 Step 0b 续传逻辑，跳过此处
+4. 无历史状态 → 重建状态：
 
 ```bash
 kata-cli features:init-tests --project {{project}} --feature {{feature}}
-```
-
-4. 解析 Archive MD → .task-state.json：
-
-```bash
 bun run engine/src/ui-autotest/parse-cases.ts \
   --file workspace/{{project}}/features/{{feature}}/archive.md \
   --project {{project}}
 ```
 
-5. 展示范围摘要：
-
-```
-[parse-cases] 全新 | project=dataAssets feature=202604-xxx tasks=16
-  P0: 5 | P1: 8 | P2: 3
-```
+5. 已有脚本 → 保留不动（parse-cases 不覆盖已有文件）
 
 **完成 Step 1**：
 
