@@ -18,7 +18,7 @@ import {
   type ContentModule,
   type ContentPitfall,
   type IndexData,
-} from "../../src/lib/knowledge.ts";
+} from "../../lib/knowledge.ts";
 
 describe("parseFrontmatter", () => {
   it("parses a valid frontmatter block", () => {
@@ -176,6 +176,7 @@ describe("renderIndex", () => {
     const data: IndexData = {
       modules: [],
       pitfalls: [],
+      sites: [],
       overview_updated: "2026-04-17",
       terms_updated: "2026-04-17",
       terms_count: 0,
@@ -207,6 +208,7 @@ describe("renderIndex", () => {
         },
       ],
       pitfalls: [],
+      sites: [],
       overview_updated: "2026-04-17",
       terms_updated: "2026-04-17",
       terms_count: 3,
@@ -232,6 +234,7 @@ describe("renderIndex", () => {
           confidence: "high",
         },
       ],
+      sites: [],
       overview_updated: "2026-04-17",
       terms_updated: "2026-04-17",
       terms_count: 0,
@@ -245,6 +248,7 @@ describe("renderIndex", () => {
     const data: IndexData = {
       modules: [],
       pitfalls: [],
+      sites: [],
       overview_updated: "2026-04-17",
       terms_updated: "2026-04-17",
       terms_count: 7,
