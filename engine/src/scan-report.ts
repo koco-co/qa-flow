@@ -8,14 +8,15 @@
  * Spec: docs/superpowers/specs/2026-04-29-static-scan-skill-design.md
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createCli } from "../lib/cli-runner.ts";
 import { auditDir, currentYYYYMM, projectDir } from "../lib/paths.ts";
 import { fetchAndDiff } from "../lib/scan-report-diff.ts";
-import { initAudit } from "../lib/scan-report-store.ts";
+import { addBug, initAudit, nextBugId, removeBug } from "../lib/scan-report-store.ts";
 import {
   type AuditMeta,
+  type Bug,
   SCAN_REPORT_SCHEMA_VERSION,
 } from "../lib/scan-report-types.ts";
 
@@ -43,6 +44,15 @@ function defaultSlug(repo: string, base: string, head: string): string {
 function fail(code: number, msg: string): never {
   process.stderr.write(`${msg}\n`);
   process.exit(code);
+}
+
+function loadBugJson(path: string): Bug {
+  if (!existsSync(path)) fail(1, `[scan-report] json not found: ${path}`);
+  try {
+    return JSON.parse(readFileSync(path, "utf8")) as Bug;
+  } catch (e) {
+    fail(1, `[scan-report] invalid JSON: ${(e as Error).message}`);
+  }
 }
 
 async function actionCreate(opts: CreateOpts): Promise<void> {
@@ -118,6 +128,45 @@ export const program = createCli({
         { flag: "--skip-fetch", description: "skip 'git fetch' (for tests/local repos)" },
       ],
       action: actionCreate,
+    },
+    {
+      name: "add-bug",
+      description: "Append a bug from a JSON file (strict-validated)",
+      options: [
+        { flag: "--project <name>", description: "project", required: true },
+        { flag: "--yyyymm <ym>", description: "yyyymm", required: true },
+        { flag: "--slug <slug>", description: "audit slug", required: true },
+        { flag: "--json <path>", description: "path to bug JSON", required: true },
+        { flag: "--auto-id", description: "ignore bug.id and assign next id" },
+      ],
+      action: (opts: {
+        project: string; yyyymm: string; slug: string; json: string; autoId?: boolean;
+      }) => {
+        const bug = loadBugJson(opts.json);
+        if (opts.autoId) bug.id = nextBugId(opts.project, opts.yyyymm, opts.slug);
+        try {
+          addBug(opts.project, opts.yyyymm, opts.slug, bug);
+        } catch (e) {
+          const msg = (e as Error).message;
+          if (msg.startsWith("invalid bug:")) fail(2, `[scan-report] ${msg}`);
+          fail(1, `[scan-report] ${msg}`);
+        }
+        process.stdout.write(`${JSON.stringify({ ok: true, id: bug.id })}\n`);
+      },
+    },
+    {
+      name: "remove-bug",
+      description: "Remove a bug by id",
+      options: [
+        { flag: "--project <name>", description: "project", required: true },
+        { flag: "--yyyymm <ym>", description: "yyyymm", required: true },
+        { flag: "--slug <slug>", description: "audit slug", required: true },
+        { flag: "--bug-id <id>", description: "bug id (e.g. b-001)", required: true },
+      ],
+      action: (opts: { project: string; yyyymm: string; slug: string; bugId: string }) => {
+        removeBug(opts.project, opts.yyyymm, opts.slug, opts.bugId);
+        process.stdout.write(`${JSON.stringify({ ok: true, removed: opts.bugId })}\n`);
+      },
     },
   ],
 });

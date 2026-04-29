@@ -86,3 +86,69 @@ describe("scan-report CLI — create", () => {
     expect(r.stderr.toString()).toContain("not found");
   });
 });
+
+describe("scan-report CLI — add-bug / remove-bug", () => {
+  async function setupAudit(): Promise<{ slug: string; ym: string }> {
+    const r = await $`bun ${CLI} create \
+      --project ${PROJECT} --repo demo \
+      --base-branch release_6.3.x --head-branch release_6.3.0_dev \
+      --slug demo-test --skip-fetch`.quiet().nothrow();
+    expect(r.exitCode).toBe(0);
+    const out = JSON.parse(r.stdout.toString());
+    return { slug: out.slug, ym: out.yyyymm };
+  }
+
+  function writeBugJson(path: string, override: Record<string, unknown> = {}): void {
+    const bug = {
+      id: "b-001",
+      title: "Default",
+      severity: "major",
+      type: "logic",
+      module: "M",
+      location: { file: "a.ts", line: 1 },
+      phenomenon: "P", expected: "E", actual: "A",
+      reproduction_steps: ["1", "2", "3"],
+      root_cause: "R",
+      evidence: { diff_hunk: "@@" },
+      suggestion: "S",
+      confidence: 0.9,
+      confidence_reason: "C",
+      ...override,
+    };
+    writeFileSync(path, JSON.stringify(bug));
+  }
+
+  test("add-bug auto-assigns next id when --auto-id", async () => {
+    const { slug, ym } = await setupAudit();
+    const f = join(WS, "bug.json");
+    writeBugJson(f, { id: "ignored" });
+    const r = await $`bun ${CLI} add-bug \
+      --project ${PROJECT} --slug ${slug} --yyyymm ${ym} \
+      --json ${f} --auto-id`.quiet().nothrow();
+    expect(r.exitCode).toBe(0);
+    expect(JSON.parse(r.stdout.toString()).id).toBe("b-001");
+  });
+
+  test("add-bug fails on invalid bug with exit 2", async () => {
+    const { slug, ym } = await setupAudit();
+    const f = join(WS, "bug.json");
+    writeBugJson(f, { confidence: 0.3 });
+    const r = await $`bun ${CLI} add-bug \
+      --project ${PROJECT} --slug ${slug} --yyyymm ${ym} --json ${f}`
+      .quiet().nothrow();
+    expect(r.exitCode).toBe(2);
+    expect(r.stderr.toString()).toContain("confidence");
+  });
+
+  test("remove-bug deletes by id", async () => {
+    const { slug, ym } = await setupAudit();
+    const f = join(WS, "bug.json");
+    writeBugJson(f, { id: "b-001" });
+    await $`bun ${CLI} add-bug --project ${PROJECT} --slug ${slug} --yyyymm ${ym} --json ${f}`
+      .quiet().nothrow();
+    const r = await $`bun ${CLI} remove-bug --project ${PROJECT} --slug ${slug} --yyyymm ${ym} --bug-id b-001`
+      .quiet().nothrow();
+    expect(r.exitCode).toBe(0);
+    expect(JSON.parse(r.stdout.toString()).removed).toBe("b-001");
+  });
+});
