@@ -13,7 +13,17 @@ import { dirname, join } from "node:path";
 import { createCli } from "../lib/cli-runner.ts";
 import { auditDir, currentYYYYMM, projectDir } from "../lib/paths.ts";
 import { fetchAndDiff } from "../lib/scan-report-diff.ts";
-import { addBug, initAudit, nextBugId, removeBug } from "../lib/scan-report-store.ts";
+import {
+  addBug,
+  initAudit,
+  nextBugId,
+  readMeta,
+  readReport,
+  removeBug,
+  setMeta,
+  updateBugField,
+  updateBugSteps,
+} from "../lib/scan-report-store.ts";
 import {
   type AuditMeta,
   type Bug,
@@ -166,6 +176,110 @@ export const program = createCli({
       action: (opts: { project: string; yyyymm: string; slug: string; bugId: string }) => {
         removeBug(opts.project, opts.yyyymm, opts.slug, opts.bugId);
         process.stdout.write(`${JSON.stringify({ ok: true, removed: opts.bugId })}\n`);
+      },
+    },
+    {
+      name: "update-bug",
+      description: "Update a single bug field (supports dot-paths like location.line)",
+      options: [
+        { flag: "--project <name>", description: "project", required: true },
+        { flag: "--yyyymm <ym>", description: "yyyymm", required: true },
+        { flag: "--slug <slug>", description: "audit slug", required: true },
+        { flag: "--bug-id <id>", description: "bug id", required: true },
+        { flag: "--field <path>", description: "field path, e.g. title or location.line", required: true },
+        { flag: "--value <v>", description: "new value (numeric strings are coerced)", required: true },
+      ],
+      action: (opts: {
+        project: string; yyyymm: string; slug: string; bugId: string; field: string; value: string;
+      }) => {
+        let coerced: unknown = opts.value;
+        // numeric coercion only when path is line / confidence-style numeric leaf
+        if (/(^|\.)(line|confidence)$/.test(opts.field)) {
+          const n = Number(opts.value);
+          if (!Number.isNaN(n)) coerced = n;
+        }
+        try {
+          updateBugField(opts.project, opts.yyyymm, opts.slug, opts.bugId, opts.field, coerced);
+        } catch (e) {
+          const msg = (e as Error).message;
+          if (msg.includes("invalid bug")) fail(2, `[scan-report] ${msg}`);
+          fail(1, `[scan-report] ${msg}`);
+        }
+        process.stdout.write(`${JSON.stringify({ ok: true })}\n`);
+      },
+    },
+    {
+      name: "update-bug-steps",
+      description: "Replace reproduction_steps array from a JSON file",
+      options: [
+        { flag: "--project <name>", description: "project", required: true },
+        { flag: "--yyyymm <ym>", description: "yyyymm", required: true },
+        { flag: "--slug <slug>", description: "audit slug", required: true },
+        { flag: "--bug-id <id>", description: "bug id", required: true },
+        { flag: "--json <path>", description: "path to JSON array of strings", required: true },
+      ],
+      action: (opts: {
+        project: string; yyyymm: string; slug: string; bugId: string; json: string;
+      }) => {
+        if (!existsSync(opts.json)) fail(1, `[scan-report] json not found`);
+        const steps = JSON.parse(readFileSync(opts.json, "utf8"));
+        if (!Array.isArray(steps)) fail(1, `[scan-report] steps must be JSON array`);
+        try {
+          updateBugSteps(opts.project, opts.yyyymm, opts.slug, opts.bugId, steps);
+        } catch (e) {
+          const msg = (e as Error).message;
+          if (msg.includes("invalid bug")) fail(2, `[scan-report] ${msg}`);
+          fail(1, `[scan-report] ${msg}`);
+        }
+        process.stdout.write(`${JSON.stringify({ ok: true })}\n`);
+      },
+    },
+    {
+      name: "set-meta",
+      description: "Update a top-level meta field",
+      options: [
+        { flag: "--project <name>", description: "project", required: true },
+        { flag: "--yyyymm <ym>", description: "yyyymm", required: true },
+        { flag: "--slug <slug>", description: "audit slug", required: true },
+        { flag: "--field <name>", description: "meta field name (reviewer | summary | related_feature)", required: true },
+        { flag: "--value <v>", description: "new string value", required: true },
+      ],
+      action: (opts: {
+        project: string; yyyymm: string; slug: string; field: string; value: string;
+      }) => {
+        const allowed = new Set(["reviewer", "summary", "related_feature"]);
+        if (!allowed.has(opts.field)) fail(1, `[scan-report] field "${opts.field}" not editable via set-meta`);
+        setMeta(
+          opts.project,
+          opts.yyyymm,
+          opts.slug,
+          opts.field as "reviewer" | "summary" | "related_feature",
+          opts.value,
+        );
+        process.stdout.write(`${JSON.stringify({ ok: true })}\n`);
+      },
+    },
+    {
+      name: "show",
+      description: "Print meta + bugs (or one bug) as JSON",
+      options: [
+        { flag: "--project <name>", description: "project", required: true },
+        { flag: "--yyyymm <ym>", description: "yyyymm", required: true },
+        { flag: "--slug <slug>", description: "audit slug", required: true },
+        { flag: "--bug-id <id>", description: "(optional) only show one bug" },
+      ],
+      action: (opts: {
+        project: string; yyyymm: string; slug: string; bugId?: string;
+      }) => {
+        const meta = readMeta(opts.project, opts.yyyymm, opts.slug);
+        const report = readReport(opts.project, opts.yyyymm, opts.slug);
+        if (opts.bugId) {
+          const bug = report.bugs.find((b) => b.id === opts.bugId);
+          if (!bug) fail(1, `[scan-report] bug ${opts.bugId} not found`);
+          process.stdout.write(`${JSON.stringify({ meta, bug }, null, 2)}\n`);
+          return;
+        }
+        process.stdout.write(`${JSON.stringify({ meta, bugs: report.bugs }, null, 2)}\n`);
       },
     },
   ],

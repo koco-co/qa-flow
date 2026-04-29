@@ -152,3 +152,80 @@ describe("scan-report CLI — add-bug / remove-bug", () => {
     expect(JSON.parse(r.stdout.toString()).removed).toBe("b-001");
   });
 });
+
+describe("scan-report CLI — update / set-meta / show", () => {
+  async function seedOneBug(): Promise<{ slug: string; ym: string }> {
+    const r1 = await $`bun ${CLI} create --project ${PROJECT} --repo demo \
+      --base-branch release_6.3.x --head-branch release_6.3.0_dev \
+      --slug u-test --skip-fetch`.quiet().nothrow();
+    const { slug, yyyymm } = JSON.parse(r1.stdout.toString());
+
+    const f = join(WS, "bug.json");
+    writeFileSync(
+      f,
+      JSON.stringify({
+        id: "b-001", title: "T", severity: "major", type: "logic", module: "M",
+        location: { file: "a.ts", line: 1 },
+        phenomenon: "P", expected: "E", actual: "A",
+        reproduction_steps: ["1", "2", "3"],
+        root_cause: "R", evidence: { diff_hunk: "@@" },
+        suggestion: "S", confidence: 0.9, confidence_reason: "C",
+      }),
+    );
+    await $`bun ${CLI} add-bug --project ${PROJECT} --slug ${slug} --yyyymm ${yyyymm} --json ${f}`
+      .quiet().nothrow();
+    return { slug, ym: yyyymm };
+  }
+
+  test("update-bug top-level field", async () => {
+    const { slug, ym } = await seedOneBug();
+    const r = await $`bun ${CLI} update-bug --project ${PROJECT} --slug ${slug} --yyyymm ${ym} \
+      --bug-id b-001 --field title --value "renamed"`.quiet().nothrow();
+    expect(r.exitCode).toBe(0);
+
+    const show = await $`bun ${CLI} show --project ${PROJECT} --slug ${slug} --yyyymm ${ym} --bug-id b-001`
+      .quiet().nothrow();
+    expect(JSON.parse(show.stdout.toString()).bug.title).toBe("renamed");
+  });
+
+  test("update-bug nested location.line", async () => {
+    const { slug, ym } = await seedOneBug();
+    const r = await $`bun ${CLI} update-bug --project ${PROJECT} --slug ${slug} --yyyymm ${ym} \
+      --bug-id b-001 --field location.line --value 999`.quiet().nothrow();
+    expect(r.exitCode).toBe(0);
+    const show = await $`bun ${CLI} show --project ${PROJECT} --slug ${slug} --yyyymm ${ym} --bug-id b-001`
+      .quiet().nothrow();
+    expect(JSON.parse(show.stdout.toString()).bug.location.line).toBe(999);
+  });
+
+  test("update-bug-steps replaces reproduction_steps", async () => {
+    const { slug, ym } = await seedOneBug();
+    const sf = join(WS, "steps.json");
+    writeFileSync(sf, JSON.stringify(["a", "b", "c", "d"]));
+    const r = await $`bun ${CLI} update-bug-steps --project ${PROJECT} --slug ${slug} --yyyymm ${ym} \
+      --bug-id b-001 --json ${sf}`.quiet().nothrow();
+    expect(r.exitCode).toBe(0);
+    const show = await $`bun ${CLI} show --project ${PROJECT} --slug ${slug} --yyyymm ${ym} --bug-id b-001`
+      .quiet().nothrow();
+    expect(JSON.parse(show.stdout.toString()).bug.reproduction_steps.length).toBe(4);
+  });
+
+  test("set-meta updates reviewer", async () => {
+    const { slug, ym } = await seedOneBug();
+    const r = await $`bun ${CLI} set-meta --project ${PROJECT} --slug ${slug} --yyyymm ${ym} \
+      --field reviewer --value alice`.quiet().nothrow();
+    expect(r.exitCode).toBe(0);
+    const show = await $`bun ${CLI} show --project ${PROJECT} --slug ${slug} --yyyymm ${ym}`
+      .quiet().nothrow();
+    expect(JSON.parse(show.stdout.toString()).meta.reviewer).toBe("alice");
+  });
+
+  test("show without --bug-id returns full report", async () => {
+    const { slug, ym } = await seedOneBug();
+    const r = await $`bun ${CLI} show --project ${PROJECT} --slug ${slug} --yyyymm ${ym}`
+      .quiet().nothrow();
+    const out = JSON.parse(r.stdout.toString());
+    expect(out.meta.repo).toBe("demo");
+    expect(out.bugs.length).toBe(1);
+  });
+});
