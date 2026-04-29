@@ -32,10 +32,10 @@
 
 ## 引用方式
 
-通过项目 helpers re-export 引用（推荐，路径更短）：
+通过项目 helpers re-export 引用（tsconfig alias）：
 
 ```typescript
-import { selectAntOption, expectAntMessage } from "../../helpers/test-setup";
+import { selectAntOption, expectAntMessage } from "@shared/test-setup";
 ```
 
 ## 约束

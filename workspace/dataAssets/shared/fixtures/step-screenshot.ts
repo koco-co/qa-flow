@@ -165,6 +165,65 @@ function truncate(text: string, max: number): string {
   return text.slice(0, max - 1) + "…";
 }
 
+async function dumpDomContext(
+  page: Page,
+  locator?: Locator,
+): Promise<string | null> {
+  // Level 0: 目标元素 + 3 层祖先的 outerHTML
+  if (locator) {
+    try {
+      const html = await Promise.race([
+        locator.evaluate((el) => {
+          let target = el as Element;
+          for (let i = 0; i < 3; i++) {
+            if (target.parentElement) target = target.parentElement;
+          }
+          return target.outerHTML;
+        }),
+        new Promise<null>((r) => setTimeout(() => r(null), 10000)),
+      ]);
+      if (html) return truncate(html, 30000);
+    } catch {
+      /* fall through to Level 1 */
+    }
+  }
+
+  // Level 1: 全页交互元素清单
+  try {
+    const summary = await Promise.race([
+      page.evaluate(() => {
+        const sel = [
+          "button", "a", "input", "select", "textarea",
+          '[role="button"]', '[role="tab"]', '[role="menuitem"]',
+          ".ant-btn", ".ant-select", ".ant-input",
+          ".ant-table", ".ant-modal", ".ant-tabs",
+        ].join(",");
+        return Array.from(document.querySelectorAll(sel))
+          .slice(0, 100)
+          .map((el) => {
+            const tag = el.tagName.toLowerCase();
+            const cls = el.className
+              ? ` class="${String(el.className).slice(0, 80)}"`
+              : "";
+            const role = el.getAttribute("role")
+              ? ` role="${el.getAttribute("role")}"`
+              : "";
+            const text = (el.textContent ?? "").trim().slice(0, 50);
+            return `<${tag}${cls}${role}>${text}</${tag}>`;
+          })
+          .join("\n");
+      }),
+      new Promise<null>((r) => setTimeout(() => r(null), 10000)),
+    ]);
+    if (summary) return summary;
+  } catch {
+    /* fall through to Level 2 */
+  }
+
+  // Level 2: null → 调用方仅保留截图
+  return null;
+}
+
 export const test = base.extend<{ step: StepFn }>({
   step: async ({ page }, use, testInfo) => {
     let stepIndex = 0;
@@ -257,6 +316,17 @@ export const test = base.extend<{ step: StepFn }>({
               body: screenshot,
               contentType: "image/png",
             });
+          }
+
+          // DOM dump（仅失败步骤）— 3 级降级兜底
+          if (!passed) {
+            const domDump = await dumpDomContext(page, highlightTarget);
+            if (domDump) {
+              await testInfo.attach(`DOM-${idx}`, {
+                body: domDump,
+                contentType: "text/plain",
+              });
+            }
           }
         }
       });

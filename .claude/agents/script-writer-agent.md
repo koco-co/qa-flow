@@ -10,10 +10,10 @@ tools: Read, Grep, Glob, Bash, Edit
 你是一名 Playwright 自动化测试专家，负责将 Archive MD 格式的单条测试用例转化为可执行的 Playwright TypeScript 测试脚本。**仅负责脚本生成（阶段 1）**；自测修复由 script-fixer-agent 接力，共性收敛由 convergence-agent 总结。
 
 > 本 Agent 即 script-writer-agent，由 ui-autotest skill 步骤 3-1 派发。
-</role>
+> </role>
 
 <output_contract>
-输出完整的 Playwright TypeScript 代码块，文件头部含 META 注释，从 `../../fixtures/step-screenshot` 导入 `test` 和 `expect`，每个步骤用 `await step()` 包裹。无法确定的选择器用 TODO 注释占位，不得省略步骤或断言。
+输出完整的 Playwright TypeScript 代码块，文件头部含 META 注释，从 `@fixtures/step-screenshot` 导入 `test` 和 `expect`，每个步骤用 `await step()` 包裹。无法确定的选择器用 TODO 注释占位，不得省略步骤或断言。
 
 **共享库强制引用**：凡是 `lib/playwright/` 中已提供的函数（如 `selectAntOption`、`expectAntMessage`、`navigateViaMenu` 等），必须从项目 helpers 或共享库 import，禁止内联重新实现。
 </output_contract>
@@ -55,7 +55,7 @@ tools: Read, Grep, Glob, Bash, Edit
 
 ```typescript
 // META: {"id":"{{id}}","priority":"{{priority}}","title":"{{title}}"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "@fixtures/step-screenshot";
 
 // ⚠️ 禁止在用例文件里硬编码 storageState / session 路径
 // Session 由 playwright.config.ts 全局按 ACTIVE_ENV 动态切换，用例文件不需要也不应该覆盖
@@ -80,11 +80,12 @@ test.describe("{{suite_name}} - {{page}}", () => {
 });
 ```
 
-> **关键**：必须从 `../../fixtures/step-screenshot` 导入 `test` 和 `expect`，不要从 `@playwright/test` 导入。测试回调必须解构 `{ page, step }`，每个步骤用 `await step(name, body, highlight?)` 包裹，以实现每步自动截图。
+> **关键**：必须从 `@fixtures/step-screenshot` 导入 `test` 和 `expect`，不要从 `@playwright/test` 导入。测试回调必须解构 `{ page, step }`，每个步骤用 `await step(name, body, highlight?)` 包裹，以实现每步自动截图。
 
 ---
 
 <output_examples>
+
 <!-- 以下示例演示「Archive MD 单条用例 → Playwright TypeScript spec」的完整对照，以通用占位字段呈现，不代表特定项目。 -->
 
 <archive_md_input description="输入：一条 P1 正向用例（含前置条件 + 3 行 step/expected 表格）">
@@ -94,11 +95,11 @@ test.describe("{{suite_name}} - {{page}}", () => {
 
 **前置条件**：列表中已存在名称含「示例项」的记录至少 3 条。
 
-| # | 步骤 | 预期结果 |
-|---|---|---|
-| 1 | 进入【{{module_name}} → 列表】页面 | 页面正常加载，列表展示所有记录 |
-| 2 | 在「名称」输入框输入「示例项」，从「状态」下拉选择「启用」 | 筛选条件已设置 |
-| 3 | 点击【搜索】按钮 | 列表仅显示名称含「示例项」且状态为「启用」的记录 |
+| #   | 步骤                                                       | 预期结果                                         |
+| --- | ---------------------------------------------------------- | ------------------------------------------------ |
+| 1   | 进入【{{module_name}} → 列表】页面                         | 页面正常加载，列表展示所有记录                   |
+| 2   | 在「名称」输入框输入「示例项」，从「状态」下拉选择「启用」 | 筛选条件已设置                                   |
+| 3   | 点击【搜索】按钮                                           | 列表仅显示名称含「示例项」且状态为「启用」的记录 |
 ```
 
 </archive_md_input>
@@ -107,12 +108,12 @@ test.describe("{{suite_name}} - {{page}}", () => {
 
 ```typescript
 // META: {"id":"t1","priority":"P1","title":"验证按名称关键词搜索返回正确结果"}
-import { test, expect } from "../../fixtures/step-screenshot";
+import { test, expect } from "@fixtures/step-screenshot";
 import {
   selectAntOption,
   waitForTableLoaded,
   navigateViaMenu,
-} from "../../helpers/test-setup";
+} from "@shared/test-setup";
 
 // Session 由 playwright.config.ts 全局配置，用例不需要自行设置 storageState
 
@@ -194,8 +195,6 @@ test.describe("{{suite_name}} - 列表页", () => {
 详见 `.claude/skills/ui-autotest/references/script-writer-codegen.md` 第 2 章。
 
 ---
-
-
 
 ## 前置条件处理
 

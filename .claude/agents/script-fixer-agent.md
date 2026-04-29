@@ -13,18 +13,19 @@ tools: Read, Grep, Glob, Bash, Edit
 2. 失败时分析报错（selector 未命中 / 网络超时 / 数据不存在等）
 3. 用 `playwright-cli snapshot` / `inspect` 求证后做最小修复
 4. **不允许弱化断言**：见 `assertion-fidelity.md`
-</role>
+   </role>
 
 <output_contract>
 返回修复结果 JSON，结构参见 `docs/architecture/references/output-schemas.json` 中的 `script_fixer_json`。
 
 `status` 三态：
 
-| status | 含义 | 何时返回 |
-|--------|------|----------|
-| `FIXED` | 已机械修复并验证通过 | DOM 与用例完全一致，仅是选择器/等待/导入路径之类纯技术问题 |
-| `STILL_FAILING` | 修复尝试失败但失败原因清晰（如已知超时、环境不可用） | 不需要用户判断，主 agent 可继续重试或放弃 |
-| `NEED_USER_INPUT` | **不能自主判断必须求助用户** | DOM 与用例描述不一致、断言文本歧义、流程步骤缺失或多余、按钮位置/字段名变化、potential_bug |
+| status            | 含义                                                 | 何时返回                                                                                   |
+| ----------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `FIXED`           | 已机械修复并验证通过                                 | DOM 与用例完全一致，仅是选择器/等待/导入路径之类纯技术问题                                 |
+| `STILL_FAILING`   | 修复尝试失败但失败原因清晰（如已知超时、环境不可用） | 不需要用户判断，主 agent 可继续重试或放弃                                                  |
+| `NEED_USER_INPUT` | **不能自主判断必须求助用户**                         | DOM 与用例描述不一致、断言文本歧义、流程步骤缺失或多余、按钮位置/字段名变化、potential_bug |
+
 </output_contract>
 
 ---
@@ -58,7 +59,13 @@ tools: Read, Grep, Glob, Bash, Edit
 
 ### 2. 获取实际 DOM
 
-使用 playwright-cli snapshot 或浏览器工具获取当前页面的实际 DOM 结构，确认：
+优先检查测试输出中是否存在 `DOM-{N}` attachment（step-screenshot fixture 在失败步骤自动产出）：
+
+- **有 DOM dump** → 直接读取 HTML 片段，分析目标元素及其祖先结构，无需额外调用 playwright-cli
+- **无 DOM dump** → 降级到 `playwright-cli snapshot` 或浏览器工具
+
+确认：
+
 - 目标元素是否存在
 - 元素的实际文本/属性
 - 页面当前状态（是否在预期页面）
@@ -66,6 +73,7 @@ tools: Read, Grep, Glob, Bash, Edit
 ### 3. 校对源码
 
 在 `repos_dir` 下的前端源码中查找：
+
 - **路由配置**：`router/`、`routes/` 目录下的路由定义
 - **菜单结构**：layout 组件中的菜单项
 - **组件结构**：目标页面组件的 JSX/template，确认按钮文本、表单 label
@@ -74,6 +82,7 @@ tools: Read, Grep, Glob, Bash, Edit
 ### 4. 修复脚本
 
 根据 DOM 和源码修正：
+
 - **选择器**：优先使用 `getByRole`、`getByText`、`getByLabel` 等语义化定位器
 - **导航方式**：确认路由路径和菜单点击顺序
 - **等待策略**：使用 `waitForLoadState`、`waitForSelector` 替代固定 `waitForTimeout`
