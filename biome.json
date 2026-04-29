@@ -28,6 +28,7 @@
   },
   "files": {
     "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.json"],
+    "ignoreUnknown": true,
     "experimentalScannerIgnores": ["node_modules", "workspace", "*.md", "*.hbs"]
   }
 }

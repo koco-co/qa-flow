@@ -3,16 +3,19 @@
   "version": "2.0.0",
   "type": "module",
   "private": true,
-  "workspaces": ["tools/dtstack-sdk", "engine"],
+  "workspaces": [
+    "tools/dtstack-sdk",
+    "engine"
+  ],
   "description": "AI-driven QA workflows codified as reusable kata, powered by Claude Code Skills.",
   "scripts": {
     "check": "biome check .",
     "check:fix": "biome check --fix .",
-    "lint": "biome check .",
+    "lint": "biome check engine/src engine/tests .claude/agents .claude/skills plugins tools rules",
     "format": "biome check --fix .",
     "lint:debris": "bun run scripts/lint/check-debug-files.ts && bun run scripts/lint/check-stale-paths.ts && bun run scripts/lint/check-runtime-artifacts.ts",
     "type-check": "tsc --noEmit",
-    "ci": "bun run lint && bun run lint:debris && bun run type-check && bun run test",
+    "ci": "bun run lint && bun run lint:debris && bun run lint:agents && bun run lint:paths && bun run type-check && bun run test",
     "test": "bun test --cwd engine",
     "test:watch": "bun test --watch --cwd engine",
     "lint:agents": "kata-cli agents:audit --exit-code --severity fail-only",
