@@ -48,6 +48,9 @@ apps/desktop/src-tauri/target/
 docs/superpowers/plans/
 docs/plans/
 
+# ── Git Worktrees ────────────────────────────────────────
+.worktrees/
+
 # ── IDE / 编辑器 ──────────────────────────────────────────
 .vscode/
 .idea/
@@ -71,11 +74,3 @@ Thumbs.db
 
 # ── 保留 workspace 目录结构 ─────────────────────────────
 !workspace/.gitkeep
-workspace/xyzh-shadow/
-workspace/dataAssets-shadow/
-
-# refactor handoff artifacts (transient, do not commit)
-refactor-v3-*.txt
-refactor-v3-*.log
-refactor-v3-*.log.json
-refactor-v3-*.console.log
