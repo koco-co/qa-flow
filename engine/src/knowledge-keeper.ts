@@ -148,6 +148,35 @@ function gatherIndexData(projectName: string): {
   const modules = scanAndFix("modules");
   const pitfalls = scanAndFix("pitfalls");
 
+  const sites: IndexEntry[] = [];
+  const sitesDir = join(kdir, "sites");
+  if (existsSync(sitesDir)) {
+    for (const domainDir of readdirSync(sitesDir)) {
+      const domainPath = join(sitesDir, domainDir);
+      if (!statSync(domainPath).isDirectory()) continue;
+      for (const f of readdirSync(domainPath)) {
+        if (!f.endsWith(".md")) continue;
+        const full = join(domainPath, f);
+        let raw = readFileSync(full, "utf8");
+        const fix = autoFixFrontmatter(raw, full, today);
+        if (fix.fixed) {
+          writeFileSync(full, fix.content);
+          fixedFiles.push(`sites/${domainDir}/${f}`);
+          raw = fix.content;
+        }
+        const parsed = parseFrontmatter(raw);
+        if (!parsed.frontmatter) continue;
+        sites.push({
+          name: `sites/${domainDir}/${f.replace(/\.md$/, "")}`,
+          title: parsed.frontmatter.title,
+          tags: parsed.frontmatter.tags,
+          updated: parsed.frontmatter.updated,
+          confidence: parsed.frontmatter.confidence,
+        });
+      }
+    }
+  }
+
   const readUpdated = (name: string): string => {
     const path = join(kdir, name);
     if (!existsSync(path)) return "";
@@ -175,6 +204,7 @@ function gatherIndexData(projectName: string): {
     data: {
       modules,
       pitfalls,
+      sites,
       overview_updated: readUpdated("overview.md"),
       terms_updated: readUpdated("terms.md"),
       terms_count,
@@ -186,6 +216,7 @@ function gatherIndexData(projectName: string): {
 function writeIndexFile(projectName: string): {
   modules_count: number;
   pitfalls_count: number;
+  sites_count: number;
   fixed_frontmatter: string[];
   written: string;
 } {
@@ -196,6 +227,7 @@ function writeIndexFile(projectName: string): {
   return {
     modules_count: data.modules.length,
     pitfalls_count: data.pitfalls.length,
+    sites_count: data.sites.length,
     fixed_frontmatter: fixedFiles,
     written: indexPath,
   };

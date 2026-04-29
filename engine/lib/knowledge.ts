@@ -193,6 +193,7 @@ export interface IndexEntry {
 export interface IndexData {
   modules: IndexEntry[];
   pitfalls: IndexEntry[];
+  sites: IndexEntry[];
   overview_updated: string;
   terms_updated: string;
   terms_count: number;
@@ -206,12 +207,21 @@ function renderIndexEntry(subdir: "modules" | "pitfalls", entry: IndexEntry): st
 export function renderIndex(project: string, data: IndexData): string {
   const sortedModules = [...data.modules].sort((a, b) => a.name.localeCompare(b.name));
   const sortedPitfalls = [...data.pitfalls].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedSites = [...data.sites].sort((a, b) => a.name.localeCompare(b.name));
 
   const modulesBody = sortedModules.length
     ? sortedModules.map((e) => renderIndexEntry("modules", e)).join("\n")
     : "_（暂无）_";
   const pitfallsBody = sortedPitfalls.length
     ? sortedPitfalls.map((e) => renderIndexEntry("pitfalls", e)).join("\n")
+    : "_（暂无）_";
+  const sitesBody = sortedSites.length
+    ? sortedSites
+        .map((e) => {
+          const tagsStr = e.tags.length ? ` [tags: ${e.tags.join(", ")}]` : "";
+          return `- [${e.name}.md](${e.name}.md) — ${e.title}${tagsStr} (updated: ${e.updated}, confidence: ${e.confidence})`;
+        })
+        .join("\n")
     : "_（暂无）_";
 
   const nowIso = new Date().toISOString();
@@ -232,6 +242,10 @@ ${modulesBody}
 ## Pitfalls
 
 ${pitfallsBody}
+
+## Sites
+
+${sitesBody}
 
 <!-- last-indexed: ${nowIso} -->
 `;

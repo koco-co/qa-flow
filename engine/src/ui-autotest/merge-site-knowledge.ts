@@ -20,14 +20,14 @@ import { Command } from "commander";
 
 const KB_DIR = "knowledge";
 
-export interface Suggestion {
+export interface SiteKnowledgeSuggestion {
   type: "site-selectors" | "site-traps" | "site-api" | "site-overview";
   domain: string;
   content: string;
   confidence: "high" | "medium" | "low";
 }
 
-const TYPE_FILE_MAP: Record<Suggestion["type"], string> = {
+const TYPE_FILE_MAP: Record<SiteKnowledgeSuggestion["type"], string> = {
   "site-selectors": "selectors.md",
   "site-traps": "traps.md",
   "site-api": "api.md",
@@ -40,7 +40,7 @@ const TYPE_FILE_MAP: Record<Suggestion["type"], string> = {
  * @returns true 表示已写入，false 表示跳过（置信度低且无确认或内容已存在）
  */
 export function mergeSiteKnowledge(
-  suggestion: Suggestion,
+  suggestion: SiteKnowledgeSuggestion,
   rootDir: string = process.cwd(),
   confirmed: boolean = false,
 ): boolean {
@@ -88,7 +88,7 @@ export function mergeSiteKnowledge(
  * 批量合并站点知识建议。
  */
 export function mergeKnowledgeBatch(
-  suggestions: Suggestion[],
+  suggestions: SiteKnowledgeSuggestion[],
   rootDir: string = process.cwd(),
   confirmed: boolean = false,
 ): { written: number; skipped: number } {
@@ -124,7 +124,13 @@ function runCli(): void {
     workspace?: string;
   }>();
 
-  const suggestions: Suggestion[] = JSON.parse(readFileSync(opts.input, "utf-8"));
+  let inputContent: string;
+  if (opts.input === "-") {
+    inputContent = readFileSync("/dev/stdin", "utf-8");
+  } else {
+    inputContent = readFileSync(opts.input, "utf-8");
+  }
+  const suggestions: SiteKnowledgeSuggestion[] = JSON.parse(inputContent);
   const rootDir = opts.workspace
     ? join(opts.workspace, opts.project ?? "")
     : process.cwd();
