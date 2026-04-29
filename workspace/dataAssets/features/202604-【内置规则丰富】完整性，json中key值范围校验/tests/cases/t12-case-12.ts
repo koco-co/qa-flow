@@ -1,7 +1,7 @@
 // META: {"id":"t12","priority":"P0","title":"验证质量报告中校验通过行的各列展示内容正确"}
 import { expect, test } from "../../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "../data/test-data";
-import { PASS_TASK_NAME, ensureQualityReportsReady, getQualityReportRuleRow, openQualityReportDetail } from "./task-helpers";
+import { PASS_TASK_NAME, ensureQualityReportsReady, getQualityReportRuleRow, openQualityReportDetail } from "../helpers/task-helpers";
 import { KEY_RANGE_RULE_NAME, getExpectedFieldType } from "../helpers/suite-helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });

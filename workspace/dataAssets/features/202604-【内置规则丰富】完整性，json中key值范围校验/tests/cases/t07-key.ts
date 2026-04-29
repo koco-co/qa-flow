@@ -2,7 +2,7 @@
 import { expect, test } from "../../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "../data/test-data";
 import { KEY_RANGE_RULE_NAME, assertOnlyTheseDetailRows, expectDetailTitle, expectHighlightedColumn } from "../helpers/suite-helpers";
-import { MAIN_TASK_NAME, ensureExecutedRuleTasks, getTaskDetailRuleCard, openTaskInstanceDetail, openTaskRuleDetailDataDrawer, waitForTaskInstanceFinished } from "./task-helpers";
+import { MAIN_TASK_NAME, ensureExecutedRuleTasks, getTaskDetailRuleCard, openTaskInstanceDetail, openTaskRuleDetailDataDrawer, waitForTaskInstanceFinished } from "../helpers/task-helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 test.setTimeout(600000);

@@ -5,7 +5,7 @@ import {
   parseFrontMatter,
   serializeFrontMatter,
   todayString,
-} from "../../src/lib/frontmatter.ts";
+} from "../../lib/frontmatter.ts";
 
 describe("parseFrontMatter", () => {
   it("returns empty frontmatter and full body if no --- delimiters", () => {

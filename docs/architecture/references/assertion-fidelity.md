@@ -1,6 +1,6 @@
 # 断言忠实原则（Assertion Fidelity）
 
-> 所有 Playwright 脚本生成/修复 agent 必须遵守的共享规则。ui-autotest 链路的 `script-writer-agent` / `script-fixer-agent`（步骤 3）和 `regression-runner-agent`（步骤 5）引用本文件。
+> 所有 Playwright 脚本生成/修复 agent 必须遵守的共享规则。ui-autotest 链路的 `script-case-agent`（步骤 3）和 `regression-runner-agent`（步骤 5）引用本文件。
 
 ## 核心原则
 
@@ -32,7 +32,9 @@ modal.locator("*").filter({ hasText: /匹配成功/ });
 
 // ✅ 精确定位到结果区域（message / alert / form-item-explain / 专用结果容器）
 modal
-  .locator(".ant-message-notice, .ant-alert, .ant-form-item-explain, [class*=test-result]")
+  .locator(
+    ".ant-message-notice, .ant-alert, .ant-form-item-explain, [class*=test-result]",
+  )
   .filter({ hasText: "匹配成功" })
   .first();
 ```
@@ -65,13 +67,15 @@ await expect(result).toHaveText("匹配成功");
 
 ```typescript
 // ❌ 吞掉失败
-try { await expect(result).toHaveText("匹配成功"); } catch {}
+try {
+  await expect(result).toHaveText("匹配成功");
+} catch {}
 
 // ❌ 元素缺失时跳过断言
 if (await result.isVisible()) await expect(result).toHaveText("匹配成功");
 
 // ❌ 把失败断言反转语义
-await expect(result).not.toBeVisible();  // 原本要求「显示匹配成功」
+await expect(result).not.toBeVisible(); // 原本要求「显示匹配成功」
 ```
 
 ### 6. 禁止删除、`.skip()` 断言步骤
@@ -80,15 +84,15 @@ await expect(result).not.toBeVisible();  // 原本要求「显示匹配成功」
 
 ## 用例预期 → 断言 翻译规则
 
-| 用例 `expected` 文本                | 断言写法                                               |
-| ----------------------------------- | ------------------------------------------------------ |
-| "显示匹配成功"                      | `toContainText("匹配成功")` 禁止 `/匹配成功\|成功/`     |
-| "显示匹配失败"                      | `toContainText("匹配失败")` 禁止 `/匹配失败\|不符合/`   |
-| "按钮隐藏" / "控件不可见"           | `toHaveCount(0)` 或 `not.toBeVisible()`                |
-| "按钮禁用"                          | `toBeDisabled()`                                       |
-| "提示：{{原文}}"                    | `toContainText("{{原文}}")`，多条提示就多条 `expect`   |
-| "输入框值为 X"                      | `toHaveValue("X")`                                     |
-| "列表 N 条"                         | `toHaveCount(N)`                                       |
+| 用例 `expected` 文本      | 断言写法                                              |
+| ------------------------- | ----------------------------------------------------- |
+| "显示匹配成功"            | `toContainText("匹配成功")` 禁止 `/匹配成功\|成功/`   |
+| "显示匹配失败"            | `toContainText("匹配失败")` 禁止 `/匹配失败\|不符合/` |
+| "按钮隐藏" / "控件不可见" | `toHaveCount(0)` 或 `not.toBeVisible()`               |
+| "按钮禁用"                | `toBeDisabled()`                                      |
+| "提示：{{原文}}"          | `toContainText("{{原文}}")`，多条提示就多条 `expect`  |
+| "输入框值为 X"            | `toHaveValue("X")`                                    |
+| "列表 N 条"               | `toHaveCount(N)`                                      |
 
 ---
 
@@ -123,11 +127,11 @@ await expect(result).not.toBeVisible();  // 原本要求「显示匹配成功」
 
 `reason_type` 取值：
 
-| 值               | 含义                                     | 主 agent 处理                         |
-| ---------------- | ---------------------------------------- | ------------------------------------- |
-| `frontend`       | 前端 DOM/文案变更，语义不变              | 自动写回 Archive MD                   |
-| `logic`          | 需求逻辑变更（预期规则变了）             | 展示差异预览，用户确认后写回          |
-| `potential_bug` | 页面实际表现与用例预期不符，可能是缺陷   | **不写回**，脚本保持原断言，上报用户 |
+| 值              | 含义                                   | 主 agent 处理                        |
+| --------------- | -------------------------------------- | ------------------------------------ |
+| `frontend`      | 前端 DOM/文案变更，语义不变            | 自动写回 Archive MD                  |
+| `logic`         | 需求逻辑变更（预期规则变了）           | 展示差异预览，用户确认后写回         |
+| `potential_bug` | 页面实际表现与用例预期不符，可能是缺陷 | **不写回**，脚本保持原断言，上报用户 |
 
 ---
 

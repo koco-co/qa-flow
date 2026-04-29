@@ -1,6 +1,6 @@
 // META: {"id":"t5","priority":"P1","title":"验证key范围校验表单必填提示"}
 import { test } from "../../../../shared/fixtures/step-screenshot";
-import { addRuleToPackage } from "../../../202604-有效性-取值范围枚举范围规则/tests/helpers/rule-editor-helpers";
+import { addRuleToPackage } from "../../../202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tests/helpers/rule-editor-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "../data/test-data";
 import { SCENARIOS, expectRuleError, saveInvalidRuleSet, selectRuleFunction, setVerificationContent, startRuleSetDraft } from "../helpers/suite-helpers";
 import { selectAntOption } from "../../../../shared/helpers";

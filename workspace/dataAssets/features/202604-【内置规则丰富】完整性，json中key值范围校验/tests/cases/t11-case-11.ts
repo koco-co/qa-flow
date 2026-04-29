@@ -1,7 +1,7 @@
 // META: {"id":"t11","priority":"P1","title":"验证校验结果查询中的明细/下载/通过无明细/失败日志"}
 import { expect, test } from "../../../../shared/fixtures/step-screenshot";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "../data/test-data";
-import { FAIL_LOG_TASK_NAME, MAIN_TASK_NAME, PASS_TASK_NAME, ensureExecutedRuleTasks, getTaskDetailRuleCard, openTaskInstanceDetail, openTaskLogDrawer, openTaskRuleDetailDataDrawer, waitForTaskInstanceFinished } from "./task-helpers";
+import { FAIL_LOG_TASK_NAME, MAIN_TASK_NAME, PASS_TASK_NAME, ensureExecutedRuleTasks, getTaskDetailRuleCard, openTaskInstanceDetail, openTaskLogDrawer, openTaskRuleDetailDataDrawer, waitForTaskInstanceFinished } from "../helpers/task-helpers";
 import { KEY_RANGE_RULE_NAME, assertOnlyTheseDetailRows, expectDetailTitle, expectHighlightedColumn } from "../helpers/suite-helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });

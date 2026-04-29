@@ -6,7 +6,7 @@ import {
   navigateViaMenu,
   selectAntOption,
 } from "../../../../shared/helpers";
-import { enableCompatibleMonitorDatasourceRouting } from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
+import { enableCompatibleMonitorDatasourceRouting } from "../../../202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tests/helpers/rule-editor-helpers";
 import {
   executeTaskFromList as executeSharedTaskFromList,
   getQualityReportRuleRow,
@@ -19,13 +19,13 @@ import {
   openTaskRuleDetailDataDrawer,
   waitForQualityReportRow as waitForSharedQualityReportRow,
   waitForTaskInstanceFinished as waitForSharedTaskInstanceFinished,
-} from "../有效性-取值范围枚举范围规则/rule-task-helpers";
+} from "../../../202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tests/helpers/rule-task-helpers";
 import {
   injectProjectContext,
   getCurrentDatasource,
   resolveEffectiveQualityProjectId,
   resolveVariantName,
-} from "./test-data";
+} from "../data/test-data";
 import {
   FAIL_LOG_TASK_NAME,
   MAIN_TASK_NAME,

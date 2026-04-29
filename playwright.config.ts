@@ -30,11 +30,13 @@ loadDotEnv();
 
 // §3.4 F7: outputDir 必须按项目隔离，不允许多 project 共用根 test-results/
 function resolveOutputDir(): string {
-  const project = process.env.KATA_ACTIVE_PROJECT;
+  const project =
+    process.env.KATA_ACTIVE_PROJECT ??
+    process.env.QA_PROJECT;
   if (!project) {
     // 兼容期：未设置时仍写到仓库根（CI 不应该走到这）
     console.warn(
-      "[playwright.config] KATA_ACTIVE_PROJECT not set; falling back to ./test-results. " +
+      "[playwright.config] KATA_ACTIVE_PROJECT/QA_PROJECT not set; falling back to ./test-results. " +
       "This will be rejected in P11 lint."
     );
     return "test-results";

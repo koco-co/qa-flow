@@ -1,27 +1,16 @@
 import type { WorkflowStep, GateConfig } from "./orchestrator-types.ts";
 
 export const uiAutotestSteps: WorkflowStep[] = [
-  { id: "parse-and-scope", executor: "direct", dependsOn: [] },
+  { id: "preflight", executor: "direct", dependsOn: [] },
+  { id: "parse-and-scope", executor: "direct", dependsOn: ["preflight"] },
   { id: "login", executor: "direct", dependsOn: ["parse-and-scope"] },
   {
-    id: "script-write",
+    id: "script-case",
     executor: "subagent",
-    subagentConfig: { agentRef: "script-writer-agent", model: "sonnet" },
+    subagentConfig: { agentRef: "script-case-agent", model: "sonnet" },
     dependsOn: ["login"],
   },
-  {
-    id: "script-fix",
-    executor: "subagent",
-    subagentConfig: { agentRef: "script-fixer-agent", model: "sonnet" },
-    dependsOn: ["script-write"],
-  },
-  {
-    id: "convergence",
-    executor: "subagent",
-    subagentConfig: { agentRef: "convergence-agent", model: "sonnet" },
-    dependsOn: ["script-fix"],
-  },
-  { id: "merge", executor: "direct", dependsOn: ["convergence"] },
+  { id: "merge", executor: "direct", dependsOn: ["script-case"] },
   {
     id: "regression",
     executor: "subagent",

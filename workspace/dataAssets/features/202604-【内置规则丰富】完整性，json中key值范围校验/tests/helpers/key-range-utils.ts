@@ -26,7 +26,7 @@ import {
   SPARKTHRIFT_DATASOURCE_KEYWORD,
   injectProjectContext,
   QUALITY_PROJECT_ID,
-} from "./data-15693";
+} from "../data/data-15693";
 
 // ── 类型定义 ──────────────────────────────────────────────────
 

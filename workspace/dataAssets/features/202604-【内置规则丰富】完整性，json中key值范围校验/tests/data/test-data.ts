@@ -1,12 +1,12 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
-import { setupPreconditions } from "../../../../shared/helpers/preconditions";
+import { createClient, setupPreconditions } from "../../../../shared/helpers/preconditions";
 import { applyRuntimeCookies, normalizeDataAssetsBaseUrl } from "../../../../shared/helpers/test-setup";
 import {
   clearCurrentDatasource as clearLegacyDatasource,
   setCurrentDatasource as setLegacyDatasource,
-} from "../../../202604-有效性-取值范围枚举范围规则/tests/data/test-data";
+} from "../../../202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tests/data/test-data";
 
 export interface DatasourceConfig {
   readonly id: "sparkthrift2.x" | "doris3.x";
@@ -235,13 +235,14 @@ export async function runPreconditions(
     let lastAttemptError: Error | null = null;
     for (const candidateProjectName of BATCH_PROJECT_CANDIDATES) {
       try {
-        await setupPreconditions(page, {
-          datasourceType: datasource.preconditionType,
+        await setupPreconditions({
+          client: await createClient(page),
+          project: candidateProjectName,
+          datasource: datasource.preconditionType,
           tables: TABLE_DEFINITIONS.map((table) => ({
             name: table.name,
             sql: table.sqlByDatasource[datasource.id],
           })),
-          projectName: candidateProjectName,
           syncTimeout: 90,
         });
         process.stderr.write(

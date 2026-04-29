@@ -1,7 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, it, expect } from "bun:test";
-import { loadXmindRules, buildRootName } from "../../src/lib/rules.ts";
+import { loadXmindRules, buildRootName } from "../../lib/rules.ts";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
 const PROJECT = "test-rules-project";

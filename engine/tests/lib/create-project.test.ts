@@ -12,7 +12,7 @@ import {
   resolveSkeletonPaths,
   SKELETON_SPEC,
   validateProjectName,
-} from "../../src/lib/create-project.ts";
+} from "../../lib/create-project.ts";
 
 describe("validateProjectName", () => {
   it("accepts camelCase name dataAssets", () => {

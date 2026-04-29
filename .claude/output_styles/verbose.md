@@ -1,4 +1,4 @@
-# Verbose Style（可选）
+# Verbose Style
 
 - 用于 bug 分析、code review、复杂设计讨论
 - 完整描述问题上下文和根因分析

@@ -93,6 +93,30 @@ export function lintFeatureTests(testsDir: string): LintReport {
 
   // L8 — .debug/ must be in .gitignore (checked separately at workspace level)
 
+  // L9 — tests/ root must not contain full.spec.ts with inline test bodies
+  const rootSpecFiles = readdirSync(testsDir)
+    .filter((f) => f.endsWith(".spec.ts"));
+  for (const sf of rootSpecFiles) {
+    const sfPath = join(testsDir, sf);
+    const content = readFileSync(sfPath, "utf8");
+    // 如果 spec 文件包含 test() 或 import 实际用例（非聚合 import），视为内联
+    if (content.includes("test(") && !content.includes('import "./')) {
+      violations.push({ rule: "L9", file: sfPath, message: `spec file '${sf}' contains inline test body instead of aggregated imports; move tests to cases/ and use merge-specs` });
+    }
+  }
+
+  // L10 — tests/ root must not contain sql/ subdirectory
+  const sqlDir = join(testsDir, "sql");
+  if (existsSync(sqlDir)) {
+    violations.push({ rule: "L10", file: sqlDir, message: "sql/ directory is legacy; move seed SQL to tests/data/ instead" });
+  }
+
+  // L11 — tests/ root must not contain MANUAL-TRIAGE.md
+  const manualTriage = join(testsDir, "MANUAL-TRIAGE.md");
+  if (existsSync(manualTriage)) {
+    violations.push({ rule: "L11", file: manualTriage, message: "MANUAL-TRIAGE.md is legacy; use .task-state.json for task tracking instead" });
+  }
+
   return {
     featureDir: testsDir,
     violations,

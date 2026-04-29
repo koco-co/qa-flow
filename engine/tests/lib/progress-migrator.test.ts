@@ -6,13 +6,13 @@ import {
   migrateKataState,
   migrateSession,
   migrateUiAutotest,
-} from "../../src/lib/progress-migrator.ts";
+} from "../../lib/progress-migrator.ts";
 import {
   addTasks,
   createSession,
   readSession,
   writeSession,
-} from "../../src/lib/progress-store.ts";
+} from "../../lib/progress-store.ts";
 
 const TMP = join(tmpdir(), `migrator-test-${process.pid}`);
 const WS = join(TMP, "workspace");

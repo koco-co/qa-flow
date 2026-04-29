@@ -8,8 +8,8 @@ import {
   gotoRuleSetList,
   DORIS_MONITOR_DATASOURCE,
   SPARKTHRIFT_MONITOR_DATASOURCE,
-} from "./key-range-utils";
-import { KEY_RANGE_TABLE } from "./data-15693";
+} from "../helpers/key-range-utils";
+import { KEY_RANGE_TABLE } from "../data/data-15693";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 

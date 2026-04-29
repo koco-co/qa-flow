@@ -23,7 +23,7 @@ afterEach(() => {
 
 describe("loadDotEnv", () => {
   it("returns empty object if .env file does not exist", async () => {
-    const { loadDotEnv } = await import("../../src/lib/env.ts");
+    const { loadDotEnv } = await import("../../lib/env.ts");
     const result = loadDotEnv(join(TMP_DIR, ".env.nonexistent"));
     expect(result).toEqual({});
   });
@@ -32,7 +32,7 @@ describe("loadDotEnv", () => {
     makeTmp();
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, "FOO=bar\nBAZ=qux\n");
-    const { loadDotEnv } = await import("../../src/lib/env.ts");
+    const { loadDotEnv } = await import("../../lib/env.ts");
     const result = loadDotEnv(envPath);
     expect(result["FOO"]).toBe("bar");
     expect(result["BAZ"]).toBe("qux");
@@ -42,7 +42,7 @@ describe("loadDotEnv", () => {
     makeTmp();
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, "# this is a comment\nFOO=hello\n# another comment\n");
-    const { loadDotEnv } = await import("../../src/lib/env.ts");
+    const { loadDotEnv } = await import("../../lib/env.ts");
     const result = loadDotEnv(envPath);
     expect(result["FOO"]).toBe("hello");
     expect(Object.keys(result).length).toBe(1);
@@ -52,7 +52,7 @@ describe("loadDotEnv", () => {
     makeTmp();
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, "\n\nFOO=hello\n\n");
-    const { loadDotEnv } = await import("../../src/lib/env.ts");
+    const { loadDotEnv } = await import("../../lib/env.ts");
     const result = loadDotEnv(envPath);
     expect(result["FOO"]).toBe("hello");
     expect(Object.keys(result).length).toBe(1);
@@ -62,7 +62,7 @@ describe("loadDotEnv", () => {
     makeTmp();
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, 'TOKEN="my-secret-token"\n');
-    const { loadDotEnv } = await import("../../src/lib/env.ts");
+    const { loadDotEnv } = await import("../../lib/env.ts");
     const result = loadDotEnv(envPath);
     expect(result["TOKEN"]).toBe("my-secret-token");
   });
@@ -71,7 +71,7 @@ describe("loadDotEnv", () => {
     makeTmp();
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, "TOKEN='my-secret-token'\n");
-    const { loadDotEnv } = await import("../../src/lib/env.ts");
+    const { loadDotEnv } = await import("../../lib/env.ts");
     const result = loadDotEnv(envPath);
     expect(result["TOKEN"]).toBe("my-secret-token");
   });
@@ -80,7 +80,7 @@ describe("loadDotEnv", () => {
     makeTmp();
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, "URL=http://example.com?a=1&b=2\n");
-    const { loadDotEnv } = await import("../../src/lib/env.ts");
+    const { loadDotEnv } = await import("../../lib/env.ts");
     const result = loadDotEnv(envPath);
     expect(result["URL"]).toBe("http://example.com?a=1&b=2");
   });
@@ -89,7 +89,7 @@ describe("loadDotEnv", () => {
     makeTmp();
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, "INVALID_LINE\nFOO=bar\n");
-    const { loadDotEnv } = await import("../../src/lib/env.ts");
+    const { loadDotEnv } = await import("../../lib/env.ts");
     const result = loadDotEnv(envPath);
     expect(result["FOO"]).toBe("bar");
     expect(Object.keys(result).length).toBe(1);
@@ -98,7 +98,7 @@ describe("loadDotEnv", () => {
 
 describe("getEnv", () => {
   it("returns process.env value if set", async () => {
-    const { getEnv } = await import("../../src/lib/env.ts");
+    const { getEnv } = await import("../../lib/env.ts");
     process.env["__TEST_QA_FLOW_KEY__"] = "from-process-env";
     const result = getEnv("__TEST_QA_FLOW_KEY__");
     expect(result).toBe("from-process-env");
@@ -106,7 +106,7 @@ describe("getEnv", () => {
   });
 
   it("returns undefined for missing key", async () => {
-    const { getEnv } = await import("../../src/lib/env.ts");
+    const { getEnv } = await import("../../lib/env.ts");
     const result = getEnv("__DEFINITELY_NOT_SET_KEY_XYZ_123__");
     expect(result).toBe(undefined);
   });
@@ -114,14 +114,14 @@ describe("getEnv", () => {
 
 describe("getEnvOrThrow", () => {
   it("throws if key is not set", async () => {
-    const { getEnvOrThrow } = await import("../../src/lib/env.ts");
+    const { getEnvOrThrow } = await import("../../lib/env.ts");
     expect(() => getEnvOrThrow("__DEFINITELY_NOT_SET_KEY_THROW_TEST__")).toThrow(
       /__DEFINITELY_NOT_SET_KEY_THROW_TEST__/,
     );
   });
 
   it("returns value if key is set in process.env", async () => {
-    const { getEnvOrThrow } = await import("../../src/lib/env.ts");
+    const { getEnvOrThrow } = await import("../../lib/env.ts");
     process.env["__TEST_QA_THROW_KEY__"] = "present-value";
     const result = getEnvOrThrow("__TEST_QA_THROW_KEY__");
     expect(result).toBe("present-value");
@@ -135,7 +135,7 @@ describe("initEnv", () => {
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, "INIT_TEST_KEY_NEW=newval\n");
     delete process.env["INIT_TEST_KEY_NEW"];
-    const { initEnv } = await import("../../src/lib/env.ts");
+    const { initEnv } = await import("../../lib/env.ts");
     initEnv(envPath);
     expect(process.env["INIT_TEST_KEY_NEW"]).toBe("newval");
     delete process.env["INIT_TEST_KEY_NEW"];
@@ -146,7 +146,7 @@ describe("initEnv", () => {
     const envPath = join(TMP_DIR, ".env");
     writeFileSync(envPath, "INIT_TEST_KEY_EXISTING=from-file\n");
     process.env["INIT_TEST_KEY_EXISTING"] = "already-set";
-    const { initEnv } = await import("../../src/lib/env.ts");
+    const { initEnv } = await import("../../lib/env.ts");
     initEnv(envPath);
     expect(process.env["INIT_TEST_KEY_EXISTING"]).toBe("already-set");
     delete process.env["INIT_TEST_KEY_EXISTING"];
@@ -184,7 +184,7 @@ describe("initEnv three-layer mode", () => {
     );
 
     cleanKeys();
-    const { initEnv } = await import("../../src/lib/env.ts");
+    const { initEnv } = await import("../../lib/env.ts");
     const merged = initEnv({ cwd: TMP_DIR });
 
     expect(merged["TL_ONLY_ENV"]).toBe("env");
@@ -203,7 +203,7 @@ describe("initEnv three-layer mode", () => {
     // no .env.envs, no .env.local
 
     cleanKeys();
-    const { initEnv } = await import("../../src/lib/env.ts");
+    const { initEnv } = await import("../../lib/env.ts");
     const merged = initEnv({ cwd: TMP_DIR });
     expect(merged["TL_ONLY_ENV"]).toBe("only");
     cleanKeys();
@@ -217,7 +217,7 @@ describe("initEnv three-layer mode", () => {
 
     cleanKeys();
     process.env["TL_SHELL_WINS"] = "from-shell";
-    const { initEnv } = await import("../../src/lib/env.ts");
+    const { initEnv } = await import("../../lib/env.ts");
     initEnv({ cwd: TMP_DIR });
     expect(process.env["TL_SHELL_WINS"]).toBe("from-shell");
     cleanKeys();

@@ -21,12 +21,12 @@ import {
   keepOnlyRulePackages,
   openRuleSetEditor,
   saveRuleSet,
-} from "../有效性-取值范围枚举范围规则/rule-editor-helpers";
+} from "../../../202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tests/helpers/rule-editor-helpers";
 import {
   getCurrentDatasource,
   runPreconditions,
   SUITE_KEYS,
-} from "./test-data";
+} from "../data/test-data";
 
 export const SUITE_NAME = "【内置规则丰富】完整性，json中key值范围校验";
 export const KEY_RANGE_RULE_NAME = "key范围校验";

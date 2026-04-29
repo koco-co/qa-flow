@@ -1,4 +1,4 @@
-# Terse Style（默认）
+# Terse Style
 
 - 能一句说清不写两句
 - 不总结刚做了什么（用户能看 diff）

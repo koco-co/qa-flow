@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, it, expect } from "bun:test";
@@ -304,49 +304,51 @@ afterEach(() => {
 });
 
 describe("parse-cases CLI", () => {
-  it("解析测试夹具 MD 并输出有效 JSON", () => {
+  it("默认写入 .task-state.json 格式到 tests/ 目录", () => {
     const fixturePath = join(TMP_DIR, "fixture.md");
     writeFileSync(fixturePath, FIXTURE_MD, "utf-8");
+    const expectedStateFile = join(TMP_DIR, "tests", ".task-state.json");
 
-    const { stdout, code } = runCli(["--file", fixturePath]);
+    const { code } = runCli(["--file", fixturePath]);
     expect(code).toBe(0);
 
-    const result = JSON.parse(stdout);
-    expect(result.suite_name).toBe("质量问题台账");
-    expect(result.stats.total).toBe(3);
+    // 验证状态文件存在且为 TaskState 格式
+    expect(existsSync(expectedStateFile)).toBe(true);
+    const content = readFileSync(expectedStateFile, "utf-8");
+    const state = JSON.parse(content);
+    expect(state.schema_version).toBe("3");
+    expect(state.suite_name).toBe("质量问题台账");
+    expect(state.stats.total).toBe(3);
+    expect(state.tasks.length).toBe(3);
+    expect(state.tasks[0].status).toBe("pending");
+    expect(state.tasks[0].phase).toBe("writing");
   });
 
   it("--priority P0 过滤后只返回 P0 用例", () => {
     const fixturePath = join(TMP_DIR, "fixture-priority.md");
     writeFileSync(fixturePath, FIXTURE_MD, "utf-8");
+    const expectedStateFile = join(TMP_DIR, "tests", ".task-state.json");
 
-    const { stdout, code } = runCli([
-      "--file",
-      fixturePath,
-      "--priority",
-      "P0",
-    ]);
+    const { code } = runCli(["--file", fixturePath, "--priority", "P0"]);
     expect(code).toBe(0);
 
-    const result = JSON.parse(stdout);
-    expect(result.stats.total).toBe(1);
-    expect(result.tasks[0].priority).toBe("P0");
+    const content = readFileSync(expectedStateFile, "utf-8");
+    const state = JSON.parse(content);
+    expect(state.stats.total).toBe(1);
+    expect(state.tasks[0].priority).toBe("P0");
   });
 
   it("--priority P0,P1 过滤后返回 P0 和 P1 用例", () => {
     const fixturePath = join(TMP_DIR, "fixture-multi.md");
     writeFileSync(fixturePath, FIXTURE_MD, "utf-8");
+    const expectedStateFile = join(TMP_DIR, "tests", ".task-state.json");
 
-    const { stdout, code } = runCli([
-      "--file",
-      fixturePath,
-      "--priority",
-      "P0,P1",
-    ]);
+    const { code } = runCli(["--file", fixturePath, "--priority", "P0,P1"]);
     expect(code).toBe(0);
 
-    const result = JSON.parse(stdout);
-    expect(result.stats.total).toBe(2);
+    const content = readFileSync(expectedStateFile, "utf-8");
+    const state = JSON.parse(content);
+    expect(state.stats.total).toBe(2);
   });
 
   it("文件不存在时以非零状态码退出", () => {
@@ -354,16 +356,54 @@ describe("parse-cases CLI", () => {
     expect(code).not.toBe(0);
   });
 
-  it("--output 将结果写入文件", () => {
+  it("--output 指定自定义输出路径", () => {
     const fixturePath = join(TMP_DIR, "fixture-output.md");
-    const outputPath = join(TMP_DIR, "output.json");
+    const outputPath = join(TMP_DIR, "custom-output.json");
     writeFileSync(fixturePath, FIXTURE_MD, "utf-8");
 
     const { code } = runCli(["--file", fixturePath, "--output", outputPath]);
     expect(code).toBe(0);
 
     const content = readFileSync(outputPath, "utf-8");
-    const result = JSON.parse(content);
+    const state = JSON.parse(content);
+    expect(state.schema_version).toBe("3");
+    expect(state.suite_name).toBe("质量问题台账");
+  });
+
+  it("--legacy 保持旧版 stdout 输出", () => {
+    const fixturePath = join(TMP_DIR, "fixture-legacy.md");
+    writeFileSync(fixturePath, FIXTURE_MD, "utf-8");
+
+    const { stdout, code } = runCli(["--file", fixturePath, "--legacy"]);
+    expect(code).toBe(0);
+
+    const result = JSON.parse(stdout);
     expect(result.suite_name).toBe("质量问题台账");
+    expect(result.tasks.length).toBe(3);
+  });
+
+  it("--resume 保留已有状态", () => {
+    const fixturePath = join(TMP_DIR, "fixture-resume.md");
+    writeFileSync(fixturePath, FIXTURE_MD, "utf-8");
+    const expectedStateFile = join(TMP_DIR, "tests", ".task-state.json");
+
+    // 第一次执行
+    const { code: code1 } = runCli(["--file", fixturePath]);
+    expect(code1).toBe(0);
+
+    // 手动修改一个任务为 completed
+    const state1 = JSON.parse(readFileSync(expectedStateFile, "utf-8"));
+    state1.tasks[0].status = "completed";
+    state1.tasks[0].phase = "done";
+    writeFileSync(expectedStateFile, JSON.stringify(state1), "utf-8");
+
+    // 续传模式重新解析
+    const { code: code2 } = runCli(["--file", fixturePath, "--resume"]);
+    expect(code2).toBe(0);
+
+    const state2 = JSON.parse(readFileSync(expectedStateFile, "utf-8"));
+    expect(state2.tasks[0].status).toBe("completed"); // 保留
+    expect(state2.tasks[1].status).toBe("pending");    // 新的
+    expect(state2.tasks[2].status).toBe("pending");
   });
 });

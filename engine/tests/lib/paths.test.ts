@@ -27,7 +27,7 @@ import {
   repoRoot,
   scriptsDir,
   skillsDir,
-} from "../../src/lib/paths.ts";
+} from "../../lib/paths.ts";
 
 import {
   featureDir,
@@ -35,7 +35,7 @@ import {
   incidentDir,
   projectShared,
   regressionDir,
-} from "../../src/lib/paths.ts";
+} from "../../lib/paths.ts";
 
 describe("parseGitUrl", () => {
   it("extracts group and repo from http gitlab URL with .git suffix", () => {

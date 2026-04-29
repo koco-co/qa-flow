@@ -9,8 +9,8 @@ import {
   isCacheValid,
   buildCacheEntry,
   composeProfile,
-} from "../../src/lib/signal-probe.ts";
-import type { SignalEntry, SignalProfile, ArchiveSearchHit } from "../../src/lib/signal-probe.ts";
+} from "../../lib/signal-probe.ts";
+import type { SignalEntry, SignalProfile, ArchiveSearchHit } from "../../lib/signal-probe.ts";
 
 // ---------------------------------------------------------------------------
 // classifySource

@@ -7,8 +7,8 @@ import {
   deleteRuleSetsByTableName,
   gotoRuleSetList,
   saveRuleSet,
-} from "./key-range-utils";
-import { KEY_RANGE_TABLE, QUALITY_PROJECT_ID } from "./data-15693";
+} from "../helpers/key-range-utils";
+import { KEY_RANGE_TABLE, QUALITY_PROJECT_ID } from "../data/data-15693";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });
 

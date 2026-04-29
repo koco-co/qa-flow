@@ -12,44 +12,44 @@ UI自动化、e2e回归、冒烟测试
 
 ## 编排步骤
 
-共享协议（确认策略、命令别名、Task schema、输出目录约定等）见 [`workflow.md#protocols`](workflow.md#protocols)。
-异常处理见 [`workflow.md#protocols-exception`](workflow.md#protocols-exception)，按需加载。
+共享协议（确认策略、命令别名、Task schema、输出目录约定等）见 workflow.md → Protocols: Standard。
+异常处理见 workflow.md → Protocols: Exception handling，按需加载。
+
+### 步骤 0: 环境检查（Pre-flight）
+
+executor: direct
+指令: .claude/skills/ui-autotest/workflow.md#step-0
+
+> **编排层强制执行**，不是文字参考。必须按顺序执行以下 5 个子步骤：
+
+1. `0a. 目录结构检查` — 运行 `kata-cli features:lint-tests --project {{project}} --feature {{feature}} --exit-code`，有严重违规时报告用户
+2. `0b. 续传检测` — 检查 `.task-state.json` 是否存在，展示进度摘要，问用户是否续传
+3. `0c. 注册命令别名` — 执行 alias 注册脚本别名
+4. `0d. 创建主任务` — 创建 T0~T6 并设置依赖关系
+5. `0e. 确认副作用的操作策略` — 按硬规则/需确认/需预览三级策略执行
 
 ### 步骤 1: 解析输入与确认范围
 
 executor: direct
 指令: .claude/skills/ui-autotest/workflow.md#step-1
 
-> 步骤 1 完成后自动加载 [step-1.5-resume.md](workflow.md#step-1-5) 检查断点续传。
+> 步骤 1 完成后自动检查 .task-state.json（替代旧的 Step 1.5 续传路径）。
 
 ### 步骤 2: 登录态准备
 
 executor: direct
 指令: .claude/skills/ui-autotest/workflow.md#step-2
 
-### 步骤 3-1: script writer（脚本生成）
+### 步骤 3: 并行处理用例（写+修一条龙）
 
-executor: subagent
-agent: script-writer-agent
+executor: subagent (并行派发)
+agent: script-case-agent
 model: sonnet
-指令: .claude/skills/ui-autotest/workflow.md#step-3a
+指令: .claude/skills/ui-autotest/workflow.md#step-3
 
-### 步骤 3-2: script fixer（自测修复）
-
-executor: subagent
-agent: script-fixer-agent
-model: sonnet
-指令: .claude/skills/ui-autotest/workflow.md#step-3b
-
-### 步骤 3-3: convergence（共性收敛）
-
-executor: subagent
-agent: convergence-agent
-model: sonnet
-指令: .claude/skills/ui-autotest/workflow.md#step-3c
-
-- .claude/skills/ui-autotest/workflow.md#step-3c
-  gate 后: .claude/skills/ui-autotest/workflow.md#gate-r1
+> script-case-agent 合并了原 script-writer（生成）和 script-fixer（修复）的职责，同一 agent 完成写→测→修全流程。
+> 收敛分析在全部 case 完成后由主 agent 自行完成，或选择性派发 convergence-agent。
+> gate 后: .claude/skills/ui-autotest/workflow.md#gate-r1
 
 ### 步骤 4: 合并脚本
 
@@ -68,6 +68,16 @@ gate 后: .claude/skills/ui-autotest/workflow.md#gate-r2
 
 executor: direct
 指令: .claude/skills/ui-autotest/workflow.md#step-6
+
+## 任务进度管理
+
+使用文件化 `.task-state.json` + Claude 原生 Task 工具实现双重进度追踪：
+
+**文件状态（持久化）**：`.task-state.json` 存储每个 case 的详细状态，支持断点续传和跨 session 恢复
+
+**Claude Task（会话级）**：7 个主任务（T0~T6）用于会话内进度追踪
+
+**Step 3 动态子任务**：每批派发 script-case-agent 时创建批次子任务
 
 ## 工作流说明
 

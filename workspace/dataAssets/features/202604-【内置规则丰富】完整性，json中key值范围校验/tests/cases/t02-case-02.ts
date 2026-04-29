@@ -1,6 +1,6 @@
 // META: {"id":"t2","priority":"P1","title":"验证校验内容选择/搜索/回显/悬浮/标签提示"}
 import { expect, test } from "../../../../shared/fixtures/step-screenshot";
-import { addRuleToPackage } from "../../../202604-有效性-取值范围枚举范围规则/tests/helpers/rule-editor-helpers";
+import { addRuleToPackage } from "../../../202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tests/helpers/rule-editor-helpers";
 import {
   ACTIVE_DATASOURCES,
   clearCurrentDatasource,

@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { uiAutotestSteps } from "../../src/lib/ui-autotest.ts";
-import { repoRoot } from "../../src/lib/paths.ts";
+import { uiAutotestSteps } from "../../lib/ui-autotest.ts";
+import { repoRoot } from "../../lib/paths.ts";
 
 describe("uiAutotestSteps", () => {
   test("every dependsOn id refers to a real prior step", () => {

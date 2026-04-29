@@ -1,8 +1,8 @@
 // META: {"id":"t8","priority":"P1","title":"验证校验方法切换（包含与不包含）规则保存和执行结果差异"}
 import { expect, test } from "../../../../shared/fixtures/step-screenshot";
-import { addRuleToPackage, getRulePackage, openRuleSetEditor, saveRuleSet } from "../../../202604-有效性-取值范围枚举范围规则/tests/helpers/rule-editor-helpers";
+import { addRuleToPackage, getRulePackage, openRuleSetEditor, saveRuleSet } from "../../../202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tests/helpers/rule-editor-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "../data/test-data";
-import { METHOD_SWITCH_TASK_NAME, ensureExecutedRuleTasks, openQualityReportDetail, getQualityReportRuleRow } from "./task-helpers";
+import { METHOD_SWITCH_TASK_NAME, ensureExecutedRuleTasks, openQualityReportDetail, getQualityReportRuleRow } from "../helpers/task-helpers";
 import { KEY_RANGE_RULE_NAME, SCENARIOS, configureKeyRangeRule, seedScenarioRuleSet } from "../helpers/suite-helpers";
 
 test.use({ storageState: process.env.UI_AUTOTEST_SESSION_PATH ?? ".auth/session.json" });

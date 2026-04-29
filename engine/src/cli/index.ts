@@ -89,9 +89,11 @@ kata.addCommand(xmindPatch);
 
 // ── Features commands ─────────────────────────────────────────
 import { registerImportFix } from "./features-import-fix.ts";
+import { registerInitTests } from "./features-init-tests.ts";
 import { registerLintTests } from "./features-lint-tests.ts";
 import { registerReorgTests } from "./features-reorg-tests.ts";
 registerImportFix(kata);
+registerInitTests(kata);
 registerLintTests(kata);
 registerReorgTests(kata);
 

@@ -1,6 +1,6 @@
 // META: {"id":"t3","priority":"P0","title":"验证json类型字段可成功配置key范围校验规则"}
 import { expect, test } from "../../../../shared/fixtures/step-screenshot";
-import { addRuleToPackage } from "../../../202604-有效性-取值范围枚举范围规则/tests/helpers/rule-editor-helpers";
+import { addRuleToPackage } from "../../../202604-【内置规则丰富】有效性，支持设置字段多规则的且或关系/tests/helpers/rule-editor-helpers";
 import { ACTIVE_DATASOURCES, clearCurrentDatasource, setCurrentDatasource } from "../data/test-data";
 import { SCENARIOS, configureKeyRangeRule, startRuleSetDraft } from "../helpers/suite-helpers";
 import { selectAntOption } from "../../../../shared/helpers";
