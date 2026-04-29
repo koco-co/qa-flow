@@ -229,3 +229,61 @@ describe("scan-report CLI — update / set-meta / show", () => {
     expect(out.bugs.length).toBe(1);
   });
 });
+
+describe("scan-report CLI — render & auto-render", () => {
+  test("create produces report.html and add-bug refreshes it", async () => {
+    const r1 = await $`bun ${CLI} create --project ${PROJECT} --repo demo \
+      --base-branch release_6.3.x --head-branch release_6.3.0_dev --slug r-test --skip-fetch`
+      .quiet().nothrow();
+    const { slug, yyyymm } = JSON.parse(r1.stdout.toString());
+    const html = join(WS, PROJECT, "audits", `${yyyymm}-${slug}`, "report.html");
+    expect(existsSync(html)).toBe(true);
+    const empty = readFileSync(html, "utf8");
+    expect(empty).toContain("静态扫描报告");
+
+    const f = join(WS, "bug.json");
+    writeFileSync(
+      f,
+      JSON.stringify({
+        id: "b-001", title: "rendered bug", severity: "critical", type: "logic", module: "X",
+        location: { file: "a.ts", line: 1 },
+        phenomenon: "P", expected: "E", actual: "A",
+        reproduction_steps: ["1", "2", "3"], root_cause: "R",
+        evidence: { diff_hunk: "@@" },
+        suggestion: "S", confidence: 0.9, confidence_reason: "C",
+      }),
+    );
+    await $`bun ${CLI} add-bug --project ${PROJECT} --slug ${slug} --yyyymm ${yyyymm} --json ${f}`
+      .quiet().nothrow();
+
+    const after = readFileSync(html, "utf8");
+    expect(after).toContain("rendered bug");
+    expect(after).toContain('id="b-001"');
+  });
+
+  test("--no-render skips html refresh", async () => {
+    const r1 = await $`bun ${CLI} create --project ${PROJECT} --repo demo \
+      --base-branch release_6.3.x --head-branch release_6.3.0_dev --slug nr-test --skip-fetch`
+      .quiet().nothrow();
+    const { slug, yyyymm } = JSON.parse(r1.stdout.toString());
+    const html = join(WS, PROJECT, "audits", `${yyyymm}-${slug}`, "report.html");
+    const before = readFileSync(html, "utf8");
+
+    const f = join(WS, "bug.json");
+    writeFileSync(
+      f,
+      JSON.stringify({
+        id: "b-001", title: "should not appear", severity: "critical", type: "logic", module: "X",
+        location: { file: "a.ts", line: 1 },
+        phenomenon: "P", expected: "E", actual: "A",
+        reproduction_steps: ["1", "2", "3"], root_cause: "R",
+        evidence: { diff_hunk: "@@" },
+        suggestion: "S", confidence: 0.9, confidence_reason: "C",
+      }),
+    );
+    await $`bun ${CLI} add-bug --project ${PROJECT} --slug ${slug} --yyyymm ${yyyymm} --json ${f} --no-render`
+      .quiet().nothrow();
+    const after = readFileSync(html, "utf8");
+    expect(after).toBe(before);
+  });
+});

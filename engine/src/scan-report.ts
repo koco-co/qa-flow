@@ -11,8 +11,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createCli } from "../lib/cli-runner.ts";
-import { auditDir, currentYYYYMM, projectDir } from "../lib/paths.ts";
+import { auditDir, auditFile, currentYYYYMM, projectDir } from "../lib/paths.ts";
 import { fetchAndDiff } from "../lib/scan-report-diff.ts";
+import { renderScanReport } from "../lib/scan-report-render.ts";
 import {
   addBug,
   initAudit,
@@ -54,6 +55,14 @@ function defaultSlug(repo: string, base: string, head: string): string {
 function fail(code: number, msg: string): never {
   process.stderr.write(`${msg}\n`);
   process.exit(code);
+}
+
+function autoRender(project: string, ym: string, slug: string, noRender: boolean): void {
+  if (noRender) return;
+  const meta = readMeta(project, ym, slug);
+  const report = readReport(project, ym, slug);
+  const html = renderScanReport(meta, report);
+  writeFileSync(auditFile(project, ym, slug, "report.html"), html, "utf8");
 }
 
 function loadBugJson(path: string): Bug {
@@ -104,6 +113,8 @@ async function actionCreate(opts: CreateOpts): Promise<void> {
   ensureParent(diffPath);
   writeFileSync(diffPath, diffOut.diff, "utf8");
 
+  autoRender(opts.project, yyyymm, slug, false);
+
   process.stdout.write(
     `${JSON.stringify(
       {
@@ -148,9 +159,10 @@ export const program = createCli({
         { flag: "--slug <slug>", description: "audit slug", required: true },
         { flag: "--json <path>", description: "path to bug JSON", required: true },
         { flag: "--auto-id", description: "ignore bug.id and assign next id" },
+        { flag: "--no-render", description: "skip auto-render" },
       ],
       action: (opts: {
-        project: string; yyyymm: string; slug: string; json: string; autoId?: boolean;
+        project: string; yyyymm: string; slug: string; json: string; autoId?: boolean; render?: boolean;
       }) => {
         const bug = loadBugJson(opts.json);
         if (opts.autoId) bug.id = nextBugId(opts.project, opts.yyyymm, opts.slug);
@@ -161,6 +173,7 @@ export const program = createCli({
           if (msg.startsWith("invalid bug:")) fail(2, `[scan-report] ${msg}`);
           fail(1, `[scan-report] ${msg}`);
         }
+        autoRender(opts.project, opts.yyyymm, opts.slug, opts.render === false);
         process.stdout.write(`${JSON.stringify({ ok: true, id: bug.id })}\n`);
       },
     },
@@ -172,9 +185,11 @@ export const program = createCli({
         { flag: "--yyyymm <ym>", description: "yyyymm", required: true },
         { flag: "--slug <slug>", description: "audit slug", required: true },
         { flag: "--bug-id <id>", description: "bug id (e.g. b-001)", required: true },
+        { flag: "--no-render", description: "skip auto-render" },
       ],
-      action: (opts: { project: string; yyyymm: string; slug: string; bugId: string }) => {
+      action: (opts: { project: string; yyyymm: string; slug: string; bugId: string; render?: boolean }) => {
         removeBug(opts.project, opts.yyyymm, opts.slug, opts.bugId);
+        autoRender(opts.project, opts.yyyymm, opts.slug, opts.render === false);
         process.stdout.write(`${JSON.stringify({ ok: true, removed: opts.bugId })}\n`);
       },
     },
@@ -188,9 +203,11 @@ export const program = createCli({
         { flag: "--bug-id <id>", description: "bug id", required: true },
         { flag: "--field <path>", description: "field path, e.g. title or location.line", required: true },
         { flag: "--value <v>", description: "new value (numeric strings are coerced)", required: true },
+        { flag: "--no-render", description: "skip auto-render" },
       ],
       action: (opts: {
         project: string; yyyymm: string; slug: string; bugId: string; field: string; value: string;
+        render?: boolean;
       }) => {
         let coerced: unknown = opts.value;
         // numeric coercion only when path is line / confidence-style numeric leaf
@@ -205,6 +222,7 @@ export const program = createCli({
           if (msg.includes("invalid bug")) fail(2, `[scan-report] ${msg}`);
           fail(1, `[scan-report] ${msg}`);
         }
+        autoRender(opts.project, opts.yyyymm, opts.slug, opts.render === false);
         process.stdout.write(`${JSON.stringify({ ok: true })}\n`);
       },
     },
@@ -217,9 +235,11 @@ export const program = createCli({
         { flag: "--slug <slug>", description: "audit slug", required: true },
         { flag: "--bug-id <id>", description: "bug id", required: true },
         { flag: "--json <path>", description: "path to JSON array of strings", required: true },
+        { flag: "--no-render", description: "skip auto-render" },
       ],
       action: (opts: {
         project: string; yyyymm: string; slug: string; bugId: string; json: string;
+        render?: boolean;
       }) => {
         if (!existsSync(opts.json)) fail(1, `[scan-report] json not found`);
         const steps = JSON.parse(readFileSync(opts.json, "utf8"));
@@ -231,6 +251,7 @@ export const program = createCli({
           if (msg.includes("invalid bug")) fail(2, `[scan-report] ${msg}`);
           fail(1, `[scan-report] ${msg}`);
         }
+        autoRender(opts.project, opts.yyyymm, opts.slug, opts.render === false);
         process.stdout.write(`${JSON.stringify({ ok: true })}\n`);
       },
     },
@@ -243,9 +264,11 @@ export const program = createCli({
         { flag: "--slug <slug>", description: "audit slug", required: true },
         { flag: "--field <name>", description: "meta field name (reviewer | summary | related_feature)", required: true },
         { flag: "--value <v>", description: "new string value", required: true },
+        { flag: "--no-render", description: "skip auto-render" },
       ],
       action: (opts: {
         project: string; yyyymm: string; slug: string; field: string; value: string;
+        render?: boolean;
       }) => {
         const allowed = new Set(["reviewer", "summary", "related_feature"]);
         if (!allowed.has(opts.field)) fail(1, `[scan-report] field "${opts.field}" not editable via set-meta`);
@@ -256,6 +279,7 @@ export const program = createCli({
           opts.field as "reviewer" | "summary" | "related_feature",
           opts.value,
         );
+        autoRender(opts.project, opts.yyyymm, opts.slug, opts.render === false);
         process.stdout.write(`${JSON.stringify({ ok: true })}\n`);
       },
     },
@@ -280,6 +304,21 @@ export const program = createCli({
           return;
         }
         process.stdout.write(`${JSON.stringify({ meta, bugs: report.bugs }, null, 2)}\n`);
+      },
+    },
+    {
+      name: "render",
+      description: "Render report.html from current report.json",
+      options: [
+        { flag: "--project <name>", description: "project", required: true },
+        { flag: "--yyyymm <ym>", description: "yyyymm", required: true },
+        { flag: "--slug <slug>", description: "audit slug", required: true },
+      ],
+      action: (opts: { project: string; yyyymm: string; slug: string }) => {
+        autoRender(opts.project, opts.yyyymm, opts.slug, false);
+        process.stdout.write(
+          `${JSON.stringify({ ok: true, html: auditFile(opts.project, opts.yyyymm, opts.slug, "report.html") })}\n`,
+        );
       },
     },
   ],
