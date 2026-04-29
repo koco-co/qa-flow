@@ -189,17 +189,25 @@ bun run engine/src/ui-autotest/merge-specs.ts \
 
 ### Readiness Gate
 
-进入 Step 5 前检查是否所有 task 均已完结。未完结的派 agent 处理，不跳过。
+进入 Step 5 前检查是否所有 task 均已完结。
 
 ```bash
-STATS=$(bun run engine/src/ui-autotest/task-state-cli.ts stats {{tests_dir}})
-PENDING=$(echo "$STATS" | bun -e "const s=JSON.parse(require('fs').readFileSync(0,'utf8'));console.log(s.pending)")
-IN_PROGRESS=$(echo "$STATS" | bun -e "const s=JSON.parse(require('fs').readFileSync(0,'utf8'));console.log(s.in_progress)")
-FAILED=$(echo "$STATS" | bun -e "const s=JSON.parse(require('fs').readFileSync(0,'utf8'));console.log(s.failed)")
+STATE=$(bun run engine/src/ui-autotest/task-state-cli.ts read {{tests_dir}})
+# 检查：无 pending、无 in_progress、无 failed
+PENDING=$(echo "$STATE" | bun -e "const s=JSON.parse(require('fs').readFileSync(0,'utf8'));console.log(s.stats.pending)")
+IN_PROGRESS=$(echo "$STATE" | bun -e "const s=JSON.parse(require('fs').readFileSync(0,'utf8'));console.log(s.stats.in_progress)")
+FAILED=$(echo "$STATE" | bun -e "const s=JSON.parse(require('fs').readFileSync(0,'utf8'));console.log(s.stats.failed)")
+# 检查：所有 completed 的 task 必须有 fix_result（证明执行过 playwright test）
+FAKE=$(echo "$STATE" | bun -e "
+const s=JSON.parse(require('fs').readFileSync(0,'utf8'));
+const fake=s.tasks.filter(t=>t.status==='completed'&&(!t.fix_result||!t.fix_result.fix_status));
+console.log(fake.map(t=>t.id).join(','))
+")
 ```
 
-- `pending=0, in_progress=0, failed=0` → 进入 Step 5
-- 否则 → 列出未完结的 task，派 script-case-agent 处理
+- `pending=0, in_progress=0, failed=0` **且** `FAKE` 为空 → 进入 Step 5
+- 有未完结任务 → 列出后派 script-case-agent 处理
+- 有 `FAKE` 任务（status=completed 但未执行过 playwright test）→ 标记回 pending，派 agent 重做
 
 **完成 Step 4**：
 

@@ -62,14 +62,23 @@ test.describe("{{suite_name}} - {{page}}", () => {
 });
 ```
 
-### 3. 自测
+### 3. 自测（强制）
+
+**必须执行 playwright test。不允许跳过。**
 
 ```bash
 QA_PROJECT={{project}} bunx playwright test {{script_path}} --project=chromium --timeout=30000
 ```
 
-- 通过 → 更新 `.task-state.json`：`status=completed, phase=done`
-- 失败 → 进入修复流程
+**结果判定**：
+
+| 命令执行情况                     | 动作           | 更新状态                             |
+| -------------------------------- | -------------- | ------------------------------------ |
+| 测试跑完，断言通过               | 记录结果，继续 | `status=completed, fix_status=FIXED` |
+| 测试跑完，断言失败               | 记录结果，继续 | `status=completed, fix_status=FIXED` |
+| 脚本本身报错（编译/选择器/超时） | 进入修复流程   | **不得标记 completed**               |
+
+> 核心规则：**只要 playwright test 正常执行完毕，无论断言结果如何，都算有效执行。** 脚本无法执行（编译错、定位器异常、import 路径错误等）才需要修复。
 
 ### 4. 修复
 
@@ -167,6 +176,15 @@ updateTask(testsDir, taskId, {
 ## 共享库强制引用
 
 凡是 `lib/playwright/` 或 `tests/helpers/` 中已提供的函数，必须 import 使用，禁止内联重新实现。生成前先读：
+
+---
+
+## 红线规则
+
+1. **未执行 playwright test，不得标记 `status=completed`。** 仅编译通过不算，必须确认脚本可正常运行。
+2. **测试正常执行完毕（无论断言通过或失败）** → 记录结果，可以 completed。
+3. **脚本无法执行（编译错、定位器异常、import 错误等）** → 修复，修复失败则标记 `status=failed`，不得 completed。
+4. 违反此规则视为流程违规，任务作废。
 
 - `lib/playwright/index.ts`
 - `tests/helpers/` 下的文件
