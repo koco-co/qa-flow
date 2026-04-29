@@ -13,6 +13,7 @@
 | `dtstack-cli`    | 平台前置条件 CLI（SQL/项目/资产同步），用法见 `tools/dtstack-sdk/docs/usage.md` |
 | `/ui-autotest`   | UI 自动化测试                                                                   |
 | `/static-scan`   | 提测分支静态扫描（diff → 可复现 bug 报告）                                      |
+| `/update-docs`   | 同步命令索引到 README + 更新 CHANGELOG（提交前建议运行）                        |
 
 ## 工作区布局
 

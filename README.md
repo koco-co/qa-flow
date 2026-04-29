@@ -96,7 +96,7 @@ kata 采用 **Router + Skill + Agent + Plugin Hook** 分层架构：
 - **kata Router** — 入口路由层；首次使用、无项目或安装向导由 `using-kata` skill 承接
 - **8 个 Skill** — `using-kata` / `playwright-cli` / `test-case-gen` / `ui-autotest` / `case-format` / `daily-task` / `knowledge-keeper` / `static-scan`
 - **6 个核心用户工作流** — `test-case-gen` / `ui-autotest` / `case-format` / `daily-task`（bug/conflict/hotfix）/ `knowledge-keeper` / `static-scan`（`using-kata` + `create-project` 为入口与初始化工作流）
-- **17 个独立 Agent** — 每个 Agent 通过 frontmatter 声明 model/tools，由 Skill 作为编排器调度；含 Phase 3 新增 `pattern-analyzer-agent` / `script-fixer-agent` / `convergence-agent` / `regression-runner-agent` / `source-scanner-agent` / `static-scan-agent`
+- **16 个独立 Agent** — 每个 Agent 通过 frontmatter 声明 model/tools，由 Skill 作为编排器调度；含 Phase 3 新增 `script-case-agent` / `pattern-analyzer-agent` / `convergence-agent` / `regression-runner-agent` / `source-scanner-agent` / `static-scan-agent`
 - **Cross-cutting 能力** — CLI Runner 工厂、三段式 `.env`、多环境 `kata-state` 隔离、`plan.md` 仲裁、`LOG_LEVEL` 日志分级、项目级规则、只读源码副本、Plugin Hooks
 - **Project-scoped Output** — 统一输出到 `workspace/<project>/`，支持 XMind / Archive MD / HTML 报告 / Playwright + Allure 产物
 
@@ -175,34 +175,23 @@ bunx playwright install                       # 仅 UI 自动化场景需要
 
 ### 常用命令
 
-```bash
-# 查看功能菜单
-/using-kata
+<!-- COMMANDS:START -->
 
-# 为需求文档生成完整测试用例
-为 {{需求名称}} 生成测试用例
+| 命令 | 功能 |
+|------|------|
+| `/using-kata`    | 功能菜单 + 项目创建                                                             |
+| `/test-case-gen` | 生成测试用例（PRD → 用例）                                                      |
+| `/case-format`   | XMind 编辑 / XMind↔Archive 同步 / 格式转换                                      |
+| `/daily-task`    | bug / conflict / hotfix 三模式                                                  |
+| `dtstack-cli`    | 平台前置条件 CLI（SQL/项目/资产同步），用法见 `tools/dtstack-sdk/docs/usage.md` |
+| `/ui-autotest`   | UI 自动化测试                                                                   |
+| `/static-scan`   | 提测分支静态扫描（diff → 可复现 bug 报告）                                      |
+| `/update-docs`   | 同步命令索引到 README + 更新 CHANGELOG（提交前建议运行）                        |
 
-# 快速模式（跳过部分交互，1 轮 Review）
-为 {{需求名称}} --quick 生成测试用例
+<!-- COMMANDS:END -->
 
-# 从蓝湖 URL 直接导入需求并生成用例
-生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid={{tid}}&docId={{docId}}
 
-# 直接粘贴报错日志进行 Bug 分析
-帮我分析这个报错
 
-# 局部修改已有 XMind 用例
-修改用例 "验证导出仅导出当前筛选结果"
-
-# 标准化历史 XMind / CSV 为 Archive MD
-标准化归档 workspace/<project>/history/旧用例.xmind
-
-# UI 自动化测试
-UI自动化测试 {{需求名称}} https://your-app.example.com
-
-# 切换当前项目
-切换项目
-```
 
 ---
 
@@ -521,8 +510,7 @@ kata/
 │   │   ├── frontend-bug-agent.md #   前端 Bug 分析（sonnet）
 │   │   ├── conflict-agent.md     #   合并冲突分析（sonnet）
 │   │   ├── hotfix-case-agent.md  #   Hotfix 用例生成（sonnet）
-│   │   ├── script-writer-agent.md #  Playwright 脚本生成（sonnet）
-│   │   ├── script-fixer-agent.md #   Playwright 脚本自修复（sonnet）
+│   │   ├── script-case-agent.md    #  Playwright 脚本生成+自修复（sonnet）
 │   │   ├── pattern-analyzer-agent.md # 共性收敛/抽取 helpers（opus）
 │   │   ├── bug-reporter-agent.md #   Bug 报告生成（haiku）
 │   │   ├── convergence-agent.md  #   共性收敛（sonnet）

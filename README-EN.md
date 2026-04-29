@@ -61,16 +61,16 @@ Branch diff ──────────────────── /static
 
 ## Features
 
-| Feature                         | Description                                                                                                                                                                                                                                                            |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **8 Skills / 6 Core Workflows** | `using-kata` + `playwright-cli` + 6 primary execution workflows covering menus/init, generation, analysis, format conversion, diagnostics, regression, and static scan                                                                                                 |
-| **17-Agent Architecture**       | Specialized agents declare model/tools in frontmatter and are dispatched by Skills based on task complexity; includes `pattern-analyzer-agent` / `script-fixer-agent` / `convergence-agent` / `regression-runner-agent` / `source-scanner-agent` / `static-scan-agent` |
-| **Project-Scoped Workspace**    | All artifacts are written into `workspace/&lt;project&gt;/...`, keeping projects isolated                                                                                                                                                                              |
-| **A/B Artifact Contract**       | XMind / intermediate artifacts use Contract A; Archive MD / display titles use Contract B                                                                                                                                                                              |
-| **Preview-before-Write**        | XMind `patch` / `add` / `delete` always run `--dry-run` first, then require confirmation                                                                                                                                                                               |
-| **Self-healing UI Regression**  | UI automation verifies each script individually, repairs up to 3 rounds, and can emit bug reports or fix hints                                                                                                                                                         |
-| **Plugin Hooks**                | Lanhu import, Zentao integration, and IM notifications are attached via lifecycle hooks                                                                                                                                                                                |
-| **Safety Gates**                | Read-only source repos, explicit side-effect confirmation, and separate reference vs writeback gates                                                                                                                                                                   |
+| Feature                         | Description                                                                                                                                                                                                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **8 Skills / 6 Core Workflows** | `using-kata` + `playwright-cli` + 6 primary execution workflows covering menus/init, generation, analysis, format conversion, diagnostics, regression, and static scan                                                                                                |
+| **17-Agent Architecture**       | Specialized agents declare model/tools in frontmatter and are dispatched by Skills based on task complexity; includes `script-case-agent` / `pattern-analyzer-agent` / `convergence-agent` / `regression-runner-agent` / `source-scanner-agent` / `static-scan-agent` |
+| **Project-Scoped Workspace**    | All artifacts are written into `workspace/&lt;project&gt;/...`, keeping projects isolated                                                                                                                                                                             |
+| **A/B Artifact Contract**       | XMind / intermediate artifacts use Contract A; Archive MD / display titles use Contract B                                                                                                                                                                             |
+| **Preview-before-Write**        | XMind `patch` / `add` / `delete` always run `--dry-run` first, then require confirmation                                                                                                                                                                              |
+| **Self-healing UI Regression**  | UI automation verifies each script individually, repairs up to 3 rounds, and can emit bug reports or fix hints                                                                                                                                                        |
+| **Plugin Hooks**                | Lanhu import, Zentao integration, and IM notifications are attached via lifecycle hooks                                                                                                                                                                               |
+| **Safety Gates**                | Read-only source repos, explicit side-effect confirmation, and separate reference vs writeback gates                                                                                                                                                                  |
 
 ---
 
@@ -86,7 +86,7 @@ kata uses a **Router + Skill + Agent + Plugin Hook** architecture:
 - **kata Router** — Entry routing layer; first-run and project management requests are handled by the `using-kata` skill
 - **7 Skills** — `using-kata` / `playwright-cli` / `test-case-gen` / `ui-autotest` / `case-format` / `daily-task` / `knowledge-keeper`
 - **5 primary user workflows** — `test-case-gen`, `ui-autotest`, `case-format`, `daily-task` (bug/conflict/hotfix), `knowledge-keeper` (`using-kata` + `playwright-cli` are entry and bootstrap workflows)
-- **16 standalone agents** — Each agent declares its model/tools in frontmatter and is orchestrated by a Skill; includes Phase 3's `pattern-analyzer-agent` / `script-fixer-agent` / `convergence-agent` / `regression-runner-agent` / `source-scanner-agent`
+- **16 standalone agents** — Each agent declares its model/tools in frontmatter and is orchestrated by a Skill; includes Phase 3's `script-case-agent` / `pattern-analyzer-agent` / `convergence-agent` / `regression-runner-agent` / `source-scanner-agent`
 - **Cross-cutting capabilities** — CLI Runner factory, three-tier `.env`, multi-environment `kata-state` isolation, `plan.md` arbitration, `LOG_LEVEL` logging, project-level rules, read-only source repos, plugin hooks
 - **Project-scoped output** — artifacts are written to `workspace/<project>/`, including XMind, Archive MD, HTML reports, and Playwright + Allure assets
 
@@ -166,38 +166,23 @@ A 6-step interactive wizard will guide you through:
 
 ### Quick Commands
 
-The current user-facing trigger phrases are Chinese-first; the examples below are the actual commands used in Claude Code.
+<!-- COMMANDS:START -->
 
-```bash
-# Show feature menu
-/using-kata
+| Command | Description |
+|---------|-------------|
+| `/using-kata`    | Feature menu + project creation |
+| `/test-case-gen` | Generate test cases (PRD → structured cases) |
+| `/case-format`   | XMind editing / XMind↔Archive sync / format conversion |
+| `/daily-task`    | Bug / conflict / hotfix three-mode workflow |
+| `dtstack-cli`    | Platform prerequisites CLI (SQL/project/asset sync), see `tools/dtstack-sdk/docs/usage.md` |
+| `/ui-autotest`   | UI automation testing |
+| `/static-scan`   | Release branch static scan (diff → reproducible bug report) |
+| `/update-docs`   | Sync command index to README + update CHANGELOG (run before committing) |
 
-# Generate test cases from PRD
-为 {{requirement_name}} 生成测试用例
+<!-- COMMANDS:END -->
 
-# Quick mode (skip interactions, 1-round review)
-为 {{requirement_name}} --quick 生成测试用例
 
-# Import from Lanhu URL
-生成测试用例 https://lanhuapp.com/web/#/item/project/product?tid={{tid}}&docId={{docId}}
 
-# Analyze error logs
-帮我分析这个报错
-
-# Edit existing XMind cases
-修改用例 "Verify export only exports filtered results"
-
-# Standardize legacy XMind / CSV into Archive MD
-标准化归档 workspace/<project>/history/legacy-cases.xmind
-
-# UI automation test
-UI自动化测试 {{requirement_name}} https://your-app.example.com
-
-# Switch active project
-切换项目
-```
-
----
 
 ## Workflow Details
 

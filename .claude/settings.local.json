@@ -18,6 +18,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit.*CLAUDE.md|Write.*CLAUDE.md",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/sync-docs.sh"
+          }
+        ]
+      }
     ]
   }
 }
