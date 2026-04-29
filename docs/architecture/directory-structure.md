@@ -69,6 +69,7 @@ workspace/{project}/
 ├── history/              ← 历史数据
 ├── issues/               ← Hotfix 用例
 ├── reports/              ← 分析报告
+├── audits/               ← 静态扫描报告（meta/report/diff/HTML）
 └── .repos/               ← 只读源码副本
 ```
 

@@ -30,6 +30,7 @@ Existing XMind ────────────────── /case-form
 Zentao bug URL ────────────────── /daily-task hotfix ──> Hotfix Archive MD
 Backend/frontend error logs ───── /daily-task bug ──────> HTML bug report
 Git conflict snippet ──────────── /daily-task conflict ─> HTML merge-conflict report
+Branch diff ──────────────────── /static-scan ─────────> Reproducible Bug JSON + HTML scan report
 ```
 
 </div>
@@ -48,6 +49,7 @@ Git conflict snippet ──────────── /daily-task conflict �
   - [Hotfix / Bug / Conflict Analysis](#2-hotfix--bug--conflict-analysis)
   - [XMind / Format Conversion](#3-xmind--format-conversion-case-format)
   - [UI Automation](#4-ui-automation-ui-autotest)
+  - [Static Scan](#5-static-scan-static-scan)
 - [Plugin System](#plugin-system)
 - [Project Structure](#project-structure)
 - [Script CLI Reference](#script-cli-reference)
@@ -59,16 +61,16 @@ Git conflict snippet ──────────── /daily-task conflict �
 
 ## Features
 
-| Feature                         | Description                                                                                                                                                                                                                                      |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **7 Skills / 5 Core Workflows** | `using-kata` + `playwright-cli` + 5 primary execution workflows covering menus/init, generation, analysis, format conversion, diagnostics, and regression                                                                                        |
-| **16-Agent Architecture**       | Specialized agents declare model/tools in frontmatter and are dispatched by Skills based on task complexity; includes `pattern-analyzer-agent` / `script-fixer-agent` / `convergence-agent` / `regression-runner-agent` / `source-scanner-agent` |
-| **Project-Scoped Workspace**    | All artifacts are written into `workspace/&lt;project&gt;/...`, keeping projects isolated                                                                                                                                                        |
-| **A/B Artifact Contract**       | XMind / intermediate artifacts use Contract A; Archive MD / display titles use Contract B                                                                                                                                                        |
-| **Preview-before-Write**        | XMind `patch` / `add` / `delete` always run `--dry-run` first, then require confirmation                                                                                                                                                         |
-| **Self-healing UI Regression**  | UI automation verifies each script individually, repairs up to 3 rounds, and can emit bug reports or fix hints                                                                                                                                   |
-| **Plugin Hooks**                | Lanhu import, Zentao integration, and IM notifications are attached via lifecycle hooks                                                                                                                                                          |
-| **Safety Gates**                | Read-only source repos, explicit side-effect confirmation, and separate reference vs writeback gates                                                                                                                                             |
+| Feature                         | Description                                                                                                                                                                                                                                                            |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **8 Skills / 6 Core Workflows** | `using-kata` + `playwright-cli` + 6 primary execution workflows covering menus/init, generation, analysis, format conversion, diagnostics, regression, and static scan                                                                                                 |
+| **17-Agent Architecture**       | Specialized agents declare model/tools in frontmatter and are dispatched by Skills based on task complexity; includes `pattern-analyzer-agent` / `script-fixer-agent` / `convergence-agent` / `regression-runner-agent` / `source-scanner-agent` / `static-scan-agent` |
+| **Project-Scoped Workspace**    | All artifacts are written into `workspace/&lt;project&gt;/...`, keeping projects isolated                                                                                                                                                                              |
+| **A/B Artifact Contract**       | XMind / intermediate artifacts use Contract A; Archive MD / display titles use Contract B                                                                                                                                                                              |
+| **Preview-before-Write**        | XMind `patch` / `add` / `delete` always run `--dry-run` first, then require confirmation                                                                                                                                                                               |
+| **Self-healing UI Regression**  | UI automation verifies each script individually, repairs up to 3 rounds, and can emit bug reports or fix hints                                                                                                                                                         |
+| **Plugin Hooks**                | Lanhu import, Zentao integration, and IM notifications are attached via lifecycle hooks                                                                                                                                                                                |
+| **Safety Gates**                | Read-only source repos, explicit side-effect confirmation, and separate reference vs writeback gates                                                                                                                                                                   |
 
 ---
 
@@ -374,6 +376,48 @@ Transforms Archive MD test cases into Playwright TypeScript scripts, executes by
 
 ---
 
+### 5. Static Scan (`/static-scan`)
+
+Diff-based LLM analysis of `.repos/{repo}` (head branch vs baseline), producing only reproducible bugs as JSON + polished HTML in `workspace/{project}/audits/`.
+
+#### Pipeline
+
+![Static Scan Pipeline](assets/diagrams/static-scan.svg)
+
+#### 6 Steps
+
+| Step | Name                 | Description                                                                  |
+| ---- | -------------------- | ---------------------------------------------------------------------------- |
+| S1   | **Collect baseline** | AskUserQuestion to select `release_*.x` or manual input                      |
+| S2   | **create**           | `kata-cli scan-report create` — fetch + diff + init audit (meta/report/diff) |
+| S3   | **Dispatch Agent**   | `static-scan-agent` reads diff.patch + repo, outputs reproducible bug JSON   |
+| S4   | **Loop add-bug**     | `add-bug --auto-id` per item; validation failures logged to discard file     |
+| S5   | **Render report**    | `kata-cli scan-report render` — Handlebars → polished HTML                   |
+| S6   | **CRUD follow-up**   | `update-bug` / `remove-bug` / `set-meta` / `show` as needed                  |
+
+#### Usage
+
+```bash
+# Basic — scan head branch against baseline
+/static-scan --project dataAssets --repo dt-insight-engine --head-branch release_6.3.0_dev
+
+# Post-scan adjustments
+kata-cli scan-report update-bug --project dataAssets --slug ... --bug-id b-003 --field root_cause --value "..."
+kata-cli scan-report remove-bug --project dataAssets --slug ... --bug-id b-005
+kata-cli scan-report set-meta --project dataAssets --slug ... --field reviewer --value alice
+```
+
+#### Output
+
+| Type        | Path                                                 |
+| ----------- | ---------------------------------------------------- |
+| meta.json   | `workspace/<project>/audits/{ym}-{slug}/meta.json`   |
+| report.json | `workspace/<project>/audits/{ym}-{slug}/report.json` |
+| diff.patch  | `workspace/<project>/audits/{ym}-{slug}/diff.patch`  |
+| HTML report | `workspace/<project>/audits/{ym}-{slug}/report.html` |
+
+---
+
 ## Plugin System
 
 ![Plugin System](assets/diagrams/plugin-system.svg)
@@ -457,7 +501,7 @@ Set `LOG_LEVEL=debug` / `info` / `warn` / `error` to control verbosity at runtim
 ```text
 kata/
 ├── .claude/
-│   ├── agents/                   # 16 standalone agent definitions
+│   ├── agents/                   # 17 standalone agent definitions
 ├── engine/
 │   ├── src/                      # Core TypeScript CLI scripts
 │   │   ├── state.ts              # Breakpoint/resume state management
@@ -470,7 +514,13 @@ kata/
 │   │   ├── image-compress.ts     # Image compression (>2000px auto-resize)
 │   │   ├── prd-frontmatter.ts    # PRD frontmatter normalization
 │   │   ├── config.ts             # Environment config reader
+│   │   ├── scan-report.ts        # Static scan report CRUD + render
 │   │   ├── lib/                  # Shared helpers and types
+│   │   │   ├── scan-report-types.ts  # Scan report type contracts
+│   │   │   ├── scan-report-validate.ts # Bug strict validator
+│   │   │   ├── scan-report-store.ts  # JSON CRUD store
+│   │   │   ├── scan-report-diff.ts   # Git diff helpers
+│   │   │   └── scan-report-render.ts # Handlebars renderer
 │   └── tests/                    # Unit tests
 │   └── skills/
 │       ├── using-kata/           # Feature menu + project management entry
@@ -482,6 +532,7 @@ kata/
 │       ├── knowledge-keeper/     # Business knowledge base read/write
 │       ├── ui-autotest/          # Playwright UI automation orchestrator
 │       │   └── scripts/          # parse-cases / merge-specs / session-login
+│       ├── static-scan/          # Static code scan orchestrator
 │       └── playwright-cli/       # Playwright CLI integration
 ├── plugins/
 │   ├── lanhu/                    # Lanhu PRD import plugin
@@ -490,6 +541,7 @@ kata/
 ├── workspace/                    # Multi-project runtime workspace
 │   ├── dataAssets/
 │   │   ├── features/{ym}-{slug}/ # Aggregated feature dir (PRD/archive/xmind/tests)
+│   │   ├── audits/{ym}-{slug}/  # Static scan reports (meta/report/diff/HTML)
 │   │   ├── issues/               # Hotfix test cases
 │   │   ├── history/              # Legacy CSV / XMind inputs
 │   │   ├── reports/              # Bug / conflict / Allure reports
@@ -524,26 +576,27 @@ kata/
 
 All scripts are located at `engine/src/`. They share a unified entry factory (`lib/cli-runner.ts`) and are executed with `bun run`:
 
-| Script                      | Commands                                       | Description                                          |
-| --------------------------- | ---------------------------------------------- | ---------------------------------------------------- |
-| `kata-state.ts`             | `init` / `resume` / `update` / `clean`         | Breakpoint state (isolated per `ACTIVE_ENV`)         |
-| `plan.ts`                   | `read` / `write-strategy` / `hydrate`          | `plan.md` frontmatter read/write and arbitration     |
-| `discuss.ts`                | `start` / `close`                              | Orchestrator-hosted requirements discussion session  |
-| `case-signal-analyzer.ts`   | `run` / `cache-read`                           | 4-dimension signal probe                             |
-| `case-strategy-resolver.ts` | `resolve`                                      | 5-strategy dispatch (S1–S5)                          |
-| `writer-context-builder.ts` | `--module <name>`                              | Writer context assembly with knowledge injection     |
-| `xmind-gen.ts`              | `--input <json> --output <dir>`                | Generate XMind files from JSON intermediate format   |
-| `xmind-patch.ts`            | `search` / `show` / `patch` / `add` / `delete` | XMind test case CRUD                                 |
-| `archive-gen.ts`            | `--input <json> --output <dir>` / `search`     | Generate Archive MD or keyword search                |
-| `knowledge-keeper.ts`       | `index` / `read` / `write`                     | Business knowledge base index, read, and write       |
-| `rule-loader.ts`            | `load --project <name>`                        | Two-tier rule loader (global + project)              |
-| `create-project.ts`         | `scan` / `create` / `clone-repo`               | Project skeleton creation/repair, source repo clone  |
-| `image-compress.ts`         | `--dir <dir>`                                  | Batch image compression (>2000px auto-resize)        |
-| `plugin-loader.ts`          | `check` / `notify`                             | Plugin availability check and notification dispatch  |
-| `repo-sync.ts`              | `--url <url> --branch <branch>`                | Source repo branch sync/clone                        |
-| `repo-profile.ts`           | `match` / `save` / `sync-profile`              | Smart matching between requirements and source repos |
-| `prd-frontmatter.ts`        | `--file <path>`                                | PRD frontmatter normalization                        |
-| `config.ts`                 | (no args)                                      | Read `.env` and output project configuration         |
+| Script                      | Commands                                                                            | Description                                          |
+| --------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `kata-state.ts`             | `init` / `resume` / `update` / `clean`                                              | Breakpoint state (isolated per `ACTIVE_ENV`)         |
+| `plan.ts`                   | `read` / `write-strategy` / `hydrate`                                               | `plan.md` frontmatter read/write and arbitration     |
+| `discuss.ts`                | `start` / `close`                                                                   | Orchestrator-hosted requirements discussion session  |
+| `case-signal-analyzer.ts`   | `run` / `cache-read`                                                                | 4-dimension signal probe                             |
+| `case-strategy-resolver.ts` | `resolve`                                                                           | 5-strategy dispatch (S1–S5)                          |
+| `writer-context-builder.ts` | `--module <name>`                                                                   | Writer context assembly with knowledge injection     |
+| `xmind-gen.ts`              | `--input <json> --output <dir>`                                                     | Generate XMind files from JSON intermediate format   |
+| `xmind-patch.ts`            | `search` / `show` / `patch` / `add` / `delete`                                      | XMind test case CRUD                                 |
+| `archive-gen.ts`            | `--input <json> --output <dir>` / `search`                                          | Generate Archive MD or keyword search                |
+| `knowledge-keeper.ts`       | `index` / `read` / `write`                                                          | Business knowledge base index, read, and write       |
+| `rule-loader.ts`            | `load --project <name>`                                                             | Two-tier rule loader (global + project)              |
+| `create-project.ts`         | `scan` / `create` / `clone-repo`                                                    | Project skeleton creation/repair, source repo clone  |
+| `image-compress.ts`         | `--dir <dir>`                                                                       | Batch image compression (>2000px auto-resize)        |
+| `plugin-loader.ts`          | `check` / `notify`                                                                  | Plugin availability check and notification dispatch  |
+| `repo-sync.ts`              | `--url <url> --branch <branch>`                                                     | Source repo branch sync/clone                        |
+| `repo-profile.ts`           | `match` / `save` / `sync-profile`                                                   | Smart matching between requirements and source repos |
+| `prd-frontmatter.ts`        | `--file <path>`                                                                     | PRD frontmatter normalization                        |
+| `config.ts`                 | (no args)                                                                           | Read `.env` and output project configuration         |
+| `scan-report.ts`            | `create` / `add-bug` / `update-bug` / `remove-bug` / `set-meta` / `show` / `render` | Static scan report CRUD + HTML render                |
 
 ---
 

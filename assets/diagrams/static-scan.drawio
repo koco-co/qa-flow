@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="cli-anything" agent="cli-anything-drawio/1.0.0" version="24.0.0">
+  <diagram id="diagram_1777455354605136" name="Page-1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="v_1777455451812116" value="User Input" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#22C55E;fontColor=#14532D;fontStyle=bold;" vertex="1" parent="1">
+          <mxGeometry x="80.0" y="60.0" width="180.0" height="60.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455451862640" value="AskUserQuestion" style="rhombus;fillColor=#FEF3C7;strokeColor=#F59E0B;fontColor=#92400E;fontStyle=bold;" vertex="1" parent="1">
+          <mxGeometry x="340.0" y="50.0" width="180.0" height="80.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455451910919" value="scan-report create" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;fontColor=#1D4ED8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="600.0" y="50.0" width="240.0" height="80.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455451961612" value="audit dir" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="920.0" y="40.0" width="180.0" height="100.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455475267921" value="static-scan-agent&amp;#xa;diff → reproducible bugs" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#5B21B6;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="600.0" y="220.0" width="240.0" height="80.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455475350611" value="add-bug loop&amp;#xa;validate + store per bug" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F97316;fontColor=#9A3412;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="600.0" y="370.0" width="240.0" height="80.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455475417920" value="render&amp;#xa;Handlebars → HTML" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ECFEFF;strokeColor=#06B6D4;fontColor=#155E75;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="600.0" y="520.0" width="240.0" height="80.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455475472401" value="report.json&amp;#xa;bug array" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="920.0" y="210.0" width="180.0" height="100.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455475530938" value="report.html&amp;#xa;精美 HTML 报告" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=0.27;" vertex="1" parent="1">
+          <mxGeometry x="920.0" y="380.0" width="180.0" height="100.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455475589736" value="diff.patch&amp;#xa;unified diff" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="80.0" y="220.0" width="180.0" height="100.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455475640239" value="repo (.repos/)&amp;#xa;source code" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="80.0" y="380.0" width="180.0" height="100.0" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455475693266" value="kata-cli scan-report&amp;#xa;add-bug / update-bug / remove-bug&amp;#xa;/ set-meta / show" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#5B21B6;" vertex="1" parent="1">
+          <mxGeometry x="300.0" y="620.0" width="300.0" height="90.0" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455553646674" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455451812116" target="v_1777455451862640">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455553695979" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455451862640" target="v_1777455451910919">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455553746683" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455451910919" target="v_1777455451961612">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455553800403" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455451961612" target="v_1777455475267921">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455553858288" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455475267921" target="v_1777455475350611">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455553912601" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455475350611" target="v_1777455475417920">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455553964708" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455475589736" target="v_1777455475267921">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455554016218" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455475640239" target="v_1777455475267921">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455554070405" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455475350611" target="v_1777455475472401">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455554118367" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455475417920" target="v_1777455475530938">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1777455554167003" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1" source="v_1777455475693266" target="v_1777455451961612">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="v_1777455572954400" value="static-scan Skill Architecture" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;" vertex="1" parent="1">
+          <mxGeometry x="350.0" y="-30.0" width="400.0" height="40.0" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
