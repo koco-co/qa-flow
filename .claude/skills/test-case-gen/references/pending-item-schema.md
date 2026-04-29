@@ -1,6 +1,6 @@
 # enhanced.md §4 待确认项（Q 区块）格式规范
 
-> 供 `references/enhanced-doc-template.md` / `references/discuss-protocol.md` / `03-discuss.md` 互相引用。CLI 强制约束见 `engine/src/lib/enhanced-doc-store.ts` `addPending` / `resolvePending`。
+> 供 `references/enhanced-doc-template.md` / `references/discuss-protocol.md` / `03-discuss.md` 互相引用。CLI 强制约束见 `engine/lib/enhanced-doc-store.ts` `addPending` / `resolvePending`。
 
 ## §4 章节结构
 

@@ -22,5 +22,5 @@
 
 模板使用 Handlebars 语法。可用变量参见各脚本的数据模型定义：
 
-- Archive: `engine/src/lib/types.ts` — `IntermediateJson`
+- Archive: `engine/lib/types.ts` — `IntermediateJson`
 - Bug Report: bug-report / hotfix-case-gen skill 派发的 agent 输出 JSON 结构

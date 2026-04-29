@@ -421,7 +421,7 @@ Phase 5 consolidated CLI / config / state / logging into four shared channels. N
 
 ### CLI Runner Factory
 
-`engine/src/lib/cli-runner.ts` exposes `createCli({ name, description, commands })`. 27 of the 28 CLI scripts use the factory, getting for free:
+`engine/lib/cli-runner.ts` exposes `createCli({ name, description, commands })`. 27 of the 28 CLI scripts use the factory, getting for free:
 
 - Three-tier `.env` preload via `initEnv()`
 - `createLogger(name)` injection
