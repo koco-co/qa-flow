@@ -100,6 +100,27 @@ kata 采用 **Router + Skill + Agent + Plugin Hook** 分层架构：
 
 </details>
 
+### 目录结构
+
+```
+kata/
+├── .claude/          ← skills / agents / settings
+├── engine/           ← 核心引擎（bin + src + lib + hooks）
+├── plugins/          ← 三方集成（lanhu / zentao / notify）
+├── tools/            ← 独立工具包（dtstack-sdk）
+├── lib/playwright/   ← Playwright 共享库
+├── templates/        ← 输出模板
+├── docs/             ← 文档（architecture / audit / specs）
+├── workspace/        ← 用户产物（按项目隔离）
+│   └── {project}/
+│       ├── features/{ym}-{slug}/  ← PRD 派生物
+│       ├── knowledge/             ← 项目级知识
+│       └── shared/                ← 跨 feature 复用
+└── config.json       ← 项目配置
+```
+
+> 完整目录说明见 [docs/architecture/directory-structure.md](docs/architecture/directory-structure.md)
+
 ---
 
 ## 快速开始

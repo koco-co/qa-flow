@@ -90,6 +90,27 @@ kata uses a **Router + Skill + Agent + Plugin Hook** architecture:
 
 </details>
 
+### Directory Structure
+
+```
+kata/
+├── .claude/          ← skills / agents / settings
+├── engine/           ← Core engine (bin + src + lib + hooks)
+├── plugins/          ← Third-party integrations (lanhu / zentao / notify)
+├── tools/            ← Standalone toolkits (dtstack-sdk)
+├── lib/playwright/   ← Playwright shared library
+├── templates/        ← Output templates
+├── docs/             ← Documentation (architecture / audit / specs)
+├── workspace/        ← User artifacts (project-scoped)
+│   └── {project}/
+│       ├── features/{ym}-{slug}/  ← PRD-derived artifacts
+│       ├── knowledge/             ← Project-level knowledge
+│       └── shared/                ← Cross-feature reuse
+└── config.json       ← Project configuration
+```
+
+> Full directory reference: [docs/architecture/directory-structure.md](docs/architecture/directory-structure.md)
+
 ---
 
 ## Quick Start
