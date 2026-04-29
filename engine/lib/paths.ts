@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { getEnv } from "./env.ts";
 
 export function repoRoot(): string {
-  return resolve(fileURLToPath(import.meta.url), "../../../..");
+  return resolve(fileURLToPath(import.meta.url), "../../..");
 }
 
 export function workspaceDir(): string {
@@ -68,6 +68,23 @@ export function incidentDir(project: string, yyyymmdd: string, slug: string): st
  */
 export function regressionDir(project: string, yyyymmdd: string, batch: string): string {
   return join(projectDir(project), "regressions", `${yyyymmdd}-${batch}`);
+}
+
+/**
+ * Static scan audit bucket. Diff-based scan reports for a given branch pair.
+ * workspace/{project}/audits/{yyyymm}-{slug}/.
+ */
+export function auditDir(project: string, yyyymm: string, slug: string): string {
+  return join(projectDir(project), "audits", `${yyyymm}-${slug}`);
+}
+
+export function auditFile(
+  project: string,
+  yyyymm: string,
+  slug: string,
+  ...segments: string[]
+): string {
+  return join(auditDir(project, yyyymm, slug), ...segments);
 }
 
 export function xmindDir(project: string): string {

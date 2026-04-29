@@ -12,7 +12,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Command } from "commander";
-import { initEnv, getEnv } from "../../engine/src/lib/env.ts";
+import { initEnv, getEnv } from "../../engine/lib/env.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = fileURLToPath(new URL(".", import.meta.url));

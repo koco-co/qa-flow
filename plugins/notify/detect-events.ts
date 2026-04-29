@@ -13,7 +13,7 @@
 import { execSync } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { initEnv } from "../../engine/src/lib/env.ts";
+import { initEnv } from "../../engine/lib/env.ts";
 import {
   detectChannels,
   isEmailEnabled,
