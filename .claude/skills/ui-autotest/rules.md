@@ -5,3 +5,4 @@
 - Assert numeric/text values must match PRD/case specification exactly.
 - Test selectors: prefer `data-testid` over text/CSS where available.
 - Source sync and writeback are separate confirmation gates — never merge.
+- Ant Design 通用交互封装（Select / Modal / Drawer / Table 等）统一维护在 `lib/playwright/ant-design/`，通过 `workspace/{project}/shared/helpers/index.ts` re-export。发现交互模式可复用时，改 `lib/playwright/ant-design/` 本体，不要在单个 spec 文件或 `shared/helpers/` 中重复实现。

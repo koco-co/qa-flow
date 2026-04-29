@@ -39,7 +39,9 @@ export async function selectAntOption(
       }
 
       const isLoading = await dropdown
-        .locator(".ant-spin-spinning, .ant-select-item-empty .ant-spin-spinning")
+        .locator(
+          ".ant-spin-spinning, .ant-select-item-empty .ant-spin-spinning",
+        )
         .first()
         .isVisible()
         .catch(() => false);
@@ -56,7 +58,8 @@ export async function selectAntOption(
   const optionLocator = async () => {
     if (typeof optionText === "string") {
       const exactMatchIndex = await options.evaluateAll(
-        (els, expected) => els.findIndex((el) => el.textContent?.trim() === expected),
+        (els, expected) =>
+          els.findIndex((el) => el.textContent?.trim() === expected),
         optionText,
       );
       if (exactMatchIndex >= 0) {
@@ -106,7 +109,10 @@ export async function selectAntOption(
         ),
       )
       .first();
-    if ((await searchInput.count()) && (await searchInput.isEditable().catch(() => false))) {
+    if (
+      (await searchInput.count()) &&
+      (await searchInput.isEditable().catch(() => false))
+    ) {
       await searchInput.fill(optionText);
       await waitForOptionsToSettle(4000);
       const searchStartedAt = Date.now();
@@ -114,7 +120,9 @@ export async function selectAntOption(
         if (await clickVisibleOption()) return;
 
         const isLoading = await dropdown
-          .locator(".ant-spin-spinning, .ant-select-item-empty .ant-spin-spinning")
+          .locator(
+            ".ant-spin-spinning, .ant-select-item-empty .ant-spin-spinning",
+          )
           .first()
           .isVisible()
           .catch(() => false);
@@ -136,7 +144,9 @@ export async function selectAntOption(
   const visibleOptions = await dropdown
     .locator(".ant-select-item-option")
     .evaluateAll((els) =>
-      els.map((el) => el.textContent?.trim()).filter((text): text is string => Boolean(text)),
+      els
+        .map((el) => el.textContent?.trim())
+        .filter((text): text is string => Boolean(text)),
     );
   throw new Error(
     `Ant Select option not found: ${String(optionText)}. Visible options: ${visibleOptions.join(", ")}`,
@@ -213,7 +223,11 @@ export async function closeAntModal(
   if (await closeBtn.isVisible().catch(() => false)) {
     await closeBtn.click();
   } else {
-    await target.locator("button").filter({ hasText: /取消|Cancel/ }).first().click();
+    await target
+      .locator("button")
+      .filter({ hasText: /取消|Cancel/ })
+      .first()
+      .click();
   }
   const { expect } = await import("@playwright/test");
   await expect(target).not.toBeVisible({ timeout: 5000 });
@@ -235,9 +249,7 @@ export async function waitForAntDrawer(
   await drawer.first().waitFor({ state: "visible", timeout: 10000 });
   if (titleText) {
     const { expect } = await import("@playwright/test");
-    await expect(
-      drawer.filter({ hasText: titleText }).first(),
-    ).toBeVisible();
+    await expect(drawer.filter({ hasText: titleText }).first()).toBeVisible();
   }
   return drawer.first();
 }
@@ -272,9 +284,7 @@ export async function waitForOverlay(
   await overlay.first().waitFor({ state: "visible", timeout: 10000 });
   if (titleText) {
     const { expect } = await import("@playwright/test");
-    await expect(
-      overlay.filter({ hasText: titleText }).first(),
-    ).toBeVisible();
+    await expect(overlay.filter({ hasText: titleText }).first()).toBeVisible();
   }
   return overlay.first();
 }
@@ -296,13 +306,11 @@ export async function confirmPopconfirm(
   const popconfirm = page
     .locator(".ant-popconfirm:visible, .ant-popover:visible")
     .first();
-  await popconfirm
-    .waitFor({ state: "visible", timeout })
-    .catch(() => { /* 未弹出则静默跳过 */ });
+  await popconfirm.waitFor({ state: "visible", timeout }).catch(() => {
+    /* 未弹出则静默跳过 */
+  });
 
-  const confirmBtn = popconfirm
-    .locator(".ant-btn-primary")
-    .first();
+  const confirmBtn = popconfirm.locator(".ant-btn-primary").first();
   if (await confirmBtn.isVisible().catch(() => false)) {
     await confirmBtn.click();
     await page.waitForTimeout(300);
@@ -385,10 +393,7 @@ export function locateFormItem(
   container: Page | Locator,
   label: string | RegExp,
 ): Locator {
-  return container
-    .locator(".ant-form-item")
-    .filter({ hasText: label })
-    .first();
+  return container.locator(".ant-form-item").filter({ hasText: label }).first();
 }
 
 /**
@@ -406,9 +411,9 @@ export async function expectFormError(
   const { expect } = await import("@playwright/test");
   const errors = container.locator(".ant-form-item-explain-error");
   if (errorText) {
-    await expect(
-      errors.filter({ hasText: errorText }).first(),
-    ).toBeVisible({ timeout });
+    await expect(errors.filter({ hasText: errorText }).first()).toBeVisible({
+      timeout,
+    });
   } else {
     await expect(errors.first()).toBeVisible({ timeout });
   }
@@ -450,10 +455,7 @@ export async function switchAntTab(
   // 等待 tab 变为 active
   const { expect } = await import("@playwright/test");
   await expect(
-    scope
-      .locator(".ant-tabs-tab-active")
-      .filter({ hasText: tabName })
-      .first(),
+    scope.locator(".ant-tabs-tab-active").filter({ hasText: tabName }).first(),
   ).toBeVisible({ timeout: 5000 });
 }
 
@@ -465,9 +467,9 @@ export async function switchAntTab(
  * @param checkbox - Checkbox 的 Locator（.ant-checkbox-wrapper 或其父级）
  */
 export async function checkAntCheckbox(checkbox: Locator): Promise<void> {
-  const input = checkbox.locator(
-    "input[type='checkbox'], .ant-checkbox-input",
-  ).first();
+  const input = checkbox
+    .locator("input[type='checkbox'], .ant-checkbox-input")
+    .first();
   if (!(await input.isChecked())) {
     await checkbox.click();
   }
@@ -477,9 +479,9 @@ export async function checkAntCheckbox(checkbox: Locator): Promise<void> {
  * 取消勾选 Ant Design Checkbox
  */
 export async function uncheckAntCheckbox(checkbox: Locator): Promise<void> {
-  const input = checkbox.locator(
-    "input[type='checkbox'], .ant-checkbox-input",
-  ).first();
+  const input = checkbox
+    .locator("input[type='checkbox'], .ant-checkbox-input")
+    .first();
   if (await input.isChecked()) {
     await checkbox.click();
   }

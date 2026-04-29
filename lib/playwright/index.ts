@@ -6,46 +6,12 @@
  *
  * @example
  * ```typescript
- * import { selectAntOption, expectAntMessage, navigateViaMenu } from "@pw/index";
+ * import { selectAntOption, expectAntMessage, navigateViaMenu, uniqueName } from "@pw/index";
  * ```
  */
 
-// Ant Design 组件交互
-export {
-  // Select
-  selectAntOption,
-  // Message / Notification
-  expectAntMessage,
-  // Modal
-  waitForAntModal,
-  confirmAntModal,
-  closeAntModal,
-  // Drawer
-  waitForAntDrawer,
-  closeAntDrawer,
-  waitForOverlay,
-  // Popconfirm / Popover
-  confirmPopconfirm,
-  cancelPopconfirm,
-  // Table
-  waitForTableLoaded,
-  findTableRow,
-  // Form
-  locateFormItem,
-  expectFormError,
-  expectNoFormError,
-  // Tabs
-  switchAntTab,
-  // Checkbox & Radio
-  checkAntCheckbox,
-  uncheckAntCheckbox,
-  clickAntRadio,
-  // Dropdown
-  clickDropdownMenuItem,
-} from "./ant-interactions";
+// Ant Design 组件交互 + 导航
+export * from "./ant-design";
 
-// 通用导航
-export { navigateViaMenu } from "./navigation";
-
-// 工具函数
+// 通用工具函数
 export { uniqueName, todayStr } from "./utils";
