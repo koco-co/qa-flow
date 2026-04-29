@@ -10,11 +10,7 @@ import {
   buildCacheEntry,
   composeProfile,
 } from "../../src/lib/signal-probe.ts";
-import type {
-  SignalEntry,
-  SignalProfile,
-  ArchiveSearchHit,
-} from "../../src/lib/signal-probe.ts";
+import type { SignalEntry, SignalProfile, ArchiveSearchHit } from "../../src/lib/signal-probe.ts";
 
 // ---------------------------------------------------------------------------
 // classifySource
@@ -149,7 +145,7 @@ describe("classifyKnowledge", () => {
       moduleName: "商品管理",
     });
     expect(result.level).toBe("strong");
-    expect((result.evidence as Record<string, unknown>).core_nonempty, true);
+    expect((result.evidence as Record<string, unknown>).core_nonempty).toBe(true);
   });
 
   it("returns weak when core is non-null but matchedModuleContent is null", () => {
@@ -159,7 +155,7 @@ describe("classifyKnowledge", () => {
       moduleName: null,
     });
     expect(result.level).toBe("weak");
-    expect((result.evidence as Record<string, unknown>).core_nonempty, true);
+    expect((result.evidence as Record<string, unknown>).core_nonempty).toBe(true);
   });
 
   it("returns missing when core is null", () => {
@@ -168,7 +164,7 @@ describe("classifyKnowledge", () => {
       matchedModuleContent: null,
     });
     expect(result.level).toBe("missing");
-    expect((result.evidence as Record<string, unknown>).core_nonempty, false);
+    expect((result.evidence as Record<string, unknown>).core_nonempty).toBe(false);
   });
 });
 
@@ -181,9 +177,7 @@ describe("computeFieldFillRate", () => {
     const buildTable = (fieldName: string) =>
       `### 字段定义\n\n| 字段名 | 控件类型 | 必填 | 校验规则 |\n| --- | --- | --- | --- |\n| ${fieldName}_1 | 文本框 | 是 | 非空 |\n| ${fieldName}_2 | 下拉框 | 否 | 枚举值 |\n`;
 
-    const prd = [buildTable("page1"), buildTable("page2"), buildTable("page3")].join(
-      "\n\n",
-    );
+    const prd = [buildTable("page1"), buildTable("page2"), buildTable("page3")].join("\n\n");
 
     const { fillRate, pageCount } = computeFieldFillRate(prd);
     expect(pageCount).toBe(3);
