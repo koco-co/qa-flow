@@ -11,6 +11,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
@@ -330,6 +331,23 @@ function runReadCore(opts: { project: string }): void {
   const modules = scanEntries(join(kdir, "modules"));
   const pitfalls = scanEntries(join(kdir, "pitfalls"));
 
+  // Register sites type
+  const sites: IndexEntry[] = [];
+  const sitesDir = join(kdir, "sites");
+  if (existsSync(sitesDir)) {
+    for (const domainDir of readdirSync(sitesDir)) {
+      const domainPath = join(sitesDir, domainDir);
+      if (!statSync(domainPath).isDirectory()) continue;
+      const siteEntries = scanEntries(domainPath);
+      for (const e of siteEntries) {
+        sites.push({
+          ...e,
+          name: `sites/${domainDir}/${e.name}`,
+        });
+      }
+    }
+  }
+
   const result = {
     project: opts.project,
     overview,
@@ -337,6 +355,7 @@ function runReadCore(opts: { project: string }): void {
     index: {
       modules,
       pitfalls,
+      sites,
       overview_updated: overview.updated,
       terms_updated,
       terms_count: terms.length,
