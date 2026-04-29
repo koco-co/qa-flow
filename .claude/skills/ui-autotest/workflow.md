@@ -326,6 +326,50 @@ echo '{{suggestions_json}}' | bun run engine/src/ui-autotest/merge-site-knowledg
 
 生成后执行 [R1 review](#gate-r1)。
 
+### 步骤 3e: 通过率检查（Gate）
+
+**在进入 Step 4 之前，先判断是否值得跑全量回归。**
+
+```bash
+# 统计通过率
+TOTAL=$(bun -e "const s=require('fs').readFileSync('$STATE_FILE','utf-8');const j=JSON.parse(s);console.log(j.stats.completed+'/'+j.stats.total)")
+RATIO=$(bun -e "const s=require('fs').readFileSync('$STATE_FILE','utf-8');const j=JSON.parse(s);console.log((j.stats.completed/j.stats.total*100).toFixed(0))")
+echo "Case 验证通过率: ${RATIO}% (${TOTAL})"
+```
+
+- `通过率 >= 80%` → 自动进入 Step 4（正常全量回归）
+- `通过率 < 80%` → 询问用户：
+
+  ```
+  Case 验证通过率仅 45%（9/20），全量回归会重新执行所有案例，包括已失败的 11 个。
+  选项：1. 只合并已通过的 case 执行（跳过已知失败）
+        2. 仍然全量执行
+        3. 跳过回归，直接出报告
+  ```
+
+**选项 1 的实现**（只执行已验证通过的 case）：
+
+```bash
+# 将失败的 case 移出 cases/ 目录，step 4 merge 时就不会包含它们
+mkdir -p _failing
+for f in $(bun -e "const s=require('fs').readFileSync('$STATE_FILE','utf-8');const j=JSON.parse(s);j.tasks.filter(t=>t.status!=='completed').forEach(t=>console.log(t.script_path||'tests/cases/'+t.id+'-*.ts'))"); do
+  [ -f "$f" ] && mv "$f" _failing/
+done
+# 正常 merge（只含已通过的 case）
+bun run engine/src/ui-autotest/merge-specs.ts \
+  --input workspace/{{project}}/features/{{feature}}/tests/cases \
+  --output workspace/{{project}}/features/{{feature}}/tests/runners
+# 恢复失败的 case（merge 完成后移回）
+mv _failing/* tests/cases/ 2>/dev/null; rmdir _failing 2>/dev/null || true
+```
+
+已知失败的 case 不执行，报告中注明：
+
+```
+✅ 通过: 9
+⏭️ 已知失败（未执行）: 11
+```
+
 **完成 Step 3**：
 
 ```bash
