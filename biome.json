@@ -29,6 +29,6 @@
   "files": {
     "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.json"],
     "ignoreUnknown": true,
-    "ignore": ["node_modules", "workspace", "*.md", "*.hbs"]
+    "experimentalScannerIgnores": ["node_modules", "workspace", "*.md", "*.hbs"]
   }
 }

@@ -91,10 +91,12 @@ if (
   argv1.endsWith("load-site-knowledge.ts") ||
   argv1.endsWith("load-site-knowledge.js")
 ) {
-  runCli().catch((err) => {
+  try {
+    runCli();
+  } catch (err) {
     process.stderr.write(
       `[load-site-knowledge] 错误：${err instanceof Error ? err.message : String(err)}\n`,
     );
     process.exit(1);
-  });
+  }
 }

@@ -69,11 +69,14 @@ function program(): Command {
   cli
     .command("update <tests_dir> <task_id>")
     .description("更新任务状态（patch 从 stdin 读取 JSON）")
-    .action((testsDir: string, taskId: string) => {
+    .action(async (testsDir: string, taskId: string) => {
       let body = "";
+      const reader = Bun.stdin.stream().getReader();
       const decoder = new TextDecoder();
-      for (const chunk of Bun.stdin.stream()) {
-        body += decoder.decode(chunk);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        body += decoder.decode(value);
       }
       let patch: Partial<TaskItem>;
       try {

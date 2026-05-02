@@ -8,7 +8,7 @@
  *   kata-cli repo-sync --help
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { createCli } from "../lib/cli-runner.ts";
@@ -32,14 +32,14 @@ interface ErrorOutput {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function git(cwd: string, args: string[]): string {
-  return execSync(`git -C "${cwd}" ${args.join(" ")}`, {
+  return execFileSync("git", ["-C", cwd, ...args], {
     encoding: "utf8",
     stdio: ["pipe", "pipe", "pipe"],
   }).trim();
 }
 
 function gitClone(url: string, targetDir: string): void {
-  execSync(`git clone "${url}" "${targetDir}"`, {
+  execFileSync("git", ["clone", url, targetDir], {
     encoding: "utf8",
     stdio: ["pipe", "pipe", "pipe"],
   });

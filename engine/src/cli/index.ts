@@ -18,6 +18,8 @@
 
 import { Command } from "commander";
 import { initEnv } from "../../lib/env.ts";
+
+// 大部分模块静态加载（无昂贵依赖）
 import { program as archiveGen } from "../archive-gen.ts";
 import { program as autoFixer } from "../auto-fixer.ts";
 import { program as caseSignalAnalyzer } from "../case-signal-analyzer.ts";
@@ -40,7 +42,6 @@ import { program as repoSync } from "../repo-sync.ts";
 import { program as reportToPdf } from "../report-to-pdf.ts";
 import { program as ruleLoader } from "../rule-loader.ts";
 import { program as scanReport } from "../scan-report.ts";
-import { program as dbCli } from "../db-cli.ts";
 import { program as migrateWorkspace } from "./migrate-workspace.ts";
 import { program as runTestsNotify } from "../run-tests-notify.ts";
 import { program as searchFilter } from "../search-filter.ts";
@@ -77,7 +78,18 @@ kata.addCommand(repoSync);
 kata.addCommand(reportToPdf);
 kata.addCommand(ruleLoader);
 kata.addCommand(scanReport);
-kata.addCommand(dbCli);
+// db-cli 懒加载：仅在调用 db 命令时导入（避免 better-sqlite3 缺失导致全部命令无法启动）
+kata.addCommand(
+  new Command("db")
+    .description("数据库操作")
+    .allowUnknownOption()
+    .allowExcessArguments(true)
+    .action(async (_opts: unknown, command: Command) => {
+      const { program: dbCliModule } = await import("../db-cli.ts");
+      // 用真实命令替换当前占位命令
+      await dbCliModule.parseAsync(process.argv.slice(2).filter(a => a !== "db"));
+    }),
+);
 kata.addCommand(migrateWorkspace);
 kata.addCommand(runTestsNotify);
 kata.addCommand(searchFilter);

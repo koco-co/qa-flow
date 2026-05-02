@@ -850,10 +850,9 @@ async function processMdFile(
 
   const xmindPath = outputOverride ? resolve(outputOverride) : join(outDir, `${fname}.xmind`);
 
-  if (existsSync(xmindPath)) unlinkSync(xmindPath);
-
   try {
     if (mode === "create") {
+      if (existsSync(xmindPath)) unlinkSync(xmindPath);
       await createXmind(data, xmindPath, project);
     } else if (mode === "append") {
       await appendXmind(data, xmindPath, project);
